@@ -1,0 +1,359 @@
+#include "services.fcl"
+#include "calorimetry.fcl"
+#include "trackfinderservices.fcl"
+BEGIN_PROLOG
+
+standard_colordrawingopt:
+{
+ ColorOrGrayScale:  1         # 0 = color, 1 = grayscale
+                              # the following parameters assume the first entry in the arrays
+                              # is for induction planes, the second for collection planes
+ RawDiv:           [ 100  ]   # number of divisions to use for the color scale
+ RawQLow:	   [ -20. ]   # minimum raw ADC value used in determining colors
+ RawQHigh:         [  60. ]   # maximum raw ADC value used in determining colors
+ RecoDiv:          [ 100  ]   # number of divisions to use for the color scale
+ RecoQLow:         [ -20. ]   # minimum calibrated ADC value used in determining colors
+ RecoQHigh:        [  60. ]   # maximum calibrated ADC value used in determining colors
+}
+
+standard_rawdrawingopt:
+{
+ DrawRawDataOrCalibWires:    0     # 0 = raw, 1 = calibrated signals, 2 = both for ADC vs TDC views         
+ TicksPerPoint:              1     # number of TDC ticks to combine for each point in the TDC vs Wire veiws 
+ ScaleDigitsByCharge:        0     # 0 = off, 1 = on                                                        
+ MinimumSignal:              5.    # minimum ADC value to draw in TDC vs Wire views                         
+ TotalTicks:                 2048. # display TDC ticks 0 -> TotalTicks                                      
+ AxisOrientation:            0     # 0 = TDC on y-axis, wire number on x-axis, 1 has that swapped           
+ TPC:                        0     # TPC number to display in TWQProjection view
+ Cryostat:                   0     # Cryostat number to display in TWQProjection view
+ RawDataLabel:               "daq" # label of module making the raw digits     
+ }
+
+standard_recodrawingopt:
+{
+ DrawHits:                  1              # 0 = off, 1 = on, will not draw if DrawRawDataOrCalibWires      
+                                           # is set to 0                                                  
+ DrawClusters:              1              # set to 1 to draw markers for each hit in the cluster - is working
+                                           # 2 to draw outlines - not working yet
+                                           # 3 to draw connecting lines between cluster hits
+ Draw2DSlopeEndPoints:      0              # draws end points and slopes for clusters, 0 = off, 1 = on    
+ DrawSpacePoints:           0              # 0 = off, 1 = on                                              
+ DrawProngs:                0              # 0 = off, 1 = on                                              
+ DrawTracks:                0  		   # 0 = off, 1 = on                                              
+ DrawTrackTrajectoryPoints: 0  		   # 0 = off, 1 = on                                              
+ DrawTrackSpacePoints:      0  		   # 0 = off, 1 = on                                              
+ DrawShowers:               0  		   # 0 = off, 1 = on                                              
+ DrawVertices:              0  		   # 0 = off, 1 = on                                              
+ DrawSeeds:                 0  		   # 0 = off, 1 = on                                              
+ DrawBezierTracks:          0  		   # 0 = off, 1 = on                                              
+ DrawOpFlashes:             0              # 0 = off, 1 = on   
+
+ DrawEvents:                0  		   # 0 = off, 1 = on                                              
+ Draw2DEndPoints:           0              # 0 = off, 1 = on, this is for the recob::EndPoint2D objects
+ SelectedHitColor:	    6		   # color to display hits selected via handscan. 
+                                           # 0:white, 1:black 2:red 3:green 4:blue 
+                                           # 5: yellow 6:magenta 7:cyan		
+ UseHitSelector:            true           # turn on ability to use hit selector or not
+ WireModuleLabels:          ["caldata"]    # list of module labels in which to look for recob::Wires      
+ HitModuleLabels:           ["ffthit"]     # list of module labels in which to look for recob::Hits       
+ EndPoint2DModuleLabels:    [""]           # list of module labels in which to look for recob::EndPoint2Ds
+ SpacePointModuleLabels:    ["spacepts"]   # list of module labels in which to look for recob::SpacePoints     
+ ProngModuleLabels:         [""]           # list of module labels in which to look for recob::Prongs     
+ ClusterModuleLabels:       ["dbcluster"]  # list of module labels in which to look for recob::Clusters   
+ TrackModuleLabels:         [""]           # list of module labels in which to look for recob::Tracks     
+ ShowerModuleLabels:        ["showerreco"] # list of module labels in which to look for recob::Showers    
+ VertexModuleLabels:        [""]           # list of module labels in which to look for recob::Vertexs    
+ SeedModuleLabels:          ["seedfinder"] # list of module labels in which to look for recob::Seeds    
+ BezierTrackModuleLabels:   ["beziertracker"] # list of module labels in which to look for Bezier Tracks    
+ OpFlashModuleLabels:       ["opflashnew"] # list of module labels in which to look for recob::OpFlashes
+
+ EventModuleLabels:         [""]           # list of module labels in which to look for recob::Events     
+ ColorProngsByLabel:        0              # 0 = generate color from id.
+                                           # 1 = generate color from label.
+ ColorSpacePointsByChisq:   0              # 0 = off, 1 = on
+ CalorimetryAlgorithm:      @local::standard_calorimetryalgdata
+}
+
+standard_simdrawingopt:
+{
+ ShowMCTruthText:         true       # toggle showing of MC interaction on or off
+ ShowMCTruthVectors:      true       # toggle showing of MC truth directions in 2D
+ ShowMCTruthTrajectories: true       # toggle showing of MC truth trajectories in 3D, all depositions
+ MinimumEnergyDeposition: 5e-5       # in GeV
+ G4ModuleLabel:           "largeant" # module labels producing sim::SimChannel objects
+}
+
+standard_evdlayoutopt:
+{
+ ShowSideBar:		1          # toggle extra sidebar visibility option
+ AutoZoomInterest:	1          # toggle the auto zoom to interesting region option
+ PrintTotalCharge:	1          # Print out the sum of collected charge 
+ ShowEndPointSection:	1          # Show Sidebar section with EndPoint extrapolation
+ ShowEndPointMarkers:	1          # toggle visbility of markers for EndPoint finding
+ ShowClusterSection:    0          # Show Sidebar section for making clusters
+ MakeClusters: 		0	   # draw two lines to create clusters
+ MakeSeeds: 		0	   # draw two lines to create clusters
+ ChangeWire: 		1	   # change wire with mouse click
+ EnableMCTruthCheckBox: 1          # 1 turn on the check box, 0 don't make it
+}
+
+standard_scanopt:
+{
+ IncludeMCInfo:     false                # include MC information in scan file if true
+ FileNameBase:      "ScanFile"           # base name for scan file
+ Categories:        ["Neutrino",         # categories for collecting information
+ 		     "Induction Plane", 
+		     "Collection Plane"]
+ FieldLabels:       ["No_nu", "Possible_nu", "nu",  # fields for each category
+                     "Tracks", "Showers", "Vertex_w", "Vertex_t",  
+                     "Tracks", "Showers", "Vertex_w", "Vertex_t"]
+ FieldTypes:        ["RadioButton", "RadioButton", "RadioButton",  # type of each field
+		     "Number", "Number", "Number", "Number",  
+		     "Number", "Number", "Number", "Number"]
+ FieldsPerCategory: [3, 4, 4]          # number of fields for each category
+}
+
+standard_evd:
+{
+ AutoAdvanceInterval: 1000
+}
+
+evd_message:
+{
+ debugModules: "*"
+ destinations:
+ {
+  Drawers:
+  {
+   type: "cerr"
+   threshold: "INFO"
+   categories:
+   {
+    SimulationDrawer:
+    {     
+     limit:       5
+     timespan:    100
+    }
+    RecoBaseDrawer:
+    {     
+     limit:       5
+     timespan:    100
+    }
+    RawDataDrawer:
+    {     
+     limit:       5
+     timespan:    100
+    }
+    ConfigurationChecker:
+    {     
+     limit:       5
+     timespan:    100
+    }
+    HitSelector:
+    {
+     limit:    	  5
+     timespan:    100
+    }
+    GraphCluster:
+    {
+     limit:       5
+     timespan:    100
+    }
+    InfoTransfer:
+    {
+     limit:       5
+     timespan:    100
+    }
+    RecoBaseDefaultCtor:
+    {
+     limit:       1
+     timespan:    100
+    }
+    LArProperties:
+    {
+     limit:       2
+     timespan:    1000
+    }
+   }
+  }
+ }
+}
+
+standard_infotransfer:
+{
+}
+
+#######################################
+
+standard_graphclusteralg:
+{
+ HitsModuleLabel: "ffthit"
+}
+
+standard_graphcluster:
+{
+ module_type:     "GraphCluster"
+ HitsModuleLabel: "ffthit"
+ GraphClusterAlg: @local::standard_graphclusteralg 
+}
+
+### Define configurations for ArgoNeuT
+
+argoneut_colordrawingopt:                       @local::standard_colordrawingopt
+argoneut_colordrawingopt.RawDiv:                [ 100, 100  ] 
+argoneut_colordrawingopt.RawQLow:               [ -10., -20.]
+argoneut_colordrawingopt.RawQHigh:              [ 30.,  60.]
+argoneut_colordrawingopt.RecoDiv:               [ 100, 100  ]
+argoneut_colordrawingopt.RecoQLow:              [ -10., -20.]
+argoneut_colordrawingopt.RecoQHigh:             [ 30., 60.0]
+argoneut_rawdrawingopt:                         @local::standard_rawdrawingopt
+argoneut_rawdrawingopt.DrawRawDataOrCalibWires: 1
+argoneut_recodrawingopt:                        @local::standard_recodrawingopt
+argoneut_simdrawingopt:                         @local::standard_simdrawingopt
+argoneut_evdlayoutopt:   		        @local::standard_evdlayoutopt  
+argoneut_evdlayoutopt.ShowSideBar:	        1                              
+argoneut_evdlayoutopt.AutoZoomInterest:	        0                              
+argoneut_evdlayoutopt.PrintTotalCharge:	        0                              
+argoneut_evdlayoutopt.ShowEndPointSection:      1	                          
+argoneut_evdlayoutopt.ShowEndPointMarkers:      1                              
+argoneut_evdlayoutopt.MakeSeeds:	        0                              
+argoneut_evdlayoutopt.ChangeWire:	        0                              
+argoneut_evdlayoutopt.MakeSeeds:	        0                              
+argoneut_evdlayoutopt.ChangeWire:	        1                              
+argoneut_scanopt:                               @local::standard_scanopt
+argoneut_evd:                                   @local::standard_evd
+argoneut_infotransfer:                          @local::standard_infotransfer
+argoneut_graphcluster:                          @local::standard_graphcluster
+
+argoneut_analysisdrawingopt:
+{
+ DrawCalorimetry:                  1           
+ DrawParticleID:                   1
+ CalorimetryModuleLabels:          ["calo"]               
+ ParticleIDModuleLabels:           ["pid"] 
+ CalorTemplateFileNames:           ["dEdxKinErestemplate.root"]
+}  
+
+argoneut_disp:
+{
+ Geometry:                 @local::argoneut_geo 
+ LArProperties:            @local::argoneut_properties
+ DetectorProperties:       @local::argoneut_detproperties
+ DatabaseUtil:		   @local::argoneut_database   
+ ColorDrawingOptions:      @local::argoneut_colordrawingopt
+ SimulationDrawingOptions: @local::argoneut_simdrawingopt  
+ RawDrawingOptions:        @local::argoneut_rawdrawingopt  
+ RecoDrawingOptions:       @local::argoneut_recodrawingopt 
+ AnalysisDrawingOptions:   @local::argoneut_analysisdrawingopt
+ EvdLayoutOptions:	   @local::argoneut_evdlayoutopt
+ EventDisplay:             @local::argoneut_evd            
+ ScanOptions:              @local::argoneut_scanopt
+ LArG4Parameters:          @local::argoneut_largeantparameters
+ LArVoxelCalculator:       @local::argoneut_larvoxelcalculator
+ InfoTransfer:		   @local::argoneut_infotransfer
+}
+
+### Define configurations for MicroBooNE
+microboone_colordrawingopt:                       @local::standard_colordrawingopt
+microboone_colordrawingopt.ColorOrGrayScale:      0
+microboone_colordrawingopt.RawDiv:                [100, 100 ] 
+microboone_colordrawingopt.RawQLow:               [-50., -66.]
+microboone_colordrawingopt.RawQHigh:              [150., 200.]
+microboone_colordrawingopt.RecoDiv:               [100, 100 ]
+microboone_colordrawingopt.RecoQLow:              [-50., -66.]
+microboone_colordrawingopt.RecoQHigh:             [150., 200.]
+microboone_rawdrawingopt:                         @local::standard_rawdrawingopt
+microboone_rawdrawingopt.TotalTicks:              3300
+microboone_recodrawingopt:                        @local::standard_recodrawingopt
+microboone_recodrawingopt.CalorimetryAlgorithm:   @local::standard_calorimetryalgdata
+microboone_simdrawingopt:                         @local::standard_simdrawingopt
+microboone_simdrawingopt.ShowMCTruthText:         false
+microboone_simdrawingopt.ShowMCTruthVectors:      false
+microboone_simdrawingopt.ShowMCTruthTrajectories: false
+microboone_evdlayoutopt:                          @local::standard_evdlayoutopt
+microboone_evdlayoutopt.ChangeWire: 	          0
+microboone_scanopt:                               @local::standard_scanopt
+microboone_scanopt.IncludeMCInfo:                 true
+microboone_scanopt.Categories:                    ["Interaction Type", 
+                                                   "Particles Coinciding with the Vertex"]
+microboone_scanopt.FieldLabels:                   ["nu_e", "nu_mu", "NC","unknown", 
+				                   "# of muons ","# of protons",
+                                                   "# of charged pions","# other tracks",
+				                   "# of electrons","# of single photons",
+                                                   "# of pi0"]
+microboone_scanopt.FieldTypes:                    ["RadioButton", "RadioButton", 
+                                                   "RadioButton", "RadioButton",
+				                   "Number","Number","Number","Number",
+                                                   "Number","Number","Number"]  # type of each field
+microboone_scanopt.FieldsPerCategory:             [4,7]                        
+microboone_evd:                                   @local::standard_evd         
+microboone_infotransfer:                          @local::standard_infotransfer
+microboone_graphcluster:                          @local::standard_graphcluster
+
+microboone_disp:
+{
+ Geometry:                 @local::microboone_geo 
+ LArProperties:            @local::microboone_properties
+ DetectorProperties:       @local::microboone_detproperties
+ DatabaseUtil:		   @local::microboone_database   
+ ColorDrawingOptions:      @local::microboone_colordrawingopt
+ SimulationDrawingOptions: @local::microboone_simdrawingopt  
+ RawDrawingOptions:        @local::microboone_rawdrawingopt  
+ RecoDrawingOptions:       @local::microboone_recodrawingopt
+ AnalysisDrawingOptions:   @local::argoneut_analysisdrawingopt
+ EvdLayoutOptions:	   @local::microboone_evdlayoutopt
+ EventDisplay:             @local::microboone_evd            
+ ScanOptions:              @local::microboone_scanopt
+ LArG4Parameters:          @local::microboone_largeantparameters
+ LArVoxelCalculator:       @local::microboone_larvoxelcalculator
+ InfoTransfer: 		   @local::microboone_infotransfer
+}
+
+
+
+
+lbnefd_colordrawingopt:                       @local::standard_colordrawingopt 
+  lbnefd_colordrawingopt.ColorOrGrayScale:       0    # use color
+lbnefd_rawdrawingopt:                         @local::standard_rawdrawingopt   
+  lbnefd_rawdrawingopt.TotalTicks:               4096
+lbnefd_recodrawingopt:                        @local::standard_recodrawingopt
+  lbnefd_recodrawingopt.UseHitSelector:          false
+  lbnefd_recodrawingopt.WireModuleLabels:        [""]
+  lbnefd_recodrawingopt.HitModuleLabels:         ["apahit"]
+  lbnefd_recodrawingopt.ClusterModuleLabels:     ["fuzzy"]
+  lbnefd_recodrawingopt.DrawClusters:            0
+lbnefd_simdrawingopt:                         @local::standard_simdrawingopt 
+lbnefd_evdlayoutopt:   	                      @local::standard_evdlayoutopt  
+lbnefd_scanopt:                               @local::standard_scanopt       
+lbnefd_evd:                                   @local::standard_evd           
+
+lbnefd_disp:
+{
+ Geometry:                 @local::lbnefd_geo 
+ LArProperties:            @local::lbnefd_properties
+ DetectorProperties:       @local::lbnefd_detproperties
+ DatabaseUtil:		   @local::lbnefd_database 
+ ColorDrawingOptions:      @local::lbnefd_colordrawingopt
+ SimulationDrawingOptions: @local::lbnefd_simdrawingopt  
+ RawDrawingOptions:        @local::lbnefd_rawdrawingopt  
+ RecoDrawingOptions:       @local::lbnefd_recodrawingopt 
+ EvdLayoutOptions:	   @local::lbnefd_evdlayoutopt
+ EventDisplay:             @local::lbnefd_evd            
+ ScanOptions:              @local::lbnefd_scanopt
+}
+
+
+
+# For now, treat 35t like FD,
+# except of course Geometry
+
+lbne35t_disp:              @local::lbnefd_disp
+lbne35t_disp.Geometry:     @local::lbne35t_geo
+lbne35t_disp.RawDrawingOptions.TPC: 1  #TPC 1 is the main drift volume in 35t
+
+
+
+
+
+
+END_PROLOG

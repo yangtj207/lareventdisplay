@@ -47,6 +47,7 @@ microboone_infotransfer: @local::standard_infotransfer
 
 microboone_disp:
 {
+ ExptGeoHelperInterface:   @local::microboone_geometry_helper
  Geometry:                 @local::microboone_geo 
  LArProperties:            @local::microboone_properties
  DetectorProperties:       @local::microboone_detproperties

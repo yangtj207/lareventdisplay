@@ -80,7 +80,8 @@ namespace evd {
     void 	SetMouseZoomRegion(int plane);
     
     void 	SelectPoint(int plane);
-    void 	SelectHit(int plane);
+    // 	TWQMultiTPCProjectionView::SelectHit() is undefined
+    //void 	SelectHit(int plane);
     void        SetPlaneWire();
     void        SetPlane();
     void        SetWire();

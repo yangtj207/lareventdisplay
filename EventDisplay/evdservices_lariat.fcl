@@ -43,6 +43,7 @@ argoneut_infotransfer:   @local::standard_infotransfer
 
 lariat_disp:
 {
+ ExptGeoHelperInterface:   @local::lariat_geometry_helper
  Geometry:                 @local::lariat_geo 
  LArProperties:            @local::argoneut_properties
  DetectorProperties:       @local::argoneut_detproperties

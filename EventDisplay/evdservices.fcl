@@ -236,6 +236,7 @@ argoneut_analysisdrawingopt:
 
 argoneut_disp:
 {
+ ExptGeoHelperInterface:   @local::argoneut_geometry_helper
  Geometry:                 @local::argoneut_geo 
  LArProperties:            @local::argoneut_properties
  DetectorProperties:       @local::argoneut_detproperties
@@ -292,6 +293,7 @@ microboone_graphcluster:                          @local::standard_graphcluster
 
 microboone_disp:
 {
+ ExptGeoHelperInterface:   @local::microboone_geometry_helper
  Geometry:                 @local::microboone_geo 
  LArProperties:            @local::microboone_properties
  DetectorProperties:       @local::microboone_detproperties
@@ -329,6 +331,7 @@ lbnefd_evd:                                   @local::standard_evd
 
 lbnefd_disp:
 {
+ ExptGeoHelperInterface:   @local::lbne_geometry_helper
  Geometry:                 @local::lbnefd_geo 
  LArProperties:            @local::lbnefd_properties
  DetectorProperties:       @local::lbnefd_detproperties
@@ -348,6 +351,7 @@ lbnefd_disp:
 # except of course Geometry
 
 lbne35t_disp:              @local::lbnefd_disp
+lbne35t_disp.ExptHelperInterface: @local::lbne_geometry_helper
 lbne35t_disp.Geometry:     @local::lbne35t_geo
 lbne35t_disp.RawDrawingOptions.TPC: 1  #TPC 1 is the main drift volume in 35t
 

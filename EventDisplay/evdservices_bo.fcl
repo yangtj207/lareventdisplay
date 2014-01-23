@@ -32,6 +32,7 @@ bo_evd:         @local::standard_evd
 
 bo_disp:
 {
+ ExptGeoHelperInterface:   @local::bo_geometry_helper
  Geometry:                 @local::bo_geo 
  LArProperties:            @local::bo_properties
  DetectorProperties:       @local::bo_detproperties

@@ -44,6 +44,7 @@ argoneut_infotransfer:   @local::standard_infotransfer
 
 argoneut_disp:
 {
+ ExptGeoHelperInterface:   @local::argoneut_geometry_helper
  Geometry:                 @local::argoneut_geo 
  LArProperties:            @local::argoneut_properties
  DetectorProperties:       @local::argoneut_detproperties

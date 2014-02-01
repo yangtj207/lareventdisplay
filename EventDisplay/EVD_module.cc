@@ -155,7 +155,7 @@ namespace evd{
   }
 
   //----------------------------------------------------
-  void EVD::analyze(const art::Event& evt)
+  void EVD::analyze(const art::Event& /*evt*/)
   {
   }
 

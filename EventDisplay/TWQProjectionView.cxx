@@ -291,7 +291,7 @@ namespace evd{
   }
 
   //......................................................................
-  void TWQProjectionView::DrawPads(const char* opt)
+  void TWQProjectionView::DrawPads(const char* /*opt*/)
   {
     for(unsigned int i=0; i<fPlanes.size();++i){
       fPlanes[i]->Draw();

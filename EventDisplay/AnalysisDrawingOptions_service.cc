@@ -15,7 +15,7 @@ namespace evd {
 
   //......................................................................
   AnalysisDrawingOptions::AnalysisDrawingOptions(fhicl::ParameterSet const& pset, 
-					 art::ActivityRegistry& reg) 
+					 art::ActivityRegistry& /* reg */) 
   {
     this->reconfigure(pset);
   }

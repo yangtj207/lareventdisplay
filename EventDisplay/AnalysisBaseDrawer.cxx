@@ -278,7 +278,7 @@ namespace evd{
    }
 
    //......................................................................
-   void AnalysisBaseDrawer::CalorInteractive(const art::Event& evt,
+   void AnalysisBaseDrawer::CalorInteractive(const art::Event& /*evt*/,
 					     evdb::View2D* view,
 					     trkf::BezierTrack BTrack,
 					     trkf::HitPtrVec HitHider

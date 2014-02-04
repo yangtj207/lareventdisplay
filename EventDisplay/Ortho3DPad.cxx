@@ -143,7 +143,7 @@ evd::Ortho3DPad::~Ortho3DPad()
 //......................................................................
 // Draw selected objects.
 
-void evd::Ortho3DPad::Draw(const char* opt)
+void evd::Ortho3DPad::Draw(const char* /*opt*/)
 {
   fPad->Clear();
   fView->Clear();

@@ -302,7 +302,7 @@ namespace evd{
   }
 
   //......................................................................
-  void TWQMultiTPCProjectionView::DrawPads(const char* opt)
+  void TWQMultiTPCProjectionView::DrawPads(const char* /*opt*/)
   {
     for(unsigned int i=0; i<fPlanes.size();++i){
       fPlanes[i]->Draw();

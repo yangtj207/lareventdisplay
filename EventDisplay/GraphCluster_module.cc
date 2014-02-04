@@ -201,7 +201,7 @@ namespace evd {
   }
   
   //-------------------------------------------------
-  void GraphCluster::reconfigure(fhicl::ParameterSet const& pset)
+  void GraphCluster::reconfigure(fhicl::ParameterSet const& /*pset*/)
   {
 
 

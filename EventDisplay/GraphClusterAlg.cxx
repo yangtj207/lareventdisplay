@@ -39,7 +39,7 @@
   
  
   //-------------------------------------------------
-  void evd::GraphClusterAlg::reconfigure(fhicl::ParameterSet const& pset)
+  void evd::GraphClusterAlg::reconfigure(fhicl::ParameterSet const& /*pset*/)
   {
 
 

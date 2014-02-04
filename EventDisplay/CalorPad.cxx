@@ -101,7 +101,7 @@ evd::CalorPad::~CalorPad()
 //......................................................................
 // Draw selected objects.
 
-void evd::CalorPad::Draw(const char* opt)
+void evd::CalorPad::Draw(const char* /*opt*/)
 {
 
   this->Pad()->cd();

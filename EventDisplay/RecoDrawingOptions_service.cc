@@ -15,7 +15,7 @@ namespace evd {
 
   //......................................................................
   RecoDrawingOptions::RecoDrawingOptions(fhicl::ParameterSet const& pset, 
-					 art::ActivityRegistry& reg) 
+					 art::ActivityRegistry& /* reg */) 
   {
     this->reconfigure(pset);
   }

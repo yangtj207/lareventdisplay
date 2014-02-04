@@ -53,7 +53,7 @@ namespace evd{
   /// Return value is the kinetic enegry of the track
   //
   double HitSelector::SaveSeedLines(const art::Event& evt,
-				    evdb::View2D*     view,
+				    evdb::View2D*     /*view*/,
 				    std::vector< util::pxline > seedlines,
 				    double distance
 				    ) 
@@ -167,7 +167,7 @@ namespace evd{
   /// @param plane  : plane number of view
   ///
   void HitSelector::SaveHits(const art::Event& evt,
-			     evdb::View2D*     view,
+			     evdb::View2D*     /*view*/,
 			     unsigned int      plane,
 			     double x,  double y,
 			     double x1, double y1,
@@ -263,7 +263,7 @@ namespace evd{
   /// @param plane  : plane number of view
   ///
   void HitSelector::ChangeHit(const art::Event& evt,
-			      evdb::View2D*     view,
+			      evdb::View2D*     /*view*/,
 			      unsigned int      plane,
 			      double x,  double y
 			      ) 

@@ -3,8 +3,7 @@
 /// \brief   Orthographic view display window
 /// \author  greenlee@fnal.gov
 ///
-#include <iostream>
-#include <sstream>
+#include <string>
 #include <cmath>
 #include "TCanvas.h"
 #include "TGLabel.h"
@@ -15,6 +14,7 @@
 #include "EventDisplay/Ortho3DView.h"
 #include "EventDisplay/Ortho3DPad.h"
 
+#include "cetlib/exception.h"
 #include "art/Framework/Principal/Event.h"
 
 //......................................................................
@@ -55,16 +55,20 @@ evd::Ortho3DView::Ortho3DView(TGMainFrame* mf) :
     evdb::Canvas::fCanvas->cd();
     OrthoProj_t proj = evd::kNoProj;
     std::string projname;
-    if(ipad == 0) {
-      proj = kXZ;
-      projname = "XZ";
-    }
-    else if(ipad == 1) {
-      proj = kYZ;
-      projname = "YZ";
-    }
-    assert(proj != evd::kNoProj);
-    assert(projname.size() > 0);
+    switch (ipad) {
+      case 0:
+        proj = kXZ;
+        projname = "XZ";
+        break;
+      case 1:
+        proj = kYZ;
+        projname = "YZ";
+        break;
+      default:
+        throw cet::exception("Ortho3DView")
+          << __func__ << ": unknown projection pad " << ipad;
+    } // switch
+    
     std::string padname = std::string("Ortho3DPad") + projname;
     std::string padtitle = projname + std::string(" View");
     double ylo = double(npad - ipad - 1) / double(npad);

@@ -45,6 +45,7 @@
 #include "Utilities/DetectorProperties.h"
 #include "Utilities/AssociationUtil.h"
 
+#include "cetlib/exception.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Persistency/Common/Ptr.h"
@@ -1838,14 +1839,20 @@ namespace evd{
       for(size_t s = 0; s < psps.size(); ++s){
 	const recob::SpacePoint& spt = *psps[s];
 	const double *xyz = spt.XYZ();
-	if(proj == evd::kXY)
-	  pm.SetPoint(s, xyz[0], xyz[1]);
-	else if(proj == evd::kXZ)
-	  pm.SetPoint(s, xyz[2], xyz[0]);
-	else {
-	  assert(proj == evd::kYZ);
-	  pm.SetPoint(s, xyz[2], xyz[1]);
-	}
+	switch (proj) {
+	  case evd::kXY:
+	    pm.SetPoint(s, xyz[0], xyz[1]);
+	    break;
+	  case evd::kXZ:
+	    pm.SetPoint(s, xyz[2], xyz[0]);
+	    break;
+	  case evd::kYZ:
+	    pm.SetPoint(s, xyz[2], xyz[1]);
+	    break;
+	  default:
+	    throw cet::exception("RecoBaseDrawer") << __func__
+	      << ": unknown projection #" << ((int) proj);
+	} // switch
       }
     }
     
@@ -1901,14 +1908,20 @@ namespace evd{
       TPolyMarker& pm = view->AddPolyMarker(np, evd::kColor[color%evd::kNCOLS], kFullCircle, msize);
       for(int p = 0; p < np; ++p){
 	const TVector3& pos = track.LocationAtPoint(p);
-	if(proj == evd::kXY)
-	  pm.SetPoint(p, pos.X(), pos.Y());
-	else if(proj == evd::kXZ)
-	  pm.SetPoint(p, pos.Z(), pos.X());
-	else {
-	  assert(proj == evd::kYZ);
-	  pm.SetPoint(p, pos.Z(), pos.Y());
-	}
+	switch (proj) {
+	  case evd::kXY:
+	    pm.SetPoint(p, pos.X(), pos.Y());
+	    break;
+	  case evd::kXZ:
+	    pm.SetPoint(p, pos.Z(), pos.X());
+	    break;
+	  case evd::kYZ:
+	    pm.SetPoint(p, pos.Z(), pos.Y());
+	    break;
+	  default:
+	    throw cet::exception("RecoBaseDrawer") << __func__
+	      << ": unknown projection #" << ((int) proj);
+	} // switch
       }
     }
 

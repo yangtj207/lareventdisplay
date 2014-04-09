@@ -86,7 +86,7 @@ namespace evd{
 							   << "values for the raw color/gray scale "
 							   << "than there are types of signal planes in "
 							   << "the detector.  It is unclear what your   "
-							   << "intention is, so bail.";
+							   << "intention is, so bail.\n";
     }// end check on the raw vector sizes
 
     if(fRecoDiv.size() != geo::kMysteryType){
@@ -104,7 +104,7 @@ namespace evd{
 							   << "values for the reco color/gray scale "
 							   << "than there are types of signal planes in "
 							   << "the detector.  It is unclear what your   "
-							   << "intention is, so bail.";
+							   << "intention is, so bail.\n";
     }// end check on the reco vector sizes
 
     return;
@@ -143,7 +143,7 @@ namespace evd{
 
     if(st == geo::kMysteryType)
       throw cet::exception("ColorDrawingOptions") << "asked for RawQ with geo::kMysteryType, "
-						  << "bad things will happen, so bail";
+						  << "bad things will happen, so bail\n";
 
     if(fColorOrGray > 0) return fGrayScaleRaw[pos];
     
@@ -157,7 +157,7 @@ namespace evd{
 
     if(st == geo::kMysteryType)
       throw cet::exception("ColorDrawingOptions") << "asked for CalQ with geo::kMysteryType, "
-						  << "bad things will happen, so bail";
+						  << "bad things will happen, so bail\n";
 
     if(fColorOrGray > 0) return fGrayScaleReco[pos];
     
@@ -171,7 +171,7 @@ namespace evd{
 
     if(st == geo::kMysteryType)
       throw cet::exception("ColorDrawingOptions") << "asked for RawT with geo::kMysteryType, "
-						  << "bad things will happen, so bail";
+						  << "bad things will happen, so bail\n";
 
 
     if(fColorOrGray > 0) return fGrayScaleRaw[pos];
@@ -186,7 +186,7 @@ namespace evd{
 
     if(st == geo::kMysteryType)
       throw cet::exception("ColorDrawingOptions") << "asked for CalT with geo::kMysteryType, "
-						  << "bad things will happen, so bail";
+						  << "bad things will happen, so bail\n";
 
     if(fColorOrGray > 0) return fGrayScaleReco[pos];
     

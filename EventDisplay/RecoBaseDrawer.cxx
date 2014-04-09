@@ -1354,7 +1354,7 @@ namespace evd{
 	}
 	else{
 	  if(proj != evd::kYZ)
-	    throw cet::exception("RecoBaseDrawer:SeedOrtho") << "projection is not YZ as expected";
+	    throw cet::exception("RecoBaseDrawer:SeedOrtho") << "projection is not YZ as expected\n";
 
 	  TMarker& strt = view->AddMarker(pt[2], pt[1], color, 4, 1.5);
 	  TLine& line = view->AddLine(end1[2], end1[1], end2[2], end2[1]);
@@ -1464,7 +1464,7 @@ namespace evd{
 
     for(auto i : spts) {
       const recob::SpacePoint* pspt = i;
-      if(pspt == 0) throw cet::exception("RecoBaseDrawer:DrawSpacePoint3D") << "space point is null";
+      if(pspt == 0) throw cet::exception("RecoBaseDrawer:DrawSpacePoint3D") << "space point is null\n";
 
       // By default use event display palette.
 
@@ -1805,7 +1805,7 @@ namespace evd{
 
     for(auto i : spts){
       const recob::SpacePoint* pspt = i;
-      if(pspt == 0) throw cet::exception("RecoBaseDrawer:DrawSpacePointOrtho") << "spacepoint is null";
+      if(pspt == 0) throw cet::exception("RecoBaseDrawer:DrawSpacePointOrtho") << "spacepoint is null\n";
 
       // By default use event display palette.
 
@@ -1851,7 +1851,7 @@ namespace evd{
 	    break;
 	  default:
 	    throw cet::exception("RecoBaseDrawer") << __func__
-	      << ": unknown projection #" << ((int) proj);
+	      << ": unknown projection #" << ((int) proj) << "\n";
 	} // switch
       }
     }
@@ -1920,7 +1920,7 @@ namespace evd{
 	    break;
 	  default:
 	    throw cet::exception("RecoBaseDrawer") << __func__
-	      << ": unknown projection #" << ((int) proj);
+	      << ": unknown projection #" << ((int) proj) << "\n";
 	} // switch
       }
     }

@@ -93,7 +93,7 @@ evd::Ortho3DPad::Ortho3DPad(const char* name, const char* title,
       break;
     default:
       throw cet::exception("Ortho3DPad")
-        << __func__ << ": unwknow projection " << ((int) proj);
+        << __func__ << ": unwknow projection " << ((int) proj) << "\n";
   } // switch
 
   // Make enclosing histogram.
@@ -120,7 +120,7 @@ evd::Ortho3DPad::Ortho3DPad(const char* name, const char* title,
       break;
     default:
       throw cet::exception("Ortho3DPad")
-        << __func__ << ": unexpected flow (projection: " << ((int) proj) << ")";
+        << __func__ << ": unexpected flow (projection: " << ((int) proj) << ")\n";
   } // switch
   fHisto->GetXaxis()->CenterTitle();
   fHisto->GetYaxis()->SetLabelSize(0.04);
@@ -269,7 +269,7 @@ void evd::Ortho3DPad::SetMSize()
   // Get marker size from number entry widget.
 
   if (!fMSizeEntry)
-    throw cet::exception("Ortho3DPad") << __func__ << ": no MSize entry";
+    throw cet::exception("Ortho3DPad") << __func__ << ": no MSize entry\n";
   double val = fMSizeEntry->GetNumber();
 
   // Scale the marker size such that the displayed marker size

@@ -291,7 +291,7 @@ namespace evd{
          fRecoHisto->SetLineColor(kBlue);
          break;
        default:
-         throw cet::exception("TQPad") << __func__ << ": unexpected quantity #" << fTQ;
+         throw cet::exception("TQPad") << __func__ << ": unexpected quantity #" << fTQ << "\n";
      }//end if fTQ == kTQ
      
      fRawHisto->SetLabelSize  (0.15,"X");

@@ -66,7 +66,7 @@ evd::Ortho3DView::Ortho3DView(TGMainFrame* mf) :
         break;
       default:
         throw cet::exception("Ortho3DView")
-          << __func__ << ": unknown projection pad " << ipad;
+          << __func__ << ": unknown projection pad " << ipad << "\n";
     } // switch
     
     std::string padname = std::string("Ortho3DPad") + projname;

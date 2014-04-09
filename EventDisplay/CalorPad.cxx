@@ -225,7 +225,7 @@ void evd::CalorPad::DrawRefCurves()
   if( !sp.find_file(anaOpt->fCalorTemplateFileNames[0], fROOTfile) )  
     throw cet::exception("Chi2ParticleID") << "cannot find the root template file: \n" 
                                            << anaOpt->fCalorTemplateFileNames[0]
-                                           << "\n bail ungracefully.";
+                                           << "\n bail ungracefully.\n";
  
   TFile *file = TFile::Open(fROOTfile.c_str());
   if(fcurvetype==1){

@@ -4,8 +4,6 @@
 ///          in the detector
 /// \author  greenlee@fnal.gov
 ///
-#include <cassert>
-#include <iostream>
 
 #include "TPad.h"
 #include "TH1F.h"
@@ -13,6 +11,7 @@
 #include "TPolyMarker.h"
 #include "TGNumberEntry.h"
 
+#include "cetlib/exception.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 
 #include "EventDisplay/Ortho3DPad.h"
@@ -73,26 +72,29 @@ evd::Ortho3DPad::Ortho3DPad(const char* name, const char* title,
 
   // Define histogram boundaries (cm).
   // For now only draw tpc=0.
-
-  if(proj == evd::kXY) {
-    fXLo = 0.;
-    fXHi = 2.*geo->DetHalfWidth();
-    fYLo = -geo->DetHalfHeight();
-    fYHi = geo->DetHalfHeight();
-  }
-  else if(proj == evd::kXZ) {
-    fXLo = 0.;
-    fXHi = geo->DetLength();
-    fYLo = 0.;
-    fYHi = 2.*geo->DetHalfWidth();
-  }
-  else {
-    assert(proj == evd::kYZ);
-    fXLo = 0.;
-    fXHi = geo->DetLength();
-    fYLo = -geo->DetHalfHeight();
-    fYHi = geo->DetHalfHeight();
-  }
+  switch (proj) {
+    case evd::kXY:
+      fXLo = 0.;
+      fXHi = 2.*geo->DetHalfWidth();
+      fYLo = -geo->DetHalfHeight();
+      fYHi = geo->DetHalfHeight();
+      break;
+    case evd::kXZ:
+      fXLo = 0.;
+      fXHi = geo->DetLength();
+      fYLo = 0.;
+      fYHi = 2.*geo->DetHalfWidth();
+      break;
+    case evd::kYZ:
+      fXLo = 0.;
+      fXHi = geo->DetLength();
+      fYLo = -geo->DetHalfHeight();
+      fYHi = geo->DetHalfHeight();
+      break;
+    default:
+      throw cet::exception("Ortho3DPad")
+        << __func__ << ": unwknow projection " << ((int) proj) << "\n";
+  } // switch
 
   // Make enclosing histogram.
 
@@ -103,19 +105,23 @@ evd::Ortho3DPad::Ortho3DPad(const char* name, const char* title,
   fHisto->SetTitleOffset(1.,"X");
   fHisto->GetXaxis()->SetLabelSize(0.04);
   fHisto->GetXaxis()->SetTitleSize(0.04);
-  if(proj == evd::kXY) {
-    fHisto->GetXaxis()->SetTitle("x (cm)");
-    fHisto->GetYaxis()->SetTitle("y (cm)");
-  }
-  else if(proj == evd::kXZ) {
-    fHisto->GetXaxis()->SetTitle("z (cm)");
-    fHisto->GetYaxis()->SetTitle("x (cm)");
-  }
-  else {
-    assert(proj == evd::kYZ);
-    fHisto->GetXaxis()->SetTitle("z (cm)");
-    fHisto->GetYaxis()->SetTitle("y (cm)");
-  }
+  switch (proj) {
+    case evd::kXY:
+      fHisto->GetXaxis()->SetTitle("x (cm)");
+      fHisto->GetYaxis()->SetTitle("y (cm)");
+      break;
+    case evd::kXZ:
+      fHisto->GetXaxis()->SetTitle("z (cm)");
+      fHisto->GetYaxis()->SetTitle("x (cm)");
+      break;
+    case evd::kYZ:
+      fHisto->GetXaxis()->SetTitle("z (cm)");
+      fHisto->GetYaxis()->SetTitle("y (cm)");
+      break;
+    default:
+      throw cet::exception("Ortho3DPad")
+        << __func__ << ": unexpected flow (projection: " << ((int) proj) << ")\n";
+  } // switch
   fHisto->GetXaxis()->CenterTitle();
   fHisto->GetYaxis()->SetLabelSize(0.04);
   fHisto->GetYaxis()->SetTitleSize(0.04);
@@ -136,8 +142,8 @@ evd::Ortho3DPad::Ortho3DPad(const char* name, const char* title,
 
 evd::Ortho3DPad::~Ortho3DPad() 
 {
-  if (fHisto) { delete fHisto; fHisto = 0; }
-  if (fView) { delete fView; fView = 0; }
+  if (fHisto) { delete fHisto; fHisto = nullptr; }
+  if (fView) { delete fView; fView = nullptr; }
 }
 
 //......................................................................
@@ -262,7 +268,8 @@ void evd::Ortho3DPad::SetMSize()
 
   // Get marker size from number entry widget.
 
-  assert(fMSizeEntry != 0);
+  if (!fMSizeEntry)
+    throw cet::exception("Ortho3DPad") << __func__ << ": no MSize entry\n";
   double val = fMSizeEntry->GetNumber();
 
   // Scale the marker size such that the displayed marker size

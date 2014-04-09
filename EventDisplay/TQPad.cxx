@@ -5,12 +5,14 @@
 /// \version $Id: TQPad.cxx,v 1.2 2010/11/11 18:11:22 p-novaart Exp $
 ///
 #include "EventDisplay/TQPad.h"
-#include <cassert>
+
 #include "TBox.h"
 #include "TH1F.h"
 #include "TF1.h"
 #include "TPad.h"
 #include "TPolyLine.h"
+
+#include "cetlib/exception.h"
 
 #include "EventDisplayBase/View2D.h"
 #include "EventDisplayBase/EventHolder.h"
@@ -273,37 +275,24 @@ namespace evd{
      double tqxlo     = 0.;
      double tqxhi     = 1.*this->RawDataDraw()->TotalClockTicks();
      
-     if(fTQ == kQ){
-       fRawHisto = new TH1F("fRAWQHisto",
-			    ";;",
-			    2,0.,1.);
-       
-       fRawHisto->SetMaximum(qxhiraw);
-       fRawHisto->SetMinimum(qxloraw);
-       
-       fRecoHisto = new TH1F("fCALQHisto",
-			     ";;",
-			     1,0.,1.);
-       
-       fRecoHisto->SetMaximum(qxhireco);
-       fRecoHisto->SetMinimum(qxloreco);
-       
-     } // end if fTQ == kQ
-     
-     if(fTQ == kTQ){
-       fRawHisto = new TH1F("fRAWTQHisto",
-			    ";t [ticks];q [ADC]",
-			    (int)tqxhi,tqxlo,tqxhi);
-       
-       fRecoHisto = new TH1F("fCALTQHisto",
-			     ";t [ticks];q [ADC]",
-			     (int)tqxhi,tqxlo,tqxhi);
-       fRecoHisto->SetLineColor(kBlue);
+     switch (fTQ) {
+       case kQ:
+         fRawHisto = new TH1F("fRAWQHisto", ";;", 2,0.,1.);
+         fRawHisto->SetMaximum(qxhiraw);
+         fRawHisto->SetMinimum(qxloraw);
+         
+         fRecoHisto = new TH1F("fCALQHisto", ";;", 1,0.,1.);
+         fRecoHisto->SetMaximum(qxhireco);
+         fRecoHisto->SetMinimum(qxloreco);
+         break; // kQ
+       case kTQ:
+         fRawHisto = new TH1F("fRAWTQHisto", ";t [ticks];q [ADC]", (int)tqxhi,tqxlo,tqxhi);
+         fRecoHisto = new TH1F("fCALTQHisto", ";t [ticks];q [ADC]", (int)tqxhi,tqxlo,tqxhi);
+         fRecoHisto->SetLineColor(kBlue);
+         break;
+       default:
+         throw cet::exception("TQPad") << __func__ << ": unexpected quantity #" << fTQ << "\n";
      }//end if fTQ == kTQ
-     
-      // By this time I must have a histogram booked
-     assert(fRecoHisto);
-     assert(fRawHisto);
      
      fRawHisto->SetLabelSize  (0.15,"X");
      fRawHisto->SetLabelOffset(0.04,"X");

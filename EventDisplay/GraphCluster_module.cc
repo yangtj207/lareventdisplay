@@ -257,37 +257,41 @@ namespace evd {
       //fGClAlg.GetStartEndHits(&startendpoints[ip]);
 	   
       if(hitlist[ip].size()>0 && !(TestFlag==-1 ) )   //old event or transfer not ready
-	{
-	  double swterror=0.,ewterror=0.;
-		  
-	  if(startendpoints[ip].w0==0 )
-	    swterror=999;
-		  
-	  if(startendpoints[ip].t1==0 )
-	    ewterror=999;
-		  
-	  std::cout << " clustering @ " <<startendpoints[ip].w0 << " +/- "<< swterror
-		    <<" " <<  startendpoints[ip].t0<< " +/- "<< swterror
-		    <<" " <<  startendpoints[ip].w1<< " +/- "<< ewterror
-		    <<" " << startendpoints[ip].t1<< " +/- "<< ewterror << std::endl;  
-		  
-	  recob::Cluster temp(startendpoints[ip].w0, swterror,
-			      startendpoints[ip].t0, swterror,
-			      startendpoints[ip].w1, ewterror,
-			      startendpoints[ip].t1, ewterror,  
-			      0, 0, 0,0,5.,
-			      geo->Plane(ip,0,0).View(),
-			      ip);
-  
-	  Graphcol->push_back(temp);
-	  // associate the hits to this cluster
-	  util::CreateAssn(*this, evt, *Graphcol, hitlist[ip], *hassn);
-	}
+        {
+          double swterror=0.,ewterror=0.;
+          
+          if(startendpoints[ip].w0==0 )
+            swterror=999;
+          
+          if(startendpoints[ip].t1==0 )
+            ewterror=999;
+          
+          std::cout << " clustering @ " <<startendpoints[ip].w0 << " +/- "<< swterror
+                    <<" " <<  startendpoints[ip].t0<< " +/- "<< swterror
+                    <<" " <<  startendpoints[ip].w1<< " +/- "<< ewterror
+                    <<" " << startendpoints[ip].t1<< " +/- "<< ewterror << std::endl;  
+          
+          // get the plane ID from the first hit
+          geo::PlaneID planeID = hitlist[ip].front()->WireID().planeID();
+          Graphcol->emplace_back(startendpoints[ip].w0, swterror,
+                                 startendpoints[ip].t0, swterror,
+                                 startendpoints[ip].w1, ewterror,
+                                 startendpoints[ip].t1, ewterror,
+                                 0, 0, 0,0,5.,
+                                 geo->Plane(ip,planeID.TPC,planeID.Cryostat).View(),
+                                 ip,
+                                 planeID
+                                 );
+          
+          // associate the hits to this cluster
+          util::CreateAssn(*this, evt, *Graphcol, hitlist[ip], *hassn);
+        }
 
     }// end of loop on planes
    
     art::PtrVector < recob::Cluster > cvec;
-	
+    cvec.reserve(fNPlanes);
+    
     for(unsigned int ip=0;ip<fNPlanes;ip++)  {
       art::ProductID aid = this->getProductID< std::vector < recob::Cluster > >(evt);
       art::Ptr< recob::Cluster > aptr(aid, ip, evt.productGetter(aid));

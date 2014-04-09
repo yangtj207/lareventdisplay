@@ -2028,9 +2028,9 @@ namespace evd{
 
     try{
       evt.getByLabel(which, clcol);
+      temp.reserve(clcol->size());
       for(unsigned int i = 0; i < clcol->size(); ++i){
-	art::Ptr<recob::Cluster> cl(clcol, i);
-	temp.push_back(cl);
+        temp.push_back(art::Ptr<recob::Cluster>(clcol, i));
       }
       temp.swap(clust);
     }

@@ -24,8 +24,8 @@
 
 
  namespace util {
-   class pxpoint;
-   class pxline;
+   class PxPoint;
+   class PxLine;
  }
 
 
@@ -104,10 +104,10 @@ namespace evd {
     endhitout[plane]=endhitin;  };
 
 
-    void SetSeedList(std::vector < util::pxline > seedlines);
+    void SetSeedList(std::vector < util::PxLine > seedlines);
 
 
-    std::vector < util::pxline > GetSeedList();
+    std::vector < util::PxLine > GetSeedList();
 
 
 
@@ -130,7 +130,7 @@ namespace evd {
     std::vector < recob::Hit * >  fEndHit; ///< The Starthit
     std::vector < recob::Hit * >  fRefEndHit; ///< The Refined Starthit
 
-    std::vector < util::pxline > fSeedList;
+    std::vector < util::PxLine > fSeedList;
 
     std::vector < std::vector <double > > starthitout;
     std::vector < std::vector <double > > endhitout;

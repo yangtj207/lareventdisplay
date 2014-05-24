@@ -54,7 +54,7 @@ namespace evd{
   //
   double HitSelector::SaveSeedLines(const art::Event& evt,
 				    evdb::View2D*     /*view*/,
-				    std::vector< util::pxline > seedlines,
+				    std::vector< util::PxLine > seedlines,
 				    double distance
 				    ) 
   {

@@ -164,13 +164,16 @@ namespace evd{
 
 	double wire = 1.*thiswid.Wire;
 	double tick = 0;
+        // get the unpacked ROIs
+        std::vector<float> wirSig = wires[i]->Signal();
+        if(wirSig.size() == 0) continue;
 	// get an iterator over the adc values
-	std::vector<float>::const_iterator itr = wires[i]->Signal().begin();
-	while( itr != wires[i]->Signal().end() ){
+	std::vector<float>::const_iterator itr = wirSig.begin();
+	while( itr != wirSig.end() ){
 	  int ticksUsed = 0;
 	  double tdcsum = 0.;
 	  double adcsum = 0.;
-	  while(ticksUsed < ticksPerPoint && itr != wires[i]->Signal().end()){
+	  while(ticksUsed < ticksPerPoint && itr != wirSig.end()){
 	    tdcsum  += tick;
 	    adcsum  += (1.*(*itr));
 	    ++ticksUsed;
@@ -2290,9 +2293,9 @@ namespace evd{
 	}
 	if(!goodWID) continue;
 
-	for(size_t s = 0; s < wires[i]->NSignal(); ++s)
-	  histo->Fill(1.*s, wires[i]->Signal()[s]);
-
+        std::vector<float> wirSig = wires[i]->Signal();
+        for(unsigned int ii = 0; ii < wirSig.size(); ++ii) 
+          histo->Fill(1.*ii, wirSig[ii]);
       }//end loop over wires
     }//end loop over wire modules
 
@@ -2348,10 +2351,13 @@ namespace evd{
 	     wid.Cryostat == rawOpt->fCryostat) goodWID = true;
 	}
 	if(!goodWID) continue;
-	
+	std::vector<float> wirSig = wires[i]->Signal();
+        for(unsigned int ii = 0; ii < wirSig.size(); ++ii) 
+          histo->Fill(wirSig[ii]);
+/*
 	for(size_t s = 0; s < wires[i]->NSignal(); ++s)
 	  histo->Fill(wires[i]->Signal()[s]);
-
+*/
       }//end loop over raw hits
     }//end loop over Wire modules
 

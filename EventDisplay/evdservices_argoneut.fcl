@@ -60,6 +60,7 @@ argoneut_disp:
  LArG4Parameters:          @local::argoneut_largeantparameters
  LArVoxelCalculator:       @local::argoneut_larvoxelcalculator
  InfoTransfer:		   @local::argoneut_infotransfer
+ TimeService:              @local::argoneut_timeservice # defined in timeservice.fcl
 }
 
 

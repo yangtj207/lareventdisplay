@@ -44,6 +44,7 @@ bo_disp:
  EvdLayoutOptions:	   @local::bo_evdlayoutopt
  EventDisplay:             @local::bo_evd            
  ScanOptions:              @local::bo_scanopt
+ TimeService:              @local::bo_timeservice # defined in timeservice.fcl
 }
 
 END_PROLOG

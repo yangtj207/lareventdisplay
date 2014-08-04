@@ -164,9 +164,6 @@ namespace evd{
     // get the x position of the plane in question
     double xyz[3]  = {0.};
     double xyz2[3] = {0.};
-//    double loc[3]  = {0.};
-//    geo->Plane(plane).LocalToWorld(loc, xyz);
-//    double planex = xyz[0];
 
     // Unpack and draw the MC vectors
     std::vector<const simb::MCTruth*> mctruth;
@@ -217,8 +214,6 @@ namespace evd{
 
         double time = detprop->ConvertXToTicks(xyz[0], (int)plane, 0, 0);
         double time2 = detprop->ConvertXToTicks(xyz2[0], (int)plane, 0, 0);
-  std::cout<<"mcp xyz "<<p.Vx()<<" "<<p.Vy()<<" "<<p.Vz()<<" time "<<(int)time
-    <<" G4 time "<<p.T()<<"\n";
 
 	if(rawopt->fAxisOrientation < 1){
 	  TLine& l = view->AddLine(w1, time, w2, time2);

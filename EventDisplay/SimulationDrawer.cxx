@@ -158,18 +158,12 @@ namespace evd{
 
     art::ServiceHandle<util::DetectorProperties> detprop;
 
-    // get the sampling rate in us as the velocity is returned in cm/us
-    double sampleRate = detprop->SamplingRate()*1.e-3;
-
     art::ServiceHandle<geo::Geometry>          geo;
     art::ServiceHandle<util::LArProperties>    larp;
     art::ServiceHandle<evd::RawDrawingOptions> rawopt;
     // get the x position of the plane in question
     double xyz[3]  = {0.};
     double xyz2[3] = {0.};
-    double loc[3]  = {0.};
-    geo->Plane(plane).LocalToWorld(loc, xyz);
-    double planex = xyz[0];
 
     // Unpack and draw the MC vectors
     std::vector<const simb::MCTruth*> mctruth;
@@ -183,13 +177,14 @@ namespace evd{
 	if (!(p.StatusCode()==0 || p.StatusCode()==1)) continue;
 
 	double r  = p.P()*10.0;           // Scale length so 10 cm = 1 GeV/c
+
 	if (r < 0.1) continue;            // Skip very short particles
 	if (p.StatusCode() == 0) r = -r;  // Flip for incoming particles
 
-  	xyz[0]  = planex;
+  	xyz[0]  = p.Vx();
 	xyz[1]  = p.Vy();
 	xyz[2]  = p.Vz();
-	xyz2[0] = planex;
+	xyz2[0] = xyz[0] + r * p.Px()/p.P();
 	xyz2[1] = xyz[1] + r * p.Py()/p.P();
 	xyz2[2] = xyz[2] + r * p.Pz()/p.P();
 	
@@ -216,9 +211,9 @@ namespace evd{
 	  writeErrMsg("SimulationDrawer", e);
 	  w2 = atoi(e.explain_self().substr(e.explain_self().find("#")+1,5).c_str());
 	}
-      
-	double time = p.Vx()/larp->DriftVelocity(larp->Efield(), larp->Temperature())/sampleRate;
-	double time2 = (p.Vx() + r * p.Px()/p.P())/larp->DriftVelocity(larp->Efield(), larp->Temperature())/sampleRate;
+
+        double time = detprop->ConvertXToTicks(xyz[0], (int)plane, 0, 0);
+        double time2 = detprop->ConvertXToTicks(xyz2[0], (int)plane, 0, 0);
 
 	if(rawopt->fAxisOrientation < 1){
 	  TLine& l = view->AddLine(w1, time, w2, time2);

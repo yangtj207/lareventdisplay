@@ -80,71 +80,81 @@ namespace evd{
          for(size_t cmod = 0; cmod < anaOpt->fCalorimetryLabels.size(); ++cmod) {
             std::string const callabel = anaOpt->fCalorimetryLabels[cmod];
             //Association between Tracks and Calorimetry
-            art::FindOne<anab::Calorimetry> focal(trackListHandle, evt, callabel);
- 
+            art::FindMany<anab::Calorimetry> fmcal(trackListHandle, evt, callabel);
+	    if (!fmcal.isValid()) continue;
             //Loop over PID collections
             for(size_t pmod = 0; pmod < anaOpt->fParticleIDLabels.size(); ++pmod) {
                std::string const pidlabel = anaOpt->fParticleIDLabels[pmod];
                //Association between Tracks and PID
-               art::FindOne<anab::ParticleID> fopid(trackListHandle, evt, pidlabel);
+               art::FindMany<anab::ParticleID> fmpid(trackListHandle, evt, pidlabel);
+	       if (!fmpid.isValid()) continue;
          
                //Loop over Tracks
                for(size_t trkIter = 0; trkIter<tracklist.size(); ++trkIter){
 		 int color = tracklist[trkIter]->ID()%evd::kNCOLS;
-                  if(focal.at(trkIter).isValid()){
-		    TPolyMarker& pm = view->AddPolyMarker(focal.at(trkIter).ref().dEdx().size(),evd::kColor[color],8,0.8);
-                     for(size_t h = 0; h<focal.at(trkIter).ref().dEdx().size();++h){
-                       double xvalue = focal.at(trkIter).ref().ResidualRange().at(h);
-                       double yvalue = focal.at(trkIter).ref().dEdx().at(h);
-                       pm.SetPoint(h,xvalue,yvalue);
-                      
-                       double error = yvalue*(0.04231 + 0.0001783*(yvalue*yvalue));
-                       TLine& l = view->AddLine(xvalue,yvalue-error,xvalue,yvalue+error);
-                       l.SetLineColor(evd::kColor[color]);
-                     }
-                  }
-                  if(fopid.at(trkIter).isValid()){
-                     char trackinfo[80];
-                     char proton[80];
-                     char kaon[80];
-                     char pion[80];
-                     char muon[80];
-                     sprintf(trackinfo,"Track #%d: K.E. = %.1f MeV , Range = %.1f cm",
-                             tracklist[trkIter]->ID(),
-                             focal.at(trkIter).ref().KineticEnergy(),
-                             focal.at(trkIter).ref().Range());
-                     sprintf(proton,"Proton Chi2 = %.1f", 
-                             fopid.at(trkIter).ref().Chi2Proton());
-                     sprintf(kaon,"Kaon Chi2 = %.1f", 
-                             fopid.at(trkIter).ref().Chi2Kaon());
-                     sprintf(pion,"Pion Chi2 = %.1f", 
-                             fopid.at(trkIter).ref().Chi2Pion());
-                     sprintf(muon,"Muon Chi2 = %.1f", 
-                             fopid.at(trkIter).ref().Chi2Muon());
-                     double offset = ((double)trkIter)*10.0;
-                     TLatex& track_tex  = view->AddLatex(13.0, (46.0)     - offset,trackinfo);
-                     TLatex& proton_tex = view->AddLatex(13.0, (46.0-2.0) - offset,proton);
-                     TLatex& kaon_tex   = view->AddLatex(13.0, (46.0-4.0) - offset,kaon);
-                     TLatex& pion_tex   = view->AddLatex(13.0, (46.0-6.0) - offset,pion);
-                     TLatex& muon_tex   = view->AddLatex(13.0, (46.0-8.0) - offset,muon);
-                     track_tex.SetTextColor(evd::kColor[color]);
-                     proton_tex.SetTextColor(evd::kColor[color]);
-                     kaon_tex.SetTextColor(evd::kColor[color]);
-                     pion_tex.SetTextColor(evd::kColor[color]);
-                     muon_tex.SetTextColor(evd::kColor[color]);
-                     track_tex.SetTextSize(0.05);
-                     proton_tex.SetTextSize(0.05);
-                     kaon_tex.SetTextSize(0.05);
-                     pion_tex.SetTextSize(0.05);
-                     muon_tex.SetTextSize(0.05);
-                  }
-                
-               }
+		 std::vector<const anab::Calorimetry*> calos = fmcal.at(trkIter);
+		 std::vector<const anab::ParticleID*> pids = fmpid.at(trkIter);
+		 if (!calos.size()) continue;
+		 if (calos.size()!=pids.size()) continue;
+		 size_t bestplane = 0;
+		 size_t nmaxhits = 0;
+		 for (size_t icalo = 0; icalo < calos.size(); ++icalo){
+		   if (calos[icalo]->dEdx().size() > nmaxhits){
+		     nmaxhits = calos[icalo]->dEdx().size();
+		     bestplane = icalo;
+		   }
+		 }
+
+		 TPolyMarker& pm = view->AddPolyMarker(calos[bestplane]->dEdx().size(),evd::kColor[color],8,0.8);
+		 for(size_t h = 0; h<calos[bestplane]->dEdx().size();++h){
+		   double xvalue = calos[bestplane]->ResidualRange().at(h);
+		   double yvalue = calos[bestplane]->dEdx().at(h);
+		   pm.SetPoint(h,xvalue,yvalue);
+                   
+		   double error = yvalue*(0.04231 + 0.0001783*(yvalue*yvalue));
+		   TLine& l = view->AddLine(xvalue,yvalue-error,xvalue,yvalue+error);
+		   l.SetLineColor(evd::kColor[color]);
+		 }
+		 
+		 char trackinfo[80];
+		 char proton[80];
+		 char kaon[80];
+		 char pion[80];
+		 char muon[80];
+		 sprintf(trackinfo,"Track #%d: K.E. = %.1f MeV , Range = %.1f cm",
+			 tracklist[trkIter]->ID(),
+			 calos[bestplane]->KineticEnergy(),
+			 calos[bestplane]->Range());
+		 sprintf(proton,"Proton Chi2 = %.1f", 
+			 pids[bestplane]->Chi2Proton());
+		 sprintf(kaon,"Kaon Chi2 = %.1f", 
+			 pids[bestplane]->Chi2Kaon());
+		 sprintf(pion,"Pion Chi2 = %.1f", 
+			 pids[bestplane]->Chi2Pion());
+		 sprintf(muon,"Muon Chi2 = %.1f", 
+			 pids[bestplane]->Chi2Muon());
+		 double offset = ((double)trkIter)*10.0;
+		 TLatex& track_tex  = view->AddLatex(13.0, (46.0)     - offset,trackinfo);
+		 TLatex& proton_tex = view->AddLatex(13.0, (46.0-2.0) - offset,proton);
+		 TLatex& kaon_tex   = view->AddLatex(13.0, (46.0-4.0) - offset,kaon);
+		 TLatex& pion_tex   = view->AddLatex(13.0, (46.0-6.0) - offset,pion);
+		 TLatex& muon_tex   = view->AddLatex(13.0, (46.0-8.0) - offset,muon);
+		 track_tex.SetTextColor(evd::kColor[color]);
+		 proton_tex.SetTextColor(evd::kColor[color]);
+		 kaon_tex.SetTextColor(evd::kColor[color]);
+		 pion_tex.SetTextColor(evd::kColor[color]);
+		 muon_tex.SetTextColor(evd::kColor[color]);
+		 track_tex.SetTextSize(0.05);
+		 proton_tex.SetTextSize(0.05);
+		 kaon_tex.SetTextSize(0.05);
+		 pion_tex.SetTextSize(0.05);
+		 muon_tex.SetTextSize(0.05);
+	       }
             }
          }
       }
    }
-
+  
   //......................................................................
    void AnalysisBaseDrawer::DrawKineticEnergy(const art::Event& evt,
                                               evdb::View2D* view)
@@ -187,27 +197,40 @@ namespace evd{
          for(size_t cmod = 0; cmod < anaOpt->fCalorimetryLabels.size(); ++cmod) {
             std::string const callabel = anaOpt->fCalorimetryLabels[cmod];
             //Association between Tracks and Calorimetry
-            art::FindOne<anab::Calorimetry> focal(trackListHandle, evt, callabel);
- 
+            art::FindMany<anab::Calorimetry> fmcal(trackListHandle, evt, callabel);
+	    if (!fmcal.isValid()) continue;
+
             //Loop over PID collections
             for(size_t pmod = 0; pmod < anaOpt->fParticleIDLabels.size(); ++pmod) {
                std::string const pidlabel = anaOpt->fParticleIDLabels[pmod];
                //Association between Tracks and PID
-               art::FindOne<anab::ParticleID> fopid(trackListHandle, evt, pidlabel);
-         
+               art::FindMany<anab::ParticleID> fmpid(trackListHandle, evt, pidlabel);
+	       if (!fmpid.isValid()) continue;
+
                //Loop over Tracks
                for(size_t trkIter = 0; trkIter<tracklist.size(); ++trkIter){
 		 int color = tracklist[trkIter]->ID()%evd::kNCOLS;
-                  if(focal.at(trkIter).isValid()){
-                    double xvalue = focal.at(trkIter).ref().Range();
-                    double yvalue = focal.at(trkIter).ref().KineticEnergy();
-                    view->AddMarker(xvalue,yvalue,evd::kColor[color],8,0.8);
-                    if(yvalue>0.0){
-                      double error = yvalue*(0.6064/std::sqrt(yvalue));
-                      TLine& l = view->AddLine(xvalue,yvalue-error,xvalue,yvalue+error);
-                      l.SetLineColor(evd::kColor[color]);
-                    }
-                  }
+
+		 std::vector<const anab::Calorimetry*> calos = fmcal.at(trkIter);
+		 if (!calos.size()) continue;
+		 size_t bestplane = 0;
+		 size_t nmaxhits = 0;
+		 for (size_t icalo = 0; icalo < calos.size(); ++icalo){
+		   if (calos[icalo]->dEdx().size() > nmaxhits){
+		     nmaxhits = calos[icalo]->dEdx().size();
+		     bestplane = icalo;
+		   }
+		 }
+
+		 double xvalue = calos[bestplane]->Range();
+		 double yvalue = calos[bestplane]->KineticEnergy();
+		 view->AddMarker(xvalue,yvalue,evd::kColor[color],8,0.8);
+		 if(yvalue>0.0){
+		   double error = yvalue*(0.6064/std::sqrt(yvalue));
+		   TLine& l = view->AddLine(xvalue,yvalue-error,xvalue,yvalue+error);
+		   l.SetLineColor(evd::kColor[color]);
+		 }
+
                }
             }
          }

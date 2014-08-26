@@ -1,5 +1,5 @@
 ##include "services.fcl"
-##include "calorimetry.fcl"
+#include "calorimetry.fcl"
 ##include "trackfinderservices.fcl"
 BEGIN_PROLOG
 
@@ -71,6 +71,16 @@ standard_recodrawingopt:
                                            # 1 = generate color from label.
  ColorSpacePointsByChisq:   0              # 0 = off, 1 = on
  CalorimetryAlgorithm:      @local::standard_calorimetryalgdata
+}
+
+standard_analysisdrawingopt:
+{
+ DrawCalorimetry:                  1
+ DrawParticleID:                   1
+ DrawShowerCalor:                  0
+ CalorimetryModuleLabels:          ["calo"]
+ ParticleIDModuleLabels:           ["pid"]
+ CalorTemplateFileName:            "dEdxKinErestemplate" # without .root
 }
 
 standard_simdrawingopt:

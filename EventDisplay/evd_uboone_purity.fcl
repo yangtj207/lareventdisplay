@@ -1,7 +1,7 @@
-#include "evdservices.fcl"
+#include "evdservices_base.fcl"
 #include "trackfindermodules.fcl"
 #include "particleid.fcl"
-#include "clustermodules.fcl"
+#include "cluster_microboone.fcl"
 #include "showerfindermodules.fcl"
 
 process_name: EVD

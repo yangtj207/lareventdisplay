@@ -138,18 +138,20 @@ void evd::CalorPad::Draw(const char* /*opt*/)
     else {
       try{
         if(fcurvetype==1) AnalysisBaseDraw()->DrawDeDx(*evt, fView);
-        else AnalysisBaseDraw()->DrawKineticEnergy(*evt, fView);
+        else if (fcurvetype==0) AnalysisBaseDraw()->DrawKineticEnergy(*evt, fView);
+	else if (fcurvetype==2) AnalysisBaseDraw()->CalorShower(*evt, fView);
       }
       catch (cet::exception e){
 	if(fcurvetype==1) writeErrMsg("Draw->DrawDeDx",e);
-        else writeErrMsg("Draw->DrawKineticEnergy",e);
+        else if (fcurvetype==0) writeErrMsg("Draw->DrawKineticEnergy",e);
+	else if (fcurvetype==2) writeErrMsg("Draw->CalorShower",e);
       }
-      try{
-	AnalysisBaseDraw()->CalorShower(*evt, fView);
-      }
-      catch (cet::exception e){
-        writeErrMsg("Draw->CalorShower",e);
-      }
+//      try{
+//	AnalysisBaseDraw()->CalorShower(*evt, fView);
+//      }
+//      catch (cet::exception e){
+//        writeErrMsg("Draw->CalorShower",e);
+//      }
        
     }
   }
@@ -222,9 +224,9 @@ void evd::CalorPad::DrawRefCurves()
   art::ServiceHandle<evd::AnalysisDrawingOptions> anaOpt;
 
   cet::search_path sp("FW_SEARCH_PATH");
-  if( !sp.find_file(anaOpt->fCalorTemplateFileNames[0], fROOTfile) )  
+  if( !sp.find_file(anaOpt->fCalorTemplateFileName + ".root", fROOTfile) )  
     throw cet::exception("Chi2ParticleID") << "cannot find the root template file: \n" 
-                                           << anaOpt->fCalorTemplateFileNames[0]
+                                           << anaOpt->fCalorTemplateFileName
                                            << "\n bail ungracefully.\n";
  
   TFile *file = TFile::Open(fROOTfile.c_str());

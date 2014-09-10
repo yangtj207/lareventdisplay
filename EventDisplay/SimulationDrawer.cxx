@@ -78,7 +78,8 @@ namespace evd{
       std::string outgoing;
       // Label cosmic rays -- others are pretty obvious
       if (mctruth[i]->Origin()==simb::kCosmicRay)  origin = "c-ray: "; 
-      for (int j=0; j<mctruth[i]->NParticles(); ++j) {
+      int jmax = TMath::Min(20,mctruth[i]->NParticles());
+      for (int j=0; j<jmax; ++j) {
 	const simb::MCParticle& p = mctruth[i]->GetParticle(j);
 	char buff[1024];
 	if (p.P()>0.05) {

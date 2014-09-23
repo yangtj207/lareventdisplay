@@ -99,12 +99,14 @@ namespace geo {
   class Geometry;
 }
 
+/* unused function
 namespace{
   void WriteMsg(const char* fcn)
   {
 	mf::LogWarning("GraphCluster") << "GraphCluster::" << fcn << " \n";
   }
 }
+*/
 
 namespace evd {
   

@@ -34,7 +34,7 @@
 
 #include <math.h>
 
-
+/* unused function
 namespace {
    // Utility function to make uniform error messages.
    void writeErrMsg(const char* fcn,
@@ -45,6 +45,7 @@ namespace {
                                            << e;
    }
 }
+*/
 
 namespace evd{
 

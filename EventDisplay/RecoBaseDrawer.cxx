@@ -15,6 +15,7 @@
 #include "TPolyMarker.h"
 #include "TPolyMarker3D.h"
 #include "TVector3.h"
+#include "TText.h"
 
 #include "EventDisplayBase/View2D.h"
 #include "EventDisplayBase/View3D.h"
@@ -476,7 +477,7 @@ namespace evd{
 	  y = ep2d[iep]->WireID().Wire;
 	}
 
-	TMarker& strt = view->AddMarker(x, y, color, 29, 2.0);
+	TMarker& strt = view->AddMarker(x, y, color, 30, 2.0);
 	strt.SetMarkerColor(color);
 	
       } // loop on iep end points
@@ -858,6 +859,15 @@ namespace evd{
 	  // Place this cluster's unique marker at the hit's location
 	  int color  = evd::kColor[clust[ic]->ID()%evd::kNCOLS];
 	  this->Hit2D(hits, color, view, drawConnectingLines);
+          if(recoOpt->fDrawClusters > 3) {
+            // BB: draw the cluster ID 
+            std::string s = std::to_string(clust[ic]->ID());
+            char const* txt = s.c_str();
+            double wire = clust[ic]->StartPos()[0];
+            double tick = 20 + clust[ic]->StartPos()[1];
+            TText& clID = view->AddText(wire, tick, txt);
+            clID.SetTextColor(color);
+          } // recoOpt->fDrawClusters > 3
 	}
 	else {
 
@@ -1087,6 +1097,10 @@ namespace evd{
     // same code to draw prongs, showers and tracks so that we can use
     // the art::Assns to get the hits and clusters.
 
+    unsigned int cstat = rawOpt->fCryostat;
+    unsigned int tpc = rawOpt->fTPC;
+    int tid = 0;
+
     if(recoOpt->fDrawTracks != 0){
       for(size_t imod = 0; imod < recoOpt->fTrackLabels.size(); ++imod){
 	std::string const which = recoOpt->fTrackLabels[imod];
@@ -1101,6 +1115,20 @@ namespace evd{
 	// loop over the prongs and get the clusters and hits associated with
 	// them.  only keep those that are in this view
 	for(size_t t = 0; t < track.vals().size(); ++t){
+
+          if(recoOpt->fDrawTracks > 1) {
+            // BB: draw the track ID at the end of the track
+            double x = track.vals().at(t)->End()(0);
+            double y = track.vals().at(t)->End()(1);
+            double z = track.vals().at(t)->End()(2);
+            double tick = 30 + detprop->ConvertXToTicks(x, plane, tpc, cstat);
+            double wire = geo->WireCoordinate(y, z, plane, tpc, cstat);
+            tid = track.vals().at(t)->ID();
+            std::string s = std::to_string(tid);
+            char const* txt = s.c_str();
+	    TText& trkID = view->AddText(wire, tick, txt);
+            trkID.SetTextColor(evd::kColor[tid]);
+          }
 	  
 	  std::vector<const recob::Hit*> hits = fmh.at(t);
 
@@ -1179,40 +1207,31 @@ namespace evd{
     art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
     art::ServiceHandle<geo::Geometry>            geo;
+    art::ServiceHandle<util::DetectorProperties> detprop;
 
     if(rawOpt->fDrawRawDataOrCalibWires < 1) return;
 
-    if(recoOpt->fDrawVertices != 0){
+    if(recoOpt->fDrawVertices == 0) return;
+    
+    for(size_t imod = 0; imod < recoOpt->fVertexLabels.size(); ++imod) {
+      std::string const which = recoOpt->fVertexLabels[imod];
 
-      geo::View_t gview = geo->TPC(rawOpt->fTPC).Plane(plane).View();
-      
-      for(size_t imod = 0; imod < recoOpt->fVertexLabels.size(); ++imod) {
-	std::string const which = recoOpt->fVertexLabels[imod];
-	
-	art::PtrVector<recob::Vertex> vertex;
-	this->GetVertices(evt, which, vertex);
+      art::PtrVector<recob::Vertex> vertex;
+      this->GetVertices(evt, which, vertex);
 
-	if(vertex.size() < 1) continue;
+      if(vertex.size() < 1) continue;
 
-	art::FindMany<recob::Hit> fmh(vertex, evt, which);
-	
-	for(size_t v = 0; v < vertex.size(); ++v){
-	  
-	  std::vector<const recob::Hit*> hits;
-
-	  hits = fmh.at(v);
-	  
-	  // only get the hits for the current view
-	  std::vector<const recob::Hit*>::iterator itr = hits.begin(); 
-	  while(itr < hits.end()){
-	    if((*itr)->View() != gview) hits.erase(itr);
-	    else itr++;
-	  }
-	  
-	  this->Hit2D(hits, evd::kColor[vertex[v]->ID()%evd::kNCOLS], view);
-	} // end loop over vertices to draw from this label
-      } // end loop over vertex module lables
-    } // end if we are drawing vertices
+      for(size_t v = 0; v < vertex.size(); ++v){
+        // BB: draw polymarker at the vertex position in this plane
+        double xyz[3];
+        vertex[v]->XYZ(xyz);
+        double wire = geo->WireCoordinate(xyz[1], xyz[2], plane, rawOpt->fTPC, rawOpt->fCryostat);
+        double time = detprop->ConvertXToTicks(xyz[0], plane, rawOpt->fTPC, rawOpt->fCryostat);
+        int color  = evd::kColor[vertex[v]->ID()%evd::kNCOLS];
+        TMarker& strt = view->AddMarker(wire, time, color, 24, 1.0);
+        strt.SetMarkerColor(color);
+      } // v
+    } // end loop over vertex module lables
     
     return;
   }
@@ -1548,19 +1567,17 @@ namespace evd{
     }
     if(recoOpt->fDrawTrackTrajectoryPoints) {
     
-      // Draw trajectory points.
+      // Draw trajectory points as a polyline
 
       int np = track.NumberTrajectoryPoints();
 
-      // Make and fill a polymarker.
-
-      TPolyMarker3D& pm = view->AddPolyMarker3D(np, evd::kColor[color%evd::kNCOLS], 1, 3);
-
+      TPolyLine3D& pl = view->AddPolyLine3D(np, evd::kColor[color%evd::kNCOLS], 2, 0);
+      
       for(int p = 0; p < np; ++p) {
 	const TVector3& pos = track.LocationAtPoint(p);
-	pm.SetPoint(p, pos.X(), pos.Y(), pos.Z());
-      }
-    }
+	pl.SetPoint(p, pos.X(), pos.Y(), pos.Z());
+      } // p
+    } // recoOpt->fDrawTrackTrajectoryPoints
 
     return;
   }
@@ -1909,23 +1926,49 @@ namespace evd{
       // Make and fill a polymarker.
 
       TPolyMarker& pm = view->AddPolyMarker(np, evd::kColor[color%evd::kNCOLS], kFullCircle, msize);
+      TPolyLine& pl = view->AddPolyLine(np, evd::kColor[color%evd::kNCOLS], 2, 0);
       for(int p = 0; p < np; ++p){
 	const TVector3& pos = track.LocationAtPoint(p);
 	switch (proj) {
 	  case evd::kXY:
 	    pm.SetPoint(p, pos.X(), pos.Y());
+	    pl.SetPoint(p, pos.X(), pos.Y());
 	    break;
 	  case evd::kXZ:
 	    pm.SetPoint(p, pos.Z(), pos.X());
+	    pl.SetPoint(p, pos.Z(), pos.X());
 	    break;
 	  case evd::kYZ:
 	    pm.SetPoint(p, pos.Z(), pos.Y());
+	    pl.SetPoint(p, pos.Z(), pos.Y());
 	    break;
 	  default:
 	    throw cet::exception("RecoBaseDrawer") << __func__
 	      << ": unknown projection #" << ((int) proj) << "\n";
 	} // switch
-      }
+      } // p
+      // BB: draw the track ID at the end of the track
+      if(recoOpt->fDrawTracks > 1) {
+        int tid = track.ID();
+        std::string s = std::to_string(tid);
+        char const* txt = s.c_str();
+        double x = track.End()(0);
+        double y = track.End()(1);
+        double z = track.End()(2);
+        if(proj == evd::kXY) {
+	  TText& trkID = view->AddText(x, y, txt);
+          trkID.SetTextColor(evd::kColor[tid]);
+          trkID.SetTextSize(0.03);
+        } else if(proj == evd::kXZ) {
+	  TText& trkID = view->AddText(z, x, txt);
+          trkID.SetTextColor(evd::kColor[tid]);
+          trkID.SetTextSize(0.03);
+        } else if(proj == evd::kYZ) {
+	  TText& trkID = view->AddText(z, y, txt);
+          trkID.SetTextColor(evd::kColor[tid]);
+          trkID.SetTextSize(0.03);
+        } // proj
+      } // recoOpt->fDrawTracks > 1
     }
 
     return;

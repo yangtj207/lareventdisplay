@@ -20,6 +20,7 @@
 #include "EventDisplayBase/View2D.h"
 #include "EventDisplayBase/EventHolder.h"
 #include "Geometry/Geometry.h"
+#include "Geometry/TPCGeo.h"
 
 ///
 /// Create a pad to show an orthographic rendering of 3D objcts.
@@ -71,25 +72,50 @@ evd::Ortho3DPad::Ortho3DPad(const char* name, const char* title,
   Pad()->SetBottomMargin (0.10);
 
   // Define histogram boundaries (cm).
-  // For now only draw tpc=0.
+  // For now only draw cryostat=0.
+  double minx = 1e9;
+  double maxx = -1e9;
+  double miny = 1e9;
+  double maxy = -1e9;
+  double minz = 1e9;
+  double maxz = -1e9;
+  for (size_t i = 0; i<geo->NTPC(); ++i){
+    double local[3] = {0.,0.,0.};
+    double world[3] = {0.,0.,0.};
+    const geo::TPCGeo &tpc = geo->TPC(i);
+    tpc.LocalToWorld(local,world);
+    if (minx>world[0]-geo->DetHalfWidth()) 
+      minx = world[0]-geo->DetHalfWidth();
+    if (maxx<world[0]+geo->DetHalfWidth()) 
+      maxx = world[0]+geo->DetHalfWidth();
+    if (miny>world[1]-geo->DetHalfHeight()) 
+      miny = world[1]-geo->DetHalfHeight();
+    if (maxy<world[1]+geo->DetHalfHeight()) 
+      maxy = world[1]+geo->DetHalfHeight();
+    if (minz>world[2]-geo->DetLength()/2.) 
+      minz = world[2]-geo->DetLength()/2.;
+    if (maxz<world[2]+geo->DetLength()/2.) 
+      maxz = world[2]+geo->DetLength()/2.;
+  }
+  
   switch (proj) {
     case evd::kXY:
-      fXLo = 0.;
-      fXHi = 2.*geo->DetHalfWidth();
-      fYLo = -geo->DetHalfHeight();
-      fYHi = geo->DetHalfHeight();
+      fXLo = minx;
+      fXHi = maxx;
+      fYLo = miny;
+      fYHi = maxy;
       break;
     case evd::kXZ:
-      fXLo = 0.;
-      fXHi = geo->DetLength();
-      fYLo = 0.;
-      fYHi = 2.*geo->DetHalfWidth();
+      fXLo = minz;
+      fXHi = maxz;
+      fYLo = minx;
+      fYHi = maxx;
       break;
     case evd::kYZ:
-      fXLo = 0.;
-      fXHi = geo->DetLength();
-      fYLo = -geo->DetHalfHeight();
-      fYHi = geo->DetHalfHeight();
+      fXLo = minz;
+      fXHi = maxz;
+      fYLo = miny;
+      fYHi = maxy;
       break;
     default:
       throw cet::exception("Ortho3DPad")
@@ -97,7 +123,7 @@ evd::Ortho3DPad::Ortho3DPad(const char* name, const char* title,
   } // switch
 
   // Make enclosing histogram.
-
+  
   fHisto = new TH1F(*(Pad()->DrawFrame(fXLo, fYLo, fXHi, fYHi)));
   fHisto->SetBit(kCannotPick);
   fHisto->SetBit(TPad::kCannotMove);
@@ -122,6 +148,7 @@ evd::Ortho3DPad::Ortho3DPad(const char* name, const char* title,
       throw cet::exception("Ortho3DPad")
         << __func__ << ": unexpected flow (projection: " << ((int) proj) << ")\n";
   } // switch
+
   fHisto->GetXaxis()->CenterTitle();
   fHisto->GetYaxis()->SetLabelSize(0.04);
   fHisto->GetYaxis()->SetTitleSize(0.04);

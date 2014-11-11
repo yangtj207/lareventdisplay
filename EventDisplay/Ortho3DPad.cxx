@@ -10,6 +10,7 @@
 #include "TBox.h"
 #include "TPolyMarker.h"
 #include "TGNumberEntry.h"
+#include "TLatex.h"
 
 #include "cetlib/exception.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
@@ -20,6 +21,7 @@
 #include "EventDisplayBase/View2D.h"
 #include "EventDisplayBase/EventHolder.h"
 #include "Geometry/Geometry.h"
+#include "Geometry/TPCGeo.h"
 
 ///
 /// Create a pad to show an orthographic rendering of 3D objcts.
@@ -71,25 +73,78 @@ evd::Ortho3DPad::Ortho3DPad(const char* name, const char* title,
   Pad()->SetBottomMargin (0.10);
 
   // Define histogram boundaries (cm).
-  // For now only draw tpc=0.
-  switch (proj) {
+  // For now only draw cryostat=0.
+  double minx = 1e9;
+  double maxx = -1e9;
+  double miny = 1e9;
+  double maxy = -1e9;
+  double minz = 1e9;
+  double maxz = -1e9;
+  for (size_t i = 0; i<geo->NTPC(); ++i){
+    double local[3] = {0.,0.,0.};
+    double world[3] = {0.,0.,0.};
+    const geo::TPCGeo &tpc = geo->TPC(i);
+    tpc.LocalToWorld(local,world);
+    if (minx>world[0]-geo->DetHalfWidth(i))
+      minx = world[0]-geo->DetHalfWidth(i);
+    if (maxx<world[0]+geo->DetHalfWidth(i))
+      maxx = world[0]+geo->DetHalfWidth(i);
+    if (miny>world[1]-geo->DetHalfHeight(i))
+      miny = world[1]-geo->DetHalfHeight(i);
+    if (maxy<world[1]+geo->DetHalfHeight(i))
+      maxy = world[1]+geo->DetHalfHeight(i);
+    if (minz>world[2]-geo->DetLength(i)/2.)
+      minz = world[2]-geo->DetLength(i)/2.;
+    if (maxz<world[2]+geo->DetLength(i)/2.)
+      maxz = world[2]+geo->DetLength(i)/2.;
+
+    switch (proj) {
     case evd::kXY:
-      fXLo = 0.;
-      fXHi = 2.*geo->DetHalfWidth();
-      fYLo = -geo->DetHalfHeight();
-      fYHi = geo->DetHalfHeight();
+      TPCBox.push_back(TBox(world[0]-geo->DetHalfWidth(i),
+			    world[1]-geo->DetHalfHeight(i),
+			    world[0]+geo->DetHalfWidth(i),
+			    world[1]+geo->DetHalfHeight(i)));
       break;
     case evd::kXZ:
-      fXLo = 0.;
-      fXHi = geo->DetLength();
-      fYLo = 0.;
-      fYHi = 2.*geo->DetHalfWidth();
+      TPCBox.push_back(TBox(world[2]-geo->DetLength(i)/2.,
+			    world[0]-geo->DetHalfWidth(i),
+			    world[2]+geo->DetLength(i)/2.,
+			    world[0]+geo->DetHalfWidth(i)));
       break;
     case evd::kYZ:
-      fXLo = 0.;
-      fXHi = geo->DetLength();
-      fYLo = -geo->DetHalfHeight();
-      fYHi = geo->DetHalfHeight();
+      TPCBox.push_back(TBox(world[2]-geo->DetLength(i)/2.,
+			    world[1]-geo->DetHalfHeight(i),
+			    world[2]+geo->DetLength(i)/2.,
+			    world[1]+geo->DetHalfHeight(i)));
+      break;
+    default:
+      throw cet::exception("Ortho3DPad")
+        << __func__ << ": unwknow projection " << ((int) proj) << "\n";
+  } // switch
+    TPCBox.back().SetFillStyle(0);
+    TPCBox.back().SetLineStyle(2);
+    TPCBox.back().SetLineWidth(2);
+    TPCBox.back().SetLineColor(16);
+  }
+  
+  switch (proj) {
+    case evd::kXY:
+      fXLo = minx;
+      fXHi = maxx;
+      fYLo = miny;
+      fYHi = maxy;
+      break;
+    case evd::kXZ:
+      fXLo = minz;
+      fXHi = maxz;
+      fYLo = minx;
+      fYHi = maxx;
+      break;
+    case evd::kYZ:
+      fXLo = minz;
+      fXHi = maxz;
+      fYLo = miny;
+      fYHi = maxy;
       break;
     default:
       throw cet::exception("Ortho3DPad")
@@ -97,7 +152,7 @@ evd::Ortho3DPad::Ortho3DPad(const char* name, const char* title,
   } // switch
 
   // Make enclosing histogram.
-
+  
   fHisto = new TH1F(*(Pad()->DrawFrame(fXLo, fYLo, fXHi, fYHi)));
   fHisto->SetBit(kCannotPick);
   fHisto->SetBit(TPad::kCannotMove);
@@ -122,6 +177,7 @@ evd::Ortho3DPad::Ortho3DPad(const char* name, const char* title,
       throw cet::exception("Ortho3DPad")
         << __func__ << ": unexpected flow (projection: " << ((int) proj) << ")\n";
   } // switch
+
   fHisto->GetXaxis()->CenterTitle();
   fHisto->GetYaxis()->SetLabelSize(0.04);
   fHisto->GetYaxis()->SetTitleSize(0.04);
@@ -176,6 +232,21 @@ void evd::Ortho3DPad::Draw(const char* /*opt*/)
   fPad->cd();
   fHisto->Draw("X-");
   fView->Draw();
+  TLatex latex;
+  latex.SetTextColor(16);
+  latex.SetTextSize(0.05);
+  for (size_t i = 0; i<TPCBox.size(); ++i){
+    TPCBox[i].Draw();
+    double x1 = TPCBox[i].GetX2() - 0.02*(fXHi-fXLo);
+    double y1 = TPCBox[i].GetY2() - 0.05*(fYHi-fYLo);
+    for (size_t j = 0; j<i; ++j){
+      if (std::abs(x1-(TPCBox[j].GetX2() - 0.02*(fXHi-fXLo)))<1e-6&&
+	  std::abs(y1-(TPCBox[j].GetY2() - 0.05*(fYHi-fYLo)))<1e-6){
+	y1 -= 0.05*(fYHi-fYLo);
+      }
+    }
+    latex.DrawLatex(x1,y1,Form("%lu",i));
+  }
   fPad->Modified();
   fPad->Update();
 }

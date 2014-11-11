@@ -11,10 +11,11 @@
 #include "EventDisplay/DrawingPad.h"
 #include "EventDisplay/OrthoProj.h"
 #include "RQ_OBJECT.h"
+#include <vector>
 
 class TH1F;
 class TGNumberEntry;
-
+class TBox;
 namespace evdb { class View2D; }
 
 namespace evd {
@@ -70,6 +71,7 @@ namespace evd {
     double fYLo;              ///< Low y value.
     double fYHi;              ///< High y value.
     double fMSize;            ///< Marker size.
+    std::vector<TBox> TPCBox; ///< TPC box
     evdb::View2D* fView;      ///< Collection of graphics objects to render
 
     // Widgets.

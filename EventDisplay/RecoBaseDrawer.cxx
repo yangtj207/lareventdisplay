@@ -6,6 +6,7 @@
 #include <map>
 #include <stdint.h>
 
+#include "TMath.h"
 #include "TMarker.h"
 #include "TBox.h"
 #include "TH1.h"
@@ -1069,7 +1070,7 @@ namespace evd{
     //   increasing wire number
     //use yprime-component of dir cos in rotated coord sys to get
     //   dTdW (number of time ticks per unit of wire pitch)
-    double rotang = 3.1416-thetawire;
+    double rotang = TMath::Pi() - thetawire;
     double yprime = std::cos(rotang)*startDir[1]
       +std::sin(rotang)*startDir[2];
     double dTdW = startDir[0]*wirePitch/driftvelocity/timetick/yprime;

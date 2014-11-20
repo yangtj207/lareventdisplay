@@ -62,6 +62,10 @@ namespace evd {
 
   private:
 
+    // Static attributes.
+
+    static Ortho3DPad* fMousePad;  ///< Selected pad for mouse action.
+
     // Attributes.
 
     TH1F* fHisto;             ///< Enclosing histogram.

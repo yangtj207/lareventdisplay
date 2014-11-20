@@ -23,6 +23,10 @@
 #include "Geometry/Geometry.h"
 #include "Geometry/TPCGeo.h"
 
+/// Define static data members.
+
+evd::Ortho3DPad* evd::Ortho3DPad::fMousePad = 0;
+
 ///
 /// Create a pad to show an orthographic rendering of 3D objcts.
 /// @param name : Name of the pad
@@ -249,6 +253,7 @@ void evd::Ortho3DPad::Draw(const char* /*opt*/)
   }
   fPad->Modified();
   fPad->Update();
+  fBoxDrawn = false;
 }
 
 //......................................................................
@@ -261,8 +266,10 @@ void evd::Ortho3DPad::SetZoom(double xlo, double ylo,
   fHisto->GetXaxis()->SetRangeUser(xlo, xhi);
   fHisto->GetYaxis()->SetRangeUser(ylo, yhi);  
   fPad->Modified();
-  if(update)
+  if(update) {
     fPad->Update();
+    fBoxDrawn = false;
+  }
 }
 
 //......................................................................
@@ -278,8 +285,10 @@ void evd::Ortho3DPad::UnZoom(bool update)
 
   SetMarkerSize(1., false);
 
-  if(update)
+  if(update) {
     fPad->Update();
+    fBoxDrawn = false;
+  }
 }
 
 //......................................................................
@@ -312,8 +321,10 @@ void evd::Ortho3DPad::SetMarkerSize(double size, bool update)
     }
 
     fPad->Modified();
-    if(update)
+    if(update) {
       fPad->Update();
+      fBoxDrawn = false;
+    }
   }
 }
 
@@ -361,6 +372,13 @@ void evd::Ortho3DPad::MouseEvent(evd::Ortho3DPad* p)
   if(!select->InheritsFrom("TBox"))
     return;
   ((TBox*)select)->SetBit(TBox::kCannotMove);
+
+  // This line is a workaround for a root bug that sends mouse events
+  // to the wrong pad.
+
+  if(fMousePad != 0)
+    p = fMousePad;
+
   p->MouseEvent();
 }
 
@@ -387,6 +405,7 @@ void evd::Ortho3DPad::MouseEvent()
     gPad->SetCursor(kCross);
     fCurrentPx = px;
     fCurrentPy = py;
+    fMousePad = this;
     break;
 
   case kMouseMotion:
@@ -402,14 +421,14 @@ void evd::Ortho3DPad::MouseEvent()
 
     // Undraw box.
 
-    if(fBoxDrawn) {
-      double pxlo = std::min(fPressPx, fCurrentPx);
-      double pxhi = std::max(fPressPx, fCurrentPx);
-      double pylo = std::min(fPressPy, fCurrentPy);
-      double pyhi = std::max(fPressPy, fCurrentPy);
-      gVirtualX->DrawBox(pxlo, pylo, pxhi, pyhi, TVirtualX::kHollow);
-      fBoxDrawn = false;
-    }
+    //if(fBoxDrawn) {
+    //  double pxlo = std::min(fPressPx, fCurrentPx);
+    //  double pxhi = std::max(fPressPx, fCurrentPx);
+    //  double pylo = std::min(fPressPy, fCurrentPy);
+    //  double pyhi = std::max(fPressPy, fCurrentPy);
+    //  gVirtualX->DrawBox(pxlo, pylo, pxhi, pyhi, TVirtualX::kHollow);
+    //  fBoxDrawn = false;
+    //}
 
     // Set everything to default.
 
@@ -422,20 +441,21 @@ void evd::Ortho3DPad::MouseEvent()
     fPressY = 0.;
     fReleaseX = 0.;
     fReleaseY = 0.;
+    fMousePad = 0;
     break;
 
   case kButton1Motion:
 
     // Undraw old selection box.
 
-    if(fBoxDrawn) {
-      double pxlo = std::min(fPressPx, fCurrentPx);
-      double pxhi = std::max(fPressPx, fCurrentPx);
-      double pylo = std::min(fPressPy, fCurrentPy);
-      double pyhi = std::max(fPressPy, fCurrentPy);
-      gVirtualX->DrawBox(pxlo, pylo, pxhi, pyhi, TVirtualX::kHollow);
-      fBoxDrawn = false;
-    }
+    //if(fBoxDrawn) {
+    //  double pxlo = std::min(fPressPx, fCurrentPx);
+    //  double pxhi = std::max(fPressPx, fCurrentPx);
+    //  double pylo = std::min(fPressPy, fCurrentPy);
+    //  double pyhi = std::max(fPressPy, fCurrentPy);
+    //  gVirtualX->DrawBox(pxlo, pylo, pxhi, pyhi, TVirtualX::kHollow);
+    //  fBoxDrawn = false;
+    //}
 
     // Update cursor location.
 
@@ -456,6 +476,9 @@ void evd::Ortho3DPad::MouseEvent()
     break;
 
   case kButton1Down:
+    gVirtualX->SetLineColor(-1);
+    gVirtualX->SetLineStyle(0);
+    gVirtualX->SetLineWidth(1);
 
     // Record the location of the button press event, which will be
     // one corner of zoom region.
@@ -470,6 +493,7 @@ void evd::Ortho3DPad::MouseEvent()
     fPressY = y;
     fReleaseX = 0.;
     fReleaseY = 0.;
+    fMousePad = this;
     break;
 
   case kButton1Up:
@@ -489,6 +513,7 @@ void evd::Ortho3DPad::MouseEvent()
       double yhi = std::max(fPressY, fReleaseY);
       SetZoom(xlo, ylo, xhi, yhi, true);
     }
+    fMousePad = 0;
     break;
   }
 }

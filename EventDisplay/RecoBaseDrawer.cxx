@@ -26,6 +26,7 @@
 #include "EventDisplay/RecoDrawingOptions.h"
 #include "EventDisplay/ColorDrawingOptions.h"
 #include "EventDisplay/RawDrawingOptions.h"
+#include "RecoBase/Wire.h"
 #include "RecoBase/Hit.h"
 #include "RecoBase/Cluster.h"
 #include "RecoBase/SpacePoint.h"
@@ -148,7 +149,7 @@ namespace evd{
       
       for(size_t i = 0; i < wires.size(); ++i) {
       
-	uint32_t channel = wires[i]->RawDigit()->Channel();
+	uint32_t channel = wires[i]->Channel();
 	std::vector<geo::WireID> wireids = geo->ChannelToWire(channel);
 
 	// check plane and tpc are correct
@@ -313,8 +314,8 @@ namespace evd{
       for(auto itr : hits){
 	// Try to get the "best" charge measurement, ie. the one last in
 	// the calibration chain      
-	fRawCharge[itr->WireID().Plane]    += itr->Charge(true);
-	double dQdX = itr->Charge(true)/geo->WirePitch()/detp->ElectronsToADC();
+	fRawCharge[itr->WireID().Plane]    += itr->PeakAmplitude();
+	double dQdX = itr->PeakAmplitude()/geo->WirePitch()/detp->ElectronsToADC();
 	fConvertedCharge[itr->WireID().Plane] += larp->BirksCorrection(dQdX);	
       } // loop on hits
 
@@ -2325,7 +2326,7 @@ namespace evd{
 
       for (size_t i = 0; i < wires.size(); ++i) {
 
-	std::vector<geo::WireID> wireids = geo->ChannelToWire(wires[i]->RawDigit()->Channel());
+	std::vector<geo::WireID> wireids = geo->ChannelToWire(wires[i]->Channel());
 
 	bool goodWID = false;
 	for( auto const& wid : wireids ){
@@ -2354,9 +2355,9 @@ namespace evd{
 	// check for correct wire, plane, cryostat and tpc were checked in GetHits
 	if(hits[i]->WireID().Wire != wire) continue;
 
-	hstart.push_back(hits[i]->StartTime());
-	hend.push_back(hits[i]->EndTime());
-	hitamplitudes.push_back(hits[i]->Charge(true));
+	hstart.push_back(hits[i]->PeakTimeMinusRMS());
+	hend.push_back(hits[i]->PeakTimePlusRMS());
+	hitamplitudes.push_back(hits[i]->PeakAmplitude());
 	hpeaktimes.push_back(hits[i]->PeakTime());
 	
       }//end loop over reco hits

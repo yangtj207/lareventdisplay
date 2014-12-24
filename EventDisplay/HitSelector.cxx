@@ -320,7 +320,7 @@ namespace evd{
       int found_it=0;
       for(unsigned int jj=0; jj<hits_saved.size(); ++jj){
 	if(selected_hit->PeakTime() == hits_saved[jj]->PeakTime()){
-	  if(selected_hit->Wire()->RawDigit()->Channel() == hits_saved[jj]->Wire()->RawDigit()->Channel()){
+	  if(selected_hit->Channel() == hits_saved[jj]->Channel()){
 	    found_it=1;
 	    hits_saved.erase(hits_saved.begin()+jj);
 	  }

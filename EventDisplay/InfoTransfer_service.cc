@@ -214,7 +214,7 @@ namespace evd {
     if(fRefStartHit[plane]){
       starthitout[plane][1] = fRefStartHit[plane]->PeakTime() ;  
       try{
-	if(fRefStartHit[plane]->Wire().isNonnull()){
+	if(fRefStartHit[plane]->WireID().isValid){
 	  starthitout[plane][0] = fRefStartHit[plane]->WireID().Wire;
 	}
 	else{
@@ -236,7 +236,7 @@ namespace evd {
     if(fRefEndHit[plane]){
       endhitout[plane][1] = fRefEndHit[plane]->PeakTime() ;  
       try{
-	if(fRefEndHit[plane]->Wire().isNonnull()){
+	if(fRefEndHit[plane]->WireID().isValid){
 	  endhitout[plane][0] = fRefEndHit[plane]->WireID().Wire;
 	}
 	else{

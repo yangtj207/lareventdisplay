@@ -1129,7 +1129,7 @@ namespace evd{
             std::string s = std::to_string(tid);
             char const* txt = s.c_str();
 	    TText& trkID = view->AddText(wire, tick, txt);
-            trkID.SetTextColor(evd::kColor[tid]);
+            trkID.SetTextColor(evd::kColor[tid%evd::kNCOLS]);
           }
 	  
 	  std::vector<const recob::Hit*> hits = fmh.at(t);

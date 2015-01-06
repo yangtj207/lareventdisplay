@@ -29,12 +29,12 @@ namespace evd {
   void AnalysisDrawingOptions::reconfigure(fhicl::ParameterSet const& pset)
   {
     fDrawCalorimetry           = pset.get< int >("DrawCalorimetry"        );
-    fDrawParticleID    	       = pset.get< int >("DrawParticleID"   	    );
-
+    fDrawParticleID    	       = pset.get< int >("DrawParticleID"   	  );
+    fDrawShowerCalor           = pset.get< int >("DrawShowerCalor"        );
     fCalorimetryLabels         = pset.get< std::vector<std::string> >("CalorimetryModuleLabels" );
     fParticleIDLabels          = pset.get< std::vector<std::string> >("ParticleIDModuleLabels"  );
 
-    fCalorTemplateFileNames    = pset.get< std::vector<std::string> >("CalorTemplateFileNames"  );
+    fCalorTemplateFileName     = pset.get< std::string >("CalorTemplateFileName"  );
   }
   
 }

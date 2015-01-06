@@ -12,6 +12,7 @@
 #include "TRootEmbeddedCanvas.h"
 #include "EventDisplay/CalorView.h"
 #include "EventDisplay/CalorPad.h"
+#include "EventDisplay/AnalysisDrawingOptions.h"
 
 #include "art/Framework/Principal/Event.h"
 
@@ -21,9 +22,15 @@
 evd::CalorView::CalorView(TGMainFrame* mf) : evdb::Canvas(mf)
 {
 
+  art::ServiceHandle<evd::AnalysisDrawingOptions> anaOpt;
+  
   evdb::Canvas::fCanvas->cd();
-  fDeDxPad = new CalorPad("fDeDxPad","DeDx Pad",0.0,0.5,1.0,1.0,1);
-
+  if (anaOpt->fDrawShowerCalor){
+    fDeDxPad = new CalorPad("fDeDxPad","DeDx Pad",0.0,0.5,1.0,1.0,2);
+  }
+  else{
+    fDeDxPad = new CalorPad("fDeDxPad","DeDx Pad",0.0,0.5,1.0,1.0,1);
+  }
   evdb::Canvas::fCanvas->cd();
   fKEPad = new CalorPad("fKEPad","Kinetic Energy Pad",0.0,0.0,1.0,0.5,0);
   

@@ -1,7 +1,7 @@
 #include "services_bo.fcl"
 #include "calorimetry_bo.fcl"
 #include "trackfinderalgorithms_bo.fcl"
-#include "evdservices.fcl"
+#include "evdservices_base.fcl"
 
 BEGIN_PROLOG
 

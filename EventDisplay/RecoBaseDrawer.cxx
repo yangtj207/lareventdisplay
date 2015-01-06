@@ -6,6 +6,7 @@
 #include <map>
 #include <stdint.h>
 
+#include "TMath.h"
 #include "TMarker.h"
 #include "TBox.h"
 #include "TH1.h"
@@ -15,6 +16,7 @@
 #include "TPolyMarker.h"
 #include "TPolyMarker3D.h"
 #include "TVector3.h"
+#include "TText.h"
 
 #include "EventDisplayBase/View2D.h"
 #include "EventDisplayBase/View3D.h"
@@ -148,78 +150,70 @@ namespace evd{
       
 	uint32_t channel = wires[i]->RawDigit()->Channel();
 	std::vector<geo::WireID> wireids = geo->ChannelToWire(channel);
-
-	// check plane and tpc are correct
-	bool badChan = true;
-	geo::WireID thiswid = wireids[0];
-	for( auto const& wid : wireids ){
-	  if(wid.planeID() == pid){
-	    badChan = false;
-	    thiswid = wid;
-	  }
-	}
-	if(badChan) continue;
       
 	geo::SigType_t sigType = geo->SignalType(channel);
 
-	double wire = 1.*thiswid.Wire;
-	double tick = 0;
-        // get the unpacked ROIs
-        std::vector<float> wirSig = wires[i]->Signal();
-        if(wirSig.size() == 0) continue;
-	// get an iterator over the adc values
-	std::vector<float>::const_iterator itr = wirSig.begin();
-	while( itr != wirSig.end() ){
-	  int ticksUsed = 0;
-	  double tdcsum = 0.;
-	  double adcsum = 0.;
-	  while(ticksUsed < ticksPerPoint && itr != wirSig.end()){
-	    tdcsum  += tick;
-	    adcsum  += (1.*(*itr));
-	    ++ticksUsed;
-	    tick += 1.;
-	    itr++; // this advance of the iterator is sufficient for the external loop too
-	  }
-	  double adc = adcsum/ticksPerPoint;
-	  double tdc = tdcsum/ticksPerPoint;
-	
-	  if(TMath::Abs(adc) < rawOpt->fMinSignal) continue;
-	
-	  int    co = 0;
-	  double sf = 1.;
-	  double q0 = 1000.0;
-	
-	  co = cst->CalQ(sigType).GetColor(adc);
-	  if (rawOpt->fScaleDigitsByCharge) {
-	    sf = sqrt(adc/q0);
-	    if (sf>1.0) sf = 1.0;
-	  }
+	for (auto const& wid : wireids){
+	  if (wid.planeID() != pid) continue;
 
-	  if(wire < minw) minw = wire;
-	  if(wire > maxw) maxw = wire;  
-	  if(tdc  < mint) mint = tdc;
-	  if(tdc  > maxt) maxt = tdc;
-	  
-	  if(rawOpt->fAxisOrientation < 1){	
-	    TBox& b1 = view->AddBox(wire-sf*0.5,
-				    tdc-sf*0.5*ticksPerPoint,
-				    wire+sf*0.5,
-				    tdc+sf*0.5*ticksPerPoint);
-	    b1.SetFillStyle(1001);
-	    b1.SetFillColor(co);    
-	    b1.SetBit(kCannotPick);
-	  }
-	  else{
-	    TBox& b1 = view->AddBox(tdc-sf*0.5*ticksPerPoint,
-				    wire-sf*0.5,
-				    tdc+sf*0.5*ticksPerPoint,
-				    wire+sf*0.5);
-	    b1.SetFillStyle(1001);
-	    b1.SetFillColor(co);    
-	    b1.SetBit(kCannotPick);
-	  }
-	  
-	}// end loop over samples 
+	  double wire = 1.*wid.Wire;
+	  double tick = 0;
+	  // get the unpacked ROIs
+	  std::vector<float> wirSig = wires[i]->Signal();
+	  if(wirSig.size() == 0) continue;
+	  // get an iterator over the adc values
+	  std::vector<float>::const_iterator itr = wirSig.begin();
+	  while( itr != wirSig.end() ){
+	    int ticksUsed = 0;
+	    double tdcsum = 0.;
+	    double adcsum = 0.;
+	    while(ticksUsed < ticksPerPoint && itr != wirSig.end()){
+	      tdcsum  += tick;
+	      adcsum  += (1.*(*itr));
+	      ++ticksUsed;
+	      tick += 1.;
+	      itr++; // this advance of the iterator is sufficient for the external loop too
+	    }
+	    double adc = adcsum/ticksPerPoint;
+	    double tdc = tdcsum/ticksPerPoint;
+	    
+	    if(TMath::Abs(adc) < rawOpt->fMinSignal) continue;
+	    
+	    int    co = 0;
+	    double sf = 1.;
+	    double q0 = 1000.0;
+	    
+	    co = cst->CalQ(sigType).GetColor(adc);
+	    if (rawOpt->fScaleDigitsByCharge) {
+	      sf = sqrt(adc/q0);
+	      if (sf>1.0) sf = 1.0;
+	    }
+	    
+	    if(wire < minw) minw = wire;
+	    if(wire > maxw) maxw = wire;  
+	    if(tdc  < mint) mint = tdc;
+	    if(tdc  > maxt) maxt = tdc;
+	    
+	    if(rawOpt->fAxisOrientation < 1){	
+	      TBox& b1 = view->AddBox(wire-sf*0.5,
+				      tdc-sf*0.5*ticksPerPoint,
+				      wire+sf*0.5,
+				      tdc+sf*0.5*ticksPerPoint);
+	      b1.SetFillStyle(1001);
+	      b1.SetFillColor(co);    
+	      b1.SetBit(kCannotPick);
+	    }
+	    else{
+	      TBox& b1 = view->AddBox(tdc-sf*0.5*ticksPerPoint,
+				      wire-sf*0.5,
+				      tdc+sf*0.5*ticksPerPoint,
+				      wire+sf*0.5);
+	      b1.SetFillStyle(1001);
+	      b1.SetFillColor(co);    
+	      b1.SetBit(kCannotPick);
+	    }
+	  }// end loop over samples 
+	}//end loop over wire segments
       }//end loop over wires
     }// end loop over wire module labels
 
@@ -230,46 +224,41 @@ namespace evd{
     
     // now loop over all the bad channels and set them to 0 adc
     for(size_t bc = 0; bc < fBadChannels.size(); ++bc){
-      std::vector<geo::WireID> wireids = geo->ChannelToWire(fBadChannels[bc]);
-
-      // check that we have correct plane and tpc
-      bool badChan = true;
-      geo::WireID thiswid = wireids[0];
-      for( auto const& wid : wireids ){
-	if(wid.planeID() == pid){
-	  badChan = false;
-	  thiswid = wid;
-	}
-      }
-      if(badChan) continue;
-
-      if(rawOpt->fMinSignal > 0) continue;
 
       geo::SigType_t sigType = geo->SignalType(fBadChannels[bc]);
-	
-      int    co   = cst->CalQ(sigType).GetColor(0);
-      double wire = 1.*thiswid.Wire;
 
-      for(int i = 0; i < ticks; i += ticksPerPoint){
-	double tdc = i + 0.5*ticksPerPoint;
+      std::vector<geo::WireID> wireids = geo->ChannelToWire(fBadChannels[bc]);
+
+      for( auto const& wid : wireids){
+	if(wid.planeID() != pid) continue;
+
+	if(rawOpt->fMinSignal > 0) continue;
 	
-	if(rawOpt->fAxisOrientation < 1){	
-	  TBox& b1 = view->AddBox(wire-0.5,
-				  tdc-0.5*ticksPerPoint,
-				  wire+0.5,
-				  tdc+0.5*ticksPerPoint);
-	  b1.SetFillStyle(1001);
-	  b1.SetFillColor(co);    
-	  b1.SetBit(kCannotPick);
-	}
-	else{
-	  TBox& b1 = view->AddBox(tdc-0.5*ticksPerPoint,
-				  wire-0.5,
-				  tdc+0.5*ticksPerPoint,
-				  wire+0.5);
-	  b1.SetFillStyle(1001);
-	  b1.SetFillColor(co);    
-	  b1.SetBit(kCannotPick);
+	
+	int    co   = cst->CalQ(sigType).GetColor(0);
+	double wire = 1.*wid.Wire;
+	
+	for(int i = 0; i < ticks; i += ticksPerPoint){
+	  double tdc = i + 0.5*ticksPerPoint;
+	  
+	  if(rawOpt->fAxisOrientation < 1){	
+	    TBox& b1 = view->AddBox(wire-0.5,
+				    tdc-0.5*ticksPerPoint,
+				    wire+0.5,
+				    tdc+0.5*ticksPerPoint);
+	    b1.SetFillStyle(1001);
+	    b1.SetFillColor(co);    
+	    b1.SetBit(kCannotPick);
+	  }
+	  else{
+	    TBox& b1 = view->AddBox(tdc-0.5*ticksPerPoint,
+				    wire-0.5,
+				    tdc+0.5*ticksPerPoint,
+				    wire+0.5);
+	    b1.SetFillStyle(1001);
+	    b1.SetFillColor(co);    
+	    b1.SetBit(kCannotPick);
+	  }
 	}
       }
     }// end loop over bad channels    
@@ -476,7 +465,7 @@ namespace evd{
 	  y = ep2d[iep]->WireID().Wire;
 	}
 
-	TMarker& strt = view->AddMarker(x, y, color, 29, 2.0);
+	TMarker& strt = view->AddMarker(x, y, color, 30, 2.0);
 	strt.SetMarkerColor(color);
 	
       } // loop on iep end points
@@ -858,6 +847,15 @@ namespace evd{
 	  // Place this cluster's unique marker at the hit's location
 	  int color  = evd::kColor[clust[ic]->ID()%evd::kNCOLS];
 	  this->Hit2D(hits, color, view, drawConnectingLines);
+          if(recoOpt->fDrawClusters > 3) {
+            // BB: draw the cluster ID 
+            std::string s = std::to_string(clust[ic]->ID());
+            char const* txt = s.c_str();
+            double wire = clust[ic]->StartPos()[0];
+            double tick = 20 + clust[ic]->StartPos()[1];
+            TText& clID = view->AddText(wire, tick, txt);
+            clID.SetTextColor(color);
+          } // recoOpt->fDrawClusters > 3
 	}
 	else {
 
@@ -1059,7 +1057,7 @@ namespace evd{
     //   increasing wire number
     //use yprime-component of dir cos in rotated coord sys to get
     //   dTdW (number of time ticks per unit of wire pitch)
-    double rotang = 3.1416-thetawire;
+    double rotang = TMath::Pi() - thetawire;
     double yprime = std::cos(rotang)*startDir[1]
       +std::sin(rotang)*startDir[2];
     double dTdW = startDir[0]*wirePitch/driftvelocity/timetick/yprime;
@@ -1087,6 +1085,10 @@ namespace evd{
     // same code to draw prongs, showers and tracks so that we can use
     // the art::Assns to get the hits and clusters.
 
+    unsigned int cstat = rawOpt->fCryostat;
+    unsigned int tpc = rawOpt->fTPC;
+    int tid = 0;
+
     if(recoOpt->fDrawTracks != 0){
       for(size_t imod = 0; imod < recoOpt->fTrackLabels.size(); ++imod){
 	std::string const which = recoOpt->fTrackLabels[imod];
@@ -1101,6 +1103,20 @@ namespace evd{
 	// loop over the prongs and get the clusters and hits associated with
 	// them.  only keep those that are in this view
 	for(size_t t = 0; t < track.vals().size(); ++t){
+
+          if(recoOpt->fDrawTracks > 1) {
+            // BB: draw the track ID at the end of the track
+            double x = track.vals().at(t)->End()(0);
+            double y = track.vals().at(t)->End()(1);
+            double z = track.vals().at(t)->End()(2);
+            double tick = 30 + detprop->ConvertXToTicks(x, plane, tpc, cstat);
+            double wire = geo->WireCoordinate(y, z, plane, tpc, cstat);
+            tid = track.vals().at(t)->ID();
+            std::string s = std::to_string(tid);
+            char const* txt = s.c_str();
+	    TText& trkID = view->AddText(wire, tick, txt);
+            trkID.SetTextColor(evd::kColor[tid%evd::kNCOLS]);
+          }
 	  
 	  std::vector<const recob::Hit*> hits = fmh.at(t);
 
@@ -1179,40 +1195,31 @@ namespace evd{
     art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
     art::ServiceHandle<geo::Geometry>            geo;
+    art::ServiceHandle<util::DetectorProperties> detprop;
 
     if(rawOpt->fDrawRawDataOrCalibWires < 1) return;
 
-    if(recoOpt->fDrawVertices != 0){
+    if(recoOpt->fDrawVertices == 0) return;
+    
+    for(size_t imod = 0; imod < recoOpt->fVertexLabels.size(); ++imod) {
+      std::string const which = recoOpt->fVertexLabels[imod];
 
-      geo::View_t gview = geo->TPC(rawOpt->fTPC).Plane(plane).View();
-      
-      for(size_t imod = 0; imod < recoOpt->fVertexLabels.size(); ++imod) {
-	std::string const which = recoOpt->fVertexLabels[imod];
-	
-	art::PtrVector<recob::Vertex> vertex;
-	this->GetVertices(evt, which, vertex);
+      art::PtrVector<recob::Vertex> vertex;
+      this->GetVertices(evt, which, vertex);
 
-	if(vertex.size() < 1) continue;
+      if(vertex.size() < 1) continue;
 
-	art::FindMany<recob::Hit> fmh(vertex, evt, which);
-	
-	for(size_t v = 0; v < vertex.size(); ++v){
-	  
-	  std::vector<const recob::Hit*> hits;
-
-	  hits = fmh.at(v);
-	  
-	  // only get the hits for the current view
-	  std::vector<const recob::Hit*>::iterator itr = hits.begin(); 
-	  while(itr < hits.end()){
-	    if((*itr)->View() != gview) hits.erase(itr);
-	    else itr++;
-	  }
-	  
-	  this->Hit2D(hits, evd::kColor[vertex[v]->ID()%evd::kNCOLS], view);
-	} // end loop over vertices to draw from this label
-      } // end loop over vertex module lables
-    } // end if we are drawing vertices
+      for(size_t v = 0; v < vertex.size(); ++v){
+        // BB: draw polymarker at the vertex position in this plane
+        double xyz[3];
+        vertex[v]->XYZ(xyz);
+        double wire = geo->WireCoordinate(xyz[1], xyz[2], plane, rawOpt->fTPC, rawOpt->fCryostat);
+        double time = detprop->ConvertXToTicks(xyz[0], plane, rawOpt->fTPC, rawOpt->fCryostat);
+        int color  = evd::kColor[vertex[v]->ID()%evd::kNCOLS];
+        TMarker& strt = view->AddMarker(wire, time, color, 24, 1.0);
+        strt.SetMarkerColor(color);
+      } // v
+    } // end loop over vertex module lables
     
     return;
   }
@@ -1548,19 +1555,17 @@ namespace evd{
     }
     if(recoOpt->fDrawTrackTrajectoryPoints) {
     
-      // Draw trajectory points.
+      // Draw trajectory points as a polyline
 
       int np = track.NumberTrajectoryPoints();
 
-      // Make and fill a polymarker.
-
-      TPolyMarker3D& pm = view->AddPolyMarker3D(np, evd::kColor[color%evd::kNCOLS], 1, 3);
-
+      TPolyLine3D& pl = view->AddPolyLine3D(np, evd::kColor[color%evd::kNCOLS], 2, 0);
+      
       for(int p = 0; p < np; ++p) {
 	const TVector3& pos = track.LocationAtPoint(p);
-	pm.SetPoint(p, pos.X(), pos.Y(), pos.Z());
-      }
-    }
+	pl.SetPoint(p, pos.X(), pos.Y(), pos.Z());
+      } // p
+    } // recoOpt->fDrawTrackTrajectoryPoints
 
     return;
   }
@@ -1909,23 +1914,49 @@ namespace evd{
       // Make and fill a polymarker.
 
       TPolyMarker& pm = view->AddPolyMarker(np, evd::kColor[color%evd::kNCOLS], kFullCircle, msize);
+      TPolyLine& pl = view->AddPolyLine(np, evd::kColor[color%evd::kNCOLS], 2, 0);
       for(int p = 0; p < np; ++p){
 	const TVector3& pos = track.LocationAtPoint(p);
 	switch (proj) {
 	  case evd::kXY:
 	    pm.SetPoint(p, pos.X(), pos.Y());
+	    pl.SetPoint(p, pos.X(), pos.Y());
 	    break;
 	  case evd::kXZ:
 	    pm.SetPoint(p, pos.Z(), pos.X());
+	    pl.SetPoint(p, pos.Z(), pos.X());
 	    break;
 	  case evd::kYZ:
 	    pm.SetPoint(p, pos.Z(), pos.Y());
+	    pl.SetPoint(p, pos.Z(), pos.Y());
 	    break;
 	  default:
 	    throw cet::exception("RecoBaseDrawer") << __func__
 	      << ": unknown projection #" << ((int) proj) << "\n";
 	} // switch
-      }
+      } // p
+      // BB: draw the track ID at the end of the track
+      if(recoOpt->fDrawTracks > 1) {
+        int tid = track.ID();
+        std::string s = std::to_string(tid);
+        char const* txt = s.c_str();
+        double x = track.End()(0);
+        double y = track.End()(1);
+        double z = track.End()(2);
+        if(proj == evd::kXY) {
+	  TText& trkID = view->AddText(x, y, txt);
+          trkID.SetTextColor(evd::kColor[tid]);
+          trkID.SetTextSize(0.03);
+        } else if(proj == evd::kXZ) {
+	  TText& trkID = view->AddText(z, x, txt);
+          trkID.SetTextColor(evd::kColor[tid]);
+          trkID.SetTextSize(0.03);
+        } else if(proj == evd::kYZ) {
+	  TText& trkID = view->AddText(z, y, txt);
+          trkID.SetTextColor(evd::kColor[tid]);
+          trkID.SetTextSize(0.03);
+        } // proj
+      } // recoOpt->fDrawTracks > 1
     }
 
     return;

@@ -20,12 +20,12 @@ namespace evd {
 
     int fDrawCalorimetry;
     int fDrawParticleID;
-   
+    int fDrawShowerCalor;
 
     std::vector<std::string> fCalorimetryLabels;         ///< module labels that produced calorimetry 
     std::vector<std::string> fParticleIDLabels;     	   ///< module labels that produced particleid
 
-    std::vector<std::string> fCalorTemplateFileNames;    ///< files that have calorimetry template curves
+    std::string fCalorTemplateFileName;    ///< files that have calorimetry template curves
 
   };
 }//namespace

@@ -228,7 +228,7 @@ namespace evd{
 			   distance, 
 			   lslope);		
     
-      recob::Hit * hit= gser.FindClosestHit(hits_to_save,
+     recob::Hit * hit= gser.FindClosestHit(hits_to_save,
 			      x, y);
       
        starthitout[plane][1] = hit->PeakTime() ;  

@@ -151,78 +151,70 @@ namespace evd{
       
 	uint32_t channel = wires[i]->Channel();
 	std::vector<geo::WireID> wireids = geo->ChannelToWire(channel);
-
-	// check plane and tpc are correct
-	bool badChan = true;
-	geo::WireID thiswid = wireids[0];
-	for( auto const& wid : wireids ){
-	  if(wid.planeID() == pid){
-	    badChan = false;
-	    thiswid = wid;
-	  }
-	}
-	if(badChan) continue;
       
 	geo::SigType_t sigType = geo->SignalType(channel);
 
-	double wire = 1.*thiswid.Wire;
-	double tick = 0;
-        // get the unpacked ROIs
-        std::vector<float> wirSig = wires[i]->Signal();
-        if(wirSig.size() == 0) continue;
-	// get an iterator over the adc values
-	std::vector<float>::const_iterator itr = wirSig.begin();
-	while( itr != wirSig.end() ){
-	  int ticksUsed = 0;
-	  double tdcsum = 0.;
-	  double adcsum = 0.;
-	  while(ticksUsed < ticksPerPoint && itr != wirSig.end()){
-	    tdcsum  += tick;
-	    adcsum  += (1.*(*itr));
-	    ++ticksUsed;
-	    tick += 1.;
-	    itr++; // this advance of the iterator is sufficient for the external loop too
-	  }
-	  double adc = adcsum/ticksPerPoint;
-	  double tdc = tdcsum/ticksPerPoint;
-	
-	  if(TMath::Abs(adc) < rawOpt->fMinSignal) continue;
-	
-	  int    co = 0;
-	  double sf = 1.;
-	  double q0 = 1000.0;
-	
-	  co = cst->CalQ(sigType).GetColor(adc);
-	  if (rawOpt->fScaleDigitsByCharge) {
-	    sf = sqrt(adc/q0);
-	    if (sf>1.0) sf = 1.0;
-	  }
+	for (auto const& wid : wireids){
+	  if (wid.planeID() != pid) continue;
 
-	  if(wire < minw) minw = wire;
-	  if(wire > maxw) maxw = wire;  
-	  if(tdc  < mint) mint = tdc;
-	  if(tdc  > maxt) maxt = tdc;
-	  
-	  if(rawOpt->fAxisOrientation < 1){	
-	    TBox& b1 = view->AddBox(wire-sf*0.5,
-				    tdc-sf*0.5*ticksPerPoint,
-				    wire+sf*0.5,
-				    tdc+sf*0.5*ticksPerPoint);
-	    b1.SetFillStyle(1001);
-	    b1.SetFillColor(co);    
-	    b1.SetBit(kCannotPick);
-	  }
-	  else{
-	    TBox& b1 = view->AddBox(tdc-sf*0.5*ticksPerPoint,
-				    wire-sf*0.5,
-				    tdc+sf*0.5*ticksPerPoint,
-				    wire+sf*0.5);
-	    b1.SetFillStyle(1001);
-	    b1.SetFillColor(co);    
-	    b1.SetBit(kCannotPick);
-	  }
-	  
-	}// end loop over samples 
+	  double wire = 1.*wid.Wire;
+	  double tick = 0;
+	  // get the unpacked ROIs
+	  std::vector<float> wirSig = wires[i]->Signal();
+	  if(wirSig.size() == 0) continue;
+	  // get an iterator over the adc values
+	  std::vector<float>::const_iterator itr = wirSig.begin();
+	  while( itr != wirSig.end() ){
+	    int ticksUsed = 0;
+	    double tdcsum = 0.;
+	    double adcsum = 0.;
+	    while(ticksUsed < ticksPerPoint && itr != wirSig.end()){
+	      tdcsum  += tick;
+	      adcsum  += (1.*(*itr));
+	      ++ticksUsed;
+	      tick += 1.;
+	      itr++; // this advance of the iterator is sufficient for the external loop too
+	    }
+	    double adc = adcsum/ticksPerPoint;
+	    double tdc = tdcsum/ticksPerPoint;
+	    
+	    if(TMath::Abs(adc) < rawOpt->fMinSignal) continue;
+	    
+	    int    co = 0;
+	    double sf = 1.;
+	    double q0 = 1000.0;
+	    
+	    co = cst->CalQ(sigType).GetColor(adc);
+	    if (rawOpt->fScaleDigitsByCharge) {
+	      sf = sqrt(adc/q0);
+	      if (sf>1.0) sf = 1.0;
+	    }
+	    
+	    if(wire < minw) minw = wire;
+	    if(wire > maxw) maxw = wire;  
+	    if(tdc  < mint) mint = tdc;
+	    if(tdc  > maxt) maxt = tdc;
+	    
+	    if(rawOpt->fAxisOrientation < 1){	
+	      TBox& b1 = view->AddBox(wire-sf*0.5,
+				      tdc-sf*0.5*ticksPerPoint,
+				      wire+sf*0.5,
+				      tdc+sf*0.5*ticksPerPoint);
+	      b1.SetFillStyle(1001);
+	      b1.SetFillColor(co);    
+	      b1.SetBit(kCannotPick);
+	    }
+	    else{
+	      TBox& b1 = view->AddBox(tdc-sf*0.5*ticksPerPoint,
+				      wire-sf*0.5,
+				      tdc+sf*0.5*ticksPerPoint,
+				      wire+sf*0.5);
+	      b1.SetFillStyle(1001);
+	      b1.SetFillColor(co);    
+	      b1.SetBit(kCannotPick);
+	    }
+	  }// end loop over samples 
+	}//end loop over wire segments
       }//end loop over wires
     }// end loop over wire module labels
 
@@ -233,46 +225,41 @@ namespace evd{
     
     // now loop over all the bad channels and set them to 0 adc
     for(size_t bc = 0; bc < fBadChannels.size(); ++bc){
-      std::vector<geo::WireID> wireids = geo->ChannelToWire(fBadChannels[bc]);
-
-      // check that we have correct plane and tpc
-      bool badChan = true;
-      geo::WireID thiswid = wireids[0];
-      for( auto const& wid : wireids ){
-	if(wid.planeID() == pid){
-	  badChan = false;
-	  thiswid = wid;
-	}
-      }
-      if(badChan) continue;
-
-      if(rawOpt->fMinSignal > 0) continue;
 
       geo::SigType_t sigType = geo->SignalType(fBadChannels[bc]);
-	
-      int    co   = cst->CalQ(sigType).GetColor(0);
-      double wire = 1.*thiswid.Wire;
 
-      for(int i = 0; i < ticks; i += ticksPerPoint){
-	double tdc = i + 0.5*ticksPerPoint;
+      std::vector<geo::WireID> wireids = geo->ChannelToWire(fBadChannels[bc]);
+
+      for( auto const& wid : wireids){
+	if(wid.planeID() != pid) continue;
+
+	if(rawOpt->fMinSignal > 0) continue;
 	
-	if(rawOpt->fAxisOrientation < 1){	
-	  TBox& b1 = view->AddBox(wire-0.5,
-				  tdc-0.5*ticksPerPoint,
-				  wire+0.5,
-				  tdc+0.5*ticksPerPoint);
-	  b1.SetFillStyle(1001);
-	  b1.SetFillColor(co);    
-	  b1.SetBit(kCannotPick);
-	}
-	else{
-	  TBox& b1 = view->AddBox(tdc-0.5*ticksPerPoint,
-				  wire-0.5,
-				  tdc+0.5*ticksPerPoint,
-				  wire+0.5);
-	  b1.SetFillStyle(1001);
-	  b1.SetFillColor(co);    
-	  b1.SetBit(kCannotPick);
+	
+	int    co   = cst->CalQ(sigType).GetColor(0);
+	double wire = 1.*wid.Wire;
+	
+	for(int i = 0; i < ticks; i += ticksPerPoint){
+	  double tdc = i + 0.5*ticksPerPoint;
+	  
+	  if(rawOpt->fAxisOrientation < 1){	
+	    TBox& b1 = view->AddBox(wire-0.5,
+				    tdc-0.5*ticksPerPoint,
+				    wire+0.5,
+				    tdc+0.5*ticksPerPoint);
+	    b1.SetFillStyle(1001);
+	    b1.SetFillColor(co);    
+	    b1.SetBit(kCannotPick);
+	  }
+	  else{
+	    TBox& b1 = view->AddBox(tdc-0.5*ticksPerPoint,
+				    wire-0.5,
+				    tdc+0.5*ticksPerPoint,
+				    wire+0.5);
+	    b1.SetFillStyle(1001);
+	    b1.SetFillColor(co);    
+	    b1.SetBit(kCannotPick);
+	  }
 	}
       }
     }// end loop over bad channels    

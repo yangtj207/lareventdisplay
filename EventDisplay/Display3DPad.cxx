@@ -69,6 +69,7 @@ namespace evd{
     if(evt){
       this->GeometryDraw()->  DetOutline3D(fView);
       this->SimulationDraw()->MCTruth3D   (*evt, fView);
+      this->RecoBaseDraw()->  PFParticle3D(*evt, fView);
       this->RecoBaseDraw()->  SpacePoint3D(*evt, fView);
       this->RecoBaseDraw()->  Prong3D     (*evt, fView);
       this->RecoBaseDraw()->  Seed3D      (*evt, fView);

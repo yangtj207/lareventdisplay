@@ -34,7 +34,8 @@ standard_recodrawingopt:
  DrawHits:                  1              # 0 = off, 1 = on, will not draw if DrawRawDataOrCalibWires      
                                            # is set to 0                                                  
  DrawClusters:              1              # set to 1 to draw markers for each hit in the cluster - is working
-                                           # 2 to draw outlines - not working yet,                 
+                                           # 2 to draw outlines - not working yet,    
+ DrawPFParticles:           0              # 1 to draw PFParticles             
  Draw2DSlopeEndPoints:      0              # draws end points and slopes for clusters, 0 = off, 1 = on    
  DrawSpacePoints:           0              # 0 = off, 1 = on                                              
  DrawProngs:                0              # 0 = off, 1 = on                                              
@@ -58,7 +59,8 @@ standard_recodrawingopt:
  EndPoint2DModuleLabels:    [""]           # list of module labels in which to look for recob::EndPoint2Ds
  SpacePointModuleLabels:    ["spacepts"]   # list of module labels in which to look for recob::SpacePoints     
  ProngModuleLabels:         [""]           # list of module labels in which to look for recob::Prongs     
- ClusterModuleLabels:       ["dbcluster"]  # list of module labels in which to look for recob::Clusters   
+ ClusterModuleLabels:       ["dbcluster"]  # list of module labels in which to look for recob::Clusters  
+ PFParticleModuleLabels:    ["pandora"]    # list of module labels in which to look for recob::PFParticles 
  TrackModuleLabels:         [""]           # list of module labels in which to look for recob::Tracks     
  ShowerModuleLabels:        ["showerreco"] # list of module labels in which to look for recob::Showers    
  VertexModuleLabels:        [""]           # list of module labels in which to look for recob::Vertexs    
@@ -75,12 +77,12 @@ standard_recodrawingopt:
 
 standard_analysisdrawingopt:
 {
- DrawCalorimetry:                  1
- DrawParticleID:                   1
- DrawShowerCalor:                  0
- CalorimetryModuleLabels:          ["calo"]
- ParticleIDModuleLabels:           ["pid"]
- CalorTemplateFileName:            "dEdxKinErestemplate" # without .root
+ DrawCalorimetry:          1
+ DrawParticleID:           1
+ DrawShowerCalor:          0
+ CalorimetryModuleLabels:  ["calo"]
+ ParticleIDModuleLabels:   ["pid"]
+ CalorTemplateFileName:    "dEdxKinErestemplate" # without .root
 }
 
 standard_simdrawingopt:

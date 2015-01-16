@@ -15,6 +15,7 @@
 #include "EventDisplay/EvdLayoutOptions.h"
 #include "EventDisplay/HitSelector.h"
 #include "Utilities/GeometryUtilities.h"
+#include "Utilities/PxHitConverter.h"
 #include "EventDisplay/InfoTransfer.h"
 #include "EventDisplay/HitSelector.h"
 #include "RecoBase/Seed.h"
@@ -220,22 +221,53 @@ namespace evd{
 	  hitlist.push_back(hit);
       }
     
-     gser.SelectLocalHitlist( hitlist, 
+    
+    // Select Local Hit List
+     util::PxHitConverter PxC;
+     std::vector <util::PxHit> pxhitlist;
+     PxC.GeneratePxHit(hitlist,pxhitlist);
+     std::vector< unsigned int > pxhitlist_local_index;
+     std::vector< util::PxHit > pxhitlist_local;
+     pxhitlist_local.clear();
+     
+     util::PxPoint startHit;
+     startHit.plane=pxhitlist.at(0).plane;
+     startHit.w=(x+x1)/2;
+     startHit.t=(y+y1)/2;
+     
+     double orttemp=TMath::Sqrt((y1-y)*(y1-y)*gser.TimeToCm()*gser.TimeToCm() + (x1-x)*(x1-x)*gser.WireToCm()*gser.WireToCm())/2;
+     
+     gser.SelectLocalHitlistIndex(pxhitlist, pxhitlist_local_index, startHit, 
+			     orttemp, 
+			     distance, lslope);
+    
+
+     for(unsigned int idx=0;idx<pxhitlist_local_index.size();idx++)
+       {
+        hits_to_save.push_back(hitlist.at(pxhitlist_local_index.at(idx)));
+	pxhitlist_local.push_back(pxhitlist.at(pxhitlist_local_index.at(idx)));
+       }
+    
+    
+   /*  gser.SelectLocalHitlist( hitlist, 
 			 hits_to_save,
 			   (x+x1)/2,
 			   (y+y1)/2, 
 			   TMath::Sqrt((y1-y)*(y1-y)*gser.TimeToCm()*gser.TimeToCm() + (x1-x)*(x1-x)*gser.WireToCm()*gser.WireToCm())/2,   
 			   distance, 
-			   lslope);		
-    
-     recob::Hit * hit= gser.FindClosestHit(hits_to_save,
-			      x, y);
+			   lslope);*/		
+    //const_cast<recob::Hit *> (nearHit.get())
+     recob::Hit * hit=  const_cast<recob::Hit *> ((hits_to_save[gser.FindClosestHitIndex(pxhitlist_local,x,y)]).get());
+     //gser.FindClosestHit(hits_to_save,
+	//		      x, y);
       
        starthitout[plane][1] = hit->PeakTime() ;  
        starthitout[plane][0] = hit->WireID().Wire;
-      
-       recob::Hit * endhit= gser.FindClosestHit(hits_to_save,
-			      x, y);
+ 
+//        // this obviously not correct, the fact that x,y are used for both start and end point, A.S. -> to debug
+       recob::Hit * endhit= const_cast<recob::Hit *> ((hits_to_save[gser.FindClosestHitIndex(pxhitlist_local,x,y)]).get());
+       //FindClosestHit(hits_to_save,
+	//		      x, y);
       
         endhitout[plane][1] = endhit->PeakTime() ;  
         endhitout[plane][0] = endhit->WireID().Wire;
@@ -293,7 +325,13 @@ namespace evd{
 	  hitlist.push_back(hit);
       }
       
-      art::Ptr < recob::Hit > selected_hit= gser.FindClosestHitPtr(hitlist, x, y); 
+     util::PxHitConverter PxC;
+     std::vector <util::PxHit> pxhitlist;
+     PxC.GeneratePxHit(hitlist,pxhitlist);
+      
+      art::Ptr < recob::Hit > selected_hit= hits_to_save[gser.FindClosestHitIndex(pxhitlist,x,y)];
+      //FindClosestHitPtr(hitlist, x, y); 
+      
       // find selected hit in evD
      //art::Ptr<recob::Hit> selected_hit;
 //       for(unsigned int ii = 0; ii < HitListHandle->size(); ++ii){

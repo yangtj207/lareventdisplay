@@ -37,6 +37,7 @@
 #include "RecoObjects/BezierTrack.h"
 #include "RecoBase/Vertex.h"
 #include "RecoBase/OpFlash.h"
+#include "AnalysisBase/CosmicTag.h"
 #include "Filters/ChannelFilter.h"
 #include "Geometry/Geometry.h"
 #include "Geometry/CryostatGeo.h"
@@ -324,7 +325,8 @@ namespace evd{
   void RecoBaseDrawer::Hit2D(std::vector<const recob::Hit*> hits,
 			     int                            color,
 			     evdb::View2D*                  view,
-                             bool              drawConnectingLines) 
+                             bool              drawConnectingLines,
+			     float cscore) 
   {
     art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
@@ -337,6 +339,7 @@ namespace evd{
     if(color==-1)
       color=recoOpt->fSelectedHitColor;
     
+
     for(unsigned int c = 0; c < hits.size(); ++c){
 
       // check that we are in the correct TPC
@@ -360,6 +363,12 @@ namespace evd{
 	b1.SetFillStyle(0);
 	b1.SetLineColor(color);
 	b1.SetBit(kCannotPick);
+	//	std::cerr << "what what aa "<< cscore << std::endl;
+	if(cscore>0.1) {
+	  b1.SetLineColor(kRed);
+	  if(cscore<0.6) b1.SetLineColor(kMagenta);
+	  b1.SetLineWidth(3);
+	}
       }
       else{
 	TBox& b1 = view->AddBox(time-0.5, w-0.5, time+0.5, w+0.5);
@@ -371,6 +380,11 @@ namespace evd{
 	b1.SetFillStyle(0);
 	b1.SetLineColor(color);
 	b1.SetBit(kCannotPick);
+	if(cscore>0.1) {
+	  b1.SetLineColor(kRed);
+	  if(cscore<0.6) b1.SetLineColor(kMagenta);
+	  b1.SetLineWidth(3);
+	}
       }
       wold = w;
       timeold = time;
@@ -1017,7 +1031,8 @@ namespace evd{
 				   unsigned int                        plane,
 				   TVector3                     const& startPos,
 				   TVector3                     const& startDir,	
-				   int                                 id)   
+				   int                                 id,
+				   float cscore)   
   {
     art::ServiceHandle<util::DetectorProperties> detprop;
     art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
@@ -1027,8 +1042,11 @@ namespace evd{
     unsigned int t = rawOpt->fTPC;
 
     // first draw the hits
-    this->Hit2D(hits, evd::kColor[id%evd::kNCOLS], view);
+    this->Hit2D(hits, evd::kColor[id%evd::kNCOLS], view, false, cscore);
 
+    std::cerr <<"in drawprong2d, after hit thing, Sarah, clean this up " << hits.size() << std::endl; // sel
+    if(hits.size()<1) return;
+ 
     // prepare to draw prongs
     double local[3] = {0.};
     double world[3] = {0.};
@@ -1036,7 +1054,7 @@ namespace evd{
     world[1] = startPos.Y();
     world[2] = startPos.Z();
 
-    // convert the starting position and direction from 3D to 2D coordinates
+     // convert the starting position and direction from 3D to 2D coordinates
     double tick = detprop->ConvertXToTicks(startPos.X(), plane, t, c);
     double wire = 0.;
     try{
@@ -1046,11 +1064,13 @@ namespace evd{
       wire = 1.*atoi(e.explain_self().substr(e.explain_self().find("#")+1,5).c_str());
     }
 
+
    // thetawire is the angle measured CW from +z axis to wire
     double thetawire = geo->TPC(t).Plane(plane).Wire(0).ThetaZ();
     double wirePitch = geo->WirePitch(hits[0]->View());
     double driftvelocity = larp->DriftVelocity(); // cm/us
     double timetick = detprop->SamplingRate()*1e-3;  // time sample in us
+
     //rotate coord system CCW around x-axis by pi-thetawire
     //   new yprime direction is perpendicular to the wire direction
     //   in the same plane as the wires and in the direction of
@@ -1061,8 +1081,10 @@ namespace evd{
     double yprime = std::cos(rotang)*startDir[1]
       +std::sin(rotang)*startDir[2];
     double dTdW = startDir[0]*wirePitch/driftvelocity/timetick/yprime;
-    
+
+
     this->Draw2DSlopeEndPoints(wire, tick, dTdW, evd::kColor[id%evd::kNCOLS], view);	
+
 
     return;
   }
@@ -1093,12 +1115,25 @@ namespace evd{
       for(size_t imod = 0; imod < recoOpt->fTrackLabels.size(); ++imod){
 	std::string const which = recoOpt->fTrackLabels[imod];
 
+	std::cerr << "getting tracks ... " << which << std::endl; // sel
+
 	art::View<recob::Track> track;
-	this->GetTracks(evt, which, track);
+       	this->GetTracks(evt, which, track);
+	//this->GetTracks(evt, "trackkalmanhitpandoracosmic", track);
+
+	std::cerr << "got tracks ... " << track.vals().size() << std::endl; // sel
 
 	if(track.vals().size() < 1) continue;
 
 	art::FindMany<recob::Hit>     fmh(track, evt, which);
+
+	//	art::FindManyP<anab::CosmicTag> cosmicTrackTags( track, evt, "cosmictagger");
+	std::string const whichTag = recoOpt->fCosmicTagLabels[imod];
+	art::FindManyP<anab::CosmicTag> cosmicTrackTags( track, evt, whichTag );
+	std::cerr << "got tags? ... " << cosmicTrackTags.isValid() << std::endl; // sel
+	std::cerr << "wtf? " << cosmicTrackTags.at(0).size() << " "<< cosmicTrackTags.size()<< std::endl; //sel
+
+
 
 	// loop over the prongs and get the clusters and hits associated with
 	// them.  only keep those that are in this view
@@ -1119,6 +1154,14 @@ namespace evd{
           }
 	  
 	  std::vector<const recob::Hit*> hits = fmh.at(t);
+	  //std::cerr << "wtf? " << cosmicTrackTags.at(t).size() << " "<< cosmicTrackTags.size()<< std::endl; //sel
+
+	  float Score = -999;
+	  if( cosmicTrackTags.at(t).size() >0 ) {
+	    art::Ptr<anab::CosmicTag> currentTag = cosmicTrackTags.at(t).at(0);
+	    Score = currentTag->CosmicScore();
+	  }
+	  //	  std::cerr << "Score = " << Score << std::endl; // sel
 
 	  // only get the hits for the current view
 	  std::vector<const recob::Hit*>::iterator itr = hits.begin(); 
@@ -1127,10 +1170,11 @@ namespace evd{
 	    else itr++;
 	  }
 
+	  std::cerr << "sending to drawprong2d " << Score << " hits size: " << hits.size() << std::endl; // sel
 	  this->DrawProng2D(hits, view, plane, 
 			    track.vals().at(t)->Vertex(), 
 			    track.vals().at(t)->VertexDirection(), 
-			    track.vals().at(t)->ID());
+			    track.vals().at(t)->ID(), Score);
 	}// end loop over prongs
       }// end loop over labels
     }// end draw tracks

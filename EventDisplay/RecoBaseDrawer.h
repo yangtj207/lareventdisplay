@@ -72,7 +72,8 @@ namespace evd {
     void Hit2D(std::vector<const recob::Hit*> hits,
 	       int                            color,
 	       evdb::View2D*                  view,
-               bool              drawConnectingLines = false);
+               bool              drawConnectingLines = false,
+	       float cscore = -1);
     void EndPoint2D(const art::Event& evt,
 		    evdb::View2D*     view,
 		    unsigned int      plane);
@@ -106,7 +107,8 @@ namespace evd {
 		     unsigned int                      	 plane,
 		     TVector3                    const& startPos,
 		     TVector3                    const& startDir,	
-		     int                               	 id);
+		     int                               	 id,
+		     float cscore = -5);
     void Vertex2D(const art::Event& evt,
 		  evdb::View2D*     view,
 		  unsigned int      plane);

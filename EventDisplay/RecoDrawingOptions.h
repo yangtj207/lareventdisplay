@@ -62,6 +62,8 @@ namespace evd {
     fhicl::ParameterSet      fCaloPSet;                 /// < parameterset for calorimetry algorithm 
     fhicl::ParameterSet      fSeedPSet;                 /// < parameterset for seed algorithm        
 
+    std::vector<std::string> fCosmicTagLabels;
+
     int                      fColorProngsByLabel;       ///< Generate prong colors by label or id?
     int                      fColorSpacePointsByChisq;  ///< Generate space point colors by chisquare?
 

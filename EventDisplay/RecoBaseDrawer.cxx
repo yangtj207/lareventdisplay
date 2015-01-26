@@ -2811,7 +2811,7 @@ int RecoBaseDrawer::GetPFParticles(const art::Event&                  evt,
     art::Handle< std::vector<recob::Track> > btbcol;
     
     try{
-      evt.getByLabel(which, btbcol);
+      evt.getByLabel(which, "bezierformat", btbcol);
       for(unsigned int i = 0; i < btbcol->size(); ++i){
 	art::Ptr<recob::Track> btb(btbcol, i);
         temp.push_back(btb);

@@ -1601,6 +1601,7 @@ void RecoBaseDrawer::DrawPFParticle3D(const art::Ptr<recob::PFParticle>&       p
                                       int                                      depth,
                                       evdb::View3D*                            view)
 {
+    art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
     
     // First let's draw the hits associated to this cluster
     const std::vector<const recob::SpacePoint*>& hitsVec(spacePointAssnVec.at(pfPart->Self()));
@@ -1673,8 +1674,17 @@ void RecoBaseDrawer::DrawPFParticle3D(const art::Ptr<recob::PFParticle>&       p
             }
         }
         
-//        TPolyMarker3D& pm = view->AddPolyMarker3D(1, colorIdx, kFullDotMedium, 1);
-//        pm.SetPolyMarker(nHits, hitPositions.get(), kFullDotMedium);
+        if (!recoOpt->fSkeletonOnly)
+        {
+            TPolyMarker3D& pm = view->AddPolyMarker3D(1, colorIdx, kFullDotMedium, 1);
+            pm.SetPolyMarker(nHits, hitPositions.get(), kFullDotMedium);
+        
+            TPolyMarker3D& pm5 = view->AddPolyMarker3D(1, 1, kFullDotMedium, 1);
+            pm5.SetPolyMarker(nEdgeHits, edgePoints.get(), kFullDotMedium);
+        
+            TPolyMarker3D& pm6 = view->AddPolyMarker3D(1, 2, kFullDotMedium, 1);
+            pm6.SetPolyMarker(nPairHits, pairPoints.get(), kFullDotMedium);
+        }
         
         TPolyMarker3D& pm2 = view->AddPolyMarker3D(1, 0, kFullDotMedium, 1);
         pm2.SetPolyMarker(nSkeletonHits, skeletonPositions.get(), kFullDotMedium);
@@ -1684,84 +1694,78 @@ void RecoBaseDrawer::DrawPFParticle3D(const art::Ptr<recob::PFParticle>&       p
         
         TPolyMarker3D& pm4 = view->AddPolyMarker3D(1, 5, kFullDotMedium, 1);
         pm4.SetPolyMarker(nSeedHits, seedPoints.get(), kFullDotMedium);
-        
-//        TPolyMarker3D& pm5 = view->AddPolyMarker3D(1, 1, kFullDotMedium, 1);
-//        pm5.SetPolyMarker(nEdgeHits, edgePoints.get(), kFullDotMedium);
-        
-//        TPolyMarker3D& pm6 = view->AddPolyMarker3D(1, 2, kFullDotMedium, 1);
-//        pm6.SetPolyMarker(nPairHits, pairPoints.get(), kFullDotMedium);
-        
-//        int hitIdx(0);
-//
-//        // Get a polymarker to draw the points
-//        TPolyMarker3D& pm = view->AddPolyMarker3D(hitsVec.size(), colorIdx, 7, 1);
-//
-//        for(const auto* spacePoint : hitsVec)
-//        {
-//            const double* pos = spacePoint->XYZ();
-//
-//            pm.SetPoint(hitIdx++, pos[0], pos[1], pos[2]);
-//        }
     }
     
     // Look up the PCA info
     if (pcAxisAssnVec.isValid())
     {
-        const std::vector<const recob::PCAxis*>& pcaVec(pcAxisAssnVec.at(pfPart->Self()));
+        std::vector<const recob::PCAxis*> pcaVec(pcAxisAssnVec.at(pfPart->Self()));
     
         if (!pcaVec.empty())
         {
-            // There is only one pca per PFParticle
-            const recob::PCAxis& pca = *pcaVec.front();
-        
             // For each axis we are going to draw a solid line between two points
             int numPoints(2);
-            int lineWidth(2); //4);
-            int lineStyle(1);
-        
-            // We also need the mean position
-            const double* avePosition = pca.getAvePosition();
-        
-            // Let's draw a marker at the interesting points
-            int             pmrkIdx(0);
-            TPolyMarker3D&  pmrk = view->AddPolyMarker3D(7, colorIdx, 4, 1);
-        
-            pmrk.SetPoint(pmrkIdx++, avePosition[0], avePosition[1], avePosition[2]);
-        
-            // Loop over pca dimensions
-            for(int dimIdx = 0; dimIdx < 3; dimIdx++)
+            int lineWidth[2] = {       3,  1};
+            int lineStyle[2] = {       1, 13};
+            int lineColor[2] = {colorIdx, 18};
+            int markStyle[2] = {       4,  4};
+            int pcaIdx(0);
+
+            // The order of axes in the returned association vector is arbitrary... the "first" axis is
+            // better and we can divine that by looking at the axis id's (the best will have been made first)
+            if (pcaVec.size() > 1 && pcaVec.front()->getID() > pcaVec.back()->getID()) std::reverse(pcaVec.begin(), pcaVec.end());
+
+            for(const auto& pca : pcaVec)
             {
-                // Oh please oh please give me an instance of a poly line...
-                TPolyLine3D& pl = view->AddPolyLine3D(numPoints, colorIdx, lineWidth, lineStyle);
-            
-                // We will use the eigen value to give the length of the line we're going to plot
-                double eigenValue = pca.getEigenValues()[dimIdx];
-            
-                // Make sure a valid eigenvalue
-                if (eigenValue > 0)
+                // We need the mean position
+                const double* avePosition = pca->getAvePosition();
+        
+                // Let's draw a marker at the interesting points
+                int             pmrkIdx(0);
+                TPolyMarker3D&  pmrk = view->AddPolyMarker3D(7, lineColor[pcaIdx], markStyle[pcaIdx], 1);
+        
+                pmrk.SetPoint(pmrkIdx++, avePosition[0], avePosition[1], avePosition[2]);
+        
+                // Loop over pca dimensions
+                for(int dimIdx = 0; dimIdx < 3; dimIdx++)
                 {
-                    // Really want the root of the eigen value
-                    eigenValue = 4.*sqrt(eigenValue);
+                    // Oh please oh please give me an instance of a poly line...
+                    TPolyLine3D& pl = view->AddPolyLine3D(numPoints, lineColor[pcaIdx], lineWidth[pcaIdx], lineStyle[pcaIdx]);
+            
+                    // We will use the eigen value to give the length of the line we're going to plot
+                    double eigenValue = pca->getEigenValues()[dimIdx];
+            
+                    // Make sure a valid eigenvalue
+                    if (eigenValue > 0)
+                    {
+                        // Really want the root of the eigen value
+                        eigenValue = 3.*sqrt(eigenValue);
                 
-                    // Recover the eigenvector
-                    const std::vector<double>& eigenVector = pca.getEigenVectors()[dimIdx];
+                        // Recover the eigenvector
+                        const std::vector<double>& eigenVector = pca->getEigenVectors()[dimIdx];
                 
-                    // Set the first point
-                    double xl = avePosition[0] - 0.5 * eigenValue * eigenVector[0];
-                    double yl = avePosition[1] - 0.5 * eigenValue * eigenVector[1];
-                    double zl = avePosition[2] - 0.5 * eigenValue * eigenVector[2];
+                        // Set the first point
+                        double xl = avePosition[0] - 0.5 * eigenValue * eigenVector[0];
+                        double yl = avePosition[1] - 0.5 * eigenValue * eigenVector[1];
+                        double zl = avePosition[2] - 0.5 * eigenValue * eigenVector[2];
                 
-                    pl.SetPoint(0, xl, yl, zl);
-                    pmrk.SetPoint(pmrkIdx++, xl, yl, zl);
+                        pl.SetPoint(0, xl, yl, zl);
+                        pmrk.SetPoint(pmrkIdx++, xl, yl, zl);
                 
-                    // Set the second point
-                    double xu = avePosition[0] + 0.5 * eigenValue * eigenVector[0];
-                    double yu = avePosition[1] + 0.5 * eigenValue * eigenVector[1];
-                    double zu = avePosition[2] + 0.5 * eigenValue * eigenVector[2];
+                        // Set the second point
+                        double xu = avePosition[0] + 0.5 * eigenValue * eigenVector[0];
+                        double yu = avePosition[1] + 0.5 * eigenValue * eigenVector[1];
+                        double zu = avePosition[2] + 0.5 * eigenValue * eigenVector[2];
                 
-                    pl.SetPoint(1, xu, yu, zu);
-                    pmrk.SetPoint(pmrkIdx++, xu, yu, zu);
+                        pl.SetPoint(1, xu, yu, zu);
+                        pmrk.SetPoint(pmrkIdx++, xu, yu, zu);
+                    }
                 }
+
+                // By convention we will have drawn the "best" axis first
+                if (recoOpt->fBestPCAAxisOnly) break;
+                
+                pcaIdx++;
             }
         }
     }

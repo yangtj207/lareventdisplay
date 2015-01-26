@@ -46,6 +46,8 @@ void RecoDrawingOptions::reconfigure(fhicl::ParameterSet const& pset)
     fDraw2DSlopeEndPoints      = pset.get< int                      >("Draw2DSlopeEndPoints"     );
     fSelectedHitColor	       = pset.get< int                      >("SelectedHitColor"         );
     fUseHitSelector            = pset.get< bool                     >("UseHitSelector"           );
+    fSkeletonOnly              = pset.get< bool                     >("DrawSkeleton3DHitsOnly"   );
+    fBestPCAAxisOnly           = pset.get< bool                     >("DrawBestPCAAxisOnly"      );
     fHitLabels                 = pset.get< std::vector<std::string> >("HitModuleLabels"          );
     fSpacePointLabels 	       = pset.get< std::vector<std::string> >("SpacePointModuleLabels"	 );
     fProngLabels      	       = pset.get< std::vector<std::string> >("ProngModuleLabels"     	 );

@@ -44,6 +44,8 @@ public:
     int  fDrawBezierTracks;
     int  fSelectedHitColor;
     bool fUseHitSelector;
+    bool fSkeletonOnly;
+    bool fBestPCAAxisOnly;
     
     std::vector<std::string> fWireLabels;           ///< module labels that produced wires
     std::vector<std::string> fHitLabels;     		///< module labels that produced hits  		       

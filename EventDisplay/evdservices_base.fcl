@@ -39,21 +39,23 @@ standard_recodrawingopt:
  Draw2DSlopeEndPoints:      0              # draws end points and slopes for clusters, 0 = off, 1 = on    
  DrawSpacePoints:           0              # 0 = off, 1 = on                                              
  DrawProngs:                0              # 0 = off, 1 = on                                              
- DrawTracks:                0  		   # 0 = off, 1 = on                                              
- DrawTrackTrajectoryPoints: 0  		   # 0 = off, 1 = on                                              
- DrawTrackSpacePoints:      0  		   # 0 = off, 1 = on                                              
- DrawShowers:               0  		   # 0 = off, 1 = on                                              
- DrawVertices:              0  		   # 0 = off, 1 = on                                              
- DrawSeeds:                 0  		   # 0 = off, 1 = on      
- DrawBezierTracks:          0  		   # 0 = off, 1 = on                                          
+ DrawTracks:                0  		       # 0 = off, 1 = on
+ DrawTrackTrajectoryPoints: 0  		       # 0 = off, 1 = on
+ DrawTrackSpacePoints:      0              # 0 = off, 1 = on
+ DrawShowers:               0  		       # 0 = off, 1 = on
+ DrawVertices:              0  		       # 0 = off, 1 = on
+ DrawSeeds:                 0  		       # 0 = off, 1 = on
+ DrawBezierTracks:          0  		       # 0 = off, 1 = on
  DrawOpFlashes:             0              # 0 = off, 1 = on   
 
- DrawEvents:                0  		   # 0 = off, 1 = on                                              
+ DrawEvents:                0  		       # 0 = off, 1 = on
  Draw2DEndPoints:           0              # 0 = off, 1 = on, this is for the recob::EndPoint2D objects
- SelectedHitColor:	    6		   # color to display hits selected via handscan. 
+ SelectedHitColor:	        6		       # color to display hits selected via handscan.
                                            # 0:white, 1:black 2:red 3:green 4:blue 
                                            # 5: yellow 6:magenta 7:cyan		
  UseHitSelector:            true           # turn on ability to use hit selector or not
+ DrawSkeleton3DHitsOnly:    false          # Draw only the "skeleton" 3D hits
+ DrawBestPCAAxisOnly:       true           # Draw only the best PCA axis
  WireModuleLabels:          ["caldata"]    # list of module labels in which to look for recob::Wires      
  HitModuleLabels:           ["ffthit"]     # list of module labels in which to look for recob::Hits       
  EndPoint2DModuleLabels:    [""]           # list of module labels in which to look for recob::EndPoint2Ds

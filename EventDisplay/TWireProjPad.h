@@ -18,8 +18,8 @@ class TH1F;
 namespace evdb { class View2D;   }
 
 namespace util {
-  class pxline;
-  class pxpoint;
+  class PxLine;
+  class PxPoint;
 }
 
 namespace recob
@@ -45,7 +45,7 @@ namespace evd {
     
     void SaveHitList(double i1, double i2,double y1, double y2, double distance, const char* zoom_opt,bool good_plane=true);
 			
-    double SaveSeedList(std::vector < util::pxline > seedlines, double distance);
+    double SaveSeedList(std::vector < util::PxLine > seedlines, double distance);
 			
     void ClearHitList();
     void SelectOneHit(double x, double y, const char* zoom_opt);
@@ -54,7 +54,7 @@ namespace evd {
 
     void ClearandUpdatePad();
     void UpdatePad();
-    void DrawLinesinView(std::vector< util::pxline > lines,bool deleting=false,const char * zoom_opt=0);
+    void DrawLinesinView(std::vector< util::PxLine > lines,bool deleting=false,const char * zoom_opt=0);
 			
     void ShowFull(int override=0);
 

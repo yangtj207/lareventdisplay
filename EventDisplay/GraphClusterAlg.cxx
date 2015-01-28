@@ -48,7 +48,7 @@
 
 
   
-  void evd::GraphClusterAlg::GetHitListAndEndPoints(unsigned int plane, art::PtrVector <recob::Hit>  &ptrhitlist,util::pxline &startendpoints)
+  void evd::GraphClusterAlg::GetHitListAndEndPoints(unsigned int plane, art::PtrVector <recob::Hit>  &ptrhitlist,util::PxLine &startendpoints)
   {
    GetHitList(plane,ptrhitlist);
    GetStartEndHits(plane,startendpoints);
@@ -58,7 +58,7 @@
   
  
   
-  void evd::GraphClusterAlg::GetStartEndHits(unsigned int plane,util::pxline &startendpoints)
+  void evd::GraphClusterAlg::GetStartEndHits(unsigned int plane,util::PxLine &startendpoints)
   {
     std::vector < double > starthit;
     std::vector < double > endhit;
@@ -194,14 +194,14 @@
  
  
   //----------------------------------------------------------------------------
-  std::vector < util::pxline > evd::GraphClusterAlg::GetSeedLines()
+  std::vector < util::PxLine > evd::GraphClusterAlg::GetSeedLines()
   {
    
     art::ServiceHandle<evd::InfoTransfer> intr;
     //////////////////////////////////////////////////
     //this is where you could create Bezier Tracks if you wanted to do it inside a producer	 
     //////////////////////////////////////////////////
-    std::vector < util::pxline > plines = intr->GetSeedList();
+    std::vector < util::PxLine > plines = intr->GetSeedList();
 	
     std::cout << " Received Seed List of Size: " << plines.size() << std::endl; 
     

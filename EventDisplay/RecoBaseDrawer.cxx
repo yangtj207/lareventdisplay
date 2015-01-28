@@ -2228,6 +2228,7 @@ void RecoBaseDrawer::DrawPFParticleOrtho(const art::Ptr<recob::PFParticle>&     
                                          evd::OrthoProj_t                         proj,
                                          evdb::View2D*                            view)
 {
+    art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
     
     // First let's draw the hits associated to this cluster
     const std::vector<const recob::SpacePoint*>& hitsVec(spacePointAssnVec.at(pfPart->Self()));
@@ -2239,110 +2240,218 @@ void RecoBaseDrawer::DrawPFParticleOrtho(const art::Ptr<recob::PFParticle>&     
     
     if (!hitsVec.empty())
     {
+        std::vector<const recob::SpacePoint*> hitPosVec;
+        std::vector<const recob::SpacePoint*> skeletonPosVec;
+        std::vector<const recob::SpacePoint*> skelEdgePosVec;
+        std::vector<const recob::SpacePoint*> edgePosVec;
+        std::vector<const recob::SpacePoint*> seedPosVec;
+        std::vector<const recob::SpacePoint*> pairPosVec;
+        
+        for(const auto& spacePoint : hitsVec)
+        {
+            if      (spacePoint->Chisq() >   0.) hitPosVec.push_back(spacePoint);
+            else if (spacePoint->Chisq() == -1.) skeletonPosVec.push_back(spacePoint);
+            else if (spacePoint->Chisq() == -3.) skelEdgePosVec.push_back(spacePoint);
+            else if (spacePoint->Chisq() == -4.) seedPosVec.push_back(spacePoint);
+            else if (spacePoint->Chisq() > -10.) edgePosVec.push_back(spacePoint);
+            else                                 pairPosVec.push_back(spacePoint);
+        }
+        
         int hitIdx(0);
         
-        // Get a polymarker to draw the points
-        TPolyMarker& pm = view->AddPolyMarker(hitsVec.size(), colorIdx, 7, 1);
+        if (!recoOpt->fSkeletonOnly)
+        {
+            TPolyMarker& pm1 = view->AddPolyMarker(hitPosVec.size(), colorIdx, kFullDotMedium, 1);
+            for(const auto* spacePoint : hitPosVec)
+            {
+                const double* pos = spacePoint->XYZ();
+                
+                if(proj == evd::kXY)
+                    pm1.SetPoint(hitIdx++, pos[0], pos[1]);
+                else if(proj == evd::kXZ)
+                    pm1.SetPoint(hitIdx++, pos[2], pos[0]);
+                else if(proj == evd::kYZ)
+                    pm1.SetPoint(hitIdx++, pos[2], pos[1]);
+            }
+            
+            hitIdx = 0;
+            
+            TPolyMarker& pm2 = view->AddPolyMarker(edgePosVec.size(), 28, kFullDotMedium, 1);
+            for(const auto* spacePoint : edgePosVec)
+            {
+                const double* pos = spacePoint->XYZ();
+                
+                if(proj == evd::kXY)
+                    pm2.SetPoint(hitIdx++, pos[0], pos[1]);
+                else if(proj == evd::kXZ)
+                    pm2.SetPoint(hitIdx++, pos[2], pos[0]);
+                else if(proj == evd::kYZ)
+                    pm2.SetPoint(hitIdx++, pos[2], pos[1]);
+            }
+            
+            hitIdx = 0;
+            
+            TPolyMarker& pm3 = view->AddPolyMarker(pairPosVec.size(), 2, kFullDotMedium, 1);
+            for(const auto* spacePoint : pairPosVec)
+            {
+                const double* pos = spacePoint->XYZ();
+                
+                if(proj == evd::kXY)
+                    pm3.SetPoint(hitIdx++, pos[0], pos[1]);
+                else if(proj == evd::kXZ)
+                    pm3.SetPoint(hitIdx++, pos[2], pos[0]);
+                else if(proj == evd::kYZ)
+                    pm3.SetPoint(hitIdx++, pos[2], pos[1]);
+            }
+        }
         
-        for(const auto* spacePoint : hitsVec)
+        hitIdx = 0;
+        
+        TPolyMarker& pm4 = view->AddPolyMarker(skeletonPosVec.size(), 1, kFullDotMedium, 1);
+        for(const auto* spacePoint : skeletonPosVec)
         {
             const double* pos = spacePoint->XYZ();
             
             if(proj == evd::kXY)
-                pm.SetPoint(hitIdx++, pos[0], pos[1]);
+                pm4.SetPoint(hitIdx++, pos[0], pos[1]);
             else if(proj == evd::kXZ)
-                pm.SetPoint(hitIdx++, pos[2], pos[0]);
+                pm4.SetPoint(hitIdx++, pos[2], pos[0]);
             else if(proj == evd::kYZ)
-                pm.SetPoint(hitIdx++, pos[2], pos[1]);
+                pm4.SetPoint(hitIdx++, pos[2], pos[1]);
+        }
+        
+        hitIdx = 0;
+        
+        TPolyMarker& pm5 = view->AddPolyMarker(skelEdgePosVec.size(), 3, kFullDotMedium, 1);
+        for(const auto* spacePoint : skelEdgePosVec)
+        {
+            const double* pos = spacePoint->XYZ();
+            
+            if(proj == evd::kXY)
+                pm5.SetPoint(hitIdx++, pos[0], pos[1]);
+            else if(proj == evd::kXZ)
+                pm5.SetPoint(hitIdx++, pos[2], pos[0]);
+            else if(proj == evd::kYZ)
+                pm5.SetPoint(hitIdx++, pos[2], pos[1]);
+        }
+        
+        hitIdx = 0;
+        
+        TPolyMarker& pm6 = view->AddPolyMarker(seedPosVec.size(), 6, kFullDotMedium, 1);
+        for(const auto* spacePoint : seedPosVec)
+        {
+            const double* pos = spacePoint->XYZ();
+            
+            if(proj == evd::kXY)
+                pm6.SetPoint(hitIdx++, pos[0], pos[1]);
+            else if(proj == evd::kXZ)
+                pm6.SetPoint(hitIdx++, pos[2], pos[0]);
+            else if(proj == evd::kYZ)
+                pm6.SetPoint(hitIdx++, pos[2], pos[1]);
         }
     }
     
     // Look up the PCA info
-    const std::vector<const recob::PCAxis*>& pcaVec(pcAxisAssnVec.at(pfPart->Self()));
-    
-    if (!pcaVec.empty())
+    if (pcAxisAssnVec.isValid())
     {
-        // There is only one pca per PFParticle
-        const recob::PCAxis& pca = *pcaVec.front();
+        std::vector<const recob::PCAxis*> pcaVec(pcAxisAssnVec.at(pfPart->Self()));
         
-        // For each axis we are going to draw a solid line between two points
-        int numPoints(2);
-        int lineWidth(2); //4);
-        int lineStyle(1);
-        
-        // We also need the mean position
-        const double* avePosition = pca.getAvePosition();
-        
-        // Let's draw a marker at the interesting points
-        int           pmrkIdx(0);
-        TPolyMarker&  pmrk = view->AddPolyMarker(7, colorIdx, 4, 1);
-        
-        if(proj == evd::kXY)
-            pmrk.SetPoint(pmrkIdx++, avePosition[0], avePosition[1]);
-        else if(proj == evd::kXZ)
-            pmrk.SetPoint(pmrkIdx++, avePosition[2], avePosition[0]);
-        else if(proj == evd::kYZ)
-            pmrk.SetPoint(pmrkIdx++, avePosition[2], avePosition[1]);
-        
-        // Loop over pca dimensions
-        for(int dimIdx = 0; dimIdx < 3; dimIdx++)
+        if (!pcaVec.empty())
         {
-            // Oh please oh please give me an instance of a poly line...
-            TPolyLine& pl = view->AddPolyLine(numPoints, colorIdx, lineWidth, lineStyle);
+            // For each axis we are going to draw a solid line between two points
+            int numPoints(2);
+            int lineWidth[2] = {       3,  1};
+            int lineStyle[2] = {       1, 13};
+            int lineColor[2] = {colorIdx, 18};
+            int markStyle[2] = {       4,  4};
+            int pcaIdx(0);
             
-            // We will use the eigen value to give the length of the line we're going to plot
-            double eigenValue = pca.getEigenValues()[dimIdx];
+            // The order of axes in the returned association vector is arbitrary... the "first" axis is
+            // better and we can divine that by looking at the axis id's (the best will have been made first)
+            if (pcaVec.size() > 1 && pcaVec.front()->getID() > pcaVec.back()->getID()) std::reverse(pcaVec.begin(), pcaVec.end());
             
-            // Make sure a valid eigenvalue
-            if (eigenValue > 0)
+            for(const auto& pca : pcaVec)
             {
-                // Really want the root of the eigen value
-                eigenValue = 4.*sqrt(eigenValue);
+                // We need the mean position
+                const double* avePosition = pca->getAvePosition();
                 
-                // Recover the eigenvector
-                const std::vector<double>& eigenVector = pca.getEigenVectors()[dimIdx];
-                
-                // Set the first point
-                double xl = avePosition[0] - 0.5 * eigenValue * eigenVector[0];
-                double yl = avePosition[1] - 0.5 * eigenValue * eigenVector[1];
-                double zl = avePosition[2] - 0.5 * eigenValue * eigenVector[2];
-
-                if(proj == evd::kXY)
-                {
-                    pl.SetPoint(0, xl, yl);
-                    pmrk.SetPoint(pmrkIdx++, xl, yl);
-                }
-                else if(proj == evd::kXZ)
-                {
-                    pl.SetPoint(0, zl, xl);
-                    pmrk.SetPoint(pmrkIdx++, zl, xl);
-                }
-                else if(proj == evd::kYZ)
-                {
-                    pl.SetPoint(0, zl, yl);
-                    pmrk.SetPoint(pmrkIdx++, zl, yl);
-                }
-                
-                // Set the second point
-                double xu = avePosition[0] + 0.5 * eigenValue * eigenVector[0];
-                double yu = avePosition[1] + 0.5 * eigenValue * eigenVector[1];
-                double zu = avePosition[2] + 0.5 * eigenValue * eigenVector[2];
+                // Let's draw a marker at the interesting points
+                int           pmrkIdx(0);
+                TPolyMarker&  pmrk = view->AddPolyMarker(7, lineColor[pcaIdx], markStyle[pcaIdx], 1);
                 
                 if(proj == evd::kXY)
-                {
-                    pl.SetPoint(1, xu, yu);
-                    pmrk.SetPoint(pmrkIdx++, xu, yu);
-                }
+                    pmrk.SetPoint(pmrkIdx++, avePosition[0], avePosition[1]);
                 else if(proj == evd::kXZ)
-                {
-                    pl.SetPoint(1, zu, xu);
-                    pmrk.SetPoint(pmrkIdx++, zu, xu);
-                }
+                    pmrk.SetPoint(pmrkIdx++, avePosition[2], avePosition[0]);
                 else if(proj == evd::kYZ)
+                    pmrk.SetPoint(pmrkIdx++, avePosition[2], avePosition[1]);
+                
+                // Loop over pca dimensions
+                for(int dimIdx = 0; dimIdx < 3; dimIdx++)
                 {
-                    pl.SetPoint(1, zu, yu);
-                    pmrk.SetPoint(pmrkIdx++, zu, yu);
+                    // Oh please oh please give me an instance of a poly line...
+                    TPolyLine& pl = view->AddPolyLine(numPoints, lineColor[pcaIdx], lineWidth[pcaIdx], lineStyle[pcaIdx]);
+                    
+                    // We will use the eigen value to give the length of the line we're going to plot
+                    double eigenValue = pca->getEigenValues()[dimIdx];
+                    
+                    // Make sure a valid eigenvalue
+                    if (eigenValue > 0)
+                    {
+                        // Really want the root of the eigen value
+                        eigenValue = 3.*sqrt(eigenValue);
+                        
+                        // Recover the eigenvector
+                        const std::vector<double>& eigenVector = pca->getEigenVectors()[dimIdx];
+                        
+                        // Set the first point
+                        double xl = avePosition[0] - 0.5 * eigenValue * eigenVector[0];
+                        double yl = avePosition[1] - 0.5 * eigenValue * eigenVector[1];
+                        double zl = avePosition[2] - 0.5 * eigenValue * eigenVector[2];
+                        
+                        if(proj == evd::kXY)
+                        {
+                            pl.SetPoint(0, xl, yl);
+                            pmrk.SetPoint(pmrkIdx++, xl, yl);
+                        }
+                        else if(proj == evd::kXZ)
+                        {
+                            pl.SetPoint(0, zl, xl);
+                            pmrk.SetPoint(pmrkIdx++, zl, xl);
+                        }
+                        else if(proj == evd::kYZ)
+                        {
+                            pl.SetPoint(0, zl, yl);
+                            pmrk.SetPoint(pmrkIdx++, zl, yl);
+                        }
+                        
+                        // Set the second point
+                        double xu = avePosition[0] + 0.5 * eigenValue * eigenVector[0];
+                        double yu = avePosition[1] + 0.5 * eigenValue * eigenVector[1];
+                        double zu = avePosition[2] + 0.5 * eigenValue * eigenVector[2];
+                        
+                        if(proj == evd::kXY)
+                        {
+                            pl.SetPoint(1, xu, yu);
+                            pmrk.SetPoint(pmrkIdx++, xu, yu);
+                        }
+                        else if(proj == evd::kXZ)
+                        {
+                            pl.SetPoint(1, zu, xu);
+                            pmrk.SetPoint(pmrkIdx++, zu, xu);
+                        }
+                        else if(proj == evd::kYZ)
+                        {
+                            pl.SetPoint(1, zu, yu);
+                            pmrk.SetPoint(pmrkIdx++, zu, yu);
+                        }
+                    }
                 }
+                
+                // By convention we will have drawn the "best" axis first
+                if (recoOpt->fBestPCAAxisOnly) break;
+                
+                pcaIdx++;
             }
         }
     }

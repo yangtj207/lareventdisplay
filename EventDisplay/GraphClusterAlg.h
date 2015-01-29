@@ -47,8 +47,8 @@ namespace recob {
 
 
 namespace util {
- class pxline;
- class pxpoint;
+ class PxLine;
+ class PxPoint;
 }
 
 namespace geo {
@@ -80,19 +80,19 @@ namespace evd {
   
 //   void GetStartEndHits(unsigned int plane, recob::Hit * starthit,recob::Hit * endhit);
 //   void GetStartEndHits(unsigned int plane);
-  void GetStartEndHits(unsigned int plane,util::pxline &startendpoints);
+  void GetStartEndHits(unsigned int plane,util::PxLine &startendpoints);
   
   
   
     //void GetHitList(unsigned int plane,std::vector< art::Ptr <recob::Hit> > ptrhitlist);
   void GetHitList(unsigned int plane, art::PtrVector <recob::Hit>  &ptrhitlist);
   
-  void GetHitListAndEndPoints(unsigned int plane, art::PtrVector <recob::Hit>  &ptrhitlist,util::pxline &startendpoints);
+  void GetHitListAndEndPoints(unsigned int plane, art::PtrVector <recob::Hit>  &ptrhitlist,util::PxLine &startendpoints);
     
   int CheckValidity(art::Event& evt); 
   
   private: 
-    std::vector < util::pxline > GetSeedLines();
+    std::vector < util::PxLine > GetSeedLines();
     
     
     
@@ -111,7 +111,7 @@ namespace evd {
     */
 //     std::vector < std::vector< recob::Hit * > > hitlist;
     
-//     std::vector < util::pxline > plines;
+//     std::vector < util::PxLine > plines;
 //     
 //     std::vector <unsigned int> swire;
 //     std::vector <unsigned int> ewire;

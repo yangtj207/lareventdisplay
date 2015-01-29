@@ -24,8 +24,8 @@ class TGLabel;
 class TRootEmbeddedCanvas;
 
 namespace util {
-class pxline;
-class pxpoint;
+class PxLine;
+class PxPoint;
 
 }
 
@@ -177,12 +177,12 @@ namespace evd {
     TGTextButton* fRefitSeeds; ///<Clears the selected points in an event
        
     
-    int DrawLine(int plane,util::pxline &pline);
+    int DrawLine(int plane,util::PxLine &pline);
     
-    std::deque<util::pxpoint>  ppoints; ///< list of points in each WireProjPad used for x,y,z finding
-    std::deque<util::pxline>  pline; ///< list of lines in each WireProjPad used for calculating 2d and 3d angles, also making seeds (eventually)
+    std::deque<util::PxPoint>  ppoints; ///< list of points in each WireProjPad used for x,y,z finding
+    std::deque<util::PxLine>  pline; ///< list of lines in each WireProjPad used for calculating 2d and 3d angles, also making seeds (eventually)
 
-    std::vector<util::pxline>  seedlines; ///< list of lines in each WireProjPad used for calculating 2d and 3d angles, also making seeds (eventually)
+    std::vector<util::PxLine>  seedlines; ///< list of lines in each WireProjPad used for calculating 2d and 3d angles, also making seeds (eventually)
 
     ZoomOptions fZoomOpt;
     std::vector<ZoomOptions> fPrevZoomOpt;

@@ -534,7 +534,7 @@ namespace evd{
     double t0 = gPad->AbsPixeltoY(py);
     double y = gPad->PadtoY(t0);
 
-    util::pxpoint ppx(plane,x,y);
+    util::PxPoint ppx(plane,x,y);
     curr_zooming_plane=-1;
 
     // check if not clicking on a plane that is already in the ppoints list:
@@ -917,16 +917,16 @@ namespace evd{
       if(fPlanes.size()>pline.size() && pline.size() >=2 ){   // need to project to third plane
 
 		
-	util::pxpoint p00(pline[0].plane,pline[0].w0,pline[0].t0);
-	util::pxpoint p01(pline[1].plane,pline[1].w0,pline[1].t0);
-	util::pxpoint p0N(0,0,0);
-	int error1=gser.GetProjectedPoint(p00,p01,p0N);
+	util::PxPoint p00(pline[0].plane,pline[0].w0,pline[0].t0);
+	util::PxPoint p01(pline[1].plane,pline[1].w0,pline[1].t0);
+	util::PxPoint p0N(0,0,0);
+	int error1=gser.GetProjectedPoint(&p00,&p01,p0N);
 		
 				
-	util::pxpoint p10(pline[0].plane,pline[0].w1,pline[0].t1);
-	util::pxpoint p11(pline[1].plane,pline[1].w1,pline[1].t1);
-	util::pxpoint p1N(0,0,0);
-	int error2=gser.GetProjectedPoint(p10,p11,p1N);
+	util::PxPoint p10(pline[0].plane,pline[0].w1,pline[0].t1);
+	util::PxPoint p11(pline[1].plane,pline[1].w1,pline[1].t1);
+	util::PxPoint p1N(0,0,0);
+	int error2=gser.GetProjectedPoint(&p10,&p11,p1N);
 	if(error1!=-1 && error2!=-1)
 	  fPlanes[p0N.plane]->SaveHitList(p0N.w,p0N.t,p1N.w,p1N.t,kDistance, zoom_opt,false);
 		
@@ -1160,7 +1160,7 @@ namespace evd{
   }
 
   //......................................................................
-  int TWQProjectionView::DrawLine(int plane,util::pxline &pline)
+  int TWQProjectionView::DrawLine(int plane,util::PxLine &pline)
   {
     art::ServiceHandle<evd::EvdLayoutOptions>     evdlayoutopt;
     art::ServiceHandle<util::DetectorProperties>  det;
@@ -1283,7 +1283,7 @@ namespace evd{
 	  else{
 	    // This proj is compatible to make a 3D seed.  Indicate this with the linefinished status
 	    mf::LogVerbatim("TWQProjectionView")<<"This is a good seed. adding line and returing 2";
-	    pline=util::pxline(plane,w0,t0,w1,t1);
+	    pline=util::PxLine(plane,w0,t0,w1,t1);
 	    linefinished=2;
 	  }
 				  
@@ -1293,7 +1293,7 @@ namespace evd{
 	// Put down guide lines in other 2 views for t
 			    
 	else if((SeedCounter%3)==1){
-	  pline=util::pxline(plane,w0,t0,w1,t1);
+	  pline=util::PxLine(plane,w0,t0,w1,t1);
 	  linefinished=1;
 				
 	}
@@ -1305,7 +1305,7 @@ namespace evd{
       }
       else{
 			  
-	pline=util::pxline(plane,w0,t0,w1,t1);
+	pline=util::PxLine(plane,w0,t0,w1,t1);
 	linefinished=1;
       }
       //curr_zooming_plane=-1;
@@ -1325,7 +1325,7 @@ namespace evd{
     if(!select->InheritsFrom("TBox")) return;
 
 
-    util::pxline ppx;
+    util::PxLine ppx;
 	 
     if(!DrawLine(plane,ppx))
       return;
@@ -1400,7 +1400,7 @@ namespace evd{
     if(!select->InheritsFrom("TBox")) return;
   
   
-    util::pxline ppx;
+    util::PxLine ppx;
   
     int DrawStatus = DrawLine(plane,ppx);
   
@@ -1424,8 +1424,8 @@ namespace evd{
       mf::LogVerbatim("TWQProjectionView") << "Adding third seed projection";
       // We drew the second seed projection - make the 3D seed
       
-      util::pxline l0 = seedlines.at(seedlines.size()-1);
-      util::pxline l1 = seedlines.at(seedlines.size()-2);
+      util::PxLine l0 = seedlines.at(seedlines.size()-1);
+      util::PxLine l1 = seedlines.at(seedlines.size()-2);
       
       art::ServiceHandle<util::DetectorProperties> det;
       art::ServiceHandle<util::DetectorProperties> geom;
@@ -1436,22 +1436,25 @@ namespace evd{
 
       
 
-      util::pxpoint thirdp0(0,0,0), thirdp1(0,0,0);
+      util::PxPoint thirdp0(0,0,0), thirdp1(0,0,0);
       
       util::GeometryUtilities geomutil;
       
       double yz0[2];
       double yz1[2];
-
-      geomutil.GetProjectedPoint(l0.pt0(), l1.pt0(), thirdp0);
-      geomutil.GetProjectedPoint(l0.pt1(), l1.pt1(), thirdp1);
-      geomutil.GetYZ(l0.pt0(), l1.pt0(), yz0);
-      geomutil.GetYZ(l0.pt1(), l1.pt1(), yz1);
+      util::PxPoint l0_pt0 = l0.pt0();
+      util::PxPoint l0_pt1 = l0.pt1();
+      util::PxPoint l1_pt0 = l1.pt0();
+      util::PxPoint l1_pt1 = l1.pt1();
+      geomutil.GetProjectedPoint(&l0_pt0, &l1_pt0, thirdp0);
+      geomutil.GetProjectedPoint(&l0_pt1, &l1_pt1, thirdp1);
+      geomutil.GetYZ(&l0_pt0, &l1_pt0, yz0);
+      geomutil.GetYZ(&l0_pt1, &l1_pt1, yz1);
 	     
       thirdp0.t = det->ConvertXToTicks(x0, thirdp0.plane,0,0);
       thirdp1.t = det->ConvertXToTicks(x1, thirdp1.plane,0,0);
 
-      util::pxline thirdline(thirdp0.plane, thirdp0.w, thirdp0.t, thirdp1.w, thirdp1.t);
+      util::PxLine thirdline(thirdp0.plane, thirdp0.w, thirdp0.t, thirdp1.w, thirdp1.t);
     
       this->seedlines.push_back(thirdline);
     

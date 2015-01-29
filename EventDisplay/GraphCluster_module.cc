@@ -91,8 +91,8 @@ extern "C" {
 
 
 namespace util {
- class pxline;
- class pxpoint;
+ class PxLine;
+ class PxPoint;
 }
 
 namespace geo {
@@ -139,7 +139,7 @@ namespace evd {
     void GetHitList(unsigned int plane, art::PtrVector <recob::Hit>  &ptrhitlist);
     
     
-    std::vector < util::pxline > GetSeedLines();
+    std::vector < util::PxLine > GetSeedLines();
     
   //  int GetMetaInfo(art::Event& evt);
     
@@ -158,7 +158,7 @@ namespace evd {
     
 //     std::vector < std::vector< recob::Hit * > > hitlist;
     
-    std::vector < util::pxline > startendpoints;
+    std::vector < util::PxLine > startendpoints;
     
 //     std::vector <unsigned int> swire;
 //     std::vector <unsigned int> ewire;
@@ -235,7 +235,7 @@ namespace evd {
 	
 	
     for(unsigned int ip=0;ip<fNPlanes;ip++) {
-      startendpoints[ip]=util::pxline();  //assign empty pxline
+      startendpoints[ip]=util::PxLine();  //assign empty PxLine
       
     }
 	

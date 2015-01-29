@@ -38,8 +38,8 @@ namespace recob {
 }
 
  namespace util {
-   class pxpoint;
-   class pxline;
+   class PxPoint;
+   class PxLine;
  }
 
 /// Class to perform operations needed to select hits and pass them to InfoTransfer.
@@ -61,7 +61,7 @@ namespace evd {
     
     double SaveSeedLines(const art::Event& evt,
 		       evdb::View2D*     view,
-		       std::vector < util::pxline > seedline,
+		       std::vector < util::PxLine > seedline,
 		       double distance
 		       ); 
   

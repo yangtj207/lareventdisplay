@@ -355,7 +355,7 @@ namespace evd{
   /////////////////////////////////////////////////
   // Pass the seed list onwards to InfoTransfer
   //
-  double TWireProjPad::SaveSeedList(std::vector< util::pxline > seedlines, 
+  double TWireProjPad::SaveSeedList(std::vector< util::PxLine > seedlines, 
 				    double distance)
   {
     double KineticEnergy = util::kBogusD;
@@ -407,7 +407,7 @@ namespace evd{
   }
   
   //......................................................................
-  void TWireProjPad::DrawLinesinView(std::vector< util::pxline > lines,
+  void TWireProjPad::DrawLinesinView(std::vector< util::PxLine > lines,
 				     bool deleting, 
 				     const char * zoom_opt)
   {
@@ -465,7 +465,7 @@ namespace evd{
 	
       if((lines.size()%3)==1){
 	mf::LogVerbatim("TWireProjPad") << "adding guide lines";
-	util::pxline TopLine = lines.at(lines.size()-1);
+	util::PxLine TopLine = lines.at(lines.size()-1);
 	lg0.SetX1(1);
 	lg0.SetX2(5000);
 

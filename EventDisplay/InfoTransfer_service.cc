@@ -192,14 +192,14 @@ namespace evd {
   }
   
   //......................................................................
-  void InfoTransfer::SetSeedList(std::vector < util::pxline > seedlines)
+  void InfoTransfer::SetSeedList(std::vector < util::PxLine > seedlines)
   {	
     fSeedList=seedlines; 
   }
       
     
   //......................................................................
-  std::vector < util::pxline > InfoTransfer::GetSeedList()
+  std::vector < util::PxLine > InfoTransfer::GetSeedList()
   { 
     return fSeedList;     
   }

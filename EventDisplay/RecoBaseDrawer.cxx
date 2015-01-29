@@ -852,8 +852,8 @@ namespace evd{
             // BB: draw the cluster ID 
             std::string s = std::to_string(clust[ic]->ID());
             char const* txt = s.c_str();
-            double wire = clust[ic]->StartPos()[0];
-            double tick = 20 + clust[ic]->StartPos()[1];
+            double wire = clust[ic]->StartWire();
+            double tick = 20 + clust[ic]->StartTick();
             TText& clID = view->AddText(wire, tick, txt);
             clID.SetTextColor(color);
           } // recoOpt->fDrawClusters > 3
@@ -895,9 +895,10 @@ namespace evd{
 	}// end if outline mode
 
 	// draw the direction cosine of the cluster as well as it's starting point
-	this->Draw2DSlopeEndPoints(clust[ic]->StartPos()[0], 
-				   clust[ic]->StartPos()[1], 
-				   clust[ic]->dTdW(), 
+	// (average of the start and end angle -- by default they are the same value)
+	this->Draw2DSlopeEndPoints(clust[ic]->StartWire(), 
+				   clust[ic]->StartTick(), 
+				   std::tan((clust[ic]->StartAngle() + clust[ic]->EndAngle())/2.),
 				   evd::kColor[clust[ic]->ID()%evd::kNCOLS], view);
 
       } // loop on ic clusters

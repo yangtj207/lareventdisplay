@@ -17,6 +17,7 @@
 #include "EventDisplayBase/View3D.h"
 #include "Geometry/Geometry.h"
 #include "Geometry/PlaneGeo.h"
+#include "Geometry/TPCGeo.h"
 #include "SimulationBase/MCTruth.h"
 #include "SimulationBase/MCParticle.h"
 #include "Simulation/LArVoxelData.h"
@@ -49,6 +50,32 @@ namespace evd{
 
   SimulationDrawer::SimulationDrawer() 
   {
+  // For now only draw cryostat=0.
+    art::ServiceHandle<geo::Geometry>          geom;
+    minx = 1e9;
+    maxx = -1e9;
+    miny = 1e9;
+    maxy = -1e9;
+    minz = 1e9;
+    maxz = -1e9;
+    for (size_t i = 0; i<geom->NTPC(); ++i){
+      double local[3] = {0.,0.,0.};
+      double world[3] = {0.,0.,0.};
+      const geo::TPCGeo &tpc = geom->TPC(i);
+      tpc.LocalToWorld(local,world);
+      if (minx>world[0]-geom->DetHalfWidth(i))
+	minx = world[0]-geom->DetHalfWidth(i);
+      if (maxx<world[0]+geom->DetHalfWidth(i))
+	maxx = world[0]+geom->DetHalfWidth(i);
+      if (miny>world[1]-geom->DetHalfHeight(i))
+	miny = world[1]-geom->DetHalfHeight(i);
+      if (maxy<world[1]+geom->DetHalfHeight(i))
+	maxy = world[1]+geom->DetHalfHeight(i);
+      if (minz>world[2]-geom->DetLength(i)/2.)
+	minz = world[2]-geom->DetLength(i)/2.;
+      if (maxz<world[2]+geom->DetLength(i)/2.)
+	maxz = world[2]+geom->DetLength(i)/2.;
+    }
   }
 
   //......................................................................
@@ -192,9 +219,10 @@ namespace evd{
 	xyz2[1] = xyz[1] + r * p.Py()/p.P();
 	xyz2[2] = xyz[2] + r * p.Pz()/p.P();
 	
-	if(xyz2[2] < 0.)                              xyz2[2] = 0.;
-	if(xyz2[2] > geo->DetLength() )               xyz2[2] = geo->DetLength();
-	if(std::abs(xyz2[1]) > geo->DetHalfHeight() ) xyz2[1] = geo->DetHalfHeight();
+	if(xyz2[2] < minz) xyz2[2] = minz;
+	if(xyz2[2] > maxz) xyz2[2] = maxz;
+	if(xyz2[1] < miny) xyz2[1] = miny;
+	if(xyz2[1] > maxy) xyz2[1] = maxy;
 	
 	unsigned int w1 = 0;
 	unsigned int w2 = 0;
@@ -253,13 +281,13 @@ namespace evd{
     this->GetParticle(evt, plist);
       
     // Useful variables
-    double detHalfWidth(geom->DetHalfWidth());
-    double xMinimum(-2.*detHalfWidth);
-    double xMaximum( 4.*detHalfWidth);
+    //double detHalfWidth(geom->DetHalfWidth());
+    double xMinimum(-1.*(maxx-minx));
+    double xMaximum( 2.*(maxx-minx));
       
-    double detHalfHeight(geom->DetHalfHeight());
-    double zMinimum(0.);
-    double zMaximum(geom->DetLength());
+//    double detHalfHeight(geom->DetHalfHeight());
+//    double zMinimum(0.);
+//    double zMaximum(geom->DetLength());
     
     // Use the LArVoxelList to get the true energy deposition locations as opposed to using MCTrajectories
     const sim::LArVoxelList voxels = sim::SimListUtils::GetLArVoxelList(evt,drawopt->fG4ModuleLabel);
@@ -318,7 +346,7 @@ namespace evd{
                     double zPos = mcTraj.Z(hitIdx);
                 
                     // If the original simulated hit did not occur in the TPC volume then don't draw it
-                    if (xPos < 0. || xPos > 2.*detHalfWidth || fabs(yPos) > detHalfHeight || zPos < zMinimum || zPos > zMaximum) continue;
+                    if (xPos < minx || xPos > maxx || yPos < miny || yPos > maxy|| zPos < minz || zPos > maxz) continue;
                 
                     // Now move the hit position to correspond to the timing
                     xPos += xOffset;
@@ -434,13 +462,14 @@ namespace evd{
     this->GetParticle(evt, plist);
     
     // Useful variables
-    double detHalfWidth(geom->DetHalfWidth());
-    double xMinimum(-2.*detHalfWidth);
-    double xMaximum( 4.*detHalfWidth);
+
+    //double detHalfWidth(geom->DetHalfWidth());
+    double xMinimum(-1.*(maxx-minx));
+    double xMaximum( 2.*(maxx-minx));
     
-    double detHalfHeight(geom->DetHalfHeight());
-    double zMinimum(0.);
-    double zMaximum(geom->DetLength());
+//    double detHalfHeight(geom->DetHalfHeight());
+//    double zMinimum(0.);
+//    double zMaximum(geom->DetLength());
     
     // Use the LArVoxelList to get the true energy deposition locations as opposed to using MCTrajectories
     const sim::LArVoxelList voxels = sim::SimListUtils::GetLArVoxelList(evt,drawopt->fG4ModuleLabel);
@@ -501,7 +530,7 @@ namespace evd{
                     double zPos = mcTraj.Z(hitIdx);
                     
                     // If the original simulated hit did not occur in the TPC volume then don't draw it
-                    if (xPos < 0. || xPos > 2.*detHalfWidth || fabs(yPos) > detHalfHeight || zPos < zMinimum || zPos > zMaximum) continue;
+		    if (xPos < minx || xPos > maxx || yPos < miny || yPos > maxy|| zPos < minz || zPos > maxz) continue;
                     
                     // Now move the hit position to correspond to the timing
                     xPos += xOffset;

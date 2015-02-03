@@ -17,9 +17,10 @@
 #include "art/Framework/Services/Registry/ServiceMacros.h"
 
 namespace evd {
-  class RecoDrawingOptions 
-  {
-  public:
+  
+class RecoDrawingOptions
+{
+public:
     RecoDrawingOptions(fhicl::ParameterSet const& pset, art::ActivityRegistry& reg);
     ~RecoDrawingOptions();
     
@@ -27,6 +28,7 @@ namespace evd {
 
     int  fDrawHits;
     int  fDrawClusters;
+    int  fDrawPFParticles;
     int  fDraw2DSlopeEndPoints;
     int  fDrawSpacePoints;
     int  fDrawProngs;
@@ -42,20 +44,23 @@ namespace evd {
     int  fDrawBezierTracks;
     int  fSelectedHitColor;
     bool fUseHitSelector;
+    bool fSkeletonOnly;
+    bool fBestPCAAxisOnly;
     
-    std::vector<std::string> fWireLabels;               ///< module labels that produced wires 		       
+    std::vector<std::string> fWireLabels;           ///< module labels that produced wires
     std::vector<std::string> fHitLabels;     		///< module labels that produced hits  		       
     std::vector<std::string> fEndPoint2DLabels; 	///< module labels that produced end point 2d objects  
-    std::vector<std::string> fClusterLabels;    	///< module labels that produced clusters 	       
-    std::vector<std::string> fSpacePointLabels; 	///< module labels that produced space points	       
+    std::vector<std::string> fClusterLabels;    	///< module labels that produced clusters
+    std::vector<std::string> fPFParticleLabels;     ///< module labels that produced PFParticles
+    std::vector<std::string> fSpacePointLabels; 	///< module labels that produced space points
     std::vector<std::string> fProngLabels;   		///< module labels that produced prongs   	       
     std::vector<std::string> fTrackLabels;   		///< module labels that produced tracks   	       
     std::vector<std::string> fShowerLabels;  		///< module labels that produced showers  	       
     std::vector<std::string> fVertexLabels;  		///< module labels that produced vertices 	       
     std::vector<std::string> fEventLabels;   		///< module labels that produced events		       
-    std::vector<std::string> fOpFlashLabels;            ///< module labels that produced events
+    std::vector<std::string> fOpFlashLabels;        ///< module labels that produced events
     std::vector<std::string> fSeedLabels;       	///< module labels that produced events                
-    std::vector<std::string> fBezierTrackLabels;       ///< module labels that produced events
+    std::vector<std::string> fBezierTrackLabels;    ///< module labels that produced events
 
 
     ///\todo Why are calorimetry related drawing options in RecoDrawingOptions instead of a separate service?

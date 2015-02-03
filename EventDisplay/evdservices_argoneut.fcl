@@ -1,7 +1,7 @@
 #include "calorimetry_argoneut.fcl"
 #include "evdservices_base.fcl"
 #include "services_argoneut.fcl"
-#include "trackfinderalgorithms_argoneut.fcl"
+#include "trackfinderalgorithms.fcl"
 
 
 BEGIN_PROLOG

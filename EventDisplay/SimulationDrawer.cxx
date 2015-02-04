@@ -330,8 +330,8 @@ namespace evd{
             {
                 // The following is meant to get the correct offset for drawing the particle trajectory
                 // In particular, the cosmic rays will not be correctly placed without this
-                double g4Ticks(timeService->TPCG4Time2Tick(mcPart->T()));
-                double xOffset(theDetector->ConvertTicksToX(g4Ticks, 0, 0, 0));
+	      double g4Ticks(timeService->TPCG4Time2Tick(mcPart->T())+theDetector->GetXTicksOffset(0,0,0));
+	      double xOffset(theDetector->ConvertTicksToX(g4Ticks, 0, 0, 0));
             
                 // collect the points from this particle
                 int numTrajPoints = mcTraj.size();
@@ -419,7 +419,7 @@ namespace evd{
         
         //double hit_time_ticks(time0/ns_per_tdc + tdc_offset);
         //double xOffset(theDetector->ConvertTicksToX(hit_time_ticks, 0, 0, 0));
-        double g4Ticks(timeService->TPCG4Time2Tick(mcPart->T()));
+        double g4Ticks(timeService->TPCG4Time2Tick(mcPart->T())+theDetector->GetXTicksOffset(0,0,0));
         double xOffset(theDetector->ConvertTicksToX(g4Ticks, 0, 0, 0));
         
         TPolyMarker3D& pm = view->AddPolyMarker3D(partToPosMapItr->second.size(), evd::Style::ColorFromPDG(mcPart->PdgCode()), kFullDotSmall, 2); //1, 3);
@@ -512,9 +512,8 @@ namespace evd{
             {
                 // The following is meant to get the correct offset for drawing the particle trajectory
                 // In particular, the cosmic rays will not be correctly placed without this
-                double g4Ticks(timeService->TPCG4Time2Tick(mcPart->T()));
+	      double g4Ticks(timeService->TPCG4Time2Tick(mcPart->T())+theDetector->GetXTicksOffset(0,0,0));
                 double xOffset(theDetector->ConvertTicksToX(g4Ticks, 0, 0, 0));
-                
                 // collect the points from this particle
                 int numTrajPoints = mcTraj.size();
                 
@@ -609,9 +608,8 @@ namespace evd{
         
         //double hit_time_ticks(time0/ns_per_tdc + tdc_offset);
         //double xOffset(theDetector->ConvertTicksToX(hit_time_ticks, 0, 0, 0));
-        double g4Ticks(timeService->TPCG4Time2Tick(mcPart->T()));
+        double g4Ticks(timeService->TPCG4Time2Tick(mcPart->T())+theDetector->GetXTicksOffset(0,0,0));
         double xOffset(theDetector->ConvertTicksToX(g4Ticks, 0, 0, 0));
-        
         TPolyMarker& pm = view->AddPolyMarker(partToPosMapItr->second.size(), evd::Style::ColorFromPDG(mcPart->PdgCode()), kFullDotMedium, 2); //kFullCircle, msize);
         
         // Now loop over points and add to trajectory
@@ -620,7 +618,6 @@ namespace evd{
             const std::vector<double>& posVec = partToPosMapItr->second[posIdx];
             
             double xCoord = posVec[0] + xOffset;
-            
             if (xCoord > xMinimum && xCoord < xMaximum)
             {
                 if(proj == evd::kXY)

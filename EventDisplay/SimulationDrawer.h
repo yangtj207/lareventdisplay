@@ -44,6 +44,13 @@ namespace evd {
 
     void HiLite(int trkId, bool hlt=true);
 
+    double minx;
+    double maxx;
+    double miny;
+    double maxy;
+    double minz;
+    double maxz;
+
   private:
     int GetMCTruth(const art::Event&                  evt,
 		   std::vector<const simb::MCTruth*>& mctruth);

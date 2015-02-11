@@ -505,7 +505,7 @@ namespace evd{
     double t0 = gPad->AbsPixeltoY(py);
     double y = gPad->PadtoY(t0);
 
-    util::pxpoint ppx(plane,x,y);
+    util::PxPoint ppx(plane,x,y);
     curr_zooming_plane=-1;
 
     // check if not clicking on a plane that is already in the ppoints list:

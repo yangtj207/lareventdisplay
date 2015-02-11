@@ -8,13 +8,16 @@
 #include "TLatex.h"
 #include "TPolyMarker3D.h"
 #include "TPolyMarker.h"
+#include "TPolyLine.h"
 #include "TPolyLine3D.h"
+#include "TDatabasePDG.h"
 
 #include "EventDisplay/SimulationDrawer.h"
 #include "EventDisplayBase/View2D.h"
 #include "EventDisplayBase/View3D.h"
 #include "Geometry/Geometry.h"
 #include "Geometry/PlaneGeo.h"
+#include "Geometry/TPCGeo.h"
 #include "SimulationBase/MCTruth.h"
 #include "SimulationBase/MCParticle.h"
 #include "Simulation/LArVoxelData.h"
@@ -25,6 +28,7 @@
 #include "EventDisplay/RawDrawingOptions.h"
 #include "Utilities/LArProperties.h"
 #include "Utilities/DetectorProperties.h"
+#include "Utilities/TimeService.h"
 
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Principal/View.h"
@@ -46,6 +50,32 @@ namespace evd{
 
   SimulationDrawer::SimulationDrawer() 
   {
+  // For now only draw cryostat=0.
+    art::ServiceHandle<geo::Geometry>          geom;
+    minx = 1e9;
+    maxx = -1e9;
+    miny = 1e9;
+    maxy = -1e9;
+    minz = 1e9;
+    maxz = -1e9;
+    for (size_t i = 0; i<geom->NTPC(); ++i){
+      double local[3] = {0.,0.,0.};
+      double world[3] = {0.,0.,0.};
+      const geo::TPCGeo &tpc = geom->TPC(i);
+      tpc.LocalToWorld(local,world);
+      if (minx>world[0]-geom->DetHalfWidth(i))
+	minx = world[0]-geom->DetHalfWidth(i);
+      if (maxx<world[0]+geom->DetHalfWidth(i))
+	maxx = world[0]+geom->DetHalfWidth(i);
+      if (miny>world[1]-geom->DetHalfHeight(i))
+	miny = world[1]-geom->DetHalfHeight(i);
+      if (maxy<world[1]+geom->DetHalfHeight(i))
+	maxy = world[1]+geom->DetHalfHeight(i);
+      if (minz>world[2]-geom->DetLength(i)/2.)
+	minz = world[2]-geom->DetLength(i)/2.;
+      if (maxz<world[2]+geom->DetLength(i)/2.)
+	maxz = world[2]+geom->DetLength(i)/2.;
+    }
   }
 
   //......................................................................
@@ -189,9 +219,10 @@ namespace evd{
 	xyz2[1] = xyz[1] + r * p.Py()/p.P();
 	xyz2[2] = xyz[2] + r * p.Pz()/p.P();
 	
-	if(xyz2[2] < 0.)                              xyz2[2] = 0.;
-	if(xyz2[2] > geo->DetLength() )               xyz2[2] = geo->DetLength();
-	if(std::abs(xyz2[1]) > geo->DetHalfHeight() ) xyz2[1] = geo->DetHalfHeight();
+	if(xyz2[2] < minz) xyz2[2] = minz;
+	if(xyz2[2] > maxz) xyz2[2] = maxz;
+	if(xyz2[1] < miny) xyz2[1] = miny;
+	if(xyz2[1] > maxy) xyz2[1] = maxy;
 	
 	unsigned int w1 = 0;
 	unsigned int w2 = 0;
@@ -241,53 +272,170 @@ namespace evd{
     // If the option is turned off, there's nothing to do
     if (!drawopt->fShowMCTruthTrajectories) return;
 
-    art::ServiceHandle<geo::Geometry> geom;
+    art::ServiceHandle<geo::Geometry>            geom;
+    art::ServiceHandle<util::DetectorProperties> theDetector;
+    art::ServiceHandle<util::TimeService>        timeService;
 
     // get the particles from the Geant4 step
     std::vector<const simb::MCParticle*> plist;
     this->GetParticle(evt, plist);
-    
-    // loop over the LArVoxelList to get the true energy deposition
-    // locations
-    const sim::LArVoxelList voxels = sim::SimListUtils::GetLArVoxelList(evt,drawopt->fG4ModuleLabel);
-								      
-    // loop over all the particles
-    for(size_t p = 0; p < plist.size(); ++p){
-
-      // collect the points from this particle
-      std::vector<double> x;
-      std::vector<double> y;
-      std::vector<double> z;
-
-      // get the limits of the cryostat in the world coordinates
-      double cryobounds[6] = {0.};
-      geom->CryostatBoundaries(cryobounds);
-
-      // this is slow, and there has to be a better way
-      // loop over the voxel list and get the centers for each voxel
-      // where the energy deposited by the current particle is above the 
-      // threshold
-
-      sim::LArVoxelList::const_iterator vxitr;
-      for(vxitr = voxels.begin(); vxitr != voxels.end(); vxitr++){
-	const sim::LArVoxelData &vxd = (*vxitr).second;
-	if( vxd.find(plist[p]->TrackId()) != vxd.end() ){
-	  if(vxd[plist[p]->TrackId()] > drawopt->fMinEnergyDeposition){                  	  
-	    x.push_back(vxd.VoxelID().X());
-	    y.push_back(vxd.VoxelID().Y());
-	    z.push_back(vxd.VoxelID().Z());
-	  }
-	} // end if this track id is in the current voxel
-      }// end loop over voxels
-	  
-      TPolyMarker3D& pm = view->AddPolyMarker3D(x.size(), 
-						evd::Style::ColorFromPDG(plist[p]->PdgCode()), 
-						1, 3);
-      for(size_t i = 0; i < x.size(); ++i)
-	pm.SetPoint(i, x[i], y[i], z[i]);
       
-    }
+    // Useful variables
+    //double detHalfWidth(geom->DetHalfWidth());
+    double xMinimum(-1.*(maxx-minx));
+    double xMaximum( 2.*(maxx-minx));
+      
+//    double detHalfHeight(geom->DetHalfHeight());
+//    double zMinimum(0.);
+//    double zMaximum(geom->DetLength());
     
+    // Use the LArVoxelList to get the true energy deposition locations as opposed to using MCTrajectories
+    const sim::LArVoxelList voxels = sim::SimListUtils::GetLArVoxelList(evt,drawopt->fG4ModuleLabel);
+      
+    mf::LogDebug("SimulationDrawer") << "Starting loop over " << plist.size() << " McParticles, voxel list size is " << voxels.size() << std::endl;
+      
+    // Using the voxel information can be slow (see previous implementation of this code).
+    // In order to speed things up we have modified the strategy:
+    // 1) Make one pass through the list of voxels
+    // 2) For each voxel, keep track of the MCParticle contributing energy to it and it's position
+    //    which is done by keeping a map between the MCParticle and a vector of positions
+    // 3) Then loop through the map to draw the particle trajectories.
+    // One caveat is the need for MCParticles... and the voxels contain the track ids. So we'll need one
+    // more loop to make a map of track id's and MCParticles.
+
+    // First up is to build the map between track id's and associated MCParticles so we can recover when looping over voxels
+    std::map<int, const simb::MCParticle*> trackToMcParticleMap;
+      
+    // Should we display the trajectories too?
+    bool   displayMcTrajectories(true);
+    double minPartEnergy(0.01);
+      
+    for(size_t p = 0; p < plist.size(); ++p)
+    {
+        trackToMcParticleMap[plist[p]->TrackId()] = plist[p];
+        
+        // Quick loop through to drawn trajectories...
+        if (displayMcTrajectories)
+        {
+            // Is there an associated McTrajectory?
+            const simb::MCParticle*   mcPart = plist[p];
+            const simb::MCTrajectory& mcTraj = mcPart->Trajectory();
+            
+            int           pdgCode(mcPart->PdgCode());
+            TParticlePDG* partPDG(TDatabasePDG::Instance()->GetParticle(pdgCode));
+            double        partCharge = partPDG ? partPDG->Charge() : 0.;
+            double        partEnergy = mcPart->E();
+        
+            if (!mcTraj.empty() && partEnergy > minPartEnergy && mcPart->TrackId() < 100000000)
+            {
+                // The following is meant to get the correct offset for drawing the particle trajectory
+                // In particular, the cosmic rays will not be correctly placed without this
+	      double g4Ticks(timeService->TPCG4Time2Tick(mcPart->T())+theDetector->GetXTicksOffset(0,0,0)-theDetector->TriggerOffset());
+	      double xOffset(theDetector->ConvertTicksToX(g4Ticks, 0, 0, 0));
+            
+                // collect the points from this particle
+                int numTrajPoints = mcTraj.size();
+            
+                std::unique_ptr<double[]> hitPositions(new double[3*numTrajPoints]);
+                int                       hitCount(0);
+            
+                for(int hitIdx = 0; hitIdx < numTrajPoints; hitIdx++)
+                {
+                    double xPos = mcTraj.X(hitIdx);
+                    double yPos = mcTraj.Y(hitIdx);
+                    double zPos = mcTraj.Z(hitIdx);
+                
+                    // If the original simulated hit did not occur in the TPC volume then don't draw it
+                    if (xPos < minx || xPos > maxx || yPos < miny || yPos > maxy|| zPos < minz || zPos > maxz) continue;
+                
+                    // Now move the hit position to correspond to the timing
+                    xPos += xOffset;
+                
+                    // Check fiducial limits
+                    if (xPos > xMinimum && xPos < xMaximum)
+                    {
+                        hitPositions[3*hitCount    ] = xPos;
+                        hitPositions[3*hitCount + 1] = yPos;
+                        hitPositions[3*hitCount + 2] = zPos;
+                        hitCount++;
+                    }
+                }
+                
+                TPolyLine3D& pl(view->AddPolyLine3D(1, evd::Style::ColorFromPDG(mcPart->PdgCode()), 1, 1));
+                
+                // Draw neutrals as a gray dotted line to help fade into background a bit...
+                if (partCharge == 0.)
+                {
+                    pl.SetLineColor(13);
+                    pl.SetLineStyle(3);
+                    pl.SetLineWidth(1);
+                }
+                pl.SetPolyLine(hitCount, hitPositions.get(), "");
+            }
+        }
+    }
+      
+    // Now we set up and build the map between MCParticles and a vector of positions obtained from the voxels
+    std::map<const simb::MCParticle*, std::vector<std::vector<double> > > partToPosMap;
+      
+    sim::LArVoxelList::const_iterator vxitr;
+    for(vxitr = voxels.begin(); vxitr != voxels.end(); vxitr++)
+    {
+        const sim::LArVoxelData &vxd = (*vxitr).second;
+        
+        for(size_t partIdx = 0; partIdx < vxd.NumberParticles(); partIdx++)
+        {
+            if(vxd.Energy(partIdx) > drawopt->fMinEnergyDeposition)
+            {
+                int trackId = vxd.TrackID(partIdx);
+                
+                // It can be in some instances that mcPart here could be zero.
+                const simb::MCParticle* mcPart = trackToMcParticleMap[trackId];
+                
+                partToPosMap[mcPart].push_back(std::vector<double>(3));
+                
+                partToPosMap[mcPart].back()[0] = vxd.VoxelID().X();
+                partToPosMap[mcPart].back()[1] = vxd.VoxelID().Y();
+                partToPosMap[mcPart].back()[2] = vxd.VoxelID().Z();
+            }
+        } // end if this track id is in the current voxel
+    }// end loop over voxels
+      
+    // Finally ready for the main event! Simply loop through the map between MCParticle and positions to
+    // draw the trajectories
+    std::map<const simb::MCParticle*, std::vector<std::vector<double> > >::iterator partToPosMapItr;
+      
+    for(partToPosMapItr = partToPosMap.begin(); partToPosMapItr != partToPosMap.end(); partToPosMapItr++)
+    {
+        // Recover the McParticle, we'll need to access several data members so may as well dereference it
+        const simb::MCParticle* mcPart = partToPosMapItr->first;
+        
+        // Apparently, it can happen that we get a null pointer here or maybe no points to plot
+        if (!mcPart || partToPosMapItr->second.empty()) continue;
+        
+        // The following is meant to get the correct offset for drawing the particle trajectory
+        // In particular, the cosmic rays will not be correctly placed without this
+        //double time0 = mcPart->T();
+        
+        //double hit_time_ticks(time0/ns_per_tdc + tdc_offset);
+        //double xOffset(theDetector->ConvertTicksToX(hit_time_ticks, 0, 0, 0));
+        double g4Ticks(timeService->TPCG4Time2Tick(mcPart->T())+theDetector->GetXTicksOffset(0,0,0)-theDetector->TriggerOffset());
+        double xOffset(theDetector->ConvertTicksToX(g4Ticks, 0, 0, 0));
+        
+        TPolyMarker3D& pm = view->AddPolyMarker3D(partToPosMapItr->second.size(), evd::Style::ColorFromPDG(mcPart->PdgCode()), kFullDotSmall, 2); //1, 3);
+        
+        // Now loop over points and add to trajectory
+        for(size_t posIdx = 0; posIdx < partToPosMapItr->second.size(); posIdx++)
+        {
+            const std::vector<double>& posVec = partToPosMapItr->second[posIdx];
+            
+            double xCoord = posVec[0] + xOffset;
+            
+            if (xCoord > xMinimum && xCoord < xMaximum)
+                pm.SetPoint(posIdx, xCoord, posVec[1], posVec[2]);
+        }
+    }
+      
     return;
   }
 
@@ -301,59 +449,185 @@ namespace evd{
     if( evt.isRealData() ) return;
 
     art::ServiceHandle<evd::SimulationDrawingOptions> drawopt;
+      
     // If the option is turned off, there's nothing to do
     if (!drawopt->fShowMCTruthTrajectories) return;
-
-    art::ServiceHandle<geo::Geometry> geom;
-
+      
+    art::ServiceHandle<geo::Geometry>            geom;
+    art::ServiceHandle<util::DetectorProperties> theDetector;
+    art::ServiceHandle<util::TimeService>        timeService;
+    
     // get the particles from the Geant4 step
     std::vector<const simb::MCParticle*> plist;
     this->GetParticle(evt, plist);
     
-    // loop over the LArVoxelList to get the true energy deposition
-    // locations
+    // Useful variables
+
+    //double detHalfWidth(geom->DetHalfWidth());
+    double xMinimum(-1.*(maxx-minx));
+    double xMaximum( 2.*(maxx-minx));
+    
+//    double detHalfHeight(geom->DetHalfHeight());
+//    double zMinimum(0.);
+//    double zMaximum(geom->DetLength());
+    
+    // Use the LArVoxelList to get the true energy deposition locations as opposed to using MCTrajectories
     const sim::LArVoxelList voxels = sim::SimListUtils::GetLArVoxelList(evt,drawopt->fG4ModuleLabel);
-								      
-    // loop over all the particles
-    for(size_t p = 0; p < plist.size(); ++p){
+    
+    mf::LogDebug("SimulationDrawer") << "Starting loop over " << plist.size() << " McParticles, voxel list size is " << voxels.size() << std::endl;
+    
+    // Using the voxel information can be slow (see previous implementation of this code).
+    // In order to speed things up we have modified the strategy:
+    // 1) Make one pass through the list of voxels
+    // 2) For each voxel, keep track of the MCParticle contributing energy to it and it's position
+    //    which is done by keeping a map between the MCParticle and a vector of positions
+    // 3) Then loop through the map to draw the particle trajectories.
+    // One caveat is the need for MCParticles... and the voxels contain the track ids. So we'll need one
+    // more loop to make a map of track id's and MCParticles.
+    
+    // First up is to build the map between track id's and associated MCParticles so we can recover when looping over voxels
+    std::map<int, const simb::MCParticle*> trackToMcParticleMap;
+    
+    // Should we display the trajectories too?
+    bool   displayMcTrajectories(true);
+    double minPartEnergy(0.025);
+    
+    for(size_t p = 0; p < plist.size(); ++p)
+    {
+        trackToMcParticleMap[plist[p]->TrackId()] = plist[p];
+        
+        // Quick loop through to drawn trajectories...
+        if (displayMcTrajectories)
+        {
+            // Is there an associated McTrajectory?
+            const simb::MCParticle*   mcPart = plist[p];
+            const simb::MCTrajectory& mcTraj = mcPart->Trajectory();
+            
+            int           pdgCode(mcPart->PdgCode());
+            TParticlePDG* partPDG(TDatabasePDG::Instance()->GetParticle(pdgCode));
+            double        partCharge = partPDG ? partPDG->Charge() : 0.;
+            double        partEnergy = mcPart->E();
+            
+            if (!mcTraj.empty() && partEnergy > minPartEnergy && mcPart->TrackId() < 100000000)
+            {
+                // The following is meant to get the correct offset for drawing the particle trajectory
+                // In particular, the cosmic rays will not be correctly placed without this
+	      double g4Ticks(timeService->TPCG4Time2Tick(mcPart->T())+theDetector->GetXTicksOffset(0,0,0)-theDetector->TriggerOffset());
+                double xOffset(theDetector->ConvertTicksToX(g4Ticks, 0, 0, 0));
+                // collect the points from this particle
+                int numTrajPoints = mcTraj.size();
+                
+                std::unique_ptr<double[]> hitPosX(new double[numTrajPoints]);
+                std::unique_ptr<double[]> hitPosY(new double[numTrajPoints]);
+                std::unique_ptr<double[]> hitPosZ(new double[numTrajPoints]);
+                int                       hitCount(0);
+                
+                for(int hitIdx = 0; hitIdx < numTrajPoints; hitIdx++)
+                {
+                    double xPos = mcTraj.X(hitIdx);
+                    double yPos = mcTraj.Y(hitIdx);
+                    double zPos = mcTraj.Z(hitIdx);
+                    
+                    // If the original simulated hit did not occur in the TPC volume then don't draw it
+		    if (xPos < minx || xPos > maxx || yPos < miny || yPos > maxy|| zPos < minz || zPos > maxz) continue;
+                    
+                    // Now move the hit position to correspond to the timing
+                    xPos += xOffset;
+                    
+                    // Check fiducial limits
+                    if (xPos > xMinimum && xPos < xMaximum)
+                    {
+                        hitPosX[hitCount] = xPos;
+                        hitPosY[hitCount] = yPos;
+                        hitPosZ[hitCount] = zPos;
+                        hitCount++;
+                    }
+                }
+                
+                TPolyLine& pl = view->AddPolyLine(1, evd::Style::ColorFromPDG(mcPart->PdgCode()), 1, 1); //kFullCircle, msize);
+                
+                // Draw neutrals as a gray dotted line to help fade into background a bit...
+                if (partCharge == 0.)
+                {
+                    pl.SetLineColor(13);
+                    pl.SetLineStyle(3);
+                    pl.SetLineWidth(1);
+                }
 
-      // collect the points from this particle
-      std::vector<double> x;
-      std::vector<double> y;
-      std::vector<double> z;
-
-      // get the limits of the cryostat in the world coordinates
-      double cryobounds[6] = {0.};
-      geom->CryostatBoundaries(cryobounds);
-
-      // this is slow, and there has to be a better way
-      // loop over the voxel list and get the centers for each voxel
-      // where the energy deposited by the current particle is above the 
-      // threshold
-
-      sim::LArVoxelList::const_iterator vxitr;
-      for(vxitr = voxels.begin(); vxitr != voxels.end(); vxitr++){
-	const sim::LArVoxelData &vxd = (*vxitr).second;
-	if( vxd.find(plist[p]->TrackId()) != vxd.end() ){
-	  if(vxd[plist[p]->TrackId()] > drawopt->fMinEnergyDeposition){                  	  
-	    x.push_back(vxd.VoxelID().X());
-	    y.push_back(vxd.VoxelID().Y());
-	    z.push_back(vxd.VoxelID().Z());
-	  }
-	} // end if this track id is in the current voxel
-      }// end loop over voxels
-	  
-      TPolyMarker& pm = view->AddPolyMarker(x.size(), 
-					    evd::Style::ColorFromPDG(plist[p]->PdgCode()), 
-					    kFullCircle, msize);
-      for(size_t i = 0; i < x.size(); ++i) {
-	if(proj == evd::kXY)
-	  pm.SetPoint(i, x[i], y[i]);
-	else if(proj == evd::kXZ)
-	  pm.SetPoint(i, z[i], x[i]);
-	else if(proj == evd::kYZ)
-	  pm.SetPoint(i, z[i], y[i]);
-      }
+                if(proj == evd::kXY)
+                    pl.SetPolyLine(hitCount, hitPosX.get(), hitPosY.get(), "");
+                else if(proj == evd::kXZ)
+                    pl.SetPolyLine(hitCount, hitPosZ.get(), hitPosX.get(), "");
+                else if(proj == evd::kYZ)
+                    pl.SetPolyLine(hitCount, hitPosZ.get(), hitPosY.get(), "");
+            }
+        }
+    }
+    
+    // Now we set up and build the map between MCParticles and a vector of positions obtained from the voxels
+    std::map<const simb::MCParticle*, std::vector<std::vector<double> > > partToPosMap;
+    
+    sim::LArVoxelList::const_iterator vxitr;
+    for(vxitr = voxels.begin(); vxitr != voxels.end(); vxitr++)
+    {
+        const sim::LArVoxelData &vxd = (*vxitr).second;
+        
+        for(size_t partIdx = 0; partIdx < vxd.NumberParticles(); partIdx++)
+        {
+            if(vxd.Energy(partIdx) > drawopt->fMinEnergyDeposition)
+            {
+                int trackId = vxd.TrackID(partIdx);
+                
+                // It can be in some instances that mcPart here could be zero.
+                const simb::MCParticle* mcPart = trackToMcParticleMap[trackId];
+                
+                partToPosMap[mcPart].push_back(std::vector<double>(3));
+                
+                partToPosMap[mcPart].back()[0] = vxd.VoxelID().X();
+                partToPosMap[mcPart].back()[1] = vxd.VoxelID().Y();
+                partToPosMap[mcPart].back()[2] = vxd.VoxelID().Z();
+            }
+        } // end if this track id is in the current voxel
+    }// end loop over voxels
+    
+    // Finally ready for the main event! Simply loop through the map between MCParticle and positions to
+    // draw the trajectories
+    std::map<const simb::MCParticle*, std::vector<std::vector<double> > >::iterator partToPosMapItr;
+    
+    for(partToPosMapItr = partToPosMap.begin(); partToPosMapItr != partToPosMap.end(); partToPosMapItr++)
+    {
+        // Recover the McParticle, we'll need to access several data members so may as well dereference it
+        const simb::MCParticle* mcPart = partToPosMapItr->first;
+        
+        // Apparently, it can happen that we get a null pointer here or maybe no points to plot
+        if (!mcPart || partToPosMapItr->second.empty()) continue;
+        
+        // The following is meant to get the correct offset for drawing the particle trajectory
+        // In particular, the cosmic rays will not be correctly placed without this
+        //double time0 = mcPart->T();
+        
+        //double hit_time_ticks(time0/ns_per_tdc + tdc_offset);
+        //double xOffset(theDetector->ConvertTicksToX(hit_time_ticks, 0, 0, 0));
+        double g4Ticks(timeService->TPCG4Time2Tick(mcPart->T())+theDetector->GetXTicksOffset(0,0,0)-theDetector->TriggerOffset());
+        double xOffset(theDetector->ConvertTicksToX(g4Ticks, 0, 0, 0));
+        TPolyMarker& pm = view->AddPolyMarker(partToPosMapItr->second.size(), evd::Style::ColorFromPDG(mcPart->PdgCode()), kFullDotMedium, 2); //kFullCircle, msize);
+        
+        // Now loop over points and add to trajectory
+        for(size_t posIdx = 0; posIdx < partToPosMapItr->second.size(); posIdx++)
+        {
+            const std::vector<double>& posVec = partToPosMapItr->second[posIdx];
+            
+            double xCoord = posVec[0] + xOffset;
+            if (xCoord > xMinimum && xCoord < xMaximum)
+            {
+                if(proj == evd::kXY)
+                    pm.SetPoint(posIdx, xCoord, posVec[1]);
+                else if(proj == evd::kXZ)
+                    pm.SetPoint(posIdx, posVec[2], xCoord);
+                else if(proj == evd::kYZ)
+                    pm.SetPoint(posIdx, posVec[2], posVec[1]);
+            }
+        }
     }
     
     return;

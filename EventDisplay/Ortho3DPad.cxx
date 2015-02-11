@@ -6,6 +6,8 @@
 ///
 
 #include "TPad.h"
+#include "TFrame.h"
+#include "TPadPainter.h"
 #include "TH1F.h"
 #include "TBox.h"
 #include "TPolyMarker.h"
@@ -186,9 +188,17 @@ evd::Ortho3DPad::Ortho3DPad(const char* name, const char* title,
   fHisto->GetYaxis()->SetLabelSize(0.04);
   fHisto->GetYaxis()->SetTitleSize(0.04);
   fHisto->GetYaxis()->CenterTitle();
+  fHisto->SetFillColor(18);
   fHisto->Draw("AB");
 
   fView = new evdb::View2D();
+    
+  // Set pad fill color
+  Pad()->SetFillColor(18);
+  Pad()->SetFrameFillColor(18);
+  Pad()->GetPainter()->SetFillColor(18);
+  Pad()->Modified();
+  Pad()->Update();
 
   // Install mouse event handler.
 
@@ -228,12 +238,14 @@ void evd::Ortho3DPad::Draw(const char* /*opt*/)
     {
       SimulationDraw()->MCTruthOrtho(*evt, fProj, fMSize, fView);
       RecoBaseDraw()->SpacePointOrtho(*evt, fProj, fMSize, fView);
+      RecoBaseDraw()->PFParticleOrtho(*evt, fProj, fMSize, fView);
       RecoBaseDraw()->ProngOrtho(*evt, fProj, fMSize, fView);
       RecoBaseDraw()->SeedOrtho(*evt, fProj, fView);
     }
   // Draw objects on pad.
 
   fPad->cd();
+  fPad->GetPainter()->SetFillColor(18);
   fHisto->Draw("X-");
   fView->Draw();
   TLatex latex;

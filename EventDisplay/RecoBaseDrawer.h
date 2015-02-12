@@ -77,16 +77,10 @@ public:
 	           evdb::View2D*     view,
 	           unsigned int      plane);
     void Hit2D(std::vector<const recob::Hit*> hits,
-<<<<<<< HEAD
 	       int                            color,
 	       evdb::View2D*                  view,
                bool              drawConnectingLines = false,
 	       float cscore = -1);
-=======
-	           int                            color,
-	           evdb::View2D*                  view,
-               bool              drawConnectingLines = false);
->>>>>>> tags/v03_04_01
     void EndPoint2D(const art::Event& evt,
 		            evdb::View2D*     view,
                     unsigned int      plane);
@@ -126,12 +120,14 @@ public:
                      unsigned int                    plane,
                      TVector3                 const& startPos,
                      TVector3                 const& startDir,
-                     int                             id);
+                     int                             id,
+		     float cscore = -5);
     void DrawTrack2D(std::vector<const recob::Hit*>& hits,
                      evdb::View2D*                   view,
                      unsigned int                    plane,
                      const recob::Track*             track,
-                     int                             id);
+                     int                             id,
+		     float cscore = -5);
     void Vertex2D(const art::Event& evt,
 		          evdb::View2D*     view,
 		          unsigned int      plane);

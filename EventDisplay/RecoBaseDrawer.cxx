@@ -27,6 +27,7 @@
 #include "EventDisplay/ColorDrawingOptions.h"
 #include "EventDisplay/RawDrawingOptions.h"
 #include "EventDisplay/Style.h"
+#include "RecoBase/Wire.h"
 #include "RecoBase/Hit.h"
 #include "RecoBase/Cluster.h"
 #include "RecoBase/PCAxis.h"
@@ -140,90 +141,90 @@ void RecoBaseDrawer::Wire2D(const art::Event& evt,
     geo::PlaneID pid(rawOpt->fCryostat, rawOpt->fTPC, plane);
     
     for(size_t imod = 0; imod < recoOpt->fWireLabels.size(); ++imod) {
-        std::string const which = recoOpt->fWireLabels[imod];
-        
-        art::PtrVector<recob::Wire> wires;
-        this->GetWires(evt, which, wires);
-        
-        if(wires.size() < 1) return;
-        
-        ticks = wires[0]->NSignal();
-        
-        for(size_t i = 0; i < wires.size(); ++i) {
+      std::string const which = recoOpt->fWireLabels[imod];
+    
+      art::PtrVector<recob::Wire> wires;
+      this->GetWires(evt, which, wires);
+
+      if(wires.size() < 1) return;
+
+      ticks = wires[0]->NSignal();
+      
+      for(size_t i = 0; i < wires.size(); ++i) {
+      
+        uint32_t channel = wires[i]->Channel();
+        std::vector<geo::WireID> wireids = geo->ChannelToWire(channel);
+      
+        geo::SigType_t sigType = geo->SignalType(channel);
+
+        for (auto const& wid : wireids){
+          if (wid.planeID() != pid) continue;
+
+          double wire = 1.*wid.Wire;
+          double tick = 0;
+          // get the unpacked ROIs
+          std::vector<float> wirSig = wires[i]->Signal();
+          if(wirSig.size() == 0) continue;
+          // get an iterator over the adc values
+          std::vector<float>::const_iterator itr = wirSig.begin();
+          while( itr != wirSig.end() ){
+            int ticksUsed = 0;
+            double tdcsum = 0.;
+            double adcsum = 0.;
+            while(ticksUsed < ticksPerPoint && itr != wirSig.end()){
+              tdcsum  += tick;
+              adcsum  += (1.*(*itr));
+              ++ticksUsed;
+              tick += 1.;
+              itr++; // this advance of the iterator is sufficient for the external loop too
+            }
+            double adc = adcsum/ticksPerPoint;
+            double tdc = tdcsum/ticksPerPoint;
             
-            uint32_t channel = wires[i]->RawDigit()->Channel();
-            std::vector<geo::WireID> wireids = geo->ChannelToWire(channel);
+            if(TMath::Abs(adc) < rawOpt->fMinSignal) continue;
             
-            geo::SigType_t sigType = geo->SignalType(channel);
+            int    co = 0;
+            double sf = 1.;
+            double q0 = 1000.0;
             
-            for (auto const& wid : wireids){
-                if (wid.planeID() != pid) continue;
-                
-                double wire = 1.*wid.Wire;
-                double tick = 0;
-                // get the unpacked ROIs
-                std::vector<float> wirSig = wires[i]->Signal();
-                if(wirSig.size() == 0) continue;
-                // get an iterator over the adc values
-                std::vector<float>::const_iterator itr = wirSig.begin();
-                while( itr != wirSig.end() ){
-                    int ticksUsed = 0;
-                    double tdcsum = 0.;
-                    double adcsum = 0.;
-                    while(ticksUsed < ticksPerPoint && itr != wirSig.end()){
-                        tdcsum  += tick;
-                        adcsum  += (1.*(*itr));
-                        ++ticksUsed;
-                        tick += 1.;
-                        itr++; // this advance of the iterator is sufficient for the external loop too
-                    }
-                    double adc = adcsum/ticksPerPoint;
-                    double tdc = tdcsum/ticksPerPoint;
-                    
-                    if(TMath::Abs(adc) < rawOpt->fMinSignal) continue;
-                    
-                    int    co = 0;
-                    double sf = 1.;
-                    double q0 = 1000.0;
-                    
-                    co = cst->CalQ(sigType).GetColor(adc);
-                    if (rawOpt->fScaleDigitsByCharge) {
-                        sf = sqrt(adc/q0);
-                        if (sf>1.0) sf = 1.0;
-                    }
-                    
-                    if(wire < minw) minw = wire;
-                    if(wire > maxw) maxw = wire;
-                    if(tdc  < mint) mint = tdc;
-                    if(tdc  > maxt) maxt = tdc;
-                    
-                    if(rawOpt->fAxisOrientation < 1){
-                        TBox& b1 = view->AddBox(wire-sf*0.5,
-                                                tdc-sf*0.5*ticksPerPoint,
-                                                wire+sf*0.5,
-                                                tdc+sf*0.5*ticksPerPoint);
-                        b1.SetFillStyle(1001);
-                        b1.SetFillColor(co);
-                        b1.SetBit(kCannotPick);
-                    }
-                    else{
-                        TBox& b1 = view->AddBox(tdc-sf*0.5*ticksPerPoint,
-                                                wire-sf*0.5,
-                                                tdc+sf*0.5*ticksPerPoint,
-                                                wire+sf*0.5);
-                        b1.SetFillStyle(1001);
-                        b1.SetFillColor(co);
-                        b1.SetBit(kCannotPick);
-                    }
-                }// end loop over samples
-            }//end loop over wire segments
-        }//end loop over wires
+            co = cst->CalQ(sigType).GetColor(adc);
+            if (rawOpt->fScaleDigitsByCharge) {
+              sf = sqrt(adc/q0);
+              if (sf>1.0) sf = 1.0;
+            }
+            
+            if(wire < minw) minw = wire;
+            if(wire > maxw) maxw = wire;  
+            if(tdc  < mint) mint = tdc;
+            if(tdc  > maxt) maxt = tdc;
+            
+            if(rawOpt->fAxisOrientation < 1){
+              TBox& b1 = view->AddBox(wire-sf*0.5,
+                                      tdc-sf*0.5*ticksPerPoint,
+                                      wire+sf*0.5,
+                                      tdc+sf*0.5*ticksPerPoint);
+              b1.SetFillStyle(1001);
+              b1.SetFillColor(co);
+              b1.SetBit(kCannotPick);
+            }
+            else{
+              TBox& b1 = view->AddBox(tdc-sf*0.5*ticksPerPoint,
+                                      wire-sf*0.5,
+                                      tdc+sf*0.5*ticksPerPoint,
+                                      wire+sf*0.5);
+              b1.SetFillStyle(1001);
+              b1.SetFillColor(co);
+              b1.SetBit(kCannotPick);
+            }
+          }// end loop over samples 
+        }//end loop over wire segments
+      }//end loop over wires
     }// end loop over wire module labels
     
     fWireMin[plane] = minw;
     fWireMax[plane] = maxw;
-    fTimeMin[plane] = mint;    
-    fTimeMax[plane] = maxt; 
+    fTimeMin[plane] = mint;
+    fTimeMax[plane] = maxt;
     
     // now loop over all the bad channels and set them to 0 adc
     for(size_t bc = 0; bc < fBadChannels.size(); ++bc){
@@ -294,21 +295,22 @@ void RecoBaseDrawer::Hit2D(const art::Event& evt,
     fConvertedCharge[plane] = 0;
 
     for (size_t imod = 0; imod < recoOpt->fHitLabels.size(); ++imod) {
-        std::string const which = recoOpt->fHitLabels[imod];
+      std::string const which = recoOpt->fHitLabels[imod];
   
-        std::vector<const recob::Hit*> hits;
-        this->GetHits(evt, which, hits, plane);
+      std::vector<const recob::Hit*> hits;
+      this->GetHits(evt, which, hits, plane);
 
-        // Display all hits on the two 2D views provided
-        for(auto itr : hits){
-            // Try to get the "best" charge measurement, ie. the one last in
-            // the calibration chain
-            fRawCharge[itr->WireID().Plane]    += itr->Charge(true);
-            double dQdX = itr->Charge(true)/geo->WirePitch()/detp->ElectronsToADC();
-            fConvertedCharge[itr->WireID().Plane] += larp->BirksCorrection(dQdX);
-        } // loop on hits
+      // Display all hits on the two 2D views provided
+      for(auto itr : hits){
+        // Try to get the "best" charge measurement, ie. the one last in
+        // the calibration chain
+        fRawCharge[itr->WireID().Plane]    += itr->PeakAmplitude();
+        double dQdX = itr->PeakAmplitude()/geo->WirePitch()/detp->ElectronsToADC();
+        fConvertedCharge[itr->WireID().Plane] += larp->BirksCorrection(dQdX);
+      } // loop on hits
 
-        this->Hit2D(hits, kBlack, view);
+      this->Hit2D(hits, kBlack, view);
+
     } // loop on imod folders
     
     return;
@@ -832,81 +834,75 @@ void RecoBaseDrawer::Cluster2D(const art::Event& evt,
                 colorIdx = pfParticle.Self() % evd::kNCOLS;
             }
 
- 	        std::vector<const recob::Hit*> hits;
-	
- 	        hits = fmh.at(ic);
+        std::vector<const recob::Hit*> hits = fmh.at(ic);
 
-	        // check for correct tpc, the view check done above
-	        // ensures we are in the correct plane
-	        if((*hits.begin())->WireID().TPC      != rawOpt->fTPC ||
-	           (*hits.begin())->WireID().Cryostat != rawOpt->fCryostat) continue;
+        // check for correct tpc, the view check done above
+        // ensures we are in the correct plane
+        if((*hits.begin())->WireID().TPC      != rawOpt->fTPC || 
+           (*hits.begin())->WireID().Cryostat != rawOpt->fCryostat) continue;
 
-            if (drawAsMarkers) {
-                // draw cluster with unique marker
-                // Place this cluster's unique marker at the hit's location
-                int color  = evd::kColor[colorIdx];
-                this->Hit2D(hits, color, view, drawConnectingLines);
+        if (drawAsMarkers) {
+          // draw cluster with unique marker
+          // Place this cluster's unique marker at the hit's location
+          int color  = evd::kColor[colorIdx];
+          this->Hit2D(hits, color, view, drawConnectingLines);
           
-                if(recoOpt->fDrawClusters > 3) {
-                    // BB: draw the cluster ID
-                    std::string s = std::to_string(clust[ic]->ID());
-                    char const* txt = s.c_str();
-                    double wire = clust[ic]->StartPos()[0];
-                    double tick = 20 + clust[ic]->StartPos()[1];
-                    TText& clID = view->AddText(wire, tick, txt);
-                    clID.SetTextColor(color);
-                } // recoOpt->fDrawClusters > 3
-            }
-            else
-            {
-                // default "outline" method:
-                std::vector<double> tpts, wpts;
+          if(recoOpt->fDrawClusters > 3) {
+            // BB: draw the cluster ID
+            std::string s = std::to_string(clust[ic]->ID());
+            char const* txt = s.c_str();
+            double wire = clust[ic]->StartWire();
+            double tick = 20 + clust[ic]->StartTick();
+            TText& clID = view->AddText(wire, tick, txt);
+            clID.SetTextColor(color);
+          } // recoOpt->fDrawClusters > 3
+        }
+        else {
+
+          // default "outline" method:
+          std::vector<double> tpts, wpts;
       
 	            this->GetClusterOutlines(hits, tpts, wpts, plane);
       
-	            int lcolor = 9; // line color
-	            int fcolor = 9; // fill color
-                int width  = 2; // line width
-	            int style  = 1; // 1=solid line style
-	            if (view != 0)
-                {
-	                TPolyLine& p1 = view->AddPolyLine(wpts.size(),
-					                                  lcolor,
-					                                  width,
-					                                  style);
-	                TPolyLine& p2 = view->AddPolyLine(wpts.size(),
-					                                  lcolor,
-                                                      width,
-					                                  style);
-	                p1.SetOption("f");
-	                p1.SetFillStyle(3003);
-	                p1.SetFillColor(fcolor);
-                    
-	                for (size_t i = 0; i < wpts.size(); ++i)
-                    {
-	                    if(rawOpt->fAxisOrientation < 1)
-                        {
-		                    p1.SetPoint(i, wpts[i], tpts[i]);
-		                    p2.SetPoint(i, wpts[i], tpts[i]);
-	                    }
-	                    else
-                        {
-		                    p1.SetPoint(i, tpts[i], wpts[i]);
-		                    p2.SetPoint(i, tpts[i], wpts[i]);
-	                    }
-	                } // loop on i points in ZX view
-                } // if we have a cluster in the ZX view
-	        }// end if outline mode
+          int lcolor = 9; // line color
+          int fcolor = 9; // fill color
+          int width  = 2; // line width
+          int style  = 1; // 1=solid line style
+          if (view != 0) {
+            TPolyLine& p1 = view->AddPolyLine(wpts.size(), 
+                                              lcolor,
+                                              width,
+                                              style);
+            TPolyLine& p2 = view->AddPolyLine(wpts.size(),
+                                              lcolor,
+                                              width,
+                                              style);
+            p1.SetOption("f");
+            p1.SetFillStyle(3003);
+            p1.SetFillColor(fcolor);
+            for (size_t i = 0; i < wpts.size(); ++i) {
+              if(rawOpt->fAxisOrientation < 1){
+                p1.SetPoint(i, wpts[i], tpts[i]);
+                p2.SetPoint(i, wpts[i], tpts[i]);
+              }
+              else{
+                p1.SetPoint(i, tpts[i], wpts[i]);
+                p2.SetPoint(i, tpts[i], wpts[i]);
+              }
+            } // loop on i points in ZX view
+          } // if we have a cluster in the ZX view
+        }// end if outline mode
 
-	        // draw the direction cosine of the cluster as well as it's starting point
-	        this->Draw2DSlopeEndPoints(clust[ic]->StartPos()[0],
-				                       clust[ic]->StartPos()[1],
-                                       clust[ic]->EndPos()[0],
-                                       clust[ic]->EndPos()[1],
-				                       clust[ic]->dTdW(),
-				                       evd::kColor[colorIdx], view);
+        // draw the direction cosine of the cluster as well as it's starting point
+        // (average of the start and end angle -- by default they are the same value)
+        this->Draw2DSlopeEndPoints(
+          clust[ic]->StartWire(), clust[ic]->StartTick(),
+          clust[ic]->EndWire(),   clust[ic]->EndTick(),
+          std::tan((clust[ic]->StartAngle() + clust[ic]->EndAngle())/2.),
+          evd::kColor[colorIdx], view
+          );
 
-        } // loop on ic clusters
+      } // loop on ic clusters
     } // loop on imod folders
     
     return;
@@ -3072,7 +3068,7 @@ int RecoBaseDrawer::GetPFParticles(const art::Event&                  evt,
 
       for (size_t i = 0; i < wires.size(); ++i) {
 
-	std::vector<geo::WireID> wireids = geo->ChannelToWire(wires[i]->RawDigit()->Channel());
+	std::vector<geo::WireID> wireids = geo->ChannelToWire(wires[i]->Channel());
 
 	bool goodWID = false;
 	for( auto const& wid : wireids ){
@@ -3101,9 +3097,9 @@ int RecoBaseDrawer::GetPFParticles(const art::Event&                  evt,
 	// check for correct wire, plane, cryostat and tpc were checked in GetHits
 	if(hits[i]->WireID().Wire != wire) continue;
 
-	hstart.push_back(hits[i]->StartTime());
-	hend.push_back(hits[i]->EndTime());
-	hitamplitudes.push_back(hits[i]->Charge(true));
+	hstart.push_back(hits[i]->PeakTimeMinusRMS());
+	hend.push_back(hits[i]->PeakTimePlusRMS());
+	hitamplitudes.push_back(hits[i]->PeakAmplitude());
 	hpeaktimes.push_back(hits[i]->PeakTime());
 	
       }//end loop over reco hits

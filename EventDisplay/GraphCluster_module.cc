@@ -41,6 +41,7 @@ namespace recob {
 #include "art/Framework/Principal/View.h"
 #include "EventDisplay/InfoTransfer.h"
 #include "Geometry/Geometry.h"
+#include "Utilities/StatCollector.h"
 
 #endif
 
@@ -273,17 +274,43 @@ namespace evd {
                     <<" " <<  startendpoints[ip].w1<< " +/- "<< ewterror
                     <<" " << startendpoints[ip].t1<< " +/- "<< ewterror << std::endl;  
           
+          // this is all we can do easily without getting the full-blown
+          // ClusterParamsAlg (that means lareventdisplay has to depend on larreco!)
+          lar::util::StatCollector<float> integral, summedADC;
+          for (art::Ptr<recob::Hit> const& hit: hitlist[ip]) {
+            integral.add(hit->Integral());
+            summedADC.add(hit->SummedADC());
+          } // for
+          
           // get the plane ID from the first hit
           geo::PlaneID planeID = hitlist[ip].front()->WireID().planeID();
-          Graphcol->emplace_back(startendpoints[ip].w0, swterror,
-                                 startendpoints[ip].t0, swterror,
-                                 startendpoints[ip].w1, ewterror,
-                                 startendpoints[ip].t1, ewterror,
-                                 0, 0, 0,0,5.,
-                                 geo->Plane(ip,planeID.TPC,planeID.Cryostat).View(),
-                                 ip,
-                                 planeID
-                                 );
+          Graphcol->emplace_back(
+            startendpoints[ip].w0,
+            swterror,
+            startendpoints[ip].t0,
+            swterror,
+            0.,                         // start_charge
+            0.,                         // start_angle
+            0.,                         // start_opening
+            startendpoints[ip].w1,
+            ewterror,
+            startendpoints[ip].t1,
+            ewterror,
+            0.,                         // end_charge
+            0.,                         // end_angle
+            0.,                         // end_opening
+            integral.Sum(),             // integral
+            integral.RMS(),             // integral_stddev
+            summedADC.Sum(),            // summedADC
+            summedADC.RMS(),            // summedADC_stddev
+            hitlist[ip].size(),         // n_hits
+            0.,                         // multiple_hit_density
+            0.,                         // width
+            ip,
+            geo->Plane(ip,planeID.TPC,planeID.Cryostat).View(),
+            planeID,
+            recob::Cluster::Sentry
+            );
           
           // associate the hits to this cluster
           util::CreateAssn(*this, evt, *Graphcol, hitlist[ip], *hassn);

@@ -304,7 +304,7 @@ namespace evd {
             summedADC.Sum(),            // summedADC
             summedADC.RMS(),            // summedADC_stddev
             hitlist[ip].size(),         // n_hits
-            0.,                         // multiple_hit_wires
+            0.,                         // multiple_hit_density
             0.,                         // width
             ip,
             geo->Plane(ip,planeID.TPC,planeID.Cryostat).View(),

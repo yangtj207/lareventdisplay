@@ -794,6 +794,10 @@ void RecoBaseDrawer::Cluster2D(const art::Event& evt,
     art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
     art::ServiceHandle<geo::Geometry>            geo;
+    art::ServiceHandle<util::LArProperties>      larp;
+    art::ServiceHandle<util::DetectorProperties> detprop;
+    //unsigned int c = rawOpt->fCryostat;
+    //unsigned int t = rawOpt->fTPC;
 
     if (rawOpt->fDrawRawDataOrCalibWires < 1) return;
     if (recoOpt->fDrawClusters == 0)          return;
@@ -895,12 +899,24 @@ void RecoBaseDrawer::Cluster2D(const art::Event& evt,
 
         // draw the direction cosine of the cluster as well as it's starting point
         // (average of the start and end angle -- by default they are the same value)
+    // thetawire is the angle measured CW from +z axis to wire
+	//double thetawire = geo->TPC(t).Plane(plane).Wire(0).ThetaZ();
+	double wirePitch = geo->WirePitch(gview);
+	double driftvelocity = larp->DriftVelocity(); // cm/us
+	double timetick = detprop->SamplingRate()*1e-3;  // time sample in us
+	//rotate coord system CCW around x-axis by pi-thetawire
+	//   new yprime direction is perpendicular to the wire direction
+	//   in the same plane as the wires and in the direction of
+	//   increasing wire number
+	//use yprime-component of dir cos in rotated coord sys to get
+	//   dTdW (number of time ticks per unit of wire pitch)
+	//double rotang = 3.1416-thetawire;
         this->Draw2DSlopeEndPoints(
-          clust[ic]->StartWire(), clust[ic]->StartTick(),
-          clust[ic]->EndWire(),   clust[ic]->EndTick(),
-          std::tan((clust[ic]->StartAngle() + clust[ic]->EndAngle())/2.),
-          evd::kColor[colorIdx], view
-          );
+	       clust[ic]->StartWire(), clust[ic]->StartTick(),
+	       clust[ic]->EndWire(),   clust[ic]->EndTick(),
+	       std::tan((clust[ic]->StartAngle() + clust[ic]->EndAngle())/2.)*wirePitch/driftvelocity/timetick,
+	       evd::kColor[colorIdx], view
+				   );
 
       } // loop on ic clusters
     } // loop on imod folders

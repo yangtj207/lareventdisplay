@@ -1145,7 +1145,7 @@ void RecoBaseDrawer::DrawTrack2D(std::vector<const recob::Hit*>& hits,
     unsigned int t = rawOpt->fTPC;
     
     // first draw the hits
-    this->Hit2D(hits, evd::kColor[(id+2)%evd::kNCOLS], view, true);
+    this->Hit2D(hits, evd::kColor[(id)%evd::kNCOLS], view, true);
     
     const TVector3& startPos = track->Vertex();
     const TVector3& startDir = track->VertexDirection();
@@ -1183,7 +1183,7 @@ void RecoBaseDrawer::DrawTrack2D(std::vector<const recob::Hit*>& hits,
     +std::sin(rotang)*startDir[2];
     double dTdW = startDir[0]*wirePitch/driftvelocity/timetick/yprime;
     
-    this->Draw2DSlopeEndPoints(wire, tick, dTdW, evd::kColor[(id+2)%evd::kNCOLS], view);
+    this->Draw2DSlopeEndPoints(wire, tick, dTdW, evd::kColor[(id)%evd::kNCOLS], view);
     
     // Draw a line to the hit positions, starting from the vertex
     size_t     nTrackHits = track->NumberTrajectoryPoints();

@@ -121,7 +121,7 @@ namespace evd {
       if (skipchan) continue;
       
       std::vector<short> uncompressed(hit->Samples());
-      raw::Uncompress(hit->fADC, uncompressed, hit->Compression());
+      raw::Uncompress(hit->ADCs(), uncompressed, hit->Compression());
       
       for(auto const& wid : wireids){
 	// check that the plane and tpc are the correct ones to draw
@@ -302,7 +302,7 @@ namespace evd {
 	if(wid.planeID() == pid){
 
 	  std::vector<short> uncompressed(hit->Samples());
-	  raw::Uncompress(hit->fADC, uncompressed, hit->Compression());
+	  raw::Uncompress(hit->ADCs(), uncompressed, hit->Compression());
       
 	  for(unsigned int j = 0; j < uncompressed.size(); ++j)
 	    histo->Fill(1.*uncompressed[j] - hit->GetPedestal());
@@ -345,7 +345,7 @@ namespace evd {
 	   wid.Wire      == wire){
       
 	  std::vector<short> uncompressed(hit->Samples());
-	  raw::Uncompress(hit->fADC, uncompressed, hit->Compression());
+	  raw::Uncompress(hit->ADCs(), uncompressed, hit->Compression());
       
 	  for(unsigned int j = 0; j < uncompressed.size(); ++j)
 	    histo->Fill(1.*j, 1.*uncompressed[j] - hit->GetPedestal());
@@ -385,7 +385,7 @@ namespace evd {
   // 	double q = 0;
   // 	t = rawhits[i]->fTDC[0];
   // 	for (unsigned int j=0; j<rawhits[i]->NADC(); ++j) {
-  // 	  q += rawhits[i]->fADC[j];
+  // 	  q += rawhits[i]->ADC(j);
   // 	}
   // 	// Hack for now...
   // 	if (q<=0.0) q = 1+i%10;

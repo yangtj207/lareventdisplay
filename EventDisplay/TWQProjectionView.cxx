@@ -78,7 +78,8 @@ namespace evd{
     fMC->Draw();  
 
     evdb::Canvas::fCanvas->cd();  
-    fWireQ = new TQPad("fWireQPad", "ADCvsTime",0.15,0.0,1.0,0.13,"TQ", 0, 0);  
+//    fWireQ = new TQPad("fWireQPad", "ADCvsTime",0.15,0.0,1.0,0.13,"TQ", 0, 0);  
+    fWireQ = new TQPad("fWireQPad", "ADCvsTime",0.15,0.0,1.0,0.14,"TQ", 0, 0);  
     fWireQ->Pad()->SetBit(TPad::kCannotMove,true);
     fWireQ->Draw();  
 

@@ -173,6 +173,7 @@ namespace evd{
             if(f1) delete f1;
          }
          
+/* This code needs additional work to draw the text on the pad
         // BB: draw plane and wire number on the histogram
         std::string pw = "P:W = " + std::to_string(this->fPlane) +
           ":" + std::to_string(this->fWire);
@@ -183,7 +184,7 @@ namespace evd{
         TText& plnwir = fView->AddText(xp, yp, txt);xxx
         plnwir.SetTextColor(kBlack);
         plnwir.Draw("same");
-
+*/
          if     (drawopt->fDrawRawDataOrCalibWires == kCALIB) fRecoHisto->Draw("same");
          else if(drawopt->fDrawRawDataOrCalibWires == kRAWCALIB){
             fRawHisto->Draw("same");

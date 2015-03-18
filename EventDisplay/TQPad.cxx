@@ -11,6 +11,7 @@
 #include "TF1.h"
 #include "TPad.h"
 #include "TPolyLine.h"
+#include "TText.h"
 
 #include "cetlib/exception.h"
 
@@ -63,22 +64,27 @@ namespace evd{
       // not have a case for each number of planes in a detector
       if(planes == 2 && fPlane > 0){
          this->Pad()->SetTopMargin   (0.110);
-         this->Pad()->SetBottomMargin(0.005);
+         this->Pad()->SetBottomMargin(0.010);
       }
       else if(planes > 2){
          if(fPlane == 1){
             this->Pad()->SetTopMargin   (0.005);
-            this->Pad()->SetBottomMargin(0.005);
+            this->Pad()->SetBottomMargin(0.010);
          }
          else if(fPlane == 2){
             this->Pad()->SetTopMargin   (0.110);
-            this->Pad()->SetBottomMargin(0.005);
+            this->Pad()->SetBottomMargin(0.010);
          }
       }
 
 
       std::string opts(opt);
-      if(opts == "TQ") fTQ = kTQ;
+      if(opts == "TQ") {
+        fTQ = kTQ;
+        // BB adjust the vertical spacing
+        this->Pad()->SetTopMargin   (0);
+        this->Pad()->SetBottomMargin(0.2);
+      }
       if(opts == "Q" ){
          fTQ = kQ;
       }
@@ -166,7 +172,19 @@ namespace evd{
             p1.Draw("same");
             if(f1) delete f1;
          }
-
+         
+/* This code needs additional work to draw the text on the pad
+        // BB: draw plane and wire number on the histogram
+        std::string pw = "P:W = " + std::to_string(this->fPlane) +
+          ":" + std::to_string(this->fWire);
+        char const* txt = pw.c_str();
+        std::cout<<" my text "<<txt<<"\n";
+        double xp = 0.1, yp = 0.9;
+        this->cd();
+        TText& plnwir = fView->AddText(xp, yp, txt);xxx
+        plnwir.SetTextColor(kBlack);
+        plnwir.Draw("same");
+*/
          if     (drawopt->fDrawRawDataOrCalibWires == kCALIB) fRecoHisto->Draw("same");
          else if(drawopt->fDrawRawDataOrCalibWires == kRAWCALIB){
             fRawHisto->Draw("same");
@@ -234,7 +252,8 @@ namespace evd{
 	  b.SetFillColor(c);      
 	  b.Draw();
 	} // end loop over Q histogram bins
-	
+        
+
 	hist->Draw("same");
 	
       } // end if fTQ == kQ
@@ -295,24 +314,24 @@ namespace evd{
      }//end if fTQ == kTQ
      
      fRawHisto->SetLabelSize  (0.15,"X");
-     fRawHisto->SetLabelOffset(0.04,"X");
-     fRawHisto->SetTitleSize  (0.10,"X");
-     fRawHisto->SetTitleOffset(0.50,"X");
+     fRawHisto->SetLabelOffset(0.00,"X");
+     fRawHisto->SetTitleSize  (0.15,"X");
+     fRawHisto->SetTitleOffset(0.80,"X");
      
-     fRawHisto->SetLabelSize  (0.07,"Y");
+     fRawHisto->SetLabelSize  (0.10,"Y");
      fRawHisto->SetLabelOffset(0.01,"Y");
-     fRawHisto->SetTitleSize  (0.10,"Y");
-     fRawHisto->SetTitleOffset(0.30,"Y");
+     fRawHisto->SetTitleSize  (0.15,"Y");
+     fRawHisto->SetTitleOffset(0.80,"Y");
      
      fRecoHisto->SetLabelSize  (0.15,"X");
      fRecoHisto->SetLabelOffset(0.00,"X");
-     fRecoHisto->SetTitleSize  (0.10,"X");
-     fRecoHisto->SetTitleOffset(0.50,"X");
+     fRecoHisto->SetTitleSize  (0.15,"X");
+     fRecoHisto->SetTitleOffset(0.80,"X");
      
-     fRecoHisto->SetLabelSize  (0.05,"Y");
-     fRecoHisto->SetLabelOffset(0.01,"Y");
-     fRecoHisto->SetTitleSize  (0.10,"Y");
-     fRecoHisto->SetTitleOffset(0.30,"Y");
+     fRecoHisto->SetLabelSize  (0.15,"Y");
+     fRecoHisto->SetLabelOffset(0.00,"Y");
+     fRecoHisto->SetTitleSize  (0.15,"Y");
+     fRecoHisto->SetTitleOffset(0.80,"Y");
    }
 
 }

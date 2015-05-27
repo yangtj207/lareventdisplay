@@ -15,7 +15,8 @@ namespace evd {
 
   //......................................................................
   RawDrawingOptions::RawDrawingOptions(fhicl::ParameterSet const& pset, 
-				       art::ActivityRegistry& /* reg */) 
+                                       art::ActivityRegistry& /* reg */) :
+      fPedestalRetrievalAlg(pset.get<fhicl::ParameterSet>("DetPedestalRetrievalAlg"))
   {
     this->reconfigure(pset);
   }
@@ -30,13 +31,15 @@ namespace evd {
   {
     fDrawRawDataOrCalibWires    = pset.get< int         >("DrawRawDataOrCalibWires"    );
     fScaleDigitsByCharge     	= pset.get< int         >("ScaleDigitsByCharge"        );
-    fTicksPerPoint              = pset.get< int         >("TicksPerPoint"              );	  
-    fMinSignal                  = pset.get< double      >("MinimumSignal"              );	  
-    fTicks                      = pset.get< double      >("TotalTicks",           2048 );	  
-    fAxisOrientation         	= pset.get< int         >("AxisOrientation",      0    );     
+    fTicksPerPoint              = pset.get< int         >("TicksPerPoint"              );
+    fMinSignal                  = pset.get< double      >("MinimumSignal"              );
+    fTicks                      = pset.get< double      >("TotalTicks",           2048 );
+    fAxisOrientation         	= pset.get< int         >("AxisOrientation",      0    );
     fRawDataLabel               = pset.get< std::string >("RawDataLabel",         "daq");
     fTPC                        = pset.get< unsigned int>("TPC",                  0    );
     fCryostat                   = pset.get< unsigned int>("Cryostat",             0    );
+      
+    //fPedestalRetrievalAlg.reconfigure(pset);
   }  
 }
 

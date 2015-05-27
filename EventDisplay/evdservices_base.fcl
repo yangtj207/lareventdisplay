@@ -1,6 +1,7 @@
 ##include "services.fcl"
 #include "calorimetry.fcl"
 ##include "trackfinderservices.fcl"
+#include "database_standard.fcl"
 BEGIN_PROLOG
 
 standard_colordrawingopt:
@@ -27,6 +28,7 @@ standard_rawdrawingopt:
  TPC:                        0     # TPC number to display in TWQProjection view
  Cryostat:                   0     # Cryostat number to display in TWQProjection view
  RawDataLabel:               "daq" # label of module making the raw digits     
+ DetPedestalRetrievalAlg:    @local::standard_pedestalretrievalalg
  }
 
 standard_recodrawingopt:

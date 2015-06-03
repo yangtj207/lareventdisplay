@@ -763,8 +763,8 @@ namespace evd{
       art::ServiceHandle<util::DetectorProperties> detp;
       art::ServiceHandle<util::LArProperties> larp;
       art::ServiceHandle<evd::RawDrawingOptions> rawOpt;
-      double ftimetick = detp->SamplingRate()/1000.;
-      double larv = larp->DriftVelocity(larp->Efield(), larp->Temperature());
+      //double ftimetick = detp->SamplingRate()/1000.;
+      //double larv = larp->DriftVelocity(larp->Efield(), larp->Temperature());
 		
       //find channels corresponding to found wires.
       geo::WireID wire1(rawOpt->fCryostat,rawOpt->fTPC,ppoints[0].plane,ppoints[0].w);
@@ -792,11 +792,16 @@ namespace evd{
       if(wires_cross){
 	xyz_vertex_fit[1]=y;
 	xyz_vertex_fit[2]=z;
-	geom->Plane(ppoints[0].plane).LocalToWorld(origin, pos);
-	xyz_vertex_fit[0]=(ppoints[0].t-detp->TriggerOffset())*larv*ftimetick+pos[0];
-	geom->Plane(ppoints[1].plane).LocalToWorld(origin, pos);
-	second_time=(ppoints[1].t-detp->TriggerOffset())*larv*ftimetick+pos[0];
-		
+	
+	xyz_vertex_fit[0]=detp->ConvertTicksToX(ppoints[0].t,
+						ppoints[0].plane,
+						rawOpt->fTPC,
+						rawOpt->fCryostat);
+	second_time=detp->ConvertTicksToX(ppoints[1].t,
+					  ppoints[1].plane,
+					  rawOpt->fTPC,
+					  rawOpt->fCryostat);
+	
 	TGText *tt=new TGText(Form("z:%4.1f",z));
 	tt->InsLine(1,Form("x:%4.1f,",(xyz_vertex_fit[0]+second_time)/2)); 
 	tt->InsLine(1,Form("y:%4.1f,",y));  
@@ -841,9 +846,11 @@ namespace evd{
 	
 	wirevertex = geom->NearestWire(pos, wplane, rawOpt->fTPC, rawOpt->fCryostat);
 	
-	double drifttick=((xyz_vertex_fit[0])/larp->DriftVelocity(larp->Efield(),larp->Temperature()))*(1./ftimetick);
-	double timestart=drifttick-(pos[0]/larp->DriftVelocity(larp->Efield(),larp->Temperature()))*(1./ftimetick)+detp->TriggerOffset();
-	
+	double timestart = detp->ConvertXToTicks(xyz_vertex_fit[0],
+						 wplane,
+						 rawOpt->fTPC,
+						 rawOpt->fCryostat);
+
 	fPlanes[wplane]->Pad()->cd();
 	fPlanes[wplane]->View()->Clear();
 	if(wires_cross && evdlayoutopt->fShowEndPointMarkers)  //only Draw if it makes sense

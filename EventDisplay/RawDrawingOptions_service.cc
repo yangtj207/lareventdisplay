@@ -8,6 +8,7 @@
 
 /// LArSoft includes
 #include "EventDisplay/RawDrawingOptions.h"
+#include "Filters/ChannelFilter.h"
 
 #include <iostream>
 
@@ -38,6 +39,10 @@ namespace evd {
     fRawDataLabel               = pset.get< std::string >("RawDataLabel",         "daq");
     fTPC                        = pset.get< unsigned int>("TPC",                  0    );
     fCryostat                   = pset.get< unsigned int>("Cryostat",             0    );
+    fMaxChannelStatus           = pset.get< unsigned int>("MaxChannelStatus",     filter::ChannelFilter::DEAD);
+      
+    // Explicit checkt to prevent attempt to display non-physical channels (which will crash display)
+    if (fMaxChannelStatus >= filter::ChannelFilter::NOTPHYSICAL) fMaxChannelStatus = filter::ChannelFilter::NOTPHYSICAL - 1;
       
     //fPedestalRetrievalAlg.reconfigure(pset);
   }  

@@ -66,11 +66,13 @@ namespace evd {
     fRawCharge.resize(nplanes,0);   
     fConvertedCharge.resize(nplanes,0);
       
-    for(size_t p = 0; p < nplanes; ++p){
-      for(size_t w = 0; w < geo->Plane(p).Nwires(); ++w){
-	uint32_t channel = geo->PlaneWireToChannel(p, w);
-	if( cf.BadChannel(channel) ) fBadChannels.push_back(channel);
-      }
+    for(size_t p = 0; p < nplanes; ++p)
+    {
+        for(size_t w = 0; w < geo->Plane(p).Nwires(); ++w)
+        {
+            uint32_t channel = geo->PlaneWireToChannel(p, w);
+            if( cf.BadChannel(channel) ) fBadChannels.push_back(channel);
+        }
     }
 
   }
@@ -111,6 +113,9 @@ namespace evd {
     this->GetRawDigits(evt, rawhits);
 
     if(rawhits.size() < 1) return;
+    
+    // It will be better when this is a service...
+    filter::ChannelFilter channelFilter;
       
     //Update the pedestal alg here
     drawopt->fPedestalRetrievalAlg.Update(evt);
@@ -118,7 +123,9 @@ namespace evd {
     for (auto const& hit : rawhits) {
 
       // The following test is meant to be temporary until the "correct" solution is implemented
-      if (hit->Channel() >= geo->Nchannels()) continue;
+      if (channelFilter.GetChannelStatus(hit->Channel()) == filter::ChannelFilter::NOTPHYSICAL) continue;
+      if (channelFilter.GetChannelStatus(hit->Channel()) >  drawopt->fMaxChannelStatus)         continue;
+        
       geo::SigType_t sigType = geo->SignalType(hit->Channel());
       geo::View_t    v       = geo->View(hit->Channel());
       std::vector<geo::WireID> wireids = geo->ChannelToWire(hit->Channel());
@@ -310,13 +317,18 @@ namespace evd {
     
     geo::PlaneID pid(drawopt->fCryostat, drawopt->fTPC, plane);
       
+    // It will be better when this is a service...
+    filter::ChannelFilter channelFilter;
+      
     //Update the pedestals here
     drawopt->fPedestalRetrievalAlg.Update(evt);
 
     for (auto const& hit : rawhits) {
         
       // The following test is meant to be temporary until the "correct" solution is implemented
-      if (hit->Channel() >= geo->Nchannels()) continue;
+      if (channelFilter.GetChannelStatus(hit->Channel()) == filter::ChannelFilter::NOTPHYSICAL) continue;
+      if (channelFilter.GetChannelStatus(hit->Channel()) >  drawopt->fMaxChannelStatus)         continue;
+
       std::vector<geo::WireID> wireids = geo->ChannelToWire(hit->Channel());
       for(auto const& wid : wireids){
 	// check that the plane and tpc are the correct ones to draw
@@ -361,13 +373,18 @@ namespace evd {
 
     geo::PlaneID pid(drawopt->fCryostat, drawopt->fTPC, plane);
       
+    // It will be better when this is a service...
+    filter::ChannelFilter channelFilter;
+      
     // Update the pedestal retrieval alg
     drawopt->fPedestalRetrievalAlg.Update(evt);
 
     for (auto const& hit : rawhits) {
       
       // The following test is meant to be temporary until the "correct" solution is implemented
-      if (hit->Channel() >= geo->Nchannels()) continue;
+      if (channelFilter.GetChannelStatus(hit->Channel()) == filter::ChannelFilter::NOTPHYSICAL) continue;
+      if (channelFilter.GetChannelStatus(hit->Channel()) >  drawopt->fMaxChannelStatus)         continue;
+        
       std::vector<geo::WireID> wireids = geo->ChannelToWire(hit->Channel());
       for(auto const& wid : wireids){
 	// check that the plane and tpc are the correct ones to draw

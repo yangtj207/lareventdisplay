@@ -13,10 +13,10 @@
 #endif
 
 class TH1F;
-namespace art  { class Event;     }
-namespace evdb { class View2D;    }
-namespace evdb { class View3D;    }
-namespace raw  { class RawDigit;  }
+namespace art    { class Event;     }
+namespace evdb   { class View2D;    }
+namespace evdb   { class View3D;    }
+namespace raw    { class RawDigit;  }
 
 namespace evd {
   /// Aid in the rendering of RawData objects

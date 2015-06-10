@@ -21,6 +21,8 @@ art_make_library( LIBRARY_NAME ${PACKAGE}
 			    Utilities
 			    AnalysisBase
 			    AnalysisAlg
+		 	    CalibrationDBI_IOVData
+			    CalibrationDBI_WebDBI
 	                    ${SIMULATIONBASE}
 			    ${EVENTDISPLAYBASE}
                             ${ART_FRAMEWORK_CORE}
@@ -159,6 +161,8 @@ simple_plugin ( RawDrawingOptions service
 			Geometry_service
 			Geometry
 			RecoBase
+			CalibrationDBI_IOVData
+			CalibrationDBI_WebDBI
 			${EVENTDISPLAYBASE}
                         ${ART_FRAMEWORK_CORE}
 			${ART_FRAMEWORK_PRINCIPAL}

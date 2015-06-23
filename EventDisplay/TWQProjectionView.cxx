@@ -78,7 +78,8 @@ namespace evd{
     fMC->Draw();  
 
     evdb::Canvas::fCanvas->cd();  
-    fWireQ = new TQPad("fWireQPad", "ADCvsTime",0.15,0.0,1.0,0.13,"TQ", 0, 0);  
+//    fWireQ = new TQPad("fWireQPad", "ADCvsTime",0.15,0.0,1.0,0.13,"TQ", 0, 0);  
+    fWireQ = new TQPad("fWireQPad", "ADCvsTime",0.15,0.0,1.0,0.14,"TQ", 0, 0);  
     fWireQ->Pad()->SetBit(TPad::kCannotMove,true);
     fWireQ->Draw();  
 
@@ -623,15 +624,18 @@ namespace evd{
       double ftimetick = detp->SamplingRate()/1000.;
       double larv = larp->DriftVelocity(larp->Efield(), larp->Temperature());
 		
-      //find channels corresponding to found wires.
-      int chan1 = geom->PlaneWireToChannel(pline[0].plane,pline[0].w0, rawOpt->fTPC, rawOpt->fCryostat);
-      int chan2 = geom->PlaneWireToChannel(pline[1].plane,pline[1].w0, rawOpt->fTPC, rawOpt->fCryostat);
-
+      //find wireIDs corresponding to found wires.
+      geo::WireID wire1(rawOpt->fCryostat,rawOpt->fTPC,pline[0].plane,pline[0].w0);
+      geo::WireID wire2(rawOpt->fCryostat,rawOpt->fTPC,pline[1].plane,pline[1].w0);
+      
       bool wires_cross=false;
       bool time_good=false;
 	
       if(std::abs(pline[0].t0-pline[1].t0) < 200){
-	wires_cross= geom->ChannelsIntersect(chan1,chan2,y,z);
+	geo::WireIDIntersection widIntersect;
+	wires_cross = geom->WireIDsIntersect(wire1,wire2,widIntersect);
+	y = widIntersect.y;
+	z = widIntersect.z;
 	time_good=true;
       }
       else{
@@ -668,15 +672,18 @@ namespace evd{
 	}
 	// return; //not returning, because may need to delete marker from wplanereturn;
       }
-      //find channels corresponding to found wires AT END OF LINE.
-      chan1 = geom->PlaneWireToChannel(pline[0].plane,pline[0].w1, rawOpt->fTPC, rawOpt->fCryostat);
-      chan2 = geom->PlaneWireToChannel(pline[1].plane,pline[1].w1, rawOpt->fTPC, rawOpt->fCryostat);
+      //find wireIDs corresponding to found wires AT END OF LINE.
+      wire1.Wire = pline[0].w1;
+      wire2.Wire = pline[1].w1;
 
       wires_cross=false;
       time_good=false;
 	
       if(std::abs(pline[0].t1-pline[1].t1) < 200){
-	wires_cross= geom->ChannelsIntersect(chan1,chan2,y,z);
+	geo::WireIDIntersection widIntersect;
+	wires_cross = geom->WireIDsIntersect(wire1,wire2,widIntersect);
+	y = widIntersect.y;
+	z = widIntersect.z;
 	time_good=true;
       }
       else{
@@ -756,18 +763,22 @@ namespace evd{
       art::ServiceHandle<util::DetectorProperties> detp;
       art::ServiceHandle<util::LArProperties> larp;
       art::ServiceHandle<evd::RawDrawingOptions> rawOpt;
-      double ftimetick = detp->SamplingRate()/1000.;
-      double larv = larp->DriftVelocity(larp->Efield(), larp->Temperature());
+      //double ftimetick = detp->SamplingRate()/1000.;
+      //double larv = larp->DriftVelocity(larp->Efield(), larp->Temperature());
 		
       //find channels corresponding to found wires.
-      int chan1 = geom->PlaneWireToChannel(ppoints[0].plane,ppoints[0].w, rawOpt->fTPC, rawOpt->fCryostat);
-      int chan2 = geom->PlaneWireToChannel(ppoints[1].plane,ppoints[1].w, rawOpt->fTPC, rawOpt->fCryostat);
-
+      geo::WireID wire1(rawOpt->fCryostat,rawOpt->fTPC,ppoints[0].plane,ppoints[0].w);
+      geo::WireID wire2(rawOpt->fCryostat,rawOpt->fTPC,ppoints[1].plane,ppoints[1].w);
+ 
       bool wires_cross=false;
       bool time_good=false;
 	
       if(std::abs(ppoints[0].t-ppoints[1].t) < 200){
-	wires_cross= geom->ChannelsIntersect(chan1,chan2,y,z);
+	geo::WireIDIntersection widIntersect;
+	geom->WireIDsIntersect(wire1,wire2,widIntersect);
+	y = widIntersect.y;
+	z = widIntersect.z;
+	wires_cross=true;
 	time_good=true;
       }
       else{
@@ -781,11 +792,16 @@ namespace evd{
       if(wires_cross){
 	xyz_vertex_fit[1]=y;
 	xyz_vertex_fit[2]=z;
-	geom->Plane(ppoints[0].plane).LocalToWorld(origin, pos);
-	xyz_vertex_fit[0]=(ppoints[0].t-detp->TriggerOffset())*larv*ftimetick+pos[0];
-	geom->Plane(ppoints[1].plane).LocalToWorld(origin, pos);
-	second_time=(ppoints[1].t-detp->TriggerOffset())*larv*ftimetick+pos[0];
-		
+	
+	xyz_vertex_fit[0]=detp->ConvertTicksToX(ppoints[0].t,
+						ppoints[0].plane,
+						rawOpt->fTPC,
+						rawOpt->fCryostat);
+	second_time=detp->ConvertTicksToX(ppoints[1].t,
+					  ppoints[1].plane,
+					  rawOpt->fTPC,
+					  rawOpt->fCryostat);
+	
 	TGText *tt=new TGText(Form("z:%4.1f",z));
 	tt->InsLine(1,Form("x:%4.1f,",(xyz_vertex_fit[0]+second_time)/2)); 
 	tt->InsLine(1,Form("y:%4.1f,",y));  
@@ -830,9 +846,11 @@ namespace evd{
 	
 	wirevertex = geom->NearestWire(pos, wplane, rawOpt->fTPC, rawOpt->fCryostat);
 	
-	double drifttick=((xyz_vertex_fit[0])/larp->DriftVelocity(larp->Efield(),larp->Temperature()))*(1./ftimetick);
-	double timestart=drifttick-(pos[0]/larp->DriftVelocity(larp->Efield(),larp->Temperature()))*(1./ftimetick)+detp->TriggerOffset();
-	
+	double timestart = detp->ConvertXToTicks(xyz_vertex_fit[0],
+						 wplane,
+						 rawOpt->fTPC,
+						 rawOpt->fCryostat);
+
 	fPlanes[wplane]->Pad()->cd();
 	fPlanes[wplane]->View()->Clear();
 	if(wires_cross && evdlayoutopt->fShowEndPointMarkers)  //only Draw if it makes sense

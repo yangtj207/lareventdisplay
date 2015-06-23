@@ -8,6 +8,7 @@
 
 /// LArSoft includes
 #include "EventDisplay/RawDrawingOptions.h"
+#include "Filters/ChannelFilter.h"
 
 #include <iostream>
 
@@ -15,7 +16,8 @@ namespace evd {
 
   //......................................................................
   RawDrawingOptions::RawDrawingOptions(fhicl::ParameterSet const& pset, 
-				       art::ActivityRegistry& /* reg */) 
+                                       art::ActivityRegistry& /* reg */) :
+      fPedestalRetrievalAlg(pset.get<fhicl::ParameterSet>("DetPedestalRetrievalAlg"))
   {
     this->reconfigure(pset);
   }
@@ -30,13 +32,19 @@ namespace evd {
   {
     fDrawRawDataOrCalibWires    = pset.get< int         >("DrawRawDataOrCalibWires"    );
     fScaleDigitsByCharge     	= pset.get< int         >("ScaleDigitsByCharge"        );
-    fTicksPerPoint              = pset.get< int         >("TicksPerPoint"              );	  
-    fMinSignal                  = pset.get< double      >("MinimumSignal"              );	  
-    fTicks                      = pset.get< double      >("TotalTicks",           2048 );	  
-    fAxisOrientation         	= pset.get< int         >("AxisOrientation",      0    );     
+    fTicksPerPoint              = pset.get< int         >("TicksPerPoint"              );
+    fMinSignal                  = pset.get< double      >("MinimumSignal"              );
+    fTicks                      = pset.get< double      >("TotalTicks",           2048 );
+    fAxisOrientation         	= pset.get< int         >("AxisOrientation",      0    );
     fRawDataLabel               = pset.get< std::string >("RawDataLabel",         "daq");
     fTPC                        = pset.get< unsigned int>("TPC",                  0    );
     fCryostat                   = pset.get< unsigned int>("Cryostat",             0    );
+    fMaxChannelStatus           = pset.get< unsigned int>("MaxChannelStatus",     filter::ChannelFilter::DEAD);
+      
+    // Explicit checkt to prevent attempt to display non-physical channels (which will crash display)
+    if (fMaxChannelStatus >= filter::ChannelFilter::NOTPHYSICAL) fMaxChannelStatus = filter::ChannelFilter::NOTPHYSICAL - 1;
+      
+    //fPedestalRetrievalAlg.reconfigure(pset);
   }  
 }
 

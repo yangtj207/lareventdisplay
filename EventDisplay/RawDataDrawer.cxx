@@ -26,6 +26,11 @@
 #include "art/Persistency/Common/Ptr.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
+#include "CalibrationDBI/IOVData/IOVTimeStamp.h"
+
+#include <iostream>
+#include <fstream>
+
 namespace {
   // Utility function to make uniform error messages.
   void writeErrMsg(const char* fcn,
@@ -35,6 +40,7 @@ namespace {
 				    << " failed with message:\n"
 				    << e;
   }
+ 
 }
 
 
@@ -60,11 +66,13 @@ namespace evd {
     fRawCharge.resize(nplanes,0);   
     fConvertedCharge.resize(nplanes,0);
       
-    for(size_t p = 0; p < nplanes; ++p){
-      for(size_t w = 0; w < geo->Plane(p).Nwires(); ++w){
-	uint32_t channel = geo->PlaneWireToChannel(p, w);
-	if( cf.BadChannel(channel) ) fBadChannels.push_back(channel);
-      }
+    for(size_t p = 0; p < nplanes; ++p)
+    {
+        for(size_t w = 0; w < geo->Plane(p).Nwires(); ++w)
+        {
+            uint32_t channel = geo->PlaneWireToChannel(p, w);
+            if( cf.BadChannel(channel) ) fBadChannels.push_back(channel);
+        }
     }
 
   }
@@ -77,8 +85,8 @@ namespace evd {
 
   //......................................................................
   void RawDataDrawer::RawDigit2D(const art::Event& evt,
-				 evdb::View2D*     view,
-				 unsigned int      plane) 
+				                 evdb::View2D*     view,
+				                 unsigned int      plane)
   {
     // Check if we're supposed to draw raw hits at all
     art::ServiceHandle<evd::RawDrawingOptions> drawopt;
@@ -105,9 +113,19 @@ namespace evd {
     this->GetRawDigits(evt, rawhits);
 
     if(rawhits.size() < 1) return;
+    
+    // It will be better when this is a service...
+    filter::ChannelFilter channelFilter;
+      
+    //Update the pedestal alg here
+    drawopt->fPedestalRetrievalAlg.Update(evt);
 
     for (auto const& hit : rawhits) {
 
+      // The following test is meant to be temporary until the "correct" solution is implemented
+      if (channelFilter.GetChannelStatus(hit->Channel()) == filter::ChannelFilter::NOTPHYSICAL) continue;
+      if (channelFilter.GetChannelStatus(hit->Channel()) >  drawopt->fMaxChannelStatus)         continue;
+        
       geo::SigType_t sigType = geo->SignalType(hit->Channel());
       geo::View_t    v       = geo->View(hit->Channel());
       std::vector<geo::WireID> wireids = geo->ChannelToWire(hit->Channel());
@@ -126,6 +144,10 @@ namespace evd {
       for(auto const& wid : wireids){
 	// check that the plane and tpc are the correct ones to draw
 	if(wid.planeID() == pid){
+        
+      // recover the pedestal
+      lariov::DetPedestal detPedestal = drawopt->fPedestalRetrievalAlg.Pedestal(hit->Channel());
+      float               pedestal    = detPedestal.PedMean();
 	  
 	  double wire = 1.*wid.Wire;
 	  double tick = 0;
@@ -137,7 +159,8 @@ namespace evd {
 	    double adcsum = 0.;
 	    while(ticksUsed < ticksPerPoint && itr != uncompressed.end()){
 	      tdcsum  += tick;
-	      adcsum  += (1.*(*itr)) - hit->GetPedestal();
+//          adcsum  += (1.*(*itr)) - fPedestalVec[hit->Channel()]; // pedestals[plane]; //hit->GetPedestal();
+          adcsum  += (1.*(*itr)) - pedestal;
 	      ++ticksUsed;
 	      tick += 1.;
 	      itr++; // this advance of the iterator is sufficient for the external loop too
@@ -279,8 +302,8 @@ namespace evd {
 
   //......................................................................
   void RawDataDrawer::FillQHisto(const art::Event& evt,
-				 unsigned int      plane,
-				 TH1F*             histo)
+				                 unsigned int      plane,
+				                 TH1F*             histo)
   {
 
     // Check if we're supposed to draw raw hits at all
@@ -293,9 +316,19 @@ namespace evd {
     this->GetRawDigits(evt, rawhits);
     
     geo::PlaneID pid(drawopt->fCryostat, drawopt->fTPC, plane);
+      
+    // It will be better when this is a service...
+    filter::ChannelFilter channelFilter;
+      
+    //Update the pedestals here
+    drawopt->fPedestalRetrievalAlg.Update(evt);
 
     for (auto const& hit : rawhits) {
-      
+        
+      // The following test is meant to be temporary until the "correct" solution is implemented
+      if (channelFilter.GetChannelStatus(hit->Channel()) == filter::ChannelFilter::NOTPHYSICAL) continue;
+      if (channelFilter.GetChannelStatus(hit->Channel()) >  drawopt->fMaxChannelStatus)         continue;
+
       std::vector<geo::WireID> wireids = geo->ChannelToWire(hit->Channel());
       for(auto const& wid : wireids){
 	// check that the plane and tpc are the correct ones to draw
@@ -303,9 +336,13 @@ namespace evd {
 
 	  std::vector<short> uncompressed(hit->Samples());
 	  raw::Uncompress(hit->ADCs(), uncompressed, hit->Compression());
+        
+      lariov::DetPedestal detPedestal = drawopt->fPedestalRetrievalAlg.Pedestal(hit->Channel());
+      float               pedestal    = detPedestal.PedMean();
+
       
 	  for(unsigned int j = 0; j < uncompressed.size(); ++j)
-	    histo->Fill(1.*uncompressed[j] - hit->GetPedestal());
+          histo->Fill(1.*uncompressed[j] - pedestal); //pedestals[plane]); //hit->GetPedestal());
 
 	  // this channel is on the correct plane, don't double count the raw signal
 	  // if there are more than one wids for the channel
@@ -335,9 +372,19 @@ namespace evd {
     if(rawhits.size() < 1) return;
 
     geo::PlaneID pid(drawopt->fCryostat, drawopt->fTPC, plane);
+      
+    // It will be better when this is a service...
+    filter::ChannelFilter channelFilter;
+      
+    // Update the pedestal retrieval alg
+    drawopt->fPedestalRetrievalAlg.Update(evt);
 
     for (auto const& hit : rawhits) {
       
+      // The following test is meant to be temporary until the "correct" solution is implemented
+      if (channelFilter.GetChannelStatus(hit->Channel()) == filter::ChannelFilter::NOTPHYSICAL) continue;
+      if (channelFilter.GetChannelStatus(hit->Channel()) >  drawopt->fMaxChannelStatus)         continue;
+        
       std::vector<geo::WireID> wireids = geo->ChannelToWire(hit->Channel());
       for(auto const& wid : wireids){
 	// check that the plane and tpc are the correct ones to draw
@@ -346,9 +393,11 @@ namespace evd {
       
 	  std::vector<short> uncompressed(hit->Samples());
 	  raw::Uncompress(hit->ADCs(), uncompressed, hit->Compression());
+      lariov::DetPedestal detPedestal = drawopt->fPedestalRetrievalAlg.Pedestal(hit->Channel());
+      float               pedestal    = detPedestal.PedMean();
       
 	  for(unsigned int j = 0; j < uncompressed.size(); ++j)
-	    histo->Fill(1.*j, 1.*uncompressed[j] - hit->GetPedestal());
+          histo->Fill(1.*j, 1.*uncompressed[j] - pedestal); //pedestals[plane]); //hit->GetPedestal());
 
 	  // this channel is on the correct plane, don't double count the raw signal
 	  // if there are more than one wids for the channel

@@ -365,7 +365,6 @@ void RecoBaseDrawer::Hit2D(const art::Event& evt,
             b1.SetFillStyle(0);
             b1.SetLineColor(color);
             b1.SetBit(kCannotPick);
-
 	    if(cscore>0.1) {
 	      b1.SetLineColor(kRed);
 	      if(cscore<0.6) b1.SetLineColor(kMagenta);
@@ -373,24 +372,23 @@ void RecoBaseDrawer::Hit2D(const art::Event& evt,
 	    }
         }
         else{
-          TBox& b1 = view->AddBox(time-0.5, w-0.5, time+0.5, w+0.5);
-          if(drawConnectingLines && c > 0) {
-            TLine& l = view->AddLine(time, w, timeold, wold);
-            l.SetLineColor(color);
-            l.SetBit(kCannotPick);
-          }
-          b1.SetFillStyle(0);
-          b1.SetLineColor(color);
-          b1.SetBit(kCannotPick);
-          if(cscore>0.1) {
-            b1.SetLineColor(kRed);
-            if(cscore<0.6) b1.SetLineColor(kMagenta);
-            b1.SetLineWidth(3);
-          }
+            TBox& b1 = view->AddBox(time-0.5, w-0.5, time+0.5, w+0.5);
+            if(drawConnectingLines && c > 0) {
+                TLine& l = view->AddLine(time, w, timeold, wold);
+                l.SetLineColor(color);
+                l.SetBit(kCannotPick);
+            }
+            b1.SetFillStyle(0);
+            b1.SetLineColor(color);
+            b1.SetBit(kCannotPick);
+	    if(cscore>0.1) {
+	      b1.SetLineColor(kRed);
+	      if(cscore<0.6) b1.SetLineColor(kMagenta);
+	      b1.SetLineWidth(3);
+	    }
         }
         wold = w;
         timeold = time;
-
     } // loop on hits
   
     return;
@@ -1088,15 +1086,15 @@ void RecoBaseDrawer::GetClusterOutlines(std::vector<const recob::Hit*>& hits,
     return;
 }
 
-//......................................................................
-void RecoBaseDrawer::DrawProng2D(std::vector<const recob::Hit*>&     hits,
-                                 evdb::View2D*                       view,
-                                 unsigned int                        plane,
-                                 TVector3                     const& startPos,
-                                 TVector3                     const& startDir,
-                                 int                                 id,
-                                 float cscore)
-{
+  //......................................................................
+  void RecoBaseDrawer::DrawProng2D(std::vector<const recob::Hit*>&     hits,
+				   evdb::View2D*                       view, 
+				   unsigned int                        plane,
+				   TVector3                     const& startPos,
+				   TVector3                     const& startDir,	
+				   int                                 id,
+				   float cscore)   
+  {
     art::ServiceHandle<util::DetectorProperties> detprop;
     art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
     art::ServiceHandle<geo::Geometry>            geo;
@@ -1107,9 +1105,6 @@ void RecoBaseDrawer::DrawProng2D(std::vector<const recob::Hit*>&     hits,
     // first draw the hits
     this->Hit2D(hits, evd::kColor[id%evd::kNCOLS], view, false, cscore);
 
-    std::cerr <<"in drawprong2d, after hit thing, Sarah, clean this up " << hits.size() << std::endl; // sel
-    if(hits.size()<1) return;
- 
     // prepare to draw prongs
     double local[3] = {0.};
     double world[3] = {0.};
@@ -1117,7 +1112,7 @@ void RecoBaseDrawer::DrawProng2D(std::vector<const recob::Hit*>&     hits,
     world[1] = startPos.Y();
     world[2] = startPos.Z();
 
-     // convert the starting position and direction from 3D to 2D coordinates
+    // convert the starting position and direction from 3D to 2D coordinates
     double tick = detprop->ConvertXToTicks(startPos.X(), plane, t, c);
     double wire = 0.;
     try{
@@ -1153,8 +1148,8 @@ void RecoBaseDrawer::DrawTrack2D(std::vector<const recob::Hit*>& hits,
                                  evdb::View2D*                   view,
                                  unsigned int                    plane,
                                  const recob::Track*             track,
-                                 int                             id,
-                                 float cscore)
+                                 int                             id, 
+				 float cscore)
 {
     art::ServiceHandle<util::DetectorProperties> detprop;
     art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
@@ -1191,7 +1186,6 @@ void RecoBaseDrawer::DrawTrack2D(std::vector<const recob::Hit*>& hits,
     double wirePitch = geo->WirePitch(hits[0]->View());
     double driftvelocity = larp->DriftVelocity(); // cm/us
     double timetick = detprop->SamplingRate()*1e-3;  // time sample in us
-
     //rotate coord system CCW around x-axis by pi-thetawire
     //   new yprime direction is perpendicular to the wire direction
     //   in the same plane as the wires and in the direction of
@@ -1269,11 +1263,11 @@ void RecoBaseDrawer::Prong2D(const art::Event& evt,
 
             art::FindMany<recob::Hit> fmh(track, evt, which);
 
-            //        art::FindManyP<anab::CosmicTag> cosmicTrackTags( track, evt, "cosmictagger");
-            std::string const whichTag = recoOpt->fCosmicTagLabels[imod];
-            art::FindManyP<anab::CosmicTag> cosmicTrackTags( track, evt, whichTag );
-            std::cerr << "got tags? ... " << cosmicTrackTags.isValid() << std::endl; // sel
-            std::cerr << "wtf? " << cosmicTrackTags.at(0).size() << " "<< cosmicTrackTags.size()<< std::endl; //sel
+	    std::cerr << "here A" << std::endl;
+	    std::string const whichTag = recoOpt->fCosmicTagLabels[imod];
+	    std::cerr << "here B" << std::endl;
+	    art::FindManyP<anab::CosmicTag> cosmicTrackTags( track, evt, whichTag );
+	    std::cerr << "here C" << std::endl;
 
             // loop over the prongs and get the clusters and hits associated with
             // them.  only keep those that are in this view
@@ -1296,12 +1290,14 @@ void RecoBaseDrawer::Prong2D(const art::Event& evt,
 	  
                 std::vector<const recob::Hit*> hits = fmh.at(t);
                 
-	        float Score = -999;
-	        if( cosmicTrackTags.at(t).size() >0 ) {
-	          art::Ptr<anab::CosmicTag> currentTag = cosmicTrackTags.at(t).at(0);
-	          Score = currentTag->CosmicScore();
-	        }
-	  //	  std::cerr << "Score = " << Score << std::endl; // sel
+		float Score = -999;
+		std::cerr << "here D" << std::endl;
+		if( cosmicTrackTags.at(t).size() >0 ) {
+		  art::Ptr<anab::CosmicTag> currentTag = cosmicTrackTags.at(t).at(0);
+		  Score = currentTag->CosmicScore();
+		}
+
+
                 // only get the hits for the current view
                 std::vector<const recob::Hit*>::iterator itr = hits.begin();
                 while(itr < hits.end()){

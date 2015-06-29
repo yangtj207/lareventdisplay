@@ -113,8 +113,8 @@ public:
 		           evdb::View2D*     view,
 		           unsigned int      plane);
     void Prong2D(const art::Event&        evt,
-		 evdb::View2D*            view,
-		 unsigned int             plane);
+		         evdb::View2D*            view,
+		         unsigned int             plane);
     void DrawProng2D(std::vector<const recob::Hit*>& hits,
                      evdb::View2D*                   view,
                      unsigned int                    plane,

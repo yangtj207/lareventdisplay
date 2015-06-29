@@ -69,11 +69,9 @@ void RecoDrawingOptions::reconfigure(fhicl::ParameterSet const& pset)
     //   fSeedPSet = pset.get< fhicl::ParameterSet >("SeedAlgorithm");
     
     fCosmicTagLabels           = pset.get< std::vector<std::string> >("CosmicTagLabels", std::vector<std::string>() );
-    
-}
-
-}
+  }
   
+}
 
 namespace evd {
 

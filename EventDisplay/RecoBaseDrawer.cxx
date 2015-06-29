@@ -1263,11 +1263,8 @@ void RecoBaseDrawer::Prong2D(const art::Event& evt,
 
             art::FindMany<recob::Hit> fmh(track, evt, which);
 
-	    std::cerr << "here A" << std::endl;
 	    std::string const whichTag = recoOpt->fCosmicTagLabels[imod];
-	    std::cerr << "here B" << std::endl;
 	    art::FindManyP<anab::CosmicTag> cosmicTrackTags( track, evt, whichTag );
-	    std::cerr << "here C" << std::endl;
 
             // loop over the prongs and get the clusters and hits associated with
             // them.  only keep those that are in this view
@@ -1291,7 +1288,6 @@ void RecoBaseDrawer::Prong2D(const art::Event& evt,
                 std::vector<const recob::Hit*> hits = fmh.at(t);
                 
 		float Score = -999;
-		std::cerr << "here D" << std::endl;
 		if( cosmicTrackTags.at(t).size() >0 ) {
 		  art::Ptr<anab::CosmicTag> currentTag = cosmicTrackTags.at(t).at(0);
 		  Score = currentTag->CosmicScore();

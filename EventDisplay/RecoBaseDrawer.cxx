@@ -1288,10 +1288,12 @@ void RecoBaseDrawer::Prong2D(const art::Event& evt,
                 std::vector<const recob::Hit*> hits = fmh.at(t);
                 
 		float Score = -999;
-		// if( cosmicTrackTags.at(t).size() > 0 ) {
-		//   art::Ptr<anab::CosmicTag> currentTag = cosmicTrackTags.at(t).at(0);
-		//   Score = currentTag->CosmicScore();
-		// }
+                if( cosmicTrackTags.isValid() ){
+		  if( cosmicTrackTags.at(t).size() > 0 ) {
+		    art::Ptr<anab::CosmicTag> currentTag = cosmicTrackTags.at(t).at(0);
+		    Score = currentTag->CosmicScore();
+		  }
+                }
 
 
                 // only get the hits for the current view
@@ -3002,8 +3004,8 @@ int RecoBaseDrawer::GetPFParticles(const art::Event&                  evt,
     
     return spts.size();
   }
-
-  //......................................................................
+  
+//......................................................................
   int RecoBaseDrawer::GetTracks(const art::Event&        evt, 
 				const std::string&       which,
 				art::View<recob::Track>& track)

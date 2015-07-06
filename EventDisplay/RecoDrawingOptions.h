@@ -42,6 +42,7 @@ public:
     int  fDraw2DEndPoints;
     int  fDrawSeeds;
     int  fDrawBezierTracks;
+    int  fDrawCosmicTags;
     int  fSelectedHitColor;
     bool fUseHitSelector;
     bool fSkeletonOnly;
@@ -61,13 +62,13 @@ public:
     std::vector<std::string> fOpFlashLabels;        ///< module labels that produced events
     std::vector<std::string> fSeedLabels;       	///< module labels that produced events                
     std::vector<std::string> fBezierTrackLabels;    ///< module labels that produced events
+    std::vector<std::string> fCosmicTagLabels;	    ///< module labes that produced cosmic tags
 
 
     ///\todo Why are calorimetry related drawing options in RecoDrawingOptions instead of a separate service?
     fhicl::ParameterSet      fCaloPSet;                 /// < parameterset for calorimetry algorithm 
     fhicl::ParameterSet      fSeedPSet;                 /// < parameterset for seed algorithm        
 
-    std::vector<std::string> fCosmicTagLabels;
 
     int                      fColorProngsByLabel;       ///< Generate prong colors by label or id?
     int                      fColorSpacePointsByChisq;  ///< Generate space point colors by chisquare?

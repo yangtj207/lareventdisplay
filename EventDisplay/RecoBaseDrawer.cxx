@@ -365,7 +365,7 @@ void RecoBaseDrawer::Hit2D(const art::Event& evt,
             b1.SetFillStyle(0);
             b1.SetLineColor(color);
             b1.SetBit(kCannotPick);
-	    if(cscore>0.1) {
+	    if(cscore>0.1 && recoOpt->fDrawCosmicTags) {
 	      b1.SetLineColor(kRed);
 	      if(cscore<0.6) b1.SetLineColor(kMagenta);
 	      b1.SetLineWidth(3);
@@ -381,7 +381,7 @@ void RecoBaseDrawer::Hit2D(const art::Event& evt,
             b1.SetFillStyle(0);
             b1.SetLineColor(color);
             b1.SetBit(kCannotPick);
-	    if(cscore>0.1) {
+	    if(cscore>0.1 && recoOpt->fDrawCosmicTags) {
 	      b1.SetLineColor(kRed);
 	      if(cscore<0.6) b1.SetLineColor(kMagenta);
 	      b1.SetLineWidth(3);
@@ -1288,10 +1288,10 @@ void RecoBaseDrawer::Prong2D(const art::Event& evt,
                 std::vector<const recob::Hit*> hits = fmh.at(t);
                 
 		float Score = -999;
-		if( cosmicTrackTags.at(t).size() >0 ) {
-		  art::Ptr<anab::CosmicTag> currentTag = cosmicTrackTags.at(t).at(0);
-		  Score = currentTag->CosmicScore();
-		}
+		// if( cosmicTrackTags.at(t).size() > 0 ) {
+		//   art::Ptr<anab::CosmicTag> currentTag = cosmicTrackTags.at(t).at(0);
+		//   Score = currentTag->CosmicScore();
+		// }
 
 
                 // only get the hits for the current view

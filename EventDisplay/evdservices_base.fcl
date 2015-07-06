@@ -50,6 +50,7 @@ standard_recodrawingopt:
  DrawSeeds:                 0  		       # 0 = off, 1 = on
  DrawBezierTracks:          0  		       # 0 = off, 1 = on
  DrawOpFlashes:             0              # 0 = off, 1 = on   
+ DrawCosmicTags:            0  		       # 0 = off, 1 = on
 
  DrawEvents:                0  		       # 0 = off, 1 = on
  Draw2DEndPoints:           0              # 0 = off, 1 = on, this is for the recob::EndPoint2D objects
@@ -72,6 +73,7 @@ standard_recodrawingopt:
  SeedModuleLabels:          ["seedfinder"] # list of module labels in which to look for recob::Seeds  
  BezierTrackModuleLabels:   ["beziertracker"] # list of module labels in which to look for Bezier Tracks    
  OpFlashModuleLabels:       ["opflashnew"] # list of module labels in which to look for recob::OpFlashes
+ CosmicTagLabels:           [""]           # list of module labels in which to look for recob::Tracks     
 
  EventModuleLabels:         [""]           # list of module labels in which to look for recob::Events     
  ColorProngsByLabel:        0              # 0 = generate color from id.

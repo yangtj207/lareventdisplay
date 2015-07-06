@@ -50,6 +50,10 @@ namespace recob {
     class OpFlash;
 }
 
+namespace anab {
+    class CosmicTag;
+}
+
 namespace util {
     class LArProperties;
     class DetectorProperties;

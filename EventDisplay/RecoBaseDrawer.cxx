@@ -41,6 +41,7 @@
 #include "RecoObjects/BezierTrack.h"
 #include "RecoBase/Vertex.h"
 #include "RecoBase/OpFlash.h"
+#include "AnalysisBase/CosmicTag.h"
 #include "Filters/ChannelFilter.h"
 #include "Geometry/Geometry.h"
 #include "Geometry/CryostatGeo.h"
@@ -316,20 +317,21 @@ void RecoBaseDrawer::Hit2D(const art::Event& evt,
     return;
 }
 
-//......................................................................
-///
-/// Render Hit objects on a 2D viewing canvas
-///
-/// @param hits   : vector of hits for the veiw
-/// @param color  : color of associated cluster/prong
-/// @param view   : Pointer to view to draw on
-///
-/// assumes the hits are all from the correct plane for the given view
-void RecoBaseDrawer::Hit2D(std::vector<const recob::Hit*> hits,
-			               int                            color,
-			               evdb::View2D*                  view,
-                           bool                           drawConnectingLines)
-{
+  //......................................................................
+  ///
+  /// Render Hit objects on a 2D viewing canvas
+  ///
+  /// @param hits   : vector of hits for the veiw
+  /// @param color  : color of associated cluster/prong
+  /// @param view   : Pointer to view to draw on
+  ///
+  /// assumes the hits are all from the correct plane for the given view
+  void RecoBaseDrawer::Hit2D(std::vector<const recob::Hit*> hits,
+			     int                            color,
+			     evdb::View2D*                  view,
+                             bool              drawConnectingLines,
+			     float cscore) 
+  {
     art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
     art::ServiceHandle<geo::Geometry>            geo;
@@ -363,6 +365,11 @@ void RecoBaseDrawer::Hit2D(std::vector<const recob::Hit*> hits,
             b1.SetFillStyle(0);
             b1.SetLineColor(color);
             b1.SetBit(kCannotPick);
+	    if(cscore>0.1 && recoOpt->fDrawCosmicTags) {
+	      b1.SetLineColor(kRed);
+	      if(cscore<0.6) b1.SetLineColor(kMagenta);
+	      b1.SetLineWidth(3);
+	    }
         }
         else{
             TBox& b1 = view->AddBox(time-0.5, w-0.5, time+0.5, w+0.5);
@@ -374,6 +381,11 @@ void RecoBaseDrawer::Hit2D(std::vector<const recob::Hit*> hits,
             b1.SetFillStyle(0);
             b1.SetLineColor(color);
             b1.SetBit(kCannotPick);
+	    if(cscore>0.1 && recoOpt->fDrawCosmicTags) {
+	      b1.SetLineColor(kRed);
+	      if(cscore<0.6) b1.SetLineColor(kMagenta);
+	      b1.SetLineWidth(3);
+	    }
         }
         wold = w;
         timeold = time;
@@ -1074,14 +1086,15 @@ void RecoBaseDrawer::GetClusterOutlines(std::vector<const recob::Hit*>& hits,
     return;
 }
 
-//......................................................................
-void RecoBaseDrawer::DrawProng2D(std::vector<const recob::Hit*>&     hits,
-                                 evdb::View2D*                       view,
-                                 unsigned int                        plane,
-                                 TVector3                     const& startPos,
-                                 TVector3                     const& startDir,
-                                 int                                 id)
-{
+  //......................................................................
+  void RecoBaseDrawer::DrawProng2D(std::vector<const recob::Hit*>&     hits,
+				   evdb::View2D*                       view, 
+				   unsigned int                        plane,
+				   TVector3                     const& startPos,
+				   TVector3                     const& startDir,	
+				   int                                 id,
+				   float cscore)   
+  {
     art::ServiceHandle<util::DetectorProperties> detprop;
     art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
     art::ServiceHandle<geo::Geometry>            geo;
@@ -1090,7 +1103,7 @@ void RecoBaseDrawer::DrawProng2D(std::vector<const recob::Hit*>&     hits,
     unsigned int t = rawOpt->fTPC;
 
     // first draw the hits
-    this->Hit2D(hits, evd::kColor[id%evd::kNCOLS], view);
+    this->Hit2D(hits, evd::kColor[id%evd::kNCOLS], view, false, cscore);
 
     // prepare to draw prongs
     double local[3] = {0.};
@@ -1135,7 +1148,8 @@ void RecoBaseDrawer::DrawTrack2D(std::vector<const recob::Hit*>& hits,
                                  evdb::View2D*                   view,
                                  unsigned int                    plane,
                                  const recob::Track*             track,
-                                 int                             id)
+                                 int                             id, 
+				 float cscore)
 {
     art::ServiceHandle<util::DetectorProperties> detprop;
     art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
@@ -1145,7 +1159,7 @@ void RecoBaseDrawer::DrawTrack2D(std::vector<const recob::Hit*>& hits,
     unsigned int t = rawOpt->fTPC;
     
     // first draw the hits
-    this->Hit2D(hits, evd::kColor[(id)%evd::kNCOLS], view, true);
+    this->Hit2D(hits, evd::kColor[(id)%evd::kNCOLS], view, true, cscore);
     
     const TVector3& startPos = track->Vertex();
     const TVector3& startDir = track->VertexDirection();
@@ -1249,6 +1263,9 @@ void RecoBaseDrawer::Prong2D(const art::Event& evt,
 
             art::FindMany<recob::Hit> fmh(track, evt, which);
 
+	    std::string const whichTag( recoOpt->fCosmicTagLabels.size() != 0 ? recoOpt->fCosmicTagLabels[imod] : "");
+	    art::FindManyP<anab::CosmicTag> cosmicTrackTags( track, evt, whichTag );
+
             // loop over the prongs and get the clusters and hits associated with
             // them.  only keep those that are in this view
             for(size_t t = 0; t < track.vals().size(); ++t)
@@ -1270,6 +1287,15 @@ void RecoBaseDrawer::Prong2D(const art::Event& evt,
 	  
                 std::vector<const recob::Hit*> hits = fmh.at(t);
                 
+		float Score = -999;
+                if( cosmicTrackTags.isValid() ){
+		  if( cosmicTrackTags.at(t).size() > 0 ) {
+		    art::Ptr<anab::CosmicTag> currentTag = cosmicTrackTags.at(t).at(0);
+		    Score = currentTag->CosmicScore();
+		  }
+                }
+
+
                 // only get the hits for the current view
                 std::vector<const recob::Hit*>::iterator itr = hits.begin();
                 while(itr < hits.end()){
@@ -1284,7 +1310,7 @@ void RecoBaseDrawer::Prong2D(const art::Event& evt,
                 const recob::Track* aTrack(track.vals().at(t));
                 this->DrawTrack2D(hits, view, plane,
                                   aTrack,
-                                  aTrack->ID());
+                                  aTrack->ID(), Score);
             }// end loop over prongs
         }// end loop over labels
     }// end draw tracks
@@ -2978,8 +3004,8 @@ int RecoBaseDrawer::GetPFParticles(const art::Event&                  evt,
     
     return spts.size();
   }
-
-  //......................................................................
+  
+//......................................................................
   int RecoBaseDrawer::GetTracks(const art::Event&        evt, 
 				const std::string&       which,
 				art::View<recob::Track>& track)

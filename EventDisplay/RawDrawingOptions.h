@@ -15,7 +15,6 @@
 #include "art/Framework/Services/Registry/ActivityRegistry.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Services/Registry/ServiceMacros.h"
-#include "CalibrationDBI/WebDBI/DetPedestalRetrievalAlg.h"
 
 namespace evd {
   class RawDrawingOptions 
@@ -35,7 +34,6 @@ namespace evd {
     unsigned int fTPC;                                     ///< TPC number to draw, typically set by TWQProjectionView
     unsigned int fCryostat;                                ///< Cryostat number to draw, typically set by TWQProjectionView
     unsigned int fMaxChannelStatus;                        ///< Display channels with this status and below
-    lariov::DetPedestalRetrievalAlg fPedestalRetrievalAlg; ///< Keep track of an instance to the pedestal retrieval alg
     std::string  fRawDataLabel;                            ///< module label that made the raw digits, default is daq
   };
 }//namespace

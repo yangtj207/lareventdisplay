@@ -29,8 +29,7 @@ standard_rawdrawingopt:
  Cryostat:                   0     # Cryostat number to display in TWQProjection view
  MaxChannelStatus:           2     # Max Channel Status - 0 = good, 1 = noisy, 2 = dead
  RawDataLabel:               "daq" # label of module making the raw digits
- DetPedestalRetrievalAlg:    @local::standard_pedestalretrievalalg
- }
+}
 
 standard_recodrawingopt:
 {

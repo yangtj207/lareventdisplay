@@ -16,8 +16,7 @@ namespace evd {
 
   //......................................................................
   RawDrawingOptions::RawDrawingOptions(fhicl::ParameterSet const& pset, 
-                                       art::ActivityRegistry& /* reg */) :
-      fPedestalRetrievalAlg(pset.get<fhicl::ParameterSet>("DetPedestalRetrievalAlg"))
+                                       art::ActivityRegistry& /* reg */) 
   {
     this->reconfigure(pset);
   }
@@ -44,7 +43,6 @@ namespace evd {
     // Explicit checkt to prevent attempt to display non-physical channels (which will crash display)
     if (fMaxChannelStatus >= filter::ChannelFilter::NOTPHYSICAL) fMaxChannelStatus = filter::ChannelFilter::NOTPHYSICAL - 1;
       
-    //fPedestalRetrievalAlg.reconfigure(pset);
   }  
 }
 

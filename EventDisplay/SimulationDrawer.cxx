@@ -87,7 +87,7 @@ namespace evd{
   //......................................................................
 
   void SimulationDrawer::MCTruthShortText(const art::Event& evt,
-					  evdb::View2D*     view) 
+                                          evdb::View2D*     view)
   {
 
     if( evt.isRealData() ) return;
@@ -100,51 +100,50 @@ namespace evd{
     this->GetMCTruth(evt, mctruth);
     
     for (unsigned int i=0; i<mctruth.size(); ++i) {
-      std::string mctext;
-      bool firstin  = true;
-      bool firstout = true;
-      std::string origin;
-      std::string incoming;
-      std::string outgoing;
-      // Label cosmic rays -- others are pretty obvious
-      if (mctruth[i]->Origin()==simb::kCosmicRay)  origin = "c-ray: "; 
-      int jmax = TMath::Min(20,mctruth[i]->NParticles());
-      for (int j=0; j<jmax; ++j) {
-	const simb::MCParticle& p = mctruth[i]->GetParticle(j);
-	char buff[1024];
-	if (p.P()>0.05) {
-	  sprintf(buff,"#color[%d]{%s #scale[0.75]{[%.1f GeV/c]}}", 
-		  Style::ColorFromPDG(p.PdgCode()),
-		  Style::LatexName(p.PdgCode()), 
-		  p.P());
-	}
-	else {
-	  sprintf(buff,"#color[%d]{%s}", 
-		  Style::ColorFromPDG(p.PdgCode()),
-		  Style::LatexName(p.PdgCode()));
-	}
-	if (p.StatusCode()==0) {
-	  if (firstin==false) incoming += " + ";
-	  incoming += buff;
-	  firstin = false;
-	}
-	if (p.StatusCode()==1) {
-	  if (firstout==false) outgoing += " + ";
-	  outgoing += buff;
-	  firstout = false;
-	}
-      } // loop on j particles
-      if (origin=="" && incoming=="") {
-	mctext = outgoing;
-      }
-      else {
-	mctext = origin+incoming+" #rightarrow "+outgoing;
-      }
-      TLatex& latex = view->AddLatex(0.03, 0.2, mctext.c_str());
-      latex.SetTextSize(0.6);
+        std::string mctext;
+        bool firstin  = true;
+        bool firstout = true;
+        std::string origin;
+        std::string incoming;
+        std::string outgoing;
+        // Label cosmic rays -- others are pretty obvious
+        if (mctruth[i]->Origin()==simb::kCosmicRay)  origin = "c-ray: ";
+        int jmax = TMath::Min(20,mctruth[i]->NParticles());
+        for (int j=0; j<jmax; ++j) {
+            const simb::MCParticle& p = mctruth[i]->GetParticle(j);
+            char buff[1024];
+            if (p.P()>0.05) {
+                sprintf(buff,"#color[%d]{%s #scale[0.75]{[%.1f GeV/c]}}",
+                        Style::ColorFromPDG(p.PdgCode()),
+                        Style::LatexName(p.PdgCode()),
+                        p.P());
+            }
+            else {
+                sprintf(buff,"#color[%d]{%s}",
+                        Style::ColorFromPDG(p.PdgCode()),
+                        Style::LatexName(p.PdgCode()));
+            }
+            if (p.StatusCode()==0) {
+                if (firstin==false) incoming += " + ";
+                incoming += buff;
+                firstin = false;
+            }
+            if (p.StatusCode()==1) {
+                if (firstout==false) outgoing += " + ";
+                outgoing += buff;
+                firstout = false;
+            }
+        } // loop on j particles
+        if (origin=="" && incoming=="") {
+            mctext = outgoing;
+        }
+        else {
+            mctext = origin+incoming+" #rightarrow "+outgoing;
+        }
+        TLatex& latex = view->AddLatex(0.03, 0.2, mctext.c_str());
+        latex.SetTextSize(0.6);
 
     } // loop on i mctruth objects
-
   }
 
   //......................................................................
@@ -152,26 +151,26 @@ namespace evd{
   void SimulationDrawer::MCTruthLongText(const art::Event& evt,
 					 evdb::View2D* /*view*/) 
   {
-    if( evt.isRealData() ) return;
+      if( evt.isRealData() ) return;
 
-    art::ServiceHandle<evd::SimulationDrawingOptions> drawopt;
-    // Skip drawing if option is turned off
-    if (!drawopt->fShowMCTruthText) return;
+      art::ServiceHandle<evd::SimulationDrawingOptions> drawopt;
+      // Skip drawing if option is turned off
+      if (!drawopt->fShowMCTruthText) return;
 
-    std::vector<const simb::MCTruth*> mctruth;
-    this->GetMCTruth(evt, mctruth);
+      std::vector<const simb::MCTruth*> mctruth;
+      this->GetMCTruth(evt, mctruth);
     
-    for (unsigned int i=0; i<mctruth.size(); ++i) {
-      std::cout << "\n";
-      for (int j=0; j<mctruth[i]->NParticles(); ++j) {
-	const simb::MCParticle& p = mctruth[i]->GetParticle(j);
-	if(p.StatusCode() == 0 || p.StatusCode() == 1)
-	  std::cout << Style::LatexName(p.PdgCode())
-		    << "\t\t" << p.E() << " GeV"
-		    << "\t"   << "(" << p.P() << " GeV/c)"
-		    << std::endl;
-      } // loop on j particles in list
-    }
+      for (unsigned int i=0; i<mctruth.size(); ++i) {
+          std::cout << "\n";
+          for (int j=0; j<mctruth[i]->NParticles(); ++j) {
+              const simb::MCParticle& p = mctruth[i]->GetParticle(j);
+              if(p.StatusCode() == 0 || p.StatusCode() == 1)
+                  std::cout << Style::LatexName(p.PdgCode())
+                  << "\t\t" << p.E() << " GeV"
+                  << "\t"   << "(" << p.P() << " GeV/c)"
+                  << std::endl;
+          } // loop on j particles in list
+      }
   }
 
 
@@ -281,13 +280,13 @@ namespace evd{
     this->GetParticle(evt, plist);
       
     // Useful variables
-    //double detHalfWidth(geom->DetHalfWidth());
     double xMinimum(-1.*(maxx-minx));
     double xMaximum( 2.*(maxx-minx));
       
-//    double detHalfHeight(geom->DetHalfHeight());
-//    double zMinimum(0.);
-//    double zMaximum(geom->DetLength());
+    // Define a couple of colors for neutrals and if we gray it out...
+    int neutralColor(12);
+    int grayedColor(15);
+    int neutrinoColor(38);
     
     // Use the LArVoxelList to get the true energy deposition locations as opposed to using MCTrajectories
     const sim::LArVoxelList voxels = sim::SimListUtils::GetLArVoxelList(evt,drawopt->fG4ModuleLabel);
@@ -307,7 +306,6 @@ namespace evd{
     std::map<int, const simb::MCParticle*> trackToMcParticleMap;
       
     // Should we display the trajectories too?
-    bool   displayMcTrajectories(true);
     double minPartEnergy(0.01);
       
     for(size_t p = 0; p < plist.size(); ++p)
@@ -315,23 +313,26 @@ namespace evd{
         trackToMcParticleMap[plist[p]->TrackId()] = plist[p];
         
         // Quick loop through to drawn trajectories...
-        if (displayMcTrajectories)
+        if (drawopt->fShowMCTruthTrajectories)
         {
             // Is there an associated McTrajectory?
             const simb::MCParticle*   mcPart = plist[p];
             const simb::MCTrajectory& mcTraj = mcPart->Trajectory();
             
             int           pdgCode(mcPart->PdgCode());
+            int           colorIdx(evd::Style::ColorFromPDG(mcPart->PdgCode()));
             TParticlePDG* partPDG(TDatabasePDG::Instance()->GetParticle(pdgCode));
             double        partCharge = partPDG ? partPDG->Charge() : 0.;
             double        partEnergy = mcPart->E();
+                                   
+            if (!drawopt->fShowMCTruthColors) colorIdx = grayedColor;
         
             if (!mcTraj.empty() && partEnergy > minPartEnergy && mcPart->TrackId() < 100000000)
             {
                 // The following is meant to get the correct offset for drawing the particle trajectory
                 // In particular, the cosmic rays will not be correctly placed without this
-	      double g4Ticks(timeService->TPCG4Time2Tick(mcPart->T())+theDetector->GetXTicksOffset(0,0,0)-theDetector->TriggerOffset());
-	      double xOffset(theDetector->ConvertTicksToX(g4Ticks, 0, 0, 0));
+                double g4Ticks(timeService->TPCG4Time2Tick(mcPart->T())+theDetector->GetXTicksOffset(0,0,0)-theDetector->TriggerOffset());
+                double xOffset(theDetector->ConvertTicksToX(g4Ticks, 0, 0, 0));
             
                 // collect the points from this particle
                 int numTrajPoints = mcTraj.size();
@@ -361,12 +362,12 @@ namespace evd{
                     }
                 }
                 
-                TPolyLine3D& pl(view->AddPolyLine3D(1, evd::Style::ColorFromPDG(mcPart->PdgCode()), 1, 1));
+                TPolyLine3D& pl(view->AddPolyLine3D(1, colorIdx, 1, 1));
                 
                 // Draw neutrals as a gray dotted line to help fade into background a bit...
                 if (partCharge == 0.)
                 {
-                    pl.SetLineColor(13);
+                    pl.SetLineColor(neutralColor);
                     pl.SetLineStyle(3);
                     pl.SetLineWidth(1);
                 }
@@ -415,14 +416,21 @@ namespace evd{
         
         // The following is meant to get the correct offset for drawing the particle trajectory
         // In particular, the cosmic rays will not be correctly placed without this
-        //double time0 = mcPart->T();
-        
-        //double hit_time_ticks(time0/ns_per_tdc + tdc_offset);
-        //double xOffset(theDetector->ConvertTicksToX(hit_time_ticks, 0, 0, 0));
         double g4Ticks(timeService->TPCG4Time2Tick(mcPart->T())+theDetector->GetXTicksOffset(0,0,0)-theDetector->TriggerOffset());
         double xOffset(theDetector->ConvertTicksToX(g4Ticks, 0, 0, 0));
         
-        TPolyMarker3D& pm = view->AddPolyMarker3D(partToPosMapItr->second.size(), evd::Style::ColorFromPDG(mcPart->PdgCode()), kFullDotSmall, 2); //1, 3);
+        int colorIdx(evd::Style::ColorFromPDG(mcPart->PdgCode()));
+        int markerIdx(kFullDotSmall);
+        int markerSize(2);
+        
+        if (!drawopt->fShowMCTruthFullSize)
+        {
+            colorIdx   = grayedColor;
+            markerIdx  = kDot;
+            markerSize = 1;
+        }
+        
+        TPolyMarker3D& pm = view->AddPolyMarker3D(partToPosMapItr->second.size(), colorIdx, markerIdx, markerSize); 
         
         // Now loop over points and add to trajectory
         for(size_t posIdx = 0; posIdx < partToPosMapItr->second.size(); posIdx++)
@@ -434,6 +442,51 @@ namespace evd{
             if (xCoord > xMinimum && xCoord < xMaximum)
                 pm.SetPoint(posIdx, xCoord, posVec[1], posVec[2]);
         }
+    }
+      
+    // Finally, let's see if we can draw the incoming particle from the MCTruth information
+    std::vector<const simb::MCTruth*> mctruth;
+    this->GetMCTruth(evt, mctruth);
+
+    // Loop through the MCTruth vector
+    for (unsigned int idx = 0; idx < mctruth.size(); idx++)
+    {
+        // Go through each MCTruth object in the list
+        for (int particleIdx = 0; particleIdx < mctruth[idx]->NParticles(); particleIdx++)
+        {
+            const simb::MCParticle& mcPart = mctruth[idx]->GetParticle(particleIdx);
+            
+            // A negative mother id indicates the "primary" particle
+            if(mcPart.Mother() == -1 && mcPart.StatusCode() == 0)
+            {
+                mf::LogDebug("SimulationDrawer") << mcPart << std::endl;
+                
+                // Get position vector
+                TVector3 particlePosition(mcPart.Vx(),mcPart.Vy(),mcPart.Vz());
+                
+                // Get direction vector (in opposite direction)
+                TVector3 oppPartDir(-mcPart.Px(),-mcPart.Py(),-mcPart.Pz());
+                
+                if (oppPartDir.Mag2() > 0.) oppPartDir.SetMag(1.);
+                
+                double arcLenToDraw = -particlePosition.Z() / oppPartDir.CosTheta();
+                
+                // No point in drawing if arc length is zero (e.g. Ar nucleus)
+                if (arcLenToDraw > 0.)
+                {
+                    // Draw the line, use an off color to be unique
+                    TPolyLine3D& pl(view->AddPolyLine3D(2, neutrinoColor, 1, 2));
+                
+                    pl.SetPoint(0,particlePosition.X(),particlePosition.Y(),particlePosition.Z());
+                
+                    particlePosition += (arcLenToDraw + 10.) * oppPartDir;
+                
+                    pl.SetPoint(1,particlePosition.X(),particlePosition.Y(),particlePosition.Z());
+                }
+            }
+            // The particles we want to draw will be early in the list so break out if we didn't find them
+            else break;
+        } // loop on particles in list
     }
       
     return;

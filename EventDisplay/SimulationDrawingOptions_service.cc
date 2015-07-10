@@ -31,6 +31,8 @@ namespace evd {
     fShowMCTruthText         = pset.get< bool        >("ShowMCTruthText",         true);
     fShowMCTruthVectors      = pset.get< bool        >("ShowMCTruthVectors",      true);
     fShowMCTruthTrajectories = pset.get< bool        >("ShowMCTruthTrajectories", true);
+    fShowMCTruthColors       = pset.get< bool        >("ShowMCTruthColors",       true);
+    fShowMCTruthFullSize     = pset.get< bool        >("ShowMCTruthFullSize",     true);
     fMinEnergyDeposition     = pset.get< double      >("MinimumEnergyDeposition"      );
     fG4ModuleLabel           = pset.get< std::string >("G4ModuleLabel"                ); 
   }

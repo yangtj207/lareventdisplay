@@ -28,6 +28,8 @@ namespace evd {
     bool        fShowMCTruthText;
     bool        fShowMCTruthVectors;
     bool        fShowMCTruthTrajectories;
+    bool        fShowMCTruthColors;
+    bool        fShowMCTruthFullSize;
     double      fMinEnergyDeposition;
     std::string fG4ModuleLabel;           ///< module label producing sim::SimChannel objects
 

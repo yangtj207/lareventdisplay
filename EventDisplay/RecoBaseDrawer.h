@@ -91,7 +91,6 @@ public:
     void OpFlash2D(const art::Event& evt,
 		           evdb::View2D*     view,
 		           unsigned int      plane);
-
     void Seed2D(const art::Event& evt,
 		        evdb::View2D*     view,
 		        unsigned int      plane);
@@ -164,10 +163,13 @@ public:
 		        evdb::View3D*     view);
     void BezierTrack3D(const art::Event& evt,
 		               evdb::View3D*     view);
-    void Vertex3D(const art::Event& evt,
+        void Vertex3D(const art::Event& evt,
 		          evdb::View3D*     view);
     void Event3D(const art::Event& evt,
                 evdb::View3D*     view);
+    void OpFlashOrtho(const art::Event& evt,
+		      evd::OrthoProj_t  proj,
+		      evdb::View2D*     view);
     void SpacePointOrtho(const art::Event& evt,
 			             evd::OrthoProj_t  proj,
 			             double            msize,

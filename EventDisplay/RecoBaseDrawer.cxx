@@ -2175,7 +2175,74 @@ void RecoBaseDrawer::Event3D(const art::Event& evt,
 
   return;
 }
+//......................................................................
+void RecoBaseDrawer::OpFlashOrtho(const art::Event& evt,
+				  evd::OrthoProj_t  proj,
+				  evdb::View2D*     view) {
+  art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
+  art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
+  art::ServiceHandle<geo::Geometry>            geo;
+  
+  if (rawOpt->fDrawRawDataOrCalibWires < 1) return;
+  if (recoOpt->fDrawOpFlashes == 0)         return;
+  
+  double minx = 1e9;
+  double maxx = -1e9;
+  for (size_t i = 0; i<geo->NTPC(); ++i){
+    double local[3] = {0.,0.,0.};
+    double world[3] = {0.,0.,0.};
+    const geo::TPCGeo &tpc = geo->TPC(i);
+    tpc.LocalToWorld(local,world);
+    if (minx>world[0]-geo->DetHalfWidth(i))
+      minx = world[0]-geo->DetHalfWidth(i);
+    if (maxx<world[0]+geo->DetHalfWidth(i))
+      maxx = world[0]+geo->DetHalfWidth(i);
+  }
+  
+  for(size_t imod = 0; imod < recoOpt->fOpFlashLabels.size(); ++imod) {
+    std::string const which = recoOpt->fOpFlashLabels[imod];
+    
+    art::PtrVector<recob::OpFlash> opflashes;
+    this->GetOpFlashes(evt, which, opflashes);
+    
+    if(opflashes.size() < 1) continue;
+    
+    int NFlashes = opflashes.size();
 
+    // project each seed into this view
+    for (int iof = 0; iof < NFlashes; ++iof) {
+
+      double YCentre    = opflashes[iof]->YCenter();
+      double YHalfWidth = opflashes[iof]->YWidth();
+      double ZCentre    = opflashes[iof]->ZCenter();
+      double ZHalfWidth = opflashes[iof]->ZWidth();
+
+      int Colour = evd::kColor[(iof)%evd::kNCOLS];
+
+      if(proj == evd::kXY){
+	TBox& b1      = view->AddBox(YCentre-YHalfWidth, minx, YCentre+YHalfWidth, maxx);
+	b1.SetFillStyle(3004);
+	b1.SetFillColor(Colour);
+	TLine&   line = view->AddLine(YCentre, minx, YCentre, maxx);
+	line.SetLineColor(Colour);
+      }
+      else if(proj == evd::kXZ){
+	TBox& b1      = view->AddBox(ZCentre-ZHalfWidth, minx, ZCentre+ZHalfWidth, maxx);
+	b1.SetFillStyle(3004);
+	b1.SetFillColor(Colour);
+	TLine&   line = view->AddLine(ZCentre, minx, ZCentre, maxx);
+	line.SetLineColor(Colour);
+      }
+      else if(proj == evd::kYZ){
+	TBox& b1      = view->AddBox(ZCentre-ZHalfWidth, YCentre-YHalfWidth, ZCentre+ZHalfWidth, YCentre+YHalfWidth);
+	b1.SetFillStyle(3004);
+	b1.SetFillColor(Colour);
+	TMarker& strt = view->AddMarker(ZCentre, YCentre, Colour, 4, 1.5);
+      }
+
+    } // Flashes with this label
+  } // Vector of OpFlash labels
+}
 //......................................................................
 void RecoBaseDrawer::SpacePointOrtho(const art::Event& evt,
 				       evd::OrthoProj_t  proj,

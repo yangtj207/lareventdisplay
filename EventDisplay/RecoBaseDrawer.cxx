@@ -2221,21 +2221,21 @@ void RecoBaseDrawer::OpFlashOrtho(const art::Event& evt,
 
       if(proj == evd::kXY){
 	TBox& b1      = view->AddBox(YCentre-YHalfWidth, minx, YCentre+YHalfWidth, maxx);
-	b1.SetFillStyle(3004);
+	b1.SetFillStyle(3004+(iof%3));
 	b1.SetFillColor(Colour);
-	TLine&   line = view->AddLine(YCentre, minx, YCentre, maxx);
-	line.SetLineColor(Colour);
+	//TLine&   line = view->AddLine(YCentre, minx, YCentre, maxx);
+	//line.SetLineColor(Colour);
       }
       else if(proj == evd::kXZ){
 	TBox& b1      = view->AddBox(ZCentre-ZHalfWidth, minx, ZCentre+ZHalfWidth, maxx);
-	b1.SetFillStyle(3004);
+	b1.SetFillStyle(3004+(iof%3));
 	b1.SetFillColor(Colour);
-	TLine&   line = view->AddLine(ZCentre, minx, ZCentre, maxx);
-	line.SetLineColor(Colour);
+	//TLine&   line = view->AddLine(ZCentre, minx, ZCentre, maxx);
+	//line.SetLineColor(Colour);
       }
       else if(proj == evd::kYZ){
 	TBox& b1      = view->AddBox(ZCentre-ZHalfWidth, YCentre-YHalfWidth, ZCentre+ZHalfWidth, YCentre+YHalfWidth);
-	b1.SetFillStyle(3004);
+	b1.SetFillStyle(3004+(iof%3));
 	b1.SetFillColor(Colour);
 	TMarker& strt = view->AddMarker(ZCentre, YCentre, Colour, 4, 1.5);
       }

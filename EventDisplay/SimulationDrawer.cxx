@@ -4,6 +4,9 @@
 /// \author  messier@indiana.edu
 /// \version $Id: SimulationDrawer.cxx,v 1.2 2010/11/11 18:11:22 p-novaart Exp $
 ///
+
+#include <iomanip>
+
 #include "TParticle.h"
 #include "TLatex.h"
 #include "TPolyMarker3D.h"
@@ -159,19 +162,30 @@ namespace evd{
 
       std::vector<const simb::MCTruth*> mctruth;
       this->GetMCTruth(evt, mctruth);
-    
+      std::cout<<"\nMCTruth Ptcl trackID            PDG      P      T   Moth  Process\n";
       for (unsigned int i=0; i<mctruth.size(); ++i) {
-          std::cout << "\n";
           for (int j=0; j<mctruth[i]->NParticles(); ++j) {
-              const simb::MCParticle& p = mctruth[i]->GetParticle(j);
-              if(p.StatusCode() == 0 || p.StatusCode() == 1)
-                  std::cout << Style::LatexName(p.PdgCode())
+            const simb::MCParticle& p = mctruth[i]->GetParticle(j);
+            if(p.StatusCode() == 0 || p.StatusCode() == 1) {
+              int KE = 1000 * (p.E() - p.Mass());
+              std::cout<<std::right<<std::setw(7)<<i<<std::setw(5)<<j
+              <<std::setw(8)<<p.TrackId()
+              <<" "<<std::setw(14)<<Style::LatexName(p.PdgCode())
+              <<std::setw(7)<<int(1000 * p.P())
+              <<std::setw(7)<<KE<<std::setw(7)<<p.Mother()
+              <<" "<<p.Process()
+              <<"\n";
+            }
+/*
+                std::cout << Style::LatexName(p.PdgCode())
                   << "\t\t" << p.E() << " GeV"
                   << "\t"   << "(" << p.P() << " GeV/c)"
                   << std::endl;
+*/
           } // loop on j particles in list
       }
-  }
+    std::cout<<"Note: Momentum, P, and kinetic energy, T, in MeV/c\n";
+  } // MCTruthLongText
 
 
   //......................................................................
@@ -231,16 +245,16 @@ namespace evd{
 	  w1 = geo->NearestWire(xyz, plane, rawopt->fTPC, rawopt->fCryostat); 
 	}
 	catch(cet::exception& e){
-	  writeErrMsg("SimulationDrawer", e);
-	  w1 = atoi(e.explain_self().substr(e.explain_self().find("#")+1,5).c_str());
+//	  writeErrMsg("SimulationDrawer", e);
+//	  w1 = atoi(e.explain_self().substr(e.explain_self().find("#")+1,5).c_str());
         }
       
 	try{
 	  w2 = geo->NearestWire(xyz2, plane, rawopt->fTPC, rawopt->fCryostat); 
     	}
         catch(cet::exception& e){
-	  writeErrMsg("SimulationDrawer", e);
-	  w2 = atoi(e.explain_self().substr(e.explain_self().find("#")+1,5).c_str());
+//	  writeErrMsg("SimulationDrawer", e);
+//	  w2 = atoi(e.explain_self().substr(e.explain_self().find("#")+1,5).c_str());
 	}
 
         double time = detprop->ConvertXToTicks(xyz[0], (int)plane, 0, 0);

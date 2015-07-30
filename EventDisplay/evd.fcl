@@ -1,4 +1,4 @@
-#include "evdservices_argoneut.fcl"
+#include "evdservices.fcl"
 
 process_name: EVD
 
@@ -6,7 +6,7 @@ services:
 {
   # Load the service that manages root files for histograms.
   message:      @local::evd_message
-  user:         @local::argoneut_disp
+  @table::custom_disp
 }
 
 # Define the services

@@ -161,8 +161,6 @@ simple_plugin ( RawDrawingOptions service
 			Geometry_service
 			Geometry
 			RecoBase
-			CalibrationDBI_IOVData
-			CalibrationDBI_Providers
 			${EVENTDISPLAYBASE}
                         ${ART_FRAMEWORK_CORE}
 			${ART_FRAMEWORK_PRINCIPAL}

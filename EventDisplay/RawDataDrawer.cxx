@@ -128,6 +128,7 @@ namespace evd {
         
       geo::SigType_t sigType = geo->SignalType(hit->Channel());
       geo::View_t    v       = geo->View(hit->Channel());
+      double const wirePitch = geo->WirePitch(v); // FIXME this assumes all TPC are the same
       std::vector<geo::WireID> wireids = geo->ChannelToWire(hit->Channel());
       bool skipchan = true;
       for(auto const& wid : wireids){
@@ -171,7 +172,7 @@ namespace evd {
 	    if(std::abs(adc) < drawopt->fMinSignal) continue;
 	
 	    fRawCharge[plane] += std::abs(adc);
-	    double dQdX = std::abs(adc)/geo->WirePitch(v)/detp->ElectronsToADC();
+	    double const dQdX = std::abs(adc)/wirePitch/detp->ElectronsToADC();
 	    fConvertedCharge[plane] += larp->BirksCorrection(dQdX);
 	
 	    int    co = 0;

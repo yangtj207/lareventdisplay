@@ -25,8 +25,8 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Persistency/Common/Ptr.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
-
-#include "CalibrationDBI/IOVData/IOVTimeStamp.h"
+#include "CalibrationDBI/Interface/IDetPedestalService.h"
+#include "CalibrationDBI/Interface/IDetPedestalProvider.h"
 
 #include <iostream>
 #include <fstream>
@@ -98,6 +98,9 @@ namespace evd {
     art::ServiceHandle<util::LArProperties> larp;
     art::ServiceHandle<util::DetectorProperties> detp;
     
+    //get pedestal conditions
+    const lariov::IDetPedestalProvider& pedestalRetrievalAlg = art::ServiceHandle<lariov::IDetPedestalService>()->GetPedestalProvider();  
+    
     geo::PlaneID pid(drawopt->fCryostat, drawopt->fTPC, plane);
 
     unsigned int w  = 0;
@@ -116,9 +119,6 @@ namespace evd {
     
     // It will be better when this is a service...
     filter::ChannelFilter channelFilter;
-      
-    //Update the pedestal alg here
-    drawopt->fPedestalRetrievalAlg.Update(evt);
 
     for (auto const& hit : rawhits) {
 
@@ -146,9 +146,8 @@ namespace evd {
 	// check that the plane and tpc are the correct ones to draw
 	if(wid.planeID() == pid){
         
-      // recover the pedestal
-      lariov::DetPedestal detPedestal = drawopt->fPedestalRetrievalAlg.Pedestal(hit->Channel());
-      float               pedestal    = detPedestal.PedMean();
+          // recover the pedestal
+          float pedestal = pedestalRetrievalAlg.PedMean(hit->Channel());
 	  
 	  double wire = 1.*wid.Wire;
 	  double tick = 0;
@@ -321,8 +320,8 @@ namespace evd {
     // It will be better when this is a service...
     filter::ChannelFilter channelFilter;
       
-    //Update the pedestals here
-    drawopt->fPedestalRetrievalAlg.Update(evt);
+    //get pedestal conditions
+    const lariov::IDetPedestalProvider& pedestalRetrievalAlg = art::ServiceHandle<lariov::IDetPedestalService>()->GetPedestalProvider();
 
     for (auto const& hit : rawhits) {
         
@@ -338,8 +337,7 @@ namespace evd {
 	  std::vector<short> uncompressed(hit->Samples());
 	  raw::Uncompress(hit->ADCs(), uncompressed, hit->Compression());
         
-      lariov::DetPedestal detPedestal = drawopt->fPedestalRetrievalAlg.Pedestal(hit->Channel());
-      float               pedestal    = detPedestal.PedMean();
+          float pedestal = pedestalRetrievalAlg.PedMean(hit->Channel());
 
       
 	  for(unsigned int j = 0; j < uncompressed.size(); ++j)
@@ -377,8 +375,8 @@ namespace evd {
     // It will be better when this is a service...
     filter::ChannelFilter channelFilter;
       
-    // Update the pedestal retrieval alg
-    drawopt->fPedestalRetrievalAlg.Update(evt);
+    //get pedestal conditions
+    const lariov::IDetPedestalProvider& pedestalRetrievalAlg = art::ServiceHandle<lariov::IDetPedestalService>()->GetPedestalProvider();
 
     for (auto const& hit : rawhits) {
       
@@ -394,8 +392,8 @@ namespace evd {
       
 	  std::vector<short> uncompressed(hit->Samples());
 	  raw::Uncompress(hit->ADCs(), uncompressed, hit->Compression());
-      lariov::DetPedestal detPedestal = drawopt->fPedestalRetrievalAlg.Pedestal(hit->Channel());
-      float               pedestal    = detPedestal.PedMean();
+
+          float pedestal = pedestalRetrievalAlg.PedMean(hit->Channel());
       
 	  for(unsigned int j = 0; j < uncompressed.size(); ++j)
           histo->Fill(1.*j, 1.*uncompressed[j] - pedestal); //pedestals[plane]); //hit->GetPedestal());

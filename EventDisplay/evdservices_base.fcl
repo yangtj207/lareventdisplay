@@ -137,7 +137,7 @@ standard_evd:
 
 evd_message:
 {
- debugModules: "*"
+ debugModules: [ "*" ]
  destinations:
  {
   Drawers:

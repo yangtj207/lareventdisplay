@@ -308,6 +308,8 @@ namespace evd{
   //......................................................................
   void TWQProjectionView::Draw(const char* opt) 
   {  
+    mf::LogDebug("TWQProjectionView") << "Starting to draw";
+    
     art::ServiceHandle<geo::Geometry> geo;
 
     ClearAllSeeds();
@@ -331,8 +333,12 @@ namespace evd{
     // Reset current zooming plane - since it's not currently zooming.
     curr_zooming_plane=-1;
   
+    unsigned int const nPlanes = fPlanes.size();
+    mf::LogDebug("TWQProjectionView")
+      << "Start drawing " << nPlanes << " planes";
     //  double Charge=0, ConvCharge=0;
-    for(unsigned int i=0;i<fPlanes.size();++i){
+    for(unsigned int i=0;i<nPlanes;++i){
+      
       fPlanes[i]->Draw(opt);
       fPlanes[i]->Pad()->Update();
       fPlanes[i]->Pad()->GetFrame()->SetBit(TPad::kCannotMove,true);
@@ -351,6 +357,8 @@ namespace evd{
       //   }
    
     }
+    mf::LogDebug("TWQProjectionView")
+      << "Done drawing " << nPlanes << " planes";
   
 
     // Charge deposit feature - not working yet
@@ -380,6 +388,7 @@ namespace evd{
       fAngleInfo->SetForegroundColor(kBlack);
 
     evdb::Canvas::fCanvas->Update();
+    mf::LogDebug("TWQProjectionView") << "Done drawing";
   }
 
   // comment out this method as for now we don't want to change every

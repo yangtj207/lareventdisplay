@@ -61,7 +61,7 @@ namespace evd {
     double UpdateSeedCurve(std::vector<recob::Seed> SeedVec, int plane);
     evdb::View2D*  View() const { return fView; }
 
-    std::vector<double> GetCurrentZoom() {return fCurrentZoom;}
+    std::vector<double> const& GetCurrentZoom() const {return fCurrentZoom;}
     
   private:
     /*     void AutoZoom(); */

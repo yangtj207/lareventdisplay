@@ -48,13 +48,14 @@ namespace evd {
 
   //......................................................................
   RawDataDrawer::RawDataDrawer() :
-    fTicks(2048)
+    fStartTick(0),fTicks(2048)
   { 
     art::ServiceHandle<geo::Geometry> geo;
 
     art::ServiceHandle<evd::RawDrawingOptions> rawopt;
     
-    fTicks = rawopt->fTicks;
+    fStartTick = rawopt->fStartTick;
+    fTicks     = rawopt->fTicks;
 
     // set the list of bad channels in this detector
     filter::ChannelFilter cf; 
@@ -71,7 +72,7 @@ namespace evd {
         for(size_t w = 0; w < geo->Plane(p).Nwires(); ++w)
         {
             uint32_t channel = geo->PlaneWireToChannel(p, w);
-            if( cf.BadChannel(channel) ) fBadChannels.push_back(channel);
+            if( cf.GetChannelStatus(channel) > rawopt->fMaxChannelStatus ) fBadChannels.push_back(channel);
         }
     }
 
@@ -193,7 +194,7 @@ namespace evd {
 	      maxt = tdc;
 	
 	    // don't draw boxes for tdc values that don't exist
-	    if(tdc > fTicks || tdc < 0) continue;
+	    if(tdc > fStartTick+fTicks || tdc < fStartTick) continue;
     
 	    if(drawopt->fAxisOrientation < 1){
 	      TBox& b1 = view->AddBox(wire-sf*0.5,
@@ -245,7 +246,7 @@ namespace evd {
 	  int      co = cst->RawQ(sigType).GetColor(0);
 	  double wire = 1.*w;
 	  
-	  for(int i = 0; i < fTicks; i += ticksPerPoint){
+	  for(int i = fStartTick; i < fStartTick+fTicks; i += ticksPerPoint){
 	    double tdc = i + 0.5*ticksPerPoint;
 	    
 	    if(drawopt->fAxisOrientation < 1){

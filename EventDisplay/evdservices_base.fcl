@@ -22,8 +22,9 @@ standard_rawdrawingopt:
  DrawRawDataOrCalibWires:    0     # 0 = raw, 1 = calibrated signals, 2 = both for ADC vs TDC views         
  TicksPerPoint:              1     # number of TDC ticks to combine for each point in the TDC vs Wire veiws 
  ScaleDigitsByCharge:        0     # 0 = off, 1 = on                                                        
- MinimumSignal:              5.    # minimum ADC value to draw in TDC vs Wire views                         
- TotalTicks:                 2048. # display TDC ticks 0 -> TotalTicks                                      
+ MinimumSignal:              5.    # minimum ADC value to draw in TDC vs Wire views
+ StartTick:                  0.    # Starting tick for the display
+ TotalTicks:                 2048. # display TDC ticks 0 -> TotalTicks
  AxisOrientation:            0     # 0 = TDC on y-axis, wire number on x-axis, 1 has that swapped           
  TPC:                        0     # TPC number to display in TWQProjection view
  Cryostat:                   0     # Cryostat number to display in TWQProjection view
@@ -37,8 +38,9 @@ standard_recodrawingopt:
                                            # is set to 0                                                  
  DrawClusters:              1              # set to 1 to draw markers for each hit in the cluster - is working
                                            # 2 to draw outlines - not working yet,    
- DrawPFParticles:           0              # 1 to draw PFParticles             
- Draw2DSlopeEndPoints:      0              # draws end points and slopes for clusters, 0 = off, 1 = on    
+ DrawPFParticles:           0              # 1 to draw PFParticles
+                                           # 4 to have 3D display "white out" if tagged as cosmic
+ Draw2DSlopeEndPoints:      0              # draws end points and slopes for clusters, 0 = off, 1 = on
  DrawSpacePoints:           0              # 0 = off, 1 = on                                              
  DrawProngs:                0              # 0 = off, 1 = on                                              
  DrawTracks:                0  		       # 0 = off, 1 = on
@@ -72,7 +74,7 @@ standard_recodrawingopt:
  SeedModuleLabels:          ["seedfinder"] # list of module labels in which to look for recob::Seeds  
  BezierTrackModuleLabels:   ["beziertracker"] # list of module labels in which to look for Bezier Tracks    
  OpFlashModuleLabels:       ["opflashnew"] # list of module labels in which to look for recob::OpFlashes
- CosmicTagLabels:           [""]           # list of module labels in which to look for recob::Tracks     
+ CosmicTagModuleLabels:     [""]           # list of module labels in which to look for recob::Tracks
 
  EventModuleLabels:         [""]           # list of module labels in which to look for recob::Events     
  ColorProngsByLabel:        0              # 0 = generate color from id.
@@ -96,6 +98,8 @@ standard_simdrawingopt:
  ShowMCTruthText:         true       # toggle showing of MC interaction on or off
  ShowMCTruthVectors:      true       # toggle showing of MC truth directions in 2D
  ShowMCTruthTrajectories: true       # toggle showing of MC truth trajectories in 3D, all depositions
+ ShowMCTruthColors:       true       # toggle to use PDG colors for particles
+ ShowMCTruthFullSize:     true       # toggle to use larger size markers for visibility
  MinimumEnergyDeposition: 5e-5       # in GeV
  G4ModuleLabel:           "largeant" # module labels producing sim::SimChannel objects
 }

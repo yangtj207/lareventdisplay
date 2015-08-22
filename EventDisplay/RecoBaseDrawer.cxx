@@ -56,6 +56,7 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Persistency/Common/Ptr.h"
+#include "art/Persistency/Common/PtrVector.h"
 #include "art/Framework/Principal/Handle.h" 
 #include "art/Framework/Core/FindMany.h" 
 #include "messagefacility/MessageLogger/MessageLogger.h"
@@ -327,10 +328,10 @@ void RecoBaseDrawer::Hit2D(const art::Event& evt,
   ///
   /// assumes the hits are all from the correct plane for the given view
   void RecoBaseDrawer::Hit2D(std::vector<const recob::Hit*> hits,
-			     int                            color,
-			     evdb::View2D*                  view,
-                             bool              drawConnectingLines,
-			     float cscore) 
+			                 int                            color,
+			                 evdb::View2D*                  view,
+                             bool                           drawConnectingLines,
+			                 float                          cscore)
   {
     art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
@@ -842,12 +843,14 @@ void RecoBaseDrawer::Cluster2D(const art::Event& evt,
 	        if(clust[ic]->View() != gview) continue;
             
             // see if we can set the color index in a sensible fashion
-            int colorIdx(clust[ic]->ID()%evd::kNCOLS);
+            int clusterIdx(clust[ic]->ID());
+            int colorIdx(clusterIdx%evd::kNCOLS);
             
             if (fmc.isValid() && fmc.at(ic).isValid())
             {
                 const recob::PFParticle& pfParticle(fmc.at(ic).ref());
-                colorIdx = pfParticle.Self() % evd::kNCOLS;
+                clusterIdx = pfParticle.Self();
+                colorIdx   = clusterIdx % evd::kNCOLS;
             }
 
         std::vector<const recob::Hit*> hits = fmh.at(ic);
@@ -865,7 +868,7 @@ void RecoBaseDrawer::Cluster2D(const art::Event& evt,
           
           if(recoOpt->fDrawClusters > 3) {
             // BB: draw the cluster ID
-            std::string s = std::to_string(clust[ic]->ID());
+            std::string s = std::to_string(clusterIdx);
             char const* txt = s.c_str();
             double wire = clust[ic]->StartWire();
             double tick = 20 + clust[ic]->StartTick();
@@ -1149,7 +1152,7 @@ void RecoBaseDrawer::DrawTrack2D(std::vector<const recob::Hit*>& hits,
                                  unsigned int                    plane,
                                  const recob::Track*             track,
                                  int                             id, 
-				 float cscore)
+				                 float                           cscore)
 {
     art::ServiceHandle<util::DetectorProperties> detprop;
     art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
@@ -1263,8 +1266,8 @@ void RecoBaseDrawer::Prong2D(const art::Event& evt,
 
             art::FindMany<recob::Hit> fmh(track, evt, which);
 
-	    std::string const whichTag( recoOpt->fCosmicTagLabels.size() != 0 ? recoOpt->fCosmicTagLabels[imod] : "");
-	    art::FindManyP<anab::CosmicTag> cosmicTrackTags( track, evt, whichTag );
+            std::string const whichTag( recoOpt->fCosmicTagLabels.size() >= imod ? recoOpt->fCosmicTagLabels[imod] : "");
+            art::FindManyP<anab::CosmicTag> cosmicTrackTags( track, evt, whichTag );
 
             // loop over the prongs and get the clusters and hits associated with
             // them.  only keep those that are in this view
@@ -1574,7 +1577,7 @@ void RecoBaseDrawer::SpacePoint3D(const art::Event& evt,
         std::vector<const recob::SpacePoint*> spts;
         this->GetSpacePoints(evt, which, spts);
         int color = imod;
-        this->DrawSpacePoint3D(spts, color, view);
+        this->DrawSpacePoint3D(spts, view, color);
     }
 
     return;
@@ -1612,6 +1615,17 @@ void RecoBaseDrawer::PFParticle3D(const art::Event& evt,
         
         // Need the PCA info as well
         art::FindMany<recob::PCAxis> pcAxisAssnVec(pfParticleVec, evt, which);
+        
+        // Want CR tagging info
+        // Note the cosmic tags come from a different producer - we assume that the producers are
+        // matched in the fcl label vectors!
+        std::string cosmicTagLabel = imod < recoOpt->fCosmicTagLabels.size() ? recoOpt->fCosmicTagLabels[imod] : "";
+        art::FindMany<anab::CosmicTag> pfCosmicAssns(pfParticleVec, evt, cosmicTagLabel);
+        
+        // We also want to drive display of tracks but have the same issue with production... so follow the
+        // same prescription.
+        std::string trackTagLabel = imod < recoOpt->fTrackLabels.size() ? recoOpt->fTrackLabels[imod] : "";
+        art::FindMany<recob::Track> pfTrackAssns(pfParticleVec, evt, trackTagLabel);
 
         // Commence looping over possible clusters
         for(size_t idx = 0; idx < pfParticleVec.size(); idx++)
@@ -1624,7 +1638,7 @@ void RecoBaseDrawer::PFParticle3D(const art::Event& evt,
             if (!pfParticle->IsPrimary()) continue;
             
             // Call the recursive drawing routine
-            DrawPFParticle3D(pfParticle, pfParticleVec, spacePointAssnVec, pcAxisAssnVec, 0, view);
+            DrawPFParticle3D(pfParticle, pfParticleVec, spacePointAssnVec, pfTrackAssns, pcAxisAssnVec, pfCosmicAssns, 0, view);
         }
     }
 
@@ -1635,7 +1649,9 @@ void RecoBaseDrawer::PFParticle3D(const art::Event& evt,
 void RecoBaseDrawer::DrawPFParticle3D(const art::Ptr<recob::PFParticle>&       pfPart,
                                       const art::PtrVector<recob::PFParticle>& pfParticleVec,
                                       const art::FindMany<recob::SpacePoint>&  spacePointAssnVec,
+                                      const art::FindMany<recob::Track>&       trackAssnVec,
                                       const art::FindMany<recob::PCAxis>&      pcAxisAssnVec,
+                                      const art::FindMany<anab::CosmicTag>&    cosmicTagAssnVec,
                                       int                                      depth,
                                       evdb::View3D*                            view)
 {
@@ -1646,7 +1662,25 @@ void RecoBaseDrawer::DrawPFParticle3D(const art::Ptr<recob::PFParticle>&       p
     
     // Use the particle ID to determine the color to draw the points
     // Ok, this is what we would like to do eventually but currently all particles are the same...
-    int colorIdx = evd::kColor[pfPart->Self() % evd::kNCOLS];
+    bool isCosmic(false);
+    int  colorIdx(evd::kColor[pfPart->Self() % evd::kNCOLS]);
+    
+    // Recover cosmic tag info if any
+    if (cosmicTagAssnVec.isValid() && recoOpt->fDrawPFParticles > 3)
+    {
+        std::vector<const anab::CosmicTag*> pfCosmicTagVec = cosmicTagAssnVec.at(pfPart.key());
+        
+        if (!pfCosmicTagVec.empty())
+        {
+            const anab::CosmicTag* cosmicTag = pfCosmicTagVec.front();
+            
+            if (cosmicTag->CosmicScore() > 0.4) isCosmic = true;
+        }
+        
+    }
+    
+    // Reset color index if a cosmic
+    if (isCosmic) colorIdx = 12;
     
     if (!hitsVec.empty())
     {
@@ -1724,20 +1758,37 @@ void RecoBaseDrawer::DrawPFParticle3D(const art::Ptr<recob::PFParticle>&       p
             pm6.SetPolyMarker(nPairHits, pairPoints.get(), kFullDotMedium);
         }
         
-        TPolyMarker3D& pm2 = view->AddPolyMarker3D(1, 0, kFullDotMedium, 1);
+        int skeletonColorIdx = !isCosmic ? 0 : colorIdx + 3;
+        
+        TPolyMarker3D& pm2 = view->AddPolyMarker3D(1, skeletonColorIdx, kFullDotMedium, 1);
         pm2.SetPolyMarker(nSkeletonHits, skeletonPositions.get(), kFullDotMedium);
         
-        TPolyMarker3D& pm3 = view->AddPolyMarker3D(1, 3, kFullDotMedium, 1);
+        int skelEdgeColorIdx = !isCosmic ? 3 : colorIdx;
+        
+        TPolyMarker3D& pm3 = view->AddPolyMarker3D(1, skelEdgeColorIdx, kFullDotMedium, 1);
         pm3.SetPolyMarker(nSkelEdgeHits, skelEdgePositions.get(), kFullDotMedium);
         
-        TPolyMarker3D& pm4 = view->AddPolyMarker3D(1, 5, kFullDotMedium, 1);
+        int seedColorIdx = !isCosmic ? 5 : colorIdx;
+        
+        TPolyMarker3D& pm4 = view->AddPolyMarker3D(1, seedColorIdx, kFullDotMedium, 1);
         pm4.SetPolyMarker(nSeedHits, seedPoints.get(), kFullDotMedium);
+    }
+    
+    // Draw associated tracks
+    if (trackAssnVec.isValid())
+    {
+        std::vector<const recob::Track*> trackVec(trackAssnVec.at(pfPart.key()));
+        
+        if (!trackVec.empty())
+        {
+            for(const auto& track : trackVec) DrawTrack3D(*track, view, colorIdx);
+        }
     }
     
     // Look up the PCA info
     if (pcAxisAssnVec.isValid())
     {
-        std::vector<const recob::PCAxis*> pcaVec(pcAxisAssnVec.at(pfPart->Self()));
+        std::vector<const recob::PCAxis*> pcaVec(pcAxisAssnVec.at(pfPart.key()));
     
         if (!pcaVec.empty())
         {
@@ -1749,6 +1800,8 @@ void RecoBaseDrawer::DrawPFParticle3D(const art::Ptr<recob::PFParticle>&       p
             int markStyle[2] = {       4,  4};
             int pcaIdx(0);
 
+            if (!isCosmic) lineColor[2] = colorIdx;
+            
             // The order of axes in the returned association vector is arbitrary... the "first" axis is
             // better and we can divine that by looking at the axis id's (the best will have been made first)
             if (pcaVec.size() > 1 && pcaVec.front()->getID() > pcaVec.back()->getID()) std::reverse(pcaVec.begin(), pcaVec.end());
@@ -1815,7 +1868,7 @@ void RecoBaseDrawer::DrawPFParticle3D(const art::Ptr<recob::PFParticle>&       p
         
         for(const auto& daughterIdx : pfPart->Daughters())
         {
-            DrawPFParticle3D(pfParticleVec.at(daughterIdx), pfParticleVec, spacePointAssnVec, pcAxisAssnVec, depth, view);
+            DrawPFParticle3D(pfParticleVec.at(daughterIdx), pfParticleVec, spacePointAssnVec, trackAssnVec, pcAxisAssnVec, cosmicTagAssnVec, depth, view);
         }
     }
     
@@ -1824,120 +1877,151 @@ void RecoBaseDrawer::DrawPFParticle3D(const art::Ptr<recob::PFParticle>&       p
 
 //......................................................................
 void RecoBaseDrawer::Prong3D(const art::Event& evt,
-			       evdb::View3D*     view)
+                             evdb::View3D*     view)
 {
-  art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
-  art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
+    art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
+    art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
 
-  if(rawOpt->fDrawRawDataOrCalibWires < 1) return;
+    if(rawOpt->fDrawRawDataOrCalibWires < 1) return;
 
-  // annoying for now, but have to have multiple copies of basically the
-  // same code to draw prongs, showers and tracks so that we can use
-  // the art::Assns to get the hits and clusters.
+    // annoying for now, but have to have multiple copies of basically the
+    // same code to draw prongs, showers and tracks so that we can use
+    // the art::Assns to get the hits and clusters.
 
-  // Tracks.
+    // Tracks.
 
-  if(recoOpt->fDrawTracks != 0){
-    for(size_t imod = 0; imod < recoOpt->fTrackLabels.size(); ++imod) {
-	std::string which = recoOpt->fTrackLabels[imod];
-	art::View<recob::Track> track;
-	this->GetTracks(evt, which, track);
+    if(recoOpt->fDrawTracks > 2){
+        for(size_t imod = 0; imod < recoOpt->fTrackLabels.size(); ++imod) {
+            std::string which = recoOpt->fTrackLabels[imod];
+            art::View<recob::Track> trackView;
+            this->GetTracks(evt, which, trackView);
+            
+            art::PtrVector<recob::Track> trackVec;
+            
+            trackView.fill(trackVec);
+            
+            std::string const cosmicTagLabel(recoOpt->fCosmicTagLabels.size() >= imod ? recoOpt->fCosmicTagLabels[imod] : "");
+            art::FindMany<anab::CosmicTag> cosmicTagAssnVec(trackVec, evt, cosmicTagLabel);
 
-	for(size_t t = 0; t < track.vals().size(); ++t) {
-	  const recob::Track* ptrack = track.vals().at(t);
-	  int color = ptrack->ID();
+            for(const auto& track : trackVec)
+            {
+                int color  = evd::kColor[track->ID()%evd::kNCOLS];
+                int marker = kFullDotMedium;
+                int size   = 2;
+                
+                // Check if a CosmicTag object is available
+                
+                // Recover cosmic tag info if any
+                if (cosmicTagAssnVec.isValid())
+                {
+                    std::vector<const anab::CosmicTag*> tkCosmicTagVec = cosmicTagAssnVec.at(track.key());
+                    
+                    if (!tkCosmicTagVec.empty())
+                    {
+                        const anab::CosmicTag* cosmicTag = tkCosmicTagVec.front();
+                        
+                        // If tagged as Cosmic then neutralize the color
+                        if (cosmicTag->CosmicScore() > 0.4)
+                        {
+                            color  = 14;
+                            marker = kFullDotSmall;
+                            size   = 1;
+                        }
+                    }
+                }
 
-	  // Draw track using only embedded information.
+                // Draw track using only embedded information.
 
-	  DrawTrack3D(*ptrack, color, view);
-	}
+                DrawTrack3D(*track, view, color, marker, size);
+            }
+        }
     }
-  }
 
-  // Showers.
+    // Showers.
 
-  if(recoOpt->fDrawShowers != 0){
-    for(size_t imod = 0; imod < recoOpt->fShowerLabels.size(); ++imod) {
-	std::string which = recoOpt->fShowerLabels[imod];
-	art::View<recob::Shower> shower;
-	this->GetShowers(evt, which, shower);
+    if(recoOpt->fDrawShowers != 0){
+        for(size_t imod = 0; imod < recoOpt->fShowerLabels.size(); ++imod) {
+            std::string which = recoOpt->fShowerLabels[imod];
+            art::View<recob::Shower> shower;
+            this->GetShowers(evt, which, shower);
 
-	for(size_t s = 0; s < shower.vals().size(); ++s) {
-	  const recob::Shower* pshower = shower.vals().at(s);
-	  int color = pshower->ID();
-	  DrawShower3D(*pshower, color, view);
-	}
+            for(size_t s = 0; s < shower.vals().size(); ++s) {
+                const recob::Shower* pshower = shower.vals().at(s);
+                int color = pshower->ID();
+                DrawShower3D(*pshower, color, view);
+            }
+        }
     }
-  }
 
-  return;
+    return;
 }
 
 //......................................................................
 void RecoBaseDrawer::DrawSpacePoint3D(const std::vector<const recob::SpacePoint*>& spts,
-					int                 color, 
-					evdb::View3D*       view)
+					                  evdb::View3D*                                view,
+                                      int                                          color,
+                                      int                                          marker,
+                                      int                                          size)
 {
-  // Get services.
+    // Get services.
 
-  art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
+    art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
 
-  // Organize space points into separate collections according to the color 
-  // we want them to be.
-  // If option If option fColorSpacePointsByChisq is false, this means
-  // having a single collection with color inherited from the prong
-  // (specified by the argument color).
+    // Organize space points into separate collections according to the color
+    // we want them to be.
+    // If option If option fColorSpacePointsByChisq is false, this means
+    // having a single collection with color inherited from the prong
+    // (specified by the argument color).
 
-  std::map<int, std::vector<const recob::SpacePoint*> > spmap;   // Indexed by color.
+    std::map<int, std::vector<const recob::SpacePoint*> > spmap;   // Indexed by color.
+    int spcolor = color;
 
-  for(auto i : spts) {
-    const recob::SpacePoint* pspt = i;
-    if(pspt == 0) throw cet::exception("RecoBaseDrawer:DrawSpacePoint3D") << "space point is null\n";
+    for(auto i : spts) {
+        const recob::SpacePoint* pspt = i;
+        if(pspt == 0) throw cet::exception("RecoBaseDrawer:DrawSpacePoint3D") << "space point is null\n";
 
-    // By default use event display palette.
+        // For rainbow effect, choose root colors in range [51,100].
+        // We are using 100=best (red), 51=worst (blue).
 
-    int spcolor = evd::kColor[color%evd::kNCOLS];
-
-    // For rainbow effect, choose root colors in range [51,100].
-    // We are using 100=best (red), 51=worst (blue).
-
-    if(recoOpt->fColorSpacePointsByChisq) {
-	spcolor = 100 - 2.5 * pspt->Chisq();
-	if(spcolor < 51)
-	  spcolor = 51;
-	if(spcolor > 100)
-	  spcolor = 100;
+        if(recoOpt->fColorSpacePointsByChisq) {
+            spcolor = 100 - 2.5 * pspt->Chisq();
+            if(spcolor < 51)
+                spcolor = 51;
+            if(spcolor > 100)
+                spcolor = 100;
+        }
+        spmap[spcolor].push_back(pspt);
     }
-    spmap[spcolor].push_back(pspt);
-  }
 
-  // Loop over colors.
-  // Note that larger (=better) space points are plotted on
-  // top for optimal visibility.
+    // Loop over colors.
+    // Note that larger (=better) space points are plotted on
+    // top for optimal visibility.
 
-  for(auto const icolor : spmap) {
-    int spcolor = icolor.first;
-    const std::vector<const recob::SpacePoint*>& psps = icolor.second;
+    for(auto const icolor : spmap) {
+        int spcolor = icolor.first;
+        const std::vector<const recob::SpacePoint*>& psps = icolor.second;
 
-    // Make and fill a polymarker.
+        // Make and fill a polymarker.
 
-    TPolyMarker3D& pm = view->AddPolyMarker3D(psps.size(), spcolor, 1, 3);
+        TPolyMarker3D& pm = view->AddPolyMarker3D(psps.size(), spcolor, marker, size);
 
-    for(size_t s = 0; s < psps.size(); ++s){
-	const recob::SpacePoint& spt = *psps[s];
+        for(size_t s = 0; s < psps.size(); ++s){
+            const recob::SpacePoint& spt = *psps[s];
 
-	const double *xyz = spt.XYZ();
-	pm.SetPoint(s, xyz[0], xyz[1], xyz[2]);
+            const double *xyz = spt.XYZ();
+            pm.SetPoint(s, xyz[0], xyz[1], xyz[2]);
+        }
     }
-  }
   
-  return;
+    return;
 }
 
 //......................................................................
 void RecoBaseDrawer::DrawTrack3D(const recob::Track& track,
-				   int                 color, 
-				   evdb::View3D*       view)
+                                 evdb::View3D*       view,
+                                 int                 color,
+                                 int                 marker,
+                                 int                 size)
 {
     // Get options.
     art::ServiceHandle<evd::RecoDrawingOptions> recoOpt;
@@ -1967,7 +2051,7 @@ void RecoBaseDrawer::DrawTrack3D(const recob::Track& track,
                     if(&*p == &track)
                     {
 	                    std::vector<const recob::SpacePoint*> spts = fmsp.at(i);
-	                    DrawSpacePoint3D(spts, color, view);
+	                    DrawSpacePoint3D(spts, view, color, marker, 1);
 	                }
                 }
             }
@@ -1980,13 +2064,13 @@ void RecoBaseDrawer::DrawTrack3D(const recob::Track& track,
         int np = track.NumberTrajectoryPoints();
       
         // Make and fill a special polymarker for the head of the track
-        TPolyMarker3D& pmStart = view->AddPolyMarker3D(1, evd::kColor[color%evd::kNCOLS], 4, 3);
+        TPolyMarker3D& pmStart = view->AddPolyMarker3D(1, color, 4, 3);
       
         const TVector3& firstPos = track.LocationAtPoint(0);
         pmStart.SetPoint(0, firstPos.X(), firstPos.Y(), firstPos.Z());
       
         // Make and fill a polymarker.
-        TPolyMarker3D& pm = view->AddPolyMarker3D(np, evd::kColor[color%evd::kNCOLS], 1, 3);
+        TPolyMarker3D& pm = view->AddPolyMarker3D(np, color, 1, 3);
       
         for(int p = 0; p < np; ++p)
         {
@@ -1995,7 +2079,7 @@ void RecoBaseDrawer::DrawTrack3D(const recob::Track& track,
         }
       
         // As we are a track, should we not be drawing a line here?
-        TPolyLine3D& pl = view->AddPolyLine3D(np, evd::kColor[color%evd::kNCOLS], 2, 7);
+        TPolyLine3D& pl = view->AddPolyLine3D(np, color, size, 7);
       
         for(int p = 0; p < np; ++p)
         {
@@ -2009,11 +2093,9 @@ void RecoBaseDrawer::DrawTrack3D(const recob::Track& track,
         TVector3 startPos(track.LocationAtPoint(0));
         TVector3 startDir(track.DirectionAtPoint(0));
       
-        //std::cout << "********************NEW TRACK*********************" << std::endl;
-      
         for(int p = 1; p < np; ++p)
         {
-            TPolyLine3D& pl = view->AddPolyLine3D(2, evd::kColor[(color+1)%evd::kNCOLS], 2, 7); //1, 3);
+            TPolyLine3D& pl = view->AddPolyLine3D(2, (color+1)%evd::kNCOLS, size, 7); //1, 3);
           
             TVector3 nextPos(track.LocationAtPoint(p));
             TVector3 deltaPos = nextPos - startPos;
@@ -2062,7 +2144,7 @@ void RecoBaseDrawer::DrawShower3D(const recob::Shower& shower,
                 art::Ptr<recob::Shower> p(handle, i);
                 if(&*p == &shower) {
                     std::vector<const recob::SpacePoint*> spts = fmsp.at(i);
-                    DrawSpacePoint3D(spts, color, view);
+                    DrawSpacePoint3D(spts, view, color);
                 }
             }
         }
@@ -2098,7 +2180,7 @@ void RecoBaseDrawer::Vertex3D(const art::Event& evt,
 	  
 	  // grab the Prongs from the vertex and draw those
 	  for(size_t t = 0; t < tracks.size(); ++t)
-	    this->DrawTrack3D(*(tracks[t]), vertex[v]->ID(), view);
+	    this->DrawTrack3D(*(tracks[t]), view, vertex[v]->ID());
 	  
 	  for(size_t s = 0; s < showers.size(); ++s)
 	    this->DrawShower3D(*(showers[s]), vertex[v]->ID(), view);
@@ -2155,7 +2237,7 @@ void RecoBaseDrawer::Event3D(const art::Event& evt,
 
 	    // grab the Prongs from the vertex and draw those
 	    for(size_t t = 0; t < tracks.size(); ++t)
-	      this->DrawTrack3D(*(tracks[t]), event[e]->ID(), view);
+	      this->DrawTrack3D(*(tracks[t]), view, event[e]->ID());
 
 	    for(size_t s = 0; s < showers.size(); ++s)
 	      this->DrawShower3D(*(showers[s]), event[e]->ID(), view);

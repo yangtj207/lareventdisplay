@@ -3,7 +3,7 @@
 /// \author  messier@indiana.edu
 /// \version $Id: RecoBaseDrawer.h,v 1.3 2010/11/11 22:47:20 p-novaart Exp $
 #ifndef EVD_RECOBASEDRAWER_H
-#define EVD_RECOVASEDRAWER_H
+#define EVD_RECOBASEDRAWER_H
 #include <vector>
 #ifdef __CINT__
 
@@ -81,16 +81,17 @@ public:
 	           evdb::View2D*     view,
 	           unsigned int      plane);
     void Hit2D(std::vector<const recob::Hit*> hits,
-	       int                            color,
-	       evdb::View2D*                  view,
-               bool              drawConnectingLines = false,
-	       float cscore = -1);
+	           int                            color,
+	           evdb::View2D*                  view,
+               bool                           drawConnectingLines = false,
+               float                          cscore = -1.);
     void EndPoint2D(const art::Event& evt,
 		            evdb::View2D*     view,
                     unsigned int      plane);
     void OpFlash2D(const art::Event& evt,
 		           evdb::View2D*     view,
 		           unsigned int      plane);
+
     void Seed2D(const art::Event& evt,
 		        evdb::View2D*     view,
 		        unsigned int      plane);
@@ -130,7 +131,7 @@ public:
                      unsigned int                    plane,
                      const recob::Track*             track,
                      int                             id,
-		     float cscore = -5);
+                     float                           cscore = -5.);
     void Vertex2D(const art::Event& evt,
 		          evdb::View2D*     view,
 		          unsigned int      plane);
@@ -145,17 +146,23 @@ public:
     void DrawPFParticle3D(const art::Ptr<recob::PFParticle>&       pfPart,
                           const art::PtrVector<recob::PFParticle>& pfParticleVec,
                           const art::FindMany<recob::SpacePoint>&  spacePointAssnsVec,
+                          const art::FindMany<recob::Track>&       trackAssnVec,
                           const art::FindMany<recob::PCAxis>&      pcAxisAssnVec,
+                          const art::FindMany<anab::CosmicTag>&    cosmicTagAssnVec,
                           int                                      depth,
                           evdb::View3D*                            view);
     void Prong3D(const art::Event& evt,
 		         evdb::View3D*     view);
     void DrawSpacePoint3D(const std::vector<const recob::SpacePoint*>& spts,
-			              int                 color,
-			              evdb::View3D*       view);
+                          evdb::View3D*                                view,
+                          int                                          color,
+                          int                                          marker = 3,
+                          int                                          size = 1);
     void DrawTrack3D(const recob::Track& track,
+		             evdb::View3D*       view,
                      int                 color,
-		             evdb::View3D*       view);
+                     int                 marker = 1,
+                     int                 size = 2);
     void DrawShower3D(const recob::Shower& shower,
 		              int                  color,
                       evdb::View3D*        view);
@@ -163,7 +170,7 @@ public:
 		        evdb::View3D*     view);
     void BezierTrack3D(const art::Event& evt,
 		               evdb::View3D*     view);
-        void Vertex3D(const art::Event& evt,
+    void Vertex3D(const art::Event& evt,
 		          evdb::View3D*     view);
     void Event3D(const art::Event& evt,
                 evdb::View3D*     view);

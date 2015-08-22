@@ -291,7 +291,7 @@ namespace evd{
      double qxhiraw   = cst->fRawQHigh[(size_t)sigType];
      double qxloreco  = cst->fRecoQLow[(size_t)sigType];
      double qxhireco  = cst->fRecoQHigh[(size_t)sigType];
-     double tqxlo     = 0.;
+     double tqxlo     = 1.*this->RawDataDraw()->StartTick();
      double tqxhi     = 1.*this->RawDataDraw()->TotalClockTicks();
      
      switch (fTQ) {
@@ -305,8 +305,8 @@ namespace evd{
          fRecoHisto->SetMinimum(qxloreco);
          break; // kQ
        case kTQ:
-         fRawHisto = new TH1F("fRAWTQHisto", ";t [ticks];q [ADC]", (int)tqxhi,tqxlo,tqxhi);
-         fRecoHisto = new TH1F("fCALTQHisto", ";t [ticks];q [ADC]", (int)tqxhi,tqxlo,tqxhi);
+         fRawHisto = new TH1F("fRAWTQHisto", ";t [ticks];q [ADC]", (int)tqxhi,tqxlo,tqxhi+tqxlo);
+         fRecoHisto = new TH1F("fCALTQHisto", ";t [ticks];q [ADC]", (int)tqxhi,tqxlo,tqxhi+tqxlo);
          fRecoHisto->SetLineColor(kBlue);
          break;
        default:

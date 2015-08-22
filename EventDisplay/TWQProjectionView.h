@@ -134,6 +134,7 @@ namespace evd {
     std::vector<TQPad* >        fPlaneQ; ///< charge on each plane
     std::vector<TWireProjPad*>  fPlanes; ///< time vs wire projection for each plane
     
+    double fLastThreshold;               ///< Kludge to prevent double drawing when changing threshold
     
     
     TGCompositeFrame*    fMetaFrame;   ///< needed for the side frame

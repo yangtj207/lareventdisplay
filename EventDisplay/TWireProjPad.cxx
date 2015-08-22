@@ -102,16 +102,16 @@ namespace evd{
     
     fXLo = -0.005*(geo->Nwires(fPlane)-1);
     fXHi =  1.005*(geo->Nwires(fPlane)-1);
-    fYLo = -0.005*this->RawDataDraw()->TotalClockTicks();
-    fYHi =  1.01*this->RawDataDraw()->TotalClockTicks();
+    fYLo =  0.990*this->RawDataDraw()->StartTick();
+    fYHi =  1.005*(this->RawDataDraw()->StartTick()+this->RawDataDraw()->TotalClockTicks());
     
     art::ServiceHandle<evd::RawDrawingOptions> rawopt;
     fOri = rawopt->fAxisOrientation;
     if(fOri > 0){
       fYLo = -0.005*(geo->Nwires(fPlane)-1);
       fYHi =  1.005*(geo->Nwires(fPlane)-1);
-      fXLo = -0.005*this->RawDataDraw()->TotalClockTicks();
-      fXHi =  1.01*this->RawDataDraw()->TotalClockTicks();
+      fXLo =  0.990*this->RawDataDraw()->StartTick();
+      fXHi =  1.005*(this->RawDataDraw()->StartTick()+this->RawDataDraw()->TotalClockTicks());
       xtitle = ";t (tdc);InductionWire";
       if(geo->Plane(fPlane).SignalType() == geo::kCollection) xtitle = ";t (tdc);Collection Wire";
     }      
@@ -146,69 +146,73 @@ namespace evd{
   //......................................................................
   void TWireProjPad::Draw(const char* opt) 
   {
-    ///\todo: Why is kSelectedColor hard coded?
-    int kSelectedColor = 4;
-    fView->Clear();
+      if (!opt || opt[0] != '1')
+      {
+          ///\todo: Why is kSelectedColor hard coded?
+          int kSelectedColor = 4;
+          fView->Clear();
 	
-    // grab the singleton holding the art::Event
-    const art::Event *evt = evdb::EventHolder::Instance()->GetEvent();
-    if(evt){
-      art::ServiceHandle<evd::RecoDrawingOptions> recoOpt;
+          // grab the singleton holding the art::Event
+          const art::Event *evt = evdb::EventHolder::Instance()->GetEvent();
+          if(evt){
+              art::ServiceHandle<evd::RecoDrawingOptions> recoOpt;
 
-      this->SimulationDraw()->MCTruthVectors2D(*evt, fView, fPlane);
-      this->RawDataDraw()->   RawDigit2D      (*evt, fView, fPlane);
-      this->RecoBaseDraw()->  Wire2D          (*evt, fView, fPlane);
-      this->RecoBaseDraw()->  Hit2D           (*evt, fView, fPlane);
+              this->SimulationDraw()->MCTruthVectors2D(*evt, fView, fPlane);
+              this->RawDataDraw()->   RawDigit2D      (*evt, fView, fPlane);
+              this->RecoBaseDraw()->  Wire2D          (*evt, fView, fPlane);
+              this->RecoBaseDraw()->  Hit2D           (*evt, fView, fPlane);
       
-      if(recoOpt->fUseHitSelector)
-	this->RecoBaseDraw()->Hit2D(this->HitSelectorGet()->GetSelectedHits(fPlane), 
-				    kSelectedColor, 
-				    fView);
+              if(recoOpt->fUseHitSelector)
+                  this->RecoBaseDraw()->Hit2D(this->HitSelectorGet()->GetSelectedHits(fPlane),
+                                              kSelectedColor,
+                                              fView);
    
-      this->RecoBaseDraw()->  Cluster2D       (*evt, fView, fPlane);
-      this->RecoBaseDraw()->  EndPoint2D      (*evt, fView, fPlane);
-      this->RecoBaseDraw()->  Prong2D         (*evt, fView, fPlane);
-      this->RecoBaseDraw()->  Vertex2D        (*evt, fView, fPlane);
-      this->RecoBaseDraw()->  Seed2D          (*evt, fView, fPlane);
-      this->RecoBaseDraw()->  BezierTrack2D   (*evt, fView, fPlane);
-      this->RecoBaseDraw()->  OpFlash2D       (*evt, fView, fPlane);
-      this->RecoBaseDraw()->  Event2D         (*evt, fView, fPlane);
+              this->RecoBaseDraw()->  Cluster2D       (*evt, fView, fPlane);
+              this->RecoBaseDraw()->  EndPoint2D      (*evt, fView, fPlane);
+              this->RecoBaseDraw()->  Prong2D         (*evt, fView, fPlane);
+              this->RecoBaseDraw()->  Vertex2D        (*evt, fView, fPlane);
+              this->RecoBaseDraw()->  Seed2D          (*evt, fView, fPlane);
+              this->RecoBaseDraw()->  BezierTrack2D   (*evt, fView, fPlane);
+              this->RecoBaseDraw()->  OpFlash2D       (*evt, fView, fPlane);
+              this->RecoBaseDraw()->  Event2D         (*evt, fView, fPlane);
       
-      UpdatePad();
-    } // if (evt)
+              UpdatePad();
+          } // if (evt)
 
-    ClearandUpdatePad();
+          ClearandUpdatePad();
        
-    // check if we need to swap the axis ranges
-    art::ServiceHandle<evd::RawDrawingOptions> rawopt;
-    if(fOri != rawopt->fAxisOrientation){
-      fOri = rawopt->fAxisOrientation;
-      double max = fXHi;
-      double min = fXLo;
-      fXHi = fYHi;
-      fXLo = fYLo;
-      fYHi = max;
-      fYLo = min;
+          // check if we need to swap the axis ranges
+          art::ServiceHandle<evd::RawDrawingOptions> rawopt;
+          if(fOri != rawopt->fAxisOrientation){
+              fOri = rawopt->fAxisOrientation;
+              double max = fXHi;
+              double min = fXLo;
+              fXHi = fYHi;
+              fXLo = fYLo;
+              fYHi = max;
+              fYLo = min;
      
-      SetZoomRange(fXLo, fXHi, fYLo, fYHi);
+              SetZoomRange(fXLo, fXHi, fYLo, fYHi);
 
-      TString xtitle = fHisto->GetXaxis()->GetTitle();
-      fHisto->GetXaxis()->SetTitle(fHisto->GetYaxis()->GetTitle());
-      fHisto->GetYaxis()->SetTitle(xtitle);
-    }
+              TString xtitle = fHisto->GetXaxis()->GetTitle();
+              fHisto->GetXaxis()->SetTitle(fHisto->GetYaxis()->GetTitle());
+              fHisto->GetYaxis()->SetTitle(xtitle);
+          }
 
-    if (fPlane > 0) fHisto->Draw("X+");
-    else            fHisto->Draw("");
+          if (fPlane > 0) fHisto->Draw("X+");
+          else            fHisto->Draw("");
 
       
-    // Check if we should zoom the displays
-    if (opt==0) {
-      //       if (drawopt->fAutoZoom) this->AutoZoom();
-      //       else                    this->ShowFull();
-      this->ShowFull();
-    }
+          // Check if we should zoom the displays
+          if (opt==0) {
+              //       if (drawopt->fAutoZoom) this->AutoZoom();
+              //       else                    this->ShowFull();
+              this->ShowFull();
+          }
+      }
+      
     
-    fView->Draw();
+      fView->Draw();
 
   }
 

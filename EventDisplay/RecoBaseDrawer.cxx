@@ -304,6 +304,10 @@ void RecoBaseDrawer::Hit2D(const art::Event& evt,
 
       // Display all hits on the two 2D views provided
       for(auto itr : hits){
+
+        if(itr->WireID().TPC      != rawOpt->fTPC ||
+           itr->WireID().Cryostat != rawOpt->fCryostat) continue;
+
         // Try to get the "best" charge measurement, ie. the one last in
         // the calibration chain
         fRawCharge[itr->WireID().Plane]    += itr->PeakAmplitude();
@@ -857,8 +861,8 @@ void RecoBaseDrawer::Cluster2D(const art::Event& evt,
 
         // check for correct tpc, the view check done above
         // ensures we are in the correct plane
-        if((*hits.begin())->WireID().TPC      != rawOpt->fTPC || 
-           (*hits.begin())->WireID().Cryostat != rawOpt->fCryostat) continue;
+//        if((*hits.begin())->WireID().TPC      != rawOpt->fTPC || 
+//           (*hits.begin())->WireID().Cryostat != rawOpt->fCryostat) continue;
 
         if (drawAsMarkers) {
           // draw cluster with unique marker

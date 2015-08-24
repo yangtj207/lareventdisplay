@@ -1270,7 +1270,7 @@ void RecoBaseDrawer::Prong2D(const art::Event& evt,
 
             art::FindMany<recob::Hit> fmh(track, evt, which);
 
-            std::string const whichTag( recoOpt->fCosmicTagLabels.size() >= imod ? recoOpt->fCosmicTagLabels[imod] : "");
+            std::string const whichTag( recoOpt->fCosmicTagLabels.size() > imod ? recoOpt->fCosmicTagLabels[imod] : "");
             art::FindManyP<anab::CosmicTag> cosmicTrackTags( track, evt, whichTag );
 
             // loop over the prongs and get the clusters and hits associated with

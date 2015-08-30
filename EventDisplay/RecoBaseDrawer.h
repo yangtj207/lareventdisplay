@@ -300,7 +300,6 @@ public:
         
   private:
 
-    std::vector<unsigned int> fBadChannels;     ///< list of bad channels in the detector
     std::vector<int>          fWireMin;         ///< lowest wire in interesting region for each plane
     std::vector<int>          fWireMax;         ///< highest wire in interesting region for each plane
     std::vector<int>          fTimeMin;         ///< lowest time in interesting region for each plane

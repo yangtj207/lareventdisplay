@@ -58,7 +58,6 @@ namespace evd {
     fTicks     = rawopt->fTicks;
 
     // set the list of bad channels in this detector
-    filter::ChannelFilter cf; 
     unsigned int nplanes=geo->Nplanes();
     fWireMin.resize(nplanes,-1);   
     fWireMax.resize(nplanes,-1);    
@@ -66,15 +65,6 @@ namespace evd {
     fTimeMax.resize(nplanes,-1);    
     fRawCharge.resize(nplanes,0);   
     fConvertedCharge.resize(nplanes,0);
-      
-    for(size_t p = 0; p < nplanes; ++p)
-    {
-        for(size_t w = 0; w < geo->Plane(p).Nwires(); ++w)
-        {
-            uint32_t channel = geo->PlaneWireToChannel(p, w);
-            if( cf.GetChannelStatus(channel) > rawopt->fMaxChannelStatus ) fBadChannels.push_back(channel);
-        }
-    }
 
   }
 
@@ -104,7 +94,6 @@ namespace evd {
     
     geo::PlaneID pid(drawopt->fCryostat, drawopt->fTPC, plane);
 
-    unsigned int w  = 0;
     fRawCharge[plane]       = 0;
     fConvertedCharge[plane] = 0;
     
@@ -228,43 +217,7 @@ namespace evd {
     fWireMin[plane] = minw;   
     fWireMax[plane] = maxw;    
     fTimeMin[plane] = mint;    
-    fTimeMax[plane] = maxt; 
-    
-    // now loop over all the bad channels and set them to 0 adc
-    for(size_t bc = 0; bc < fBadChannels.size(); ++bc){
-      
-      geo::SigType_t sigType = geo->SignalType(fBadChannels[bc]);
-	
-      std::vector<geo::WireID> wireids = geo->ChannelToWire(fBadChannels[bc]);
-      
-      // check this is the correct plane and tpc
-      for( auto const& wid : wireids){
-	if(wid.planeID() == pid){
-	
-	  if(drawopt->fMinSignal > 0) continue;
-	
-	  int      co = cst->RawQ(sigType).GetColor(0);
-	  double wire = 1.*w;
-	  
-	  for(int i = fStartTick; i < fStartTick+fTicks; i += ticksPerPoint){
-	    double tdc = i + 0.5*ticksPerPoint;
-	    
-	    if(drawopt->fAxisOrientation < 1){
-	      TBox& b1 = view->AddBox(wire-0.5,tdc-0.5*ticksPerPoint,wire+0.5,tdc+0.5*ticksPerPoint);
-	      b1.SetFillStyle(1001);
-	      b1.SetFillColor(co);    
-	      b1.SetBit(kCannotPick);
-	    }
-	    else{
-	      TBox &b1 = view->AddBox(tdc-0.5*ticksPerPoint,wire-0.5,tdc+0.5*ticksPerPoint,wire+0.5);
-	      b1.SetFillStyle(1001);
-	      b1.SetFillColor(co);    
-	      b1.SetBit(kCannotPick);
-	    }	  
-	  }
-	}// end if in the right plane
-      }// end loop over wireids
-    }// end loop over bad channels    
+    fTimeMax[plane] = maxt;     
 	
   }
 

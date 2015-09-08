@@ -88,8 +88,10 @@ namespace evd {
     void        SetMCInfo();
     void        SetRawCalib();
     void 	SetUpSideBar();
+    void        ForceRedraw(); ///< Forces a redraw of the window
     void        SetUpZoomButtons();
     void 	SetUpClusterButtons();
+    void        SetUpDrawingButtons();
     void 	SetUpPositionFind();
     void        SetZoom(int plane,int wirelow,int wirehi,int timelo,int timehi, bool StoreZoom=true); 
     void 	ZoomInterest(bool flag=true);
@@ -176,6 +178,7 @@ namespace evd {
 
     TGTextButton* fRefitSeeds; ///<Clears the selected points in an event
        
+    TGTextButton* fRedraw; ///< Button to force redraw
     
     int DrawLine(int plane,util::PxLine &pline);
     

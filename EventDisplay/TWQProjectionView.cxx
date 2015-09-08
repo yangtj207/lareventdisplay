@@ -59,6 +59,7 @@ namespace evd{
   //......................................................................
   TWQProjectionView::TWQProjectionView(TGMainFrame* mf) 
     : evdb::Canvas(mf)
+    , fRedraw(nullptr)
   {  
     
     art::ServiceHandle<geo::Geometry> geo;
@@ -1702,6 +1703,7 @@ namespace evd{
     SetUpZoomButtons();
     SetUpPositionFind();
     SetUpClusterButtons();
+    SetUpDrawingButtons();
   }
 
   //......................................................................
@@ -1736,6 +1738,16 @@ namespace evd{
     art::ServiceHandle<evd::EvdLayoutOptions>   evdlayoutopt;
     evdlayoutopt->fShowEndPointMarkers= fToggleShowMarkers->GetState();
   }
+  
+  //......................................................................
+  void TWQProjectionView::ForceRedraw() {
+    mf::LogDebug("TWQProjectionView") << "Explicit request for redrawing";
+    
+    // for now, bother only about redrawing the plane pads
+    DrawPads();
+    
+  } // TWQProjectionView::ForceRedraw()
+  
   //......................................................................
   void TWQProjectionView::SetUpZoomButtons()
   {
@@ -1852,6 +1864,20 @@ namespace evd{
     //fVFrame->AddFrame(fClearSeeds, new TGLayoutHints(kLHintsTop|kLHintsLeft,0,0,5,1));
 	
   }
+  
+  //......................................................................
+  void TWQProjectionView::SetUpDrawingButtons()
+  {
+    // enter zoom buttons
+  //  art::ServiceHandle<evd::EvdLayoutOptions>        evdlayoutopt;  
+
+    fRedraw = new TGTextButton(fVFrame, "&Redraw", 120);
+    fRedraw->Connect("Clicked()", "evd::TWQProjectionView", this, "ForceRedraw()");
+
+    fVFrame->AddFrame(fRedraw,           new TGLayoutHints(kLHintsTop | kLHintsLeft, 0,  0, 5, 1 ) );
+    
+  } // SetUpDrawingButtons()
+
 
   //----------------------------------------------------------------------------
   void	TWQProjectionView::RadioButtonsDispatch(int parameter)

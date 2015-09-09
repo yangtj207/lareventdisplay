@@ -109,6 +109,7 @@ namespace evd {
     void 	SetClusters(int plane);
     
     void 	SetZoomInterest();
+    void	SetZoomFromView();
     void 	PrintCharge();
     void 	DrawPads(const char* opt="");
     

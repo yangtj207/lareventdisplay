@@ -414,6 +414,20 @@ namespace evd{
     fCurrentZoom[3]=y2;
   }
   //......................................................................
+  // Set the visible range of the wire / time view from the view
+  //
+  void TWireProjPad::SetZoomFromView() {
+    TAxis const& xaxis = *(fHisto->GetXaxis());
+    fCurrentZoom[0] = xaxis.GetBinLowEdge(xaxis.GetFirst());
+    fCurrentZoom[1] = xaxis.GetBinUpEdge(xaxis.GetLast());
+    fCurrentZoom[2] = fHisto->GetMinimum();
+    fCurrentZoom[3] = fHisto->GetMaximum();
+    LOG_DEBUG("TWireProjPad") << "Zoom set to wires ("
+      << fCurrentZoom[0] << "; " << fCurrentZoom[1] << " ), tick ("
+      << fCurrentZoom[2] << "; " << fCurrentZoom[3] << ") for plane #"
+      << fPlane;
+  } // TWireProjPad::SetZoomFromView()
+  //......................................................................
   void TWireProjPad::SaveHitList(double i1, 
 				 double i2,
 				 double y1, 

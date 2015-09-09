@@ -1714,6 +1714,13 @@ namespace evd{
   }
 
   //......................................................................
+  void TWQProjectionView::SetZoomFromView() {
+    for (TWireProjPad* pPlane: fPlanes)
+      pPlane->SetZoomFromView();
+  }
+  
+
+  //......................................................................
   void TWQProjectionView::SetClusterInterest()
   {  
     art::ServiceHandle<evd::EvdLayoutOptions>   evdlayoutopt;
@@ -1744,6 +1751,7 @@ namespace evd{
     mf::LogDebug("TWQProjectionView") << "Explicit request for redrawing";
     
     // for now, bother only about redrawing the plane pads
+    SetZoomFromView();
     DrawPads();
     
   } // TWQProjectionView::ForceRedraw()

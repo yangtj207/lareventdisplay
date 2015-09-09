@@ -33,6 +33,7 @@ namespace evd {
     fScaleDigitsByCharge     	= pset.get< int         >("ScaleDigitsByCharge"        );
     fTicksPerPoint              = pset.get< int         >("TicksPerPoint"              );
     fMinSignal                  = pset.get< double      >("MinimumSignal"              );
+    fStartTick                  = pset.get< double      >("StartTick",            0    );
     fTicks                      = pset.get< double      >("TotalTicks",           2048 );
     fAxisOrientation         	= pset.get< int         >("AxisOrientation",      0    );
     fRawDataLabel               = pset.get< std::string >("RawDataLabel",         "daq");

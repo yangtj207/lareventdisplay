@@ -29,7 +29,8 @@ namespace evd {
     int    	     fTicksPerPoint;                           ///< number of ticks to include in one point
     int    	     fScaleDigitsByCharge;                     ///< scale the size of the digit by the charge
     double 	     fMinSignal;                               ///< minimum ADC count to display a time bin
-    double 	     fTicks;                                   ///< number of TDC ticks to display, ie 0 -> fTicks
+    double       fStartTick;                               ///< Starting tick for the display
+    double 	     fTicks;                                   ///< number of TDC ticks to display, ie # fTicks past fStartTick
     int    	     fAxisOrientation;                         ///< 0 = TDC values on y-axis, wire number on x-axis, 1 = swapped
     unsigned int fTPC;                                     ///< TPC number to draw, typically set by TWQProjectionView
     unsigned int fCryostat;                                ///< Cryostat number to draw, typically set by TWQProjectionView

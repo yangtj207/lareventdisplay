@@ -2,8 +2,8 @@
 /// \brief   Class to aid in the rendering of RawData objects
 /// \author  messier@indiana.edu
 /// \version $Id: RawDataDrawer.h,v 1.2 2010/11/10 22:38:34 p-novaart Exp $
-#ifndef EVD_RECOBASEDRAWER_H
-#define EVD_RECOVASEDRAWER_H
+#ifndef EVD_RAWDATADRAWER_H
+#define EVD_RAWDATADRAWER_H
 #include <vector>
 #ifndef __CINT__
 
@@ -47,6 +47,7 @@ namespace evd {
 		     unsigned int      wire,
 		     TH1F*             histo);
 
+    double StartTick()       const { return fStartTick; }
     double TotalClockTicks() const { return fTicks; }
     
     /// Fills the viewport information from the specified pad
@@ -74,6 +75,7 @@ namespace evd {
     /// Reads raw::RawDigits; also triggers Reset()
     void GetRawDigits(art::Event const& evt);
 
+    double fStartTick;                       ///< low tick
     double fTicks;                           ///< number of ticks of the clock
     std::vector<unsigned int> fBadChannels;  ///< bad channels in the detector
    

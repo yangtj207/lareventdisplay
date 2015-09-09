@@ -69,6 +69,8 @@ namespace evd{
     // bottom left corner is (0.,0.), top right is  (1., 1.)
     fAngleInfo=NULL;
     fXYZPosition=NULL;
+      
+    fLastThreshold = -1.;
     
     evdb::Canvas::fCanvas->cd();  
     fHeaderPad = new HeaderPad("fHeaderPad","Header",0.0,0.0,0.15,0.13,"");  
@@ -2085,17 +2087,22 @@ namespace evd{
   void TWQProjectionView::SetThreshold()
   {
     double threshold = fThresEntry->GetNumberEntry()->GetNumber();
+      
+    if (threshold != fLastThreshold)
+    {
+        art::ServiceHandle<evd::RawDrawingOptions> rawopt;
+        rawopt->fMinSignal = threshold;
 
-    art::ServiceHandle<evd::RawDrawingOptions> rawopt;
-    rawopt->fMinSignal = threshold;
+        TVirtualPad *ori = gPad;
+        this->DrawPads(zoom_opt);
+        evdb::Canvas::fCanvas->cd();
+        evdb::Canvas::fCanvas->Modified();
+        evdb::Canvas::fCanvas->Update();
 
-    TVirtualPad *ori = gPad;
-    this->DrawPads(zoom_opt);
-    evdb::Canvas::fCanvas->cd();
-    evdb::Canvas::fCanvas->Modified();
-    evdb::Canvas::fCanvas->Update();
-
-    ori->cd();
+        ori->cd();
+    }
+      
+    fLastThreshold = threshold;
 
     return;
   }

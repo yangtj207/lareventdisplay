@@ -541,7 +541,7 @@ namespace evd {
   //......................................................................
   RawDataDrawer::RawDataDrawer()
     : digit_cache(new details::RawDigitCacheClass)
-    , fTicks(2048)
+    , fStartTick(0),fTicks(2048)
     , fDrawingRange(new details::CellGridClass)
   { 
     art::ServiceHandle<geo::Geometry> geo;
@@ -549,6 +549,7 @@ namespace evd {
     art::ServiceHandle<evd::RawDrawingOptions> drawopt;
     geo::TPCID tpcid(drawopt->fCryostat, drawopt->fTPC);
     
+    fStartTick = drawopt->fStartTick;
     fTicks = drawopt->fTicks;
 
     // set the list of bad channels in this detector
@@ -560,7 +561,6 @@ namespace evd {
     fTimeMax.resize(nplanes,-1);    
     fRawCharge.resize(nplanes,0);   
     fConvertedCharge.resize(nplanes,0);
-    
   }
 
   //......................................................................
@@ -720,10 +720,13 @@ namespace evd {
         // TODO we could extract the number of ticks falling in the current cell
         // rather than checking all the ticks in sequence
         // TODO support back ticksPerPoint (automatic accumulation of ticks)
-        size_t const max_tick = std::min
-          (size_t(fDrawingRange->TDCAxis().Max()), uncompressed.size());
+        size_t const max_tick = std::min({
+          size_t(fDrawingRange->TDCAxis().Max()),
+          uncompressed.size(),
+          size_t(fTicks)
+          });
         
-        for (size_t iTick = 0; iTick < max_tick; ++iTick) {
+        for (size_t iTick = fStartTick; iTick < max_tick; ++iTick) {
           
           // check if we are out of range
           const float tick = float(iTick);
@@ -774,8 +777,11 @@ namespace evd {
       // too little signal, don't bother drawing
       if(info.good && (std::abs(info.adc) < MinSignal)) continue;
       
+      // skip the bad cells
+      if (!info.good) continue;
+      
       // box color, proportional to the ADC count
-      int const color = ColorSet.GetColor(info.good? info.adc: 0);
+      int const color = ColorSet.GetColor(info.adc);
       
       // scale factor, proportional to ADC count (optional)
       constexpr float q0 = 1000.;
@@ -913,7 +919,7 @@ namespace evd {
 	      maxt = tdc;
 	
 	    // don't draw boxes for tdc values that don't exist
-	    if(tdc > fTicks || tdc < 0) continue;
+	    if(tdc > fStartTick+fTicks || tdc < fStartTick) continue;
 	    
 	    /* FIXME need to find which is the right tdc index
 	    BoxInfo_t& boxInfo = BoxInfo[wire * max_ticks + tdc];
@@ -971,7 +977,9 @@ namespace evd {
 	  int      co = cst->RawQ(sigType).GetColor(0);
 	  double wire = 1.*w;
 	  
-	  for(int iTick = 0; iTick < fTicks; iTick += ticksPerPoint){
+	  for(int iTick = fStartTick; iTick < fStartTick+fTicks;
+            iTick += ticksPerPoint)
+          {
 	    double const tdc = iTick + 0.5*ticksPerPoint;
 	  /* FIXME
 	    BoxInfo_t& boxInfo = BoxInfo[wire * max_ticks + iTick];

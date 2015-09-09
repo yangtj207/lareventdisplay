@@ -493,7 +493,7 @@ namespace evd{
                 
                     pl.SetPoint(0,particlePosition.X(),particlePosition.Y(),particlePosition.Z());
                 
-                    particlePosition += (arcLenToDraw + 10.) * oppPartDir;
+                    particlePosition += std::min(arcLenToDraw + 10.,1000.) * oppPartDir;
                 
                     pl.SetPoint(1,particlePosition.X(),particlePosition.Y(),particlePosition.Z());
                 }

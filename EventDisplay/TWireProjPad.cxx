@@ -162,14 +162,16 @@ namespace evd{
     
     fXLo = -0.005 * (nWires - 1);
     fXHi =  1.005 * (nWires - 1);
-    fYLo = -0.005 * nTicks;
-    fYHi =  1.010 * nTicks;
+    fYLo =  0.990*(unsigned int)(this->RawDataDraw()->StartTick());
+    fYHi =  1.005*std::min((unsigned int)(this->RawDataDraw()->StartTick()+nTicks), nTicks);
     
     art::ServiceHandle<evd::RawDrawingOptions> rawopt;
     fOri = rawopt->fAxisOrientation;
     if(fOri > 0){
       fYLo = -0.005 * (nWires - 1);
       fYHi =  1.005 * (nWires - 1);
+      fYLo =  0.990*(unsigned int)(this->RawDataDraw()->StartTick());
+      fYHi =  1.005*std::min((unsigned int)(this->RawDataDraw()->StartTick()+nTicks), nTicks);
       fXLo = -0.005 * nTicks;
       fXHi =  1.010 * nTicks;
       xtitle = ";t (tdc);InductionWire";
@@ -229,9 +231,9 @@ namespace evd{
       this->RecoBaseDraw()->  Hit2D           (*evt, fView, fPlane);
       
       if(recoOpt->fUseHitSelector)
-	this->RecoBaseDraw()->Hit2D(this->HitSelectorGet()->GetSelectedHits(fPlane), 
-				    kSelectedColor, 
-				    fView);
+        this->RecoBaseDraw()->Hit2D(this->HitSelectorGet()->GetSelectedHits(fPlane),
+                                    kSelectedColor,
+                                    fView);
    
       this->RecoBaseDraw()->  Cluster2D       (*evt, fView, fPlane);
       this->RecoBaseDraw()->  EndPoint2D      (*evt, fView, fPlane);
@@ -261,9 +263,9 @@ namespace evd{
       fXLo = fYLo;
       fYHi = max;
       fYLo = min;
-     
+      
       SetZoomRange(fXLo, fXHi, fYLo, fYHi);
-
+      
       TString xtitle = fHisto->GetXaxis()->GetTitle();
       fHisto->GetXaxis()->SetTitle(fHisto->GetYaxis()->GetTitle());
       fHisto->GetYaxis()->SetTitle(xtitle);

@@ -199,6 +199,10 @@ namespace evd {
       /// Deletes the data
       void Clear();
       
+      /// Dumps the content of the digit info
+      template <typename Stream>
+      void Dump(Stream&& out) const;
+      
         private:
       typedef struct {
         short min_charge = std::numeric_limits<short>::max(); ///< minimum charge
@@ -229,11 +233,18 @@ namespace evd {
     /// Cached set of RawDigitInfo_t
     class RawDigitCacheClass {
         public:
-      std::vector<RawDigitInfo_t> digits; ///< vector of raw digit information
+     
+      /// Returns the list of digit info
+      std::vector<RawDigitInfo_t> const& Digits() const { return digits; }
       
-      size_t max_samples; ///< the largest number of ticks in any digit
+      /// Returns a pointer to the digit info of given channel, nullptr if none
+      RawDigitInfo_t const* FindChannel(raw::ChannelID_t channel) const;
+
       
+      /// Returns the largest number of samples in the unpacked raw digits
+      size_t MaxSamples() const { return max_samples; }
       
+      /// Returns whether the cache is empty()
       bool empty() const { return digits.empty(); }
       
       /// Updates the cache if needed; returns whether it was needed
@@ -242,6 +253,10 @@ namespace evd {
       void Clear();
       /// Declare the cache invalid
       void Invalidate();
+      
+      /// Dump the content of the cache
+      template <typename Stream>
+      void Dump(Stream&& out) const;
       
         private:
       struct CacheTimestamp_t {
@@ -259,7 +274,19 @@ namespace evd {
           {
             return (ts.event_id != event_id) || (ts.input_label != input_label);
           } // operator!=
+        
+        operator std::string() const
+          {
+            return "R: " + std::to_string(event_id.run())
+              + " S: " + std::to_string(event_id.subRun())
+              + " E: " + std::to_string(event_id.event())
+              + " I: " + input_label.encode();
+          }
       }; // CacheTimestamp_t
+      
+      std::vector<RawDigitInfo_t> digits; ///< vector of raw digit information
+      
+      size_t max_samples = 0; ///< the largest number of ticks in any digit
       
       CacheTimestamp_t timestamp; ///< time stamp for the cache
       
@@ -270,6 +297,15 @@ namespace evd {
       
     }; // struct RawDigitCacheClass
     
+
+    std::vector<evd::details::RawDigitInfo_t>::const_iterator begin
+      (evd::details::RawDigitCacheClass const& cache)
+      { return cache.Digits().cbegin(); }
+    std::vector<evd::details::RawDigitInfo_t>::const_iterator end
+      (evd::details::RawDigitCacheClass const& cache)
+      { return cache.Digits().cend(); }
+
+
     
     /// Manages a cell-like division of a coordinate
     class GridAxisClass {
@@ -497,7 +533,6 @@ namespace evd {
   } // namespace details
 } // namespace evd
 
-
 namespace evd {
   
   // empty vector
@@ -628,7 +663,7 @@ namespace evd {
     lar::util::MinMaxCollector<float> WireRange, TDCrange;
     
     // loop over all the channels/raw digits
-    for (evd::details::RawDigitInfo_t& digit_info: digit_cache->digits) {
+    for (evd::details::RawDigitInfo_t const& digit_info: *digit_cache) {
       raw::RawDigit const& hit = digit_info.Digit();
       raw::ChannelID_t const channel = hit.Channel();
       
@@ -1030,7 +1065,7 @@ namespace evd {
     //get pedestal conditions
     const lariov::IDetPedestalProvider& pedestalRetrievalAlg = art::ServiceHandle<lariov::IDetPedestalService>()->GetPedestalProvider();
 
-    for (evd::details::RawDigitInfo_t& digit_info: digit_cache->digits) {
+    for (evd::details::RawDigitInfo_t const& digit_info: *digit_cache) {
       raw::RawDigit const& hit = digit_info.Digit();
       raw::ChannelID_t const channel = hit.Channel();
         
@@ -1105,19 +1140,16 @@ namespace evd {
     
     // find the raw digit
     // (iDigit is an iterator to a evd::details::RawDigitInfo_t)
-    auto iDigit = std::find_if(
-      digit_cache->digits.cbegin(), digit_cache->digits.cend(), 
-      [channel](evd::details::RawDigitInfo_t const& digit)
-        { return digit.Channel() == channel; }
-      );
-    if (iDigit == digit_cache->digits.cend()) { // this is weird...
+    evd::details::RawDigitInfo_t const* pDigit
+      = digit_cache->FindChannel(channel);
+    if (!pDigit) { // this is weird...
       mf::LogWarning("RawDataDrawer") << __func__
         << ": can't find raw digit for channel #" << channel
         << " (" << std::string(wireid) << ")";
       return;
     }
     
-    raw::RawDigit::ADCvector_t const& uncompressed = iDigit->Data();
+    raw::RawDigit::ADCvector_t const& uncompressed = pDigit->Data();
     
     float const pedestal = pedestalRetrievalAlg.PedMean(channel);
     
@@ -1230,7 +1262,7 @@ namespace evd {
     // This call is here for the future, if the trigger gets moved from
     // GetRawDigits() to somewhere else, raw digits will be properly updated
     // anyway. Not that necessary anyway.
-    GetRawDigits(event);
+  //  GetRawDigits(event);
     
     // reset the region of interest
     std::fill(fWireMin.begin(), fWireMin.end(), -1);
@@ -1244,6 +1276,7 @@ namespace evd {
   //......................................................................    
 
   void RawDataDrawer::GetRawDigits(art::Event const& evt) {
+  //  digit_cache->Dump(mf::LogDebug("RawDataDrawer"));
     // update cache
     art::ServiceHandle<evd::RawDrawingOptions> rawopt;
     if (digit_cache->Update(evt, rawopt->fRawDataLabel)) Reset(evt);
@@ -1314,9 +1347,31 @@ namespace evd {
       return *sample_info;
     } // SampleInfo()
     
+    template <typename Stream>
+    void RawDigitInfo_t::Dump(Stream&& out) const {
+      out << "  digit at " << ((void*) digit.get()) << " on channel #" << digit->Channel()
+        << " with " << digit->NADC();
+      if (digit->Compression() == kNone) out << " uncompressed data";
+      else out << " data items compressed with <" << digit->Compression() << ">";
+      if (data.hasData())
+        out << " with data (" << data->size() << " samples)";
+      else out << " without data";
+    } // RawDigitInfo_t::Dump()
+    
     //--------------------------------------------------------------------------
     //--- RawDigitCacheClass
     //---
+   
+    RawDigitInfo_t const* RawDigitCacheClass::FindChannel
+      (raw::ChannelID_t channel) const
+    {
+      auto iDigit = std::find_if(
+        digits.cbegin(), digits.cend(), 
+        [channel](evd::details::RawDigitInfo_t const& digit)
+          { return digit.Channel() == channel; }
+        );
+      return (iDigit == digits.cend())? nullptr: &*iDigit;
+    } // RawDigitCacheClass::FindChannel()
     
     bool RawDigitCacheClass::Update
       (art::Event const& evt, art::InputTag const& label)
@@ -1363,11 +1418,37 @@ namespace evd {
       max_samples = 0;
     } // RawDigitCacheClass::Clear()
     
-    /// Returns whether the cache is updated to this event
     bool RawDigitCacheClass::isUpToDate(CacheTimestamp_t const& ts) const {
-      return timestamp == ts;
+      /*
+        I am disabling the cache.
+        The reason is that I can't reliably determine whether it became invalid.
+        My method was to check whether the event ID or the input tag have changed.
+        Fine, except that there are situations where the event display triggers
+        a complete reread of the event, and therefore the event data (including
+        RawDigit) is deleted. Event the art pointers become "corrupted", because
+        they seem to cache the pointed address.
+        And how can I know that happened? the event ID is not changed, just all
+        the event content is gone.
+        Need to find out if EventDisplayBase, in its infinite wisdom, has a mean
+        to tell me that this slaughter happened.
+      */
+      return false;
+    // return timestamp == ts;
     } // RawDigitCacheClass::isUpToDate()
     
+    template <typename Stream>
+    void RawDigitCacheClass::Dump(Stream&& out) const {
+      out << "Cache at " << ((void*) this)
+        << " with time stamp " << std::string(timestamp)
+        << " and " << digits.size()
+        << " entries (maximum sample: " << max_samples << ");"
+        << " data at " << ((void*) digits.data());
+      for (RawDigitInfo_t const& digitInfo: digits) {
+        out << "\n  ";
+        digitInfo.Dump(out);
+      } // for
+      out << "\n";
+    } // RawDigitCacheClass::Dump()
     
     
     //--------------------------------------------------------------------------

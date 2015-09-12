@@ -74,7 +74,8 @@ namespace evd {
     
     
     void 	ChangeWire(int plane); 
-    
+    void        SelectTPC(); ///< select TPC from GUI
+
     void 	SetMouseZoomRegion(int plane);
     
     void 	SelectPoint(int plane);
@@ -92,6 +93,7 @@ namespace evd {
     void        SetUpZoomButtons();
     void 	SetUpClusterButtons();
     void        SetUpDrawingButtons();
+    void        SetUpTPCselection();
     void 	SetUpPositionFind();
     void        SetZoom(int plane,int wirelow,int wirehi,int timelo,int timehi, bool StoreZoom=true); 
     void 	ZoomInterest(bool flag=true);
@@ -181,7 +183,11 @@ namespace evd {
     TGTextButton* fRefitSeeds; ///<Clears the selected points in an event
        
     TGTextButton* fRedraw; ///< Button to force redraw
-    
+     
+    TGNumberEntry* fCryoInput; ///< current cryostat
+    TGNumberEntry* fTPCInput; ///< current TPC
+    TGLabel* fTotalTPCLabel; ///< total TPCs in the current cryostat
+
     int DrawLine(int plane,util::PxLine &pline);
     
     std::deque<util::PxPoint>  ppoints; ///< list of points in each WireProjPad used for x,y,z finding

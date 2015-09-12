@@ -39,6 +39,7 @@
 
 #include "RecoBase/Seed.h"
 #include "Geometry/Geometry.h"
+#include "Geometry/GeometryCore.h"
 #include "Geometry/PlaneGeo.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
@@ -60,6 +61,7 @@ namespace evd{
   TWQProjectionView::TWQProjectionView(TGMainFrame* mf) 
     : evdb::Canvas(mf)
     , fRedraw(nullptr)
+    , fCryoInput(nullptr), fTPCInput(nullptr), fTotalTPCLabel(nullptr)
   {  
     
     art::ServiceHandle<geo::Geometry> geo;
@@ -1706,6 +1708,7 @@ namespace evd{
     SetUpPositionFind();
     SetUpClusterButtons();
     SetUpDrawingButtons();
+    SetUpTPCselection();
   }
 
   //......................................................................
@@ -1889,6 +1892,182 @@ namespace evd{
   } // SetUpDrawingButtons()
 
 
+  //......................................................................
+  void TWQProjectionView::SetUpTPCselection()
+  {
+    geo::GeometryCore const& geom = *(art::ServiceHandle<geo::Geometry>());
+    art::ServiceHandle<evd::RawDrawingOptions> rawOpt;
+    
+    // this is the subframe with horizontal alignment where we place our widgets:
+    TGHorizontalFrame* pRow = new TGHorizontalFrame(fVFrame, 216, 32, kHorizontalFrame);
+    
+    geo::CryostatID::CryostatID_t const CurrentCryo = rawOpt->fCryostat;
+    unsigned int const NCryo = geom.Ncryostats();
+    if (NCryo > 1) { // allow a selector
+      unsigned int const NCryoDigits = std::to_string(NCryo - 1).length(); // a silly way fast to code...
+
+      geo::CryostatID::CryostatID_t const CurrentCryo = rawOpt->fCryostat;
+      
+      // label
+      TGLabel* pLabel = new TGLabel(pRow, "C:");
+      pLabel->SetTextJustify(kTextRight | kTextCenterY);
+      
+      // numerical input
+      fCryoInput = new TGNumberEntry(
+        pRow, (Double_t) CurrentCryo, // parent widget; starting value;
+        NCryoDigits, -1, // number of digits for the input field; ID;
+        TGNumberFormat::kNESInteger, TGNumberFormat::kNEAAnyNumber, // type of number; number attributes;
+        TGNumberFormat::kNELLimitMinMax, -1, NCryo // limits
+        );
+
+      TGLabel* pTotalCryoLabel = new TGLabel(pRow, ("/" + std::to_string(NCryo)).c_str());
+      pTotalCryoLabel->SetTextJustify(kTextLeft | kTextCenterY);
+      // the numbers are padding on the four sides
+      pRow->AddFrame(pLabel,          new TGLayoutHints(kLHintsLeft | kLHintsTop, 2, 2, 5, 5));
+      pRow->AddFrame(fCryoInput,      new TGLayoutHints(kLHintsLeft | kLHintsTop, 2, 2, 2, 2));
+      pRow->AddFrame(pTotalCryoLabel, new TGLayoutHints(kLHintsLeft | kLHintsTop, 2, 2, 5, 5));
+     
+      fCryoInput->Connect("ValueSet(Long_t)", "evd::TWQProjectionView", this, "SelectTPC()");
+    }
+    else { // just place a static label
+      TGLabel* pLabel = new TGLabel(pRow, "C: 0");
+      // the numbers are padding on the four sides
+      pRow->AddFrame(pLabel, new TGLayoutHints(kLHintsLeft | kLHintsTop, 2, 2, 5, 5));
+    }
+    unsigned int MaxTPC = geom.MaxTPCs();
+    if (MaxTPC > 1) { // label, numeric input, then total
+      unsigned int const NTPCDigits = std::to_string(MaxTPC - 1).length(); // a silly way fast to code...
+
+      geo::TPCID::TPCID_t const CurrentTPC = rawOpt->fTPC;
+      unsigned int const NTPCs = geom.NTPC(geo::CryostatID(CurrentCryo));
+      
+      // label
+      TGLabel* pLabel = new TGLabel(pRow, "T:");
+      pLabel->SetTextJustify(kTextRight | kTextCenterY);
+      
+      // numerical input
+      fTPCInput = new TGNumberEntry(
+        pRow, (Double_t) CurrentTPC, // parent widget; starting value;
+        NTPCDigits, -1, // number of digits for the input field; ID;
+        TGNumberFormat::kNESInteger, TGNumberFormat::kNEAAnyNumber, // type of number; number attributes;
+        TGNumberFormat::kNELLimitMinMax, -1, MaxTPC // limits
+        );
+
+      fTotalTPCLabel = new TGLabel(pRow, ("/" + std::to_string(NTPCs)).c_str());
+      fTotalTPCLabel->SetTextJustify(kTextRight | kTextCenterY);
+      // the numbers are padding on the four sides
+      pRow->AddFrame(pLabel,         new TGLayoutHints(kLHintsLeft | kLHintsTop, 2, 2, 5, 5));
+      pRow->AddFrame(fTPCInput,      new TGLayoutHints(kLHintsLeft | kLHintsTop, 2, 2, 2, 2));
+      pRow->AddFrame(fTotalTPCLabel, new TGLayoutHints(kLHintsLeft | kLHintsTop, 2, 2, 5, 5));
+     
+      fTPCInput->Connect("ValueSet(Long_t)", "evd::TWQProjectionView", this, "SelectTPC()");
+    }
+    else { // just place another static label
+      TGLabel* pLabel = new TGLabel(pRow, "T: 0");
+      // the numbers are padding on the four sides
+      pRow->AddFrame(pLabel, new TGLayoutHints(kLHintsLeft | kLHintsTop, 2, 2, 5, 5));
+   }
+    
+    fVFrame->AddFrame(pRow, new TGLayoutHints(kLHintsLeft | kLHintsTop, 2, 2, 2, 2));
+    
+  } // TWQProjectionView::SetUpTPCselection()
+  
+  //----------------------------------------------------------------------------
+  void	TWQProjectionView::SelectTPC()
+  {
+    /*
+     * This function takes care of the input in the cryostat and TPC fields.
+     * It is called whenever any of the two values (cryostat and TPC) change;
+     * it can perform a number of tasks:
+     * - first checks if the new input is valid
+     * - if it's not, tries to wrap it to a valid TPC ID
+     * - if it's not possible, goes back to the current TPC
+     * - if the resulting TPC ID is different from the original one,
+     *   updates the content of the current TPC and cryostat in the service,
+     *   and asks for redrawing
+     * - if the cryostat is changed, updates the TPC count
+     * - if it changed the values of the TPC ID respect to what was in input
+     *   at the beginning, then updates the input fields
+     *
+     */
+    evd::RawDrawingOptions& rawOpt = *(art::ServiceHandle<evd::RawDrawingOptions>());
+    geo::GeometryCore const& geom = *(art::ServiceHandle<geo::Geometry>());
+    
+    geo::TPCID CurrentTPC(rawOpt.fCryostat, rawOpt.fTPC);
+    geo::TPCID RequestedTPC(
+      fCryoInput? (unsigned int) fCryoInput->GetIntNumber(): 0U,
+      fTPCInput? (unsigned int) fTPCInput->GetIntNumber(): 0U
+      );
+    geo::TPCID NewTPC(RequestedTPC);
+    
+    // if the input ends up being invalid, try to fix it somehow;
+    // we give a special meaning to negative values;
+    // since they are not supported by the container we store them in
+    // (that is, TPCID) we have to handle negative values as special case:
+    if (fCryoInput && (fCryoInput->GetIntNumber() < 0)) {
+      // wrap back to the last cryostat, last TPC
+      NewTPC.Cryostat = (geo::CryostatID::CryostatID_t) (geom.Ncryostats() - 1);
+      NewTPC.TPC = (geo::TPCID::TPCID_t) (geom.NTPC(NewTPC) - 1);
+    }
+    else if (fTPCInput && (fTPCInput->GetIntNumber() < 0)) {
+      // wrap back to the previous cryostat, last TPC
+      if (NewTPC.Cryostat-- == 0)
+        NewTPC.Cryostat = (geo::CryostatID::CryostatID_t) (geom.Ncryostats() - 1);
+      NewTPC.TPC = (geo::TPCID::TPCID_t) (geom.NTPC(NewTPC) - 1);
+    }
+    else if (!geom.HasTPC(NewTPC)) {
+      // both elements are positive: it must be overflow
+      unsigned int const NCryos = geom.Ncryostats();
+      // what's wrong?
+      if (NewTPC.Cryostat >= NCryos) { // cryostat wrap
+        NewTPC.Cryostat = (geo::CryostatID::CryostatID_t) 0;
+        NewTPC.TPC = (geo::TPCID::TPCID_t) 0;
+      }
+      else { // TPC wrap
+        if (++NewTPC.Cryostat >= NCryos) 
+          NewTPC.Cryostat = (geo::CryostatID::CryostatID_t) 0;
+        NewTPC.TPC = (geo::TPCID::TPCID_t) 0;
+      }
+      
+      LOG_DEBUG("TWQProjectionView") << __func__ << ": invalid TPC "
+        << RequestedTPC << ", corrected as " << NewTPC << " instead";
+    }
+    
+    if (!geom.HasTPC(NewTPC)) { // weird...
+      LOG_ERROR("TWQProjectionView") << __func__ << ": internal error: "
+        << RequestedTPC << " turned into an invalid TPC " << NewTPC;
+    }
+    else if (NewTPC != CurrentTPC) { // do we need to change after all? 
+      LOG_DEBUG("TWQProjectionView") << __func__ << ": switching from "
+        << CurrentTPC << " to " << NewTPC;
+    
+      // new cryostat?
+      if (rawOpt.fCryostat != NewTPC.Cryostat) { // update the TPC count
+        unsigned int const NTPCs = geom.NTPC(NewTPC);
+        fTotalTPCLabel->SetText(("/" + std::to_string(NTPCs)).c_str());
+      //  fTotalTPCLabel->Modified();
+      }
+      // update the current TPC in the service
+      // (that is the thing everything else refers to)
+      rawOpt.fCryostat = NewTPC.Cryostat;
+      rawOpt.fTPC = NewTPC.TPC;
+      
+      // redraw the content
+      DrawPads();
+    //  evdb::Canvas::fCanvas->cd();
+    //  evdb::Canvas::fCanvas->Modified();
+    //  evdb::Canvas::fCanvas->Update();
+    }
+    
+    // if we have changed the requested TPC, we need to update the input fields
+    if (NewTPC != RequestedTPC) {
+      if (fCryoInput) fCryoInput->SetIntNumber(NewTPC.Cryostat);
+      if (fTPCInput) fTPCInput->SetIntNumber(NewTPC.TPC);
+    }
+    
+  } // TWQProjectionView::SelectTPC()
+  
+  
   //----------------------------------------------------------------------------
   void	TWQProjectionView::RadioButtonsDispatch(int parameter)
   {

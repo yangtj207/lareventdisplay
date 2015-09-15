@@ -1893,13 +1893,20 @@ namespace evd{
 
 
   //......................................................................
+  std::string TWQProjectionView::TotalElementsString(unsigned int NElements)
+    { return "(" + std::to_string(NElements) + " total)"; }
+  
   void TWQProjectionView::SetUpTPCselection()
   {
     geo::GeometryCore const& geom = *(art::ServiceHandle<geo::Geometry>());
     art::ServiceHandle<evd::RawDrawingOptions> rawOpt;
     
+    TGHorizontalFrame* pRow = nullptr;
+    //
+    // Cryostat selection line
+    //
     // this is the subframe with horizontal alignment where we place our widgets:
-    TGHorizontalFrame* pRow = new TGHorizontalFrame(fVFrame, 216, 32, kHorizontalFrame);
+    pRow = new TGHorizontalFrame(fVFrame, 216, 32, kHorizontalFrame);
     
     geo::CryostatID::CryostatID_t const CurrentCryo = rawOpt->fCryostat;
     unsigned int const NCryo = geom.Ncryostats();
@@ -1909,7 +1916,7 @@ namespace evd{
       geo::CryostatID::CryostatID_t const CurrentCryo = rawOpt->fCryostat;
       
       // label
-      TGLabel* pLabel = new TGLabel(pRow, "C:");
+      TGLabel* pLabel = new TGLabel(pRow, "Cryo #");
       pLabel->SetTextJustify(kTextRight | kTextCenterY);
       
       // numerical input
@@ -1920,7 +1927,7 @@ namespace evd{
         TGNumberFormat::kNELLimitMinMax, -1, NCryo // limits
         );
 
-      TGLabel* pTotalCryoLabel = new TGLabel(pRow, ("/" + std::to_string(NCryo)).c_str());
+      TGLabel* pTotalCryoLabel = new TGLabel(pRow, TotalElementsString(NCryo).c_str());
       pTotalCryoLabel->SetTextJustify(kTextLeft | kTextCenterY);
       // the numbers are padding on the four sides
       pRow->AddFrame(pLabel,          new TGLayoutHints(kLHintsLeft | kLHintsTop, 2, 2, 5, 5));
@@ -1930,10 +1937,19 @@ namespace evd{
       fCryoInput->Connect("ValueSet(Long_t)", "evd::TWQProjectionView", this, "SelectTPC()");
     }
     else { // just place a static label
-      TGLabel* pLabel = new TGLabel(pRow, "C: 0");
+      TGLabel* pLabel = new TGLabel(pRow, "Cryo #0 (1 total)");
       // the numbers are padding on the four sides
       pRow->AddFrame(pLabel, new TGLayoutHints(kLHintsLeft | kLHintsTop, 2, 2, 5, 5));
     }
+    
+    fVFrame->AddFrame(pRow, new TGLayoutHints(kLHintsLeft | kLHintsTop, 2, 2, 2, 2));
+    
+    //
+    // TPC selection line
+    //
+    // this is the subframe with horizontal alignment where we place our widgets:
+    pRow = new TGHorizontalFrame(fVFrame, 216, 32, kHorizontalFrame);
+    
     unsigned int MaxTPC = geom.MaxTPCs();
     if (MaxTPC > 1) { // label, numeric input, then total
       unsigned int const NTPCDigits = std::to_string(MaxTPC - 1).length(); // a silly way fast to code...
@@ -1942,7 +1958,7 @@ namespace evd{
       unsigned int const NTPCs = geom.NTPC(geo::CryostatID(CurrentCryo));
       
       // label
-      TGLabel* pLabel = new TGLabel(pRow, "T:");
+      TGLabel* pLabel = new TGLabel(pRow, "TPC  #");
       pLabel->SetTextJustify(kTextRight | kTextCenterY);
       
       // numerical input
@@ -1953,7 +1969,7 @@ namespace evd{
         TGNumberFormat::kNELLimitMinMax, -1, MaxTPC // limits
         );
 
-      fTotalTPCLabel = new TGLabel(pRow, ("/" + std::to_string(NTPCs)).c_str());
+      fTotalTPCLabel = new TGLabel(pRow, TotalElementsString(NTPCs).c_str());
       fTotalTPCLabel->SetTextJustify(kTextRight | kTextCenterY);
       // the numbers are padding on the four sides
       pRow->AddFrame(pLabel,         new TGLayoutHints(kLHintsLeft | kLHintsTop, 2, 2, 5, 5));
@@ -1963,10 +1979,10 @@ namespace evd{
       fTPCInput->Connect("ValueSet(Long_t)", "evd::TWQProjectionView", this, "SelectTPC()");
     }
     else { // just place another static label
-      TGLabel* pLabel = new TGLabel(pRow, "T: 0");
+      TGLabel* pLabel = new TGLabel(pRow, "TPC  #0 (1 total)");
       // the numbers are padding on the four sides
       pRow->AddFrame(pLabel, new TGLayoutHints(kLHintsLeft | kLHintsTop, 2, 2, 5, 5));
-   }
+    }
     
     fVFrame->AddFrame(pRow, new TGLayoutHints(kLHintsLeft | kLHintsTop, 2, 2, 2, 2));
     
@@ -2044,7 +2060,7 @@ namespace evd{
       // new cryostat?
       if (rawOpt.fCryostat != NewTPC.Cryostat) { // update the TPC count
         unsigned int const NTPCs = geom.NTPC(NewTPC);
-        fTotalTPCLabel->SetText(("/" + std::to_string(NTPCs)).c_str());
+        fTotalTPCLabel->SetText(TotalElementsString(NTPCs).c_str());
       //  fTotalTPCLabel->Modified();
       }
       // update the current TPC in the service

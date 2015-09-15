@@ -198,6 +198,9 @@ namespace evd {
     ZoomOptions fZoomOpt;
     std::vector<ZoomOptions> fPrevZoomOpt;
     
+    /// Returns a string visualizing the total number of elements
+    static std::string TotalElementsString(unsigned int NElements);
+    
   };
 
 }// namespace

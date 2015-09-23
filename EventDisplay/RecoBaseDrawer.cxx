@@ -2338,6 +2338,47 @@ void RecoBaseDrawer::OpFlashOrtho(const art::Event& evt,
   } // Vector of OpFlash labels
 }
 //......................................................................
+void RecoBaseDrawer::VertexOrtho(const art::Event& evt,
+				  evd::OrthoProj_t  proj,
+				  evdb::View2D*     view) {
+  art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
+  art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
+  art::ServiceHandle<geo::Geometry>            geo;
+  
+  if (rawOpt->fDrawRawDataOrCalibWires < 1) return;
+  if (recoOpt->fDrawVertices == 0)         return;
+  
+  for(size_t imod = 0; imod < recoOpt->fVertexLabels.size(); ++imod) {
+    std::string const which = recoOpt->fVertexLabels[imod];
+    
+    art::PtrVector<recob::Vertex> vertex;
+    this->GetVertices(evt, which, vertex);
+
+    for(size_t v = 0; v < vertex.size(); ++v){
+      
+      double xyz[3] = {0.};
+      vertex[v]->XYZ(xyz);
+      
+      int color = evd::kColor[vertex[v]->ID()%evd::kNCOLS];
+
+      if(proj == evd::kXY){
+	TMarker& strt = view->AddMarker(xyz[1], xyz[0], color, 24, 1.0);
+        strt.SetMarkerColor(color);	
+      }
+      else if(proj == evd::kXZ){
+	TMarker& strt = view->AddMarker(xyz[2], xyz[0], color, 24, 1.0);
+        strt.SetMarkerColor(color);	
+      }
+      else if(proj == evd::kYZ){
+	TMarker& strt = view->AddMarker(xyz[2], xyz[1], color, 24, 1.0);
+        strt.SetMarkerColor(color);	
+      }
+    }
+  }
+  return;
+}
+
+//......................................................................
 void RecoBaseDrawer::SpacePointOrtho(const art::Event& evt,
 				       evd::OrthoProj_t  proj,
 				       double            msize,

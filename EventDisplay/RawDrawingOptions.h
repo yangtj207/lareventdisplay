@@ -11,12 +11,31 @@
 #include <string>
 #include <vector>
 
+#include "SimpleTypesAndConstants/geo_types.h" // geo::TPCID
+
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Services/Registry/ActivityRegistry.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Services/Registry/ServiceMacros.h"
 
 namespace evd {
+  /**
+   * @brief Display parameters for the raw data
+   * 
+   * Configuration parameters
+   * -------------------------
+   * 
+   * This is an incomplete list of the supported parameters:
+   * - *RoIthresholds* (list of real numbers, default: empty): threshold in ADC
+   *   counts for a tick on a wire to be "interesting", thus extending the
+   *   region of interest to include it. The thresholds are specified one per
+   *   plane; if no threshold is specified for a plane, the threshold for the
+   *   last plane is used instead (therefore specifying just one threshold will
+   *   apply the same threshold to all planes). If no threshold is specified
+   *   at all, the value of 'MinSignal' parameter is used as threshold for all
+   *   planes
+   * 
+   */
   class RawDrawingOptions 
   {
   public:
@@ -36,6 +55,23 @@ namespace evd {
     unsigned int fCryostat;                                ///< Cryostat number to draw, typically set by TWQProjectionView
     unsigned int fMaxChannelStatus;                        ///< Display channels with this status and below
     std::string  fRawDataLabel;                            ///< module label that made the raw digits, default is daq
+    
+    std::vector<float> fRoIthresholds;                     ///< region of interest thresholds, per plane
+    
+    /// Returns the current TPC as a TPCID
+    geo::TPCID   CurrentTPC() const { return geo::TPCID(fCryostat, fTPC); }
+    
+    /// Returns the region of interest threshold for the specified wire plane
+    double RoIthreshold(geo::PlaneID const& planeID) const
+      { return RoIthreshold(planeID.Plane); }
+    
+    /// Returns the region of interest threshold for the specified wire plane
+    double RoIthreshold(geo::PlaneID::PlaneID_t plane) const
+      {
+        return (plane < fRoIthresholds.size())?
+          fRoIthresholds[plane]: fRoIthresholds.back();
+      } // RoIthreshold(plane number)
+    
   };
 }//namespace
 #endif // __CINT__

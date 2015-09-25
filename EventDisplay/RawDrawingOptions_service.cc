@@ -40,10 +40,13 @@ namespace evd {
     fTPC                        = pset.get< unsigned int>("TPC",                  0    );
     fCryostat                   = pset.get< unsigned int>("Cryostat",             0    );
     fMaxChannelStatus           = pset.get< unsigned int>("MaxChannelStatus",     filter::ChannelFilter::DEAD);
-      
+    fRoIthresholds              = pset.get< std::vector<float> >("RoIthresholds", std::vector<float>());
+    
     // Explicit checkt to prevent attempt to display non-physical channels (which will crash display)
     if (fMaxChannelStatus >= filter::ChannelFilter::NOTPHYSICAL) fMaxChannelStatus = filter::ChannelFilter::NOTPHYSICAL - 1;
-      
+    
+    if (fRoIthresholds.empty()) fRoIthresholds.push_back((float) fMinSignal);
+    
   }  
 }
 

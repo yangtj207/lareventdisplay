@@ -32,6 +32,10 @@ namespace evd {
   /// A drawing pad for time vs wire
   class TWireProjPad : public DrawingPad {
   public:
+    struct DrawOptions_t {
+      bool bZoom2DdrawToRoI = false; ///< whether to force zoom to RoI or not
+    }; // DrawOptions_t
+    
     TWireProjPad(const char* nm, const char* ti,
 		 double x1, double y1,
 		 double x2, double y2,
@@ -42,6 +46,15 @@ namespace evd {
     void SetWireRange(int i1, int i2);
 
     void SetZoomRange(int i1, int i2,int y1, int y2);
+    
+    /// Return the current draw options
+    DrawOptions_t const& GetDrawOptions() const { return fDrawOpts; }
+    /// Receive the full set of draw options
+    void SetDrawOptions(DrawOptions_t const& opt) { fDrawOpts = opt; }
+    
+    /// Sets the draw option about zooming to the region of interest
+    void SetZoomToRoI(bool bZoomToRoI)
+      { fDrawOpts.bZoom2DdrawToRoI = bZoomToRoI; }
     
     /// Sets the zoom parameters from the current histogram view
     void SetZoomFromView();
@@ -73,6 +86,7 @@ namespace evd {
   private:
 
     std::vector<double> fCurrentZoom;
+    DrawOptions_t fDrawOpts; ///< set of current draw options
 
 
     unsigned int  fPlane; ///< Which plane in the detector

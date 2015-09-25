@@ -24,9 +24,10 @@ class TGLabel;
 class TRootEmbeddedCanvas;
 
 namespace util {
-class PxLine;
-class PxPoint;
-
+  class PxLine;
+  class PxPoint;
+  
+  class DataProductChangeTracker_t;
 }
 
 namespace evd {
@@ -97,6 +98,8 @@ namespace evd {
     void 	SetUpPositionFind();
     void        SetZoom(int plane,int wirelow,int wirehi,int timelo,int timehi, bool StoreZoom=true); 
     void 	ZoomInterest(bool flag=true);
+    /// Clear all the regions of interest
+    void        ResetRegionsOfInterest();
 
     void        ZoomBack();  // Revert to the previous zoom setting
     void 	SetClusterInterest();
@@ -124,7 +127,10 @@ namespace evd {
     void 	SaveSelection();
     void 	ClearSelection();
     double      UpdateSeedCurve();
-  
+    
+    /// Returns if a new event is detected; if so, it also resets accordingly
+    bool    OnNewEvent();
+    
     void 	SetTestFlag(int number=1);
 
   protected:
@@ -197,6 +203,13 @@ namespace evd {
 
     ZoomOptions fZoomOpt;
     std::vector<ZoomOptions> fPrevZoomOpt;
+    
+    bool isZoomAutomatic; ///< true if user did not ask for custom zoom
+    
+    util::DataProductChangeTracker_t* fLastEvent; ///< keeps track of latest event
+    
+    /// Records whether we are automatically zooming to the region of interest
+    void SetAutomaticZoomMode(bool bSet = true);
     
     /// Returns a string visualizing the total number of elements
     static std::string TotalElementsString(unsigned int NElements);

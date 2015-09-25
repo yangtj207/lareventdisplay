@@ -21,6 +21,8 @@
 #include "sstream"
 
 #include "EventDisplayBase/View2D.h"
+#include "EventDisplayBase/EventHolder.h"
+#include "EventDisplay/ChangeTrackers.h" // util::DataProductChangeTracker_t
 #include "EventDisplay/TWQProjectionView.h"
 #include "EventDisplay/HeaderPad.h"
 #include "EventDisplay/ColorDrawingOptions.h"
@@ -62,6 +64,9 @@ namespace evd{
     : evdb::Canvas(mf)
     , fRedraw(nullptr)
     , fCryoInput(nullptr), fTPCInput(nullptr), fTotalTPCLabel(nullptr)
+    , isZoomAutomatic
+        (art::ServiceHandle<evd::EvdLayoutOptions>()->fAutoZoomInterest)
+    , fLastEvent(new util::DataProductChangeTracker_t)
   {  
     
     art::ServiceHandle<geo::Geometry> geo;
@@ -272,7 +277,8 @@ namespace evd{
 
     } 
 
-
+    // propagate the zoom setting
+    SetAutomaticZoomMode(isZoomAutomatic);
 
     evdb::Canvas::fCanvas->Update();
 
@@ -294,11 +300,22 @@ namespace evd{
     }
     fPlanes.clear();
     fPlaneQ.clear();
+    
+    delete fLastEvent;
   }
 
   //......................................................................
+  void TWQProjectionView::ResetRegionsOfInterest() {
+    for(TWireProjPad* planePad: fPlanes)
+      planePad->RawDataDraw()->ResetRegionOfInterest();
+  } // TWQProjectionView::ResetRegionsOfInterest()
+  
+  //......................................................................
   void TWQProjectionView::DrawPads(const char* /*opt*/)
   {
+    
+    OnNewEvent(); // if the current event is a new one, we need some resetting
+    
     for(unsigned int i=0; i<fPlanes.size();++i){
       fPlanes[i]->Draw();
       fPlanes[i]->Pad()->Update();
@@ -310,10 +327,22 @@ namespace evd{
       fPlaneQ[j]->Pad()->GetFrame()->SetBit(TPad::kCannotMove,true);
     }
   }
+  
+  
+  //......................................................................
+  void TWQProjectionView::SetAutomaticZoomMode(bool bSet /* = true */) {
+    isZoomAutomatic = bSet;
+    for (TWireProjPad* pPlane: fPlanes)
+      pPlane->SetZoomToRoI(isZoomAutomatic);
+  } // TWQProjectionView::SetAutomaticZoomMode()
+
+  
   //......................................................................
   void TWQProjectionView::Draw(const char* opt) 
   {  
     mf::LogDebug("TWQProjectionView") << "Starting to draw";
+    
+    OnNewEvent(); // if the current event is a new one, we need some resetting
     
     art::ServiceHandle<geo::Geometry> geo;
 
@@ -339,26 +368,24 @@ namespace evd{
     curr_zooming_plane=-1;
   
     unsigned int const nPlanes = fPlanes.size();
-    mf::LogDebug("TWQProjectionView")
-      << "Start drawing " << nPlanes << " planes";
+    LOG_DEBUG("TWQProjectionView") << "Start drawing " << nPlanes << " planes";
     //  double Charge=0, ConvCharge=0;
     for(unsigned int i=0;i<nPlanes;++i){
-      
-      fPlanes[i]->Draw(opt);
-      fPlanes[i]->Pad()->Update();
-      fPlanes[i]->Pad()->GetFrame()->SetBit(TPad::kCannotMove,true);
+      TWireProjPad* planePad = fPlanes[i];
+      planePad->Draw(opt);
+      planePad->Pad()->Update();
+      planePad->Pad()->GetFrame()->SetBit(TPad::kCannotMove,true);
       fPlaneQ[i]->Draw();
-      std::vector<double> ZoomParams = fPlanes[i]->GetCurrentZoom();
+      std::vector<double> ZoomParams = planePad->GetCurrentZoom();
       fZoomOpt.wmin[i] = ZoomParams[0];
       fZoomOpt.wmax[i] = ZoomParams[1];
       fZoomOpt.tmin[i] = ZoomParams[2];
       fZoomOpt.tmax[i] = ZoomParams[3];
-  
       // Charge deposit feature - not working yet
       // 
       //  if(geo->Plane(i).SignalType()==geo::kCollection)
       //  {
-      //	fPlanes[i]->RecoBaseDraw()->GetChargeSum(i,Charge,ConvCharge);  
+      //	planePad->RecoBaseDraw()->GetChargeSum(i,Charge,ConvCharge);  
       //   }
    
     }
@@ -1181,7 +1208,8 @@ namespace evd{
 	 ( std::abs(wend-wstart ) > 0.01*(xx2-xx1) ) && 
 	 ( std::abs(tend-tstart ) > 0.01*(yy2-yy1)   &&  
 	   curr_zooming_plane==plane ) ){
-		    		    
+	
+	SetAutomaticZoomMode(false);
 	this->SetZoom(plane,wstart,wend,tstart,tend);
 	wstart=-1;
 	tstart=-1;
@@ -1676,11 +1704,11 @@ namespace evd{
       if(flag){
 	int test=0;
 	if(rawopt->fDrawRawDataOrCalibWires == 0)
-	  fPlanes[iplane]->RawDataDraw()->GetRegionOfInterest(iplane,minw,maxw,mint,maxt);
+	  test = fPlanes[iplane]->RawDataDraw()->GetRegionOfInterest(iplane,minw,maxw,mint,maxt);
 	else
 	  fPlanes[iplane]->RecoBaseDraw()->GetRegionOfInterest(iplane,minw,maxw,mint,maxt);
 	  
-	if(test==-1)
+	if(test != 0)
 	  continue;
       }
       else{
@@ -1716,6 +1744,7 @@ namespace evd{
   {  
     art::ServiceHandle<evd::EvdLayoutOptions>   evdlayoutopt;
     evdlayoutopt->fAutoZoomInterest = fToggleAutoZoom->GetState();
+    SetAutomaticZoomMode(evdlayoutopt->fAutoZoomInterest == 1);
   }
 
   //......................................................................
@@ -1753,7 +1782,7 @@ namespace evd{
   
   //......................................................................
   void TWQProjectionView::ForceRedraw() {
-    mf::LogDebug("TWQProjectionView") << "Explicit request for redrawing";
+    LOG_DEBUG("TWQProjectionView") << "Explicit request for redrawing";
     
     // for now, bother only about redrawing the plane pads
     SetZoomFromView();
@@ -2069,6 +2098,7 @@ namespace evd{
       rawOpt.fTPC = NewTPC.TPC;
       
       // redraw the content
+      ResetRegionsOfInterest();
       DrawPads();
     //  evdb::Canvas::fCanvas->cd();
     //  evdb::Canvas::fCanvas->Modified();
@@ -2421,5 +2451,31 @@ namespace evd{
   }
 
 
+  //-----------------------------------------------------------------
+  bool TWQProjectionView::OnNewEvent() {
+    
+    // first check if it's new...
+    art::Event const* pEvent = evdb::EventHolder::Instance()->GetEvent();
+    if (!pEvent) {
+      if (!fLastEvent->isValid()) return false; // no event before, nor now
+      fLastEvent->clear();
+      return true;
+    }
+    
+    // do we have a new event?
+    if (!fLastEvent->update
+      ({*pEvent, art::ServiceHandle<evd::RawDrawingOptions>()->fRawDataLabel})
+      )
+      return false;
+    
+    LOG_DEBUG("TWQProjectionView") << "New event or product: " << *fLastEvent;
+    
+    art::ServiceHandle<evd::EvdLayoutOptions> drawopt;
+    SetAutomaticZoomMode(drawopt->fAutoZoomInterest == 1);
+    
+    return true; // yes, a new event is here
+  } // TWQProjectionView::OnNewEvent()
 
+  //-----------------------------------------------------------------
+  
 }// namespace

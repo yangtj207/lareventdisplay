@@ -41,9 +41,8 @@
  * fixed on demand. Examples include:
  * - no alignment of the boxes with the wire and tick numbers
  * - possible border effects
- * - the fact that only the maximum charge is displayed on each box (an option
- *   is almost implemented to replace that with a sum, and an average is also
- *   possible), and no dynamic charge range detection is in place
+ * - the fact that only the maximum charge is displayed on each box , and no
+ *   dynamic charge range detection is in place
  * - the first drawing is performed with a grid that is not the final one
  *   (because for some reason the frame starts larger than it should and is
  *   resized later)
@@ -58,6 +57,7 @@
 #include <tuple>
 #include <limits> // std::numeric_limits<>
 #include <type_traits> // std::add_const_t<>, ...
+#include <typeinfo> // to use typeid()
 #include <algorithm> // std::fill(), std::find_if(), ...
 #include <cstddef> // std::ptrdiff_t
 
@@ -67,6 +67,7 @@
 #include "TFrame.h"
 #include "TVirtualPad.h"
 
+#include "EventDisplay/ChangeTrackers.h" // util::PlaneDataChangeTracker_t
 #include "EventDisplay/RawDataDrawer.h"
 #include "EventDisplayBase/View2D.h"
 #include "EventDisplayBase/EventHolder.h"
@@ -85,6 +86,7 @@
 
 
 #include "art/Utilities/InputTag.h"
+#include "art/Utilities/Exception.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
@@ -92,6 +94,17 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "CalibrationDBI/Interface/IDetPedestalService.h"
 #include "CalibrationDBI/Interface/IDetPedestalProvider.h"
+
+
+namespace {
+  template <typename Stream, typename T>
+  void PrintRange
+    (Stream&& out, std::string header, lar::util::MinMaxCollector<T> const& range)
+  {
+    out << header << ": " << range.min() << " -- " << range.max()
+      << " (" << (range.has_data()? "valid": "invalid") << ")";
+  } // PrintRange()
+} // local namespace
 
 
 // internal use classes declaration;
@@ -231,7 +244,7 @@ namespace evd {
     
     
     /// Cached set of RawDigitInfo_t
-    class RawDigitCacheClass {
+    class RawDigitCacheDataClass {
         public:
      
       /// Returns the list of digit info
@@ -239,70 +252,67 @@ namespace evd {
       
       /// Returns a pointer to the digit info of given channel, nullptr if none
       RawDigitInfo_t const* FindChannel(raw::ChannelID_t channel) const;
-
       
       /// Returns the largest number of samples in the unpacked raw digits
       size_t MaxSamples() const { return max_samples; }
       
-      /// Returns whether the cache is empty()
+      /// Returns whether the cache is empty() (STL-like interface)
       bool empty() const { return digits.empty(); }
       
-      /// Updates the cache if needed; returns whether it was needed
-      bool Update(art::Event const& evt, art::InputTag const& label);
       /// Empties the cache
       void Clear();
-      /// Declare the cache invalid
+      
+      /// Fills the cache from the specified raw digits product handle
+      void Refill(art::Handle<std::vector<raw::RawDigit>>& rdcol);
+      
+      /// Clears the cache and marks it as invalid (use Update() to fill it)
       void Invalidate();
+      
+      /// Updates the cache for new_timestamp using the specified event
+      /// @return true if it needed to update (that might have failed)
+      bool Update(art::Event const& evt, CacheID_t const& new_timestamp);
       
       /// Dump the content of the cache
       template <typename Stream>
       void Dump(Stream&& out) const;
       
         private:
-      struct CacheTimestamp_t {
-        art::EventID event_id;
-        art::InputTag input_label;
-        
-        void clear()
-          { event_id = art::EventID(); input_label = art::InputTag(); }
-        
-        bool operator== (CacheTimestamp_t const& ts) const
-          {
-            return (ts.event_id == event_id) && (ts.input_label == input_label);
-          } // operator==
-        bool operator!= (CacheTimestamp_t const& ts) const
-          {
-            return (ts.event_id != event_id) || (ts.input_label != input_label);
-          } // operator!=
-        
-        operator std::string() const
-          {
-            return "R: " + std::to_string(event_id.run())
-              + " S: " + std::to_string(event_id.subRun())
-              + " E: " + std::to_string(event_id.event())
-              + " I: " + input_label.encode();
-          }
-      }; // CacheTimestamp_t
       
+      struct BoolWithUpToDateMetadata {
+        
+        bool bUpToDate = false;
+        std::vector<raw::RawDigit> const* digits = nullptr;
+        
+        BoolWithUpToDateMetadata() = default;
+        BoolWithUpToDateMetadata
+          (bool uptodate, std::vector<raw::RawDigit> const* newdigits):
+          bUpToDate(uptodate), digits(newdigits)
+          {}
+        
+        operator bool() const { return bUpToDate; }
+      }; // struct BoolWithUpToDateMetadata
+    
       std::vector<RawDigitInfo_t> digits; ///< vector of raw digit information
+      
+      CacheID_t timestamp; ///< object expressing validity range of cached data
       
       size_t max_samples = 0; ///< the largest number of ticks in any digit
       
-      CacheTimestamp_t timestamp; ///< time stamp for the cache
+      /// Checks whether an update is needed; can load digits in the process
+      BoolWithUpToDateMetadata CheckUpToDate
+        (CacheID_t const& ts, art::Event const* evt = nullptr) const;
       
-      /// Fills the cache
-      void Refill(art::Event const& evt, CacheTimestamp_t const& ts);
-      /// Returns whether the cache is updated to this event
-      bool isUpToDate(CacheTimestamp_t const& ts) const;
+      static std::vector<raw::RawDigit> const* ReadProduct
+        (art::Event const& evt, art::InputTag label);
       
-    }; // struct RawDigitCacheClass
+    }; // struct RawDigitCacheDataClass
     
 
     std::vector<evd::details::RawDigitInfo_t>::const_iterator begin
-      (evd::details::RawDigitCacheClass const& cache)
+      (RawDigitCacheDataClass const& cache)
       { return cache.Digits().cbegin(); }
     std::vector<evd::details::RawDigitInfo_t>::const_iterator end
-      (evd::details::RawDigitCacheClass const& cache)
+      (RawDigitCacheDataClass const& cache)
       { return cache.Digits().cend(); }
 
 
@@ -358,8 +368,11 @@ namespace evd {
       float UpperEdge(std::ptrdiff_t iCell) const
         { return LowerEdge(iCell + 1); }
       
-      /// Initialize the axis
+      /// Initialize the axis, returns whether cell size is finite
       bool Init(size_t nDiv, float new_min, float new_max);
+      
+      /// Initialize the axis limits, returns whether cell size is finite
+      bool SetLimits(float new_min, float new_max);
       
       /// Expands the cell (at fixed range) to meet minimum cell size
       /// @return Whether the cell size was changed
@@ -374,6 +387,8 @@ namespace evd {
       bool SetCellSizeBoundary(float min_size, float max_size)
         { return SetMinCellSize(min_size) || SetMaxCellSize(max_size); }
       
+      template <typename Stream>
+      void Dump(Stream&& out) const;
       
         private:
       size_t n_cells; ///< number of cells in the axis
@@ -448,6 +463,10 @@ namespace evd {
       void SetWireRange(unsigned int nWires)
         { SetWireRange(0., (float) nWires, nWires); }
       
+      /// Sets the wire range, leaving the number of wire cells unchanged
+      void SetWireRange(float min_wire, float max_wire)
+        { wire_axis.SetLimits(min_wire, max_wire); }
+      
       /// Sets the complete wire range
       void SetWireRange(float min_wire, float max_wire, unsigned int nWires)
         { wire_axis.Init(nWires, min_wire, max_wire); }
@@ -468,6 +487,10 @@ namespace evd {
       void SetTDCRange(float min_tdc, float max_tdc, unsigned int nTDC)
         { tdc_axis.Init(nTDC, min_tdc, max_tdc); }
       
+      /// Sets the TDC range, leaving the number of ticks unchanged
+      void SetTDCRange(float min_tdc, float max_tdc)
+        { tdc_axis.SetLimits(min_tdc, max_tdc); }
+      
       /// Sets the complete TDC range, with minimum cell size
       void SetTDCRange
         (float min_tdc, float max_tdc, unsigned int nTDC, float min_size)
@@ -485,6 +508,10 @@ namespace evd {
       /// Sets the minimum size for TDC cells
       bool SetMinTDCCellSize(float min_size)
         { return tdc_axis.SetMinCellSize(min_size); }
+      
+      /// Prints the current axes on the specified stream
+      template <typename Stream>
+      void Dump(Stream&& out) const;
       
         protected:
       GridAxisClass wire_axis;
@@ -540,17 +567,18 @@ namespace evd {
   
   //......................................................................
   RawDataDrawer::RawDataDrawer()
-    : digit_cache(new details::RawDigitCacheClass)
+    : digit_cache(new details::RawDigitCacheDataClass)
     , fStartTick(0),fTicks(2048)
+    , fCacheID(new details::CacheID_t)
     , fDrawingRange(new details::CellGridClass)
   { 
     art::ServiceHandle<geo::Geometry> geo;
 
-    art::ServiceHandle<evd::RawDrawingOptions> drawopt;
-    geo::TPCID tpcid(drawopt->fCryostat, drawopt->fTPC);
+    art::ServiceHandle<evd::RawDrawingOptions> rawopt;
+    geo::TPCID tpcid(rawopt->fCryostat, rawopt->fTPC);
     
-    fStartTick = drawopt->fStartTick;
-    fTicks = drawopt->fTicks;
+    fStartTick = rawopt->fStartTick;
+    fTicks = rawopt->fTicks;
 
     // set the list of bad channels in this detector
     filter::ChannelFilter cf; 
@@ -568,10 +596,48 @@ namespace evd {
   {
     delete digit_cache;
     delete fDrawingRange;
+    delete fCacheID;
   }
-
-
+  
+  
   //......................................................................
+  void RawDataDrawer::SetDrawingLimits
+    (float low_wire, float high_wire, float low_tdc, float high_tdc)
+  {
+    LOG_DEBUG("RawDataDrawer") << __func__
+      << "() setting drawing range as wires ( "
+      << low_wire << " - " << high_wire
+      << " ), ticks ( " << low_tdc << " - " << high_tdc << " )";
+    
+    // we need to set the minimum cell size to 1, otherwise some cell will not
+    // cover any wire/tick and they will be always empty
+    if (PadResolution) {
+      // TODO implement support for swapping axes here
+      unsigned int wire_pixels = PadResolution.width;
+      unsigned int tdc_pixels = PadResolution.height;
+      fDrawingRange->SetWireRange(low_wire, high_wire, wire_pixels, 1.F);
+      fDrawingRange->SetTDCRange(low_tdc, high_tdc, tdc_pixels, 1.F);
+    }
+    else {
+      LOG_DEBUG("RawDataDrawer")
+        << "Pad size not available -- using existing cell size";
+      fDrawingRange->SetWireRange(low_wire, high_wire);
+      fDrawingRange->SetMinWireCellSize(1.F);
+      fDrawingRange->SetTDCRange(low_tdc, high_tdc);
+      fDrawingRange->SetMinTDCCellSize(1.F);
+    }
+    
+  } // RawDataDrawer::SetDrawingLimits()
+  
+  
+  void RawDataDrawer::SetDrawingLimitsFromRoI
+    (geo::PlaneID::PlaneID_t plane)
+  {
+    SetDrawingLimits
+      (fWireMin[plane], fWireMax[plane], fTimeMin[plane], fTimeMax[plane]);
+  } // RawDataDrawer::SetDrawingLimitsFromRoI()
+  
+  
   void RawDataDrawer::ExtractRange
     (TVirtualPad* pPad, std::vector<double> const* zoom /* = nullptr */)
   {
@@ -586,7 +652,12 @@ namespace evd {
       double const wire_pixels = pPad->XtoAbsPixel(high_wire) - pPad->XtoAbsPixel(low_wire);
       double const tdc_pixels = -(pPad->YtoAbsPixel(high_tdc) - pPad->YtoAbsPixel(low_tdc));
       
-      log << "\n frame window is " << wire_pixels << "x" << tdc_pixels << " pixel big and";
+      PadResolution.width = (unsigned int) wire_pixels;
+      PadResolution.height = (unsigned int) tdc_pixels;
+      
+      log << "\n frame window is "
+        << PadResolution.width << "x" << PadResolution.height
+        << " pixel big and";
       // those coordinates also are a (unreliable) estimation of the zoom;
       // if we have a better one, let's use it
       // (this does not change the size of the window in terms of pixels)
@@ -601,8 +672,11 @@ namespace evd {
       log << " spans wires "
         << low_wire << "-" << high_wire << " and TDC " << low_tdc << "-" << high_tdc;
       
-      fDrawingRange->SetWireRange(low_wire, high_wire, wire_pixels, 1.0);
-      fDrawingRange->SetTDCRange(low_tdc, high_tdc, tdc_pixels, 1.0);
+      // TODO support swapping axes here:
+      // if (rawopt.fAxisOrientation < 1) { normal ; } else { swapped; }
+      
+      fDrawingRange->SetWireRange(low_wire, high_wire, (unsigned int) wire_pixels, 1.0);
+      fDrawingRange->SetTDCRange(low_tdc, high_tdc, (unsigned int) tdc_pixels, 1.0);
     }
     else {
       // keep the old frame (if any)
@@ -613,54 +687,153 @@ namespace evd {
   
   
   //......................................................................
-  void RawDataDrawer::RawDigit2D(const art::Event& evt,
-				                 evdb::View2D*     view,
-				                 unsigned int      plane)
+  class RawDataDrawer::OperationBaseClass {
+      public:
+    OperationBaseClass
+      (geo::PlaneID const& pid, RawDataDrawer* data_drawer = nullptr)
+      : pRawDataDrawer(data_drawer), planeID(pid) {}
+    
+    virtual ~OperationBaseClass() = default;
+    
+    virtual bool Initialize() { return true; }
+    
+    virtual bool ProcessWire(geo::WireID const&) { return true; }
+    virtual bool ProcessTick(size_t) { return true; }
+    
+    virtual bool Operate(geo::WireID const& wireID, size_t tick, float adc) = 0;
+    
+    virtual bool Finish() { return true; }
+    
+    virtual std::string Name() const
+      { return cet::demangle_symbol(typeid(*this).name()); }
+    
+    bool operator() (geo::WireID const& wireID, size_t tick, float adc)
+      { return Operate(wireID, tick, adc); }
+    
+    geo::PlaneID const& PlaneID() const { return planeID; }
+    RawDataDrawer* RawDataDrawerPtr() const { return pRawDataDrawer; }
+    
+      protected:
+    RawDataDrawer* pRawDataDrawer = nullptr;
+      
+      private:
+    geo::PlaneID planeID;
+  }; // class RawDataDrawer::OperationBaseClass
+  
+  //......................................................................
+  class RawDataDrawer::ManyOperations: public RawDataDrawer::OperationBaseClass
   {
-    // Check if we're supposed to draw raw hits at all
-    art::ServiceHandle<evd::RawDrawingOptions> drawopt;
-    if (drawopt->fDrawRawDataOrCalibWires == 1) return;
-
-    art::ServiceHandle<geo::Geometry> geo;
-    art::ServiceHandle<evd::ColorDrawingOptions> cst;
-
-    art::ServiceHandle<util::LArProperties> larp;
-    art::ServiceHandle<util::DetectorProperties> detp;
+    std::vector<std::unique_ptr<RawDataDrawer::OperationBaseClass>> operations;
+      public:
     
-    //get pedestal conditions
-    const lariov::IDetPedestalProvider& pedestalRetrievalAlg = art::ServiceHandle<lariov::IDetPedestalService>()->GetPedestalProvider();  
+    ManyOperations
+      (geo::PlaneID const& pid, RawDataDrawer* data_drawer = nullptr):
+      OperationBaseClass(pid, data_drawer)
+      {}
     
-    geo::PlaneID pid(drawopt->fCryostat, drawopt->fTPC, plane);
-
-    fRawCharge[plane]       = 0.;
-    fConvertedCharge[plane] = 0.;
+    virtual bool Initialize() override
+      {
+        bool bAllOk = true;
+        for (std::unique_ptr<OperationBaseClass> const& op: operations)
+          if (!op->Initialize()) bAllOk = false;
+        return bAllOk;
+      }
     
-    // set the minimum cell in ticks to at least match fTicksPerPoint
-    fDrawingRange->SetMinTDCCellSize((float) drawopt->fTicksPerPoint);
-
-    GetRawDigits(evt);
-
-    if(digit_cache->empty()) return;
+    virtual bool ProcessWire(geo::WireID const& wireID) override
+      {
+        for (std::unique_ptr<OperationBaseClass> const& op: operations)
+          if (op->ProcessWire(wireID)) return true;
+        return false;
+      }
+    virtual bool ProcessTick(size_t tick) override
+      {
+        for (std::unique_ptr<OperationBaseClass> const& op: operations)
+          if (op->ProcessTick(tick)) return true;
+        return false;
+      }
     
-    // TODO turn this into a user option
-    constexpr bool bDrawSum = false;
+    virtual bool Operate
+      (geo::WireID const& wireID, size_t tick, float adc) override
+      {
+        for (std::unique_ptr<OperationBaseClass> const& op: operations)
+          if (!op->Operate(wireID, tick, adc)) return false;
+        return true;
+      }
     
-    typedef struct {
-      int    adc   = 0;  ///< total ADC count in this box
-      bool   good  = false; ///< whether the channel is not bad
-    } BoxInfo_t;
+    virtual bool Finish() override
+      {
+        bool bAllOk = true;
+        for (std::unique_ptr<OperationBaseClass> const& op: operations)
+          if (!op->Finish()) bAllOk = false;
+        return bAllOk;
+      }
     
+    virtual std::string Name() const
+      {
+        std::string msg = cet::demangle_symbol(typeid(*this).name());
+        msg +=
+          (" [running " + std::to_string(operations.size()) + " operations:");
+        for (auto const& op: operations) {// it's unique_ptr<OperationBaseClass>
+          if (op) msg += " " + op->Name();
+          else msg += " <invalid>";
+        }
+        return msg + " ]";
+      }
     
-    // set up the size of the grid to be visualized;
-    // the information on the size has to be already there:
-    // caller should have user ExtractRange() first.
-    std::vector<BoxInfo_t> BoxInfo(fDrawingRange->NCells());
+    OperationBaseClass* Operator(size_t iOp)
+      { return operations.at(iOp).get(); }
+    OperationBaseClass const* Operator(size_t iOp) const
+      { return operations.at(iOp).get(); }
+    
+    void AddOperation(std::unique_ptr<OperationBaseClass> new_op)
+      {
+        if (!new_op) return;
+        if (PlaneID() != new_op->PlaneID()) {
+          throw art::Exception(art::errors::LogicError)
+            << "RawDataDrawer::ManyOperations(): trying to run operations on "
+            << std::string(PlaneID()) << " and "
+            << std::string(new_op->PlaneID()) << " at the same time";
+        }
+        if (RawDataDrawerPtr()
+          && (RawDataDrawerPtr() != new_op->RawDataDrawerPtr())
+          )
+        {
+          throw art::Exception(art::errors::LogicError)
+            << "RawDataDrawer::ManyOperations(): "
+            "trying to run operations on different RawDataDrawer"
+            ; // possible, but very unlikely
+        }
+        operations.emplace_back(std::move(new_op));
+      }
+    
+  }; // class RawDataDrawer::ManyOperations
+  
+  //......................................................................
+  bool RawDataDrawer::RunOperation
+    (art::Event const& evt, OperationBaseClass* operation)
+  {
+    geo::PlaneID const& pid = operation->PlaneID();
+    
+    art::ServiceHandle<evd::RawDrawingOptions> rawopt;
+    details::CacheID_t NewCacheID(evt, rawopt->fRawDataLabel, pid);
+    GetRawDigits(evt, NewCacheID);
+    
+    if(digit_cache->empty()) return true;
+    
+    LOG_DEBUG("RawDataDrawer") << "RawDataDrawer::RunOperation() running "
+      << operation->Name();
+    
+    // if we have an initialization failure, return false immediately;
+    // but it's way better if the failure throws an exception
+    if (!operation->Initialize()) return false;
     
     // It will be better when this is a service...
     filter::ChannelFilter channelFilter;
     
-    // collect the interesting range
-    lar::util::MinMaxCollector<float> WireRange, TDCrange;
+    //get pedestal conditions
+    const lariov::IDetPedestalProvider& pedestalRetrievalAlg = art::ServiceHandle<lariov::IDetPedestalService>()->GetPedestalProvider();
+    
+    geo::GeometryCore const& geom = *art::ServiceHandle<geo::Geometry>();
     
     // loop over all the channels/raw digits
     for (evd::details::RawDigitInfo_t const& digit_info: *digit_cache) {
@@ -671,14 +844,14 @@ namespace evd {
       // The following test is meant to be temporary until the "correct" solution is implemented
       auto const channel_status = channelFilter.GetChannelStatus(channel);
       if (channel_status == filter::ChannelFilter::NOTPHYSICAL) continue;
-      if (channel_status >  drawopt->fMaxChannelStatus)         continue;
+      if (channel_status >  rawopt->fMaxChannelStatus)         continue;
       
       // we have a list of all channels, but we are drawing only on one plane;
       // most of the channels will not contribute to this plane,
       // and before we start querying databases, unpacking data etc.
       // we want to know it's for something
       
-      std::vector<geo::WireID> WireIDs = geo->ChannelToWire(channel);
+      std::vector<geo::WireID> WireIDs = geom.ChannelToWire(channel);
       
       bool bDrawChannel = false;
       for (geo::WireID const& wireID: WireIDs){
@@ -699,8 +872,6 @@ namespace evd {
       // at this point we know we have to process this channel
       raw::RawDigit::ADCvector_t const& uncompressed = digit_info.Data();
       
-      details::ADCCorrectorClass ADCCorrector(pid);
-      
       // recover the pedestal
       float const pedestal = pedestalRetrievalAlg.PedMean(channel);
       
@@ -710,64 +881,142 @@ namespace evd {
         // check that the plane and tpc are the correct ones to draw
         if (wireID.planeID() != pid) continue; // not us!
         
-        float const wire = float(wireID.Wire);
-        
-        // if this wire number is out of range, we ignore it
-        if (!fDrawingRange->hasWire(wire)) continue;
+        // do we have anything to do with this wire?
+        if (!operation->ProcessWire(wireID)) continue;
         
         // get an iterator over the adc values
         // accumulate all the data of this wire in our "cells"
-        // TODO we could extract the number of ticks falling in the current cell
-        // rather than checking all the ticks in sequence
-        // TODO support back ticksPerPoint (automatic accumulation of ticks)
         size_t const max_tick = std::min({
-          size_t(fDrawingRange->TDCAxis().Max()),
           uncompressed.size(),
-          size_t(fTicks)
+          size_t(fStartTick + fTicks)
           });
         
         for (size_t iTick = fStartTick; iTick < max_tick; ++iTick) {
           
-          // check if we are out of range
-          const float tick = float(iTick);
-          
-          std::ptrdiff_t cell = fDrawingRange->GetCell(wire, tick);
-          if (cell < 0) continue;
+          // do we have anything to do with this wire?
+          if (!operation->ProcessTick(iTick)) continue;
           
           float const adc = uncompressed[iTick] - pedestal;
           
-          BoxInfo_t& info = BoxInfo[cell];
-          info.good = true; // if in range, we mark this cell as good
-          
-          fRawCharge[plane] += adc;
-          fConvertedCharge[plane] += ADCCorrector(adc);
-          
-          if (bDrawSum) { // draw total charge in cell
-            info.adc += adc;
-          }
-          else { // draw maximum digit in the cell
-            if (std::abs(info.adc) > std::abs(adc)) continue;
-            info.adc = adc;
-          }
-          
-          // this range is only within the currently selected region
-          WireRange.add(wire);
-          TDCrange.add(tick);
+          if (!operation->Operate(wireID, iTick, adc)) return false;
           
         } // if good
       } // for wires
     } // for channels
     
+    return operation->Finish();
+  } // ChannelLooper()
+  
+  
+  //......................................................................
+  class RawDataDrawer::BoxDrawer: public RawDataDrawer::OperationBaseClass {
+      public:
+    
+    BoxDrawer(
+      geo::PlaneID const& pid,
+      RawDataDrawer* dataDrawer,
+      evdb::View2D* new_view
+      )
+      : OperationBaseClass(pid, dataDrawer)
+      , view(new_view)
+      , rawCharge(0.), convertedCharge(0.)
+      , drawingRange(*(dataDrawer->fDrawingRange))
+      , ADCCorrector(PlaneID())
+      {}
+    
+    virtual bool Initialize() override
+      {
+        art::ServiceHandle<evd::RawDrawingOptions> rawopt;
+        
+        // set up the size of the grid to be visualized;
+        // the information on the size has to be already there:
+        // caller should have user ExtractRange(), or similar, first.
+        // set the minimum cell in ticks to at least match fTicksPerPoint
+        drawingRange.SetMinTDCCellSize((float) rawopt->fTicksPerPoint);
+        // also set the minimum wire cell size to 1,
+        // otherwise there will be cells represented by no wire.
+        drawingRange.SetMinWireCellSize(1.F);
+        boxInfo.clear();
+        boxInfo.resize(drawingRange.NCells());
+        return true;
+      }
+    
+    virtual bool ProcessWire(geo::WireID const& wire) override
+      { return drawingRange.hasWire((int) wire.Wire); }
+    
+    virtual bool ProcessTick(size_t tick) override
+      { return drawingRange.hasTick((float) tick); }
+    
+    virtual bool Operate
+      (geo::WireID const& wireID, size_t tick, float adc) override
+      {
+        geo::WireID::WireID_t const wire = wireID.Wire;
+        std::ptrdiff_t cell = drawingRange.GetCell(wire, tick);
+        if (cell < 0) return true;
+        
+        BoxInfo_t& info = boxInfo[cell];
+        info.good = true; // if in range, we mark this cell as good
+        
+        rawCharge += adc;
+        convertedCharge += ADCCorrector(adc);
+        
+        // draw maximum digit in the cell
+        if (std::abs(info.adc) <= std::abs(adc)) info.adc = adc;
+        
+        return true;
+      }
+    
+    virtual bool Finish() override
+      {
+        // write the information back
+        geo::PlaneID::PlaneID_t const plane = PlaneID().Plane;
+        RawDataDrawerPtr()->fRawCharge[plane] = rawCharge;
+        RawDataDrawerPtr()->fConvertedCharge[plane] = convertedCharge;
+        
+        // the cell size might have changed because of minimum size settings
+        // from configuration (see Initialize())
+        *(RawDataDrawerPtr()->fDrawingRange) = drawingRange;
+        
+        // complete the drawing
+        RawDataDrawerPtr()->QueueDrawingBoxes(view, PlaneID(), boxInfo);
+        
+        return true;
+      }
+    
+      private:
+    evdb::View2D* view;
+    
+    double rawCharge = 0., convertedCharge = 0.;
+    details::CellGridClass drawingRange;
+    std::vector<BoxInfo_t> boxInfo;
+    details::ADCCorrectorClass ADCCorrector;
+  }; // class RawDataDrawer::BoxDrawer
+  
+  
+  void RawDataDrawer::QueueDrawingBoxes(
+    evdb::View2D* view,
+    geo::PlaneID const& pid,
+    std::vector<BoxInfo_t> const& BoxInfo
+    )
+  {
     //
     // All the information is now collected in BoxInfo.
     // Make boxes out of it.
     //
+    evd::RawDrawingOptions const& rawopt
+      = *art::ServiceHandle<evd::RawDrawingOptions>();
+    
+    LOG_DEBUG("RawDataDrawer")
+      << "Filling " << BoxInfo.size() << " boxes to be rendered";
     
     // drawing options:
-    float const MinSignal = drawopt->fMinSignal;
-    bool const bScaleDigitsByCharge = drawopt->fScaleDigitsByCharge;
+    float const MinSignal = rawopt.fMinSignal;
+    bool const bScaleDigitsByCharge = rawopt.fScaleDigitsByCharge;
 
-    geo::SigType_t const sigType = geo->SignalType(pid);
+    art::ServiceHandle<evd::ColorDrawingOptions> cst;
+    
+    geo::GeometryCore const& geom = *art::ServiceHandle<geo::Geometry>();
+    geo::SigType_t const sigType = geom.SignalType(pid);
     evdb::ColorScale const& ColorSet = cst->RawQ(sigType);
     size_t const nBoxes = BoxInfo.size();
     unsigned int nDrawnBoxes = 0;
@@ -793,7 +1042,11 @@ namespace evd {
       float min_wire, max_wire, min_tick, max_tick;
       std::tie(min_wire, min_tick, max_wire, max_tick)
         = fDrawingRange->GetCellBox(iBox);
-      
+    /*
+      LOG_TRACE("RawDataDrawer")
+        << "Wires ( " << min_wire << " - " << max_wire << " ) ticks ("
+        << min_tick << " - " << max_tick << " ) for cell " << iBox;
+    */
       if (sf != 1.) { // need to shrink the box
         float const nsf = 1. - sf; // negation of scale factor
         float const half_box_wires = (max_wire - min_wire) / 2.,
@@ -809,7 +1062,7 @@ namespace evd {
       // allocate the box on the view;
       // the order of the coordinates depends on the orientation
       TBox* pBox;
-      if (drawopt->fAxisOrientation < 1)
+      if (rawopt.fAxisOrientation < 1)
         pBox = &(view->AddBox(min_wire, min_tick, max_wire, max_tick));
       else
         pBox = &(view->AddBox(min_tick, min_wire, max_tick, max_wire));
@@ -821,218 +1074,220 @@ namespace evd {
       ++nDrawnBoxes;
     } // for (iBox)
     
-    // now, when do we want to fill the interesting region?
-    // this region as computed in the current implementation is within
-    // the selected region for visualization (fDrawingRange);
-    // so we update it only if it has not been initialized yet
-    // (that is, it's empty)
-    if ((fWireMin[plane] == fWireMax[plane]) && WireRange.has_data()) {
-      mf::LogInfo("RawDataDrawer") << "Region of interest for "
-        << std::string(pid) << " detected to be within wires "
-        << WireRange.min() << " and " << WireRange.max();
-      fWireMax[plane] = WireRange.max() + 1;
-      fWireMin[plane] = WireRange.min();
-    }
-    if ((fTimeMin[plane] == fTimeMax[plane]) && TDCrange.has_data()) {
-      mf::LogInfo("RawDataDrawer") << "Region of interest for "
-        << std::string(pid) << " detected to be within ticks "
-        << TDCrange.min() << " and " << TDCrange.max();
-      fTimeMax[plane] = TDCrange.max() + 1;
-      fTimeMin[plane] = TDCrange.min();
+    LOG_DEBUG("RawDataDrawer")
+      << "Sent " << nDrawnBoxes << "/" << BoxInfo.size()
+      << " boxes to be rendered";
+  } // RawDataDrawer::QueueDrawingBoxes()
+  
+  
+  void RawDataDrawer::RunDrawOperation
+    (art::Event const& evt, evdb::View2D* view, unsigned int plane)
+  {
+    
+    // Check if we're supposed to draw raw hits at all
+    art::ServiceHandle<evd::RawDrawingOptions> rawopt;
+    if (rawopt->fDrawRawDataOrCalibWires == 1) return;
+    
+    geo::PlaneID const pid(rawopt->CurrentTPC(), plane);
+    BoxDrawer drawer(pid, this, view);
+    if (!RunOperation(evt, &drawer)) {
+      throw art::Exception(art::errors::Unknown)
+        << "RawDataDrawer::RunDrawOperation(): "
+        "somewhere something went somehow wrong";
     }
     
+  } // RawDataDrawer::RunDrawOperation()
+  
+  
+  //......................................................................
+  class RawDataDrawer::RoIextractorClass:
+    public RawDataDrawer::OperationBaseClass
+  {
+      public:
     
-#if 0
-    for (evd::details::RawDigitInfo_t& digit_info: digit_cache->digits) {
-      raw::RawDigit const& hit = digit_info.Digit();
-      raw::ChannelID_t const channel = hit.Channel();
-      
-      // The following test is meant to be temporary until the "correct" solution is implemented
-      auto const channel_status = channelFilter.GetChannelStatus(channel);
-      if (channel_status == filter::ChannelFilter::NOTPHYSICAL) continue;
-      if (channel_status >  drawopt->fMaxChannelStatus)         continue;
+    float const RoIthreshold;
+    
+    RoIextractorClass(geo::PlaneID const& pid, RawDataDrawer* data_drawer)
+      : OperationBaseClass(pid, data_drawer)
+      , RoIthreshold
+        (art::ServiceHandle<evd::RawDrawingOptions>()->RoIthreshold(PlaneID()))
+      {}
+    
+    virtual bool Operate
+      (geo::WireID const& wireID, size_t tick, float adc) override
+      {
+        if (std::abs(adc) < RoIthreshold) return true;
+        WireRange.add(wireID.Wire);
+        TDCrange.add(tick);
+        return true;
+      } // Operate()
+    
+    virtual bool Finish() override
+      {
+        geo::PlaneID::PlaneID_t const plane = PlaneID().Plane;
+        int& WireMin = pRawDataDrawer->fWireMin[plane];
+        int& WireMax = pRawDataDrawer->fWireMax[plane];
+        int& TimeMin = pRawDataDrawer->fTimeMin[plane];
+        int& TimeMax = pRawDataDrawer->fTimeMax[plane];
         
-      geo::SigType_t sigType = geo->SignalType(channel);
-      geo::View_t    v       = geo->View(channel);
-      double const wirePitch = geo->WirePitch(v); // FIXME this assumes all TPC are the same
-      std::vector<geo::WireID> wireids = geo->ChannelToWire(channel);
-      bool skipchan = true;
-      for(auto const& wid : wireids){
-	// check that the plane and tpc are the correct ones to draw
-	if(wid.planeID() == pid){
-	  skipchan = false;
-	}
+        if ((WireMin == WireMax) && WireRange.has_data()) {
+          geo::GeometryCore const& geom = *art::ServiceHandle<geo::Geometry>();
+          mf::LogInfo("RawDataDrawer") << "Region of interest for "
+            << std::string(PlaneID()) << " detected to be within wires "
+            << WireRange.min() << " to " << WireRange.max()
+            << " (plane has " << geom.Nwires(PlaneID()) << " wires)";
+          WireMax = WireRange.max() + 1;
+          WireMin = WireRange.min();
+        }
+        if ((TimeMin == TimeMax) && TDCrange.has_data()) {
+          mf::LogInfo("RawDataDrawer") << "Region of interest for "
+            << std::string(PlaneID()) << " detected to be within ticks "
+            << TDCrange.min() << " to " << TDCrange.max();
+          TimeMax = TDCrange.max() + 1;
+          TimeMin = TDCrange.min();
+        }
+        return true;
+      } // Finish()
+    
+      private:
+    lar::util::MinMaxCollector<float> WireRange, TDCrange;
+  }; // class RawDataDrawer::RoIextractorClass
+  
+  
+  void RawDataDrawer::RunRoIextractor
+    (art::Event const& evt, unsigned int plane)
+  {
+    art::ServiceHandle<evd::RawDrawingOptions> rawopt;
+    geo::PlaneID const pid(rawopt->CurrentTPC(), plane);
+    
+    // if we have no region of interest, prepare to extract it
+    bool const bExtractRoI = !hasRegionOfInterest(plane);
+    LOG_TRACE("RawDataDrawer") << "Region of interest for " << pid
+      << (bExtractRoI? " extracted": " not extracted") << " on this draw";
+    
+    if (!bExtractRoI) return;
+    
+    RoIextractorClass Extractor(pid, this);
+    if (!RunOperation(evt, &Extractor)) {
+      throw std::runtime_error
+        ("RawDataDrawer::RunRoIextractor(): somewhere something went somehow wrong");
+    }
+    
+  } // RawDataDrawer::RunRoIextractor()
+  
+  
+  //......................................................................
+  
+  void RawDataDrawer::RawDigit2D(
+    art::Event const& evt, evdb::View2D* view, unsigned int plane,
+    bool bZoomToRoI /* = false */
+    )
+  {
+    
+    art::ServiceHandle<evd::RawDrawingOptions> rawopt;
+    geo::PlaneID const pid(rawopt->CurrentTPC(), plane);
+    
+    bool const bDraw = (rawopt->fDrawRawDataOrCalibWires != 1);
+    // if we don't need to draw, don't bother doing anything;
+    // if the region of interest is required, RunRoIextractor() should be called
+    // (ok, now it's private, but it could be exposed)
+    if (!bDraw) return;
+    
+    // make sure we reset what needs to be reset
+    // before the operations are initialized;
+    // we call for reading raw digits; they will be cached, so it's not a waste
+    details::CacheID_t NewCacheID(evt, rawopt->fRawDataLabel, pid);
+    GetRawDigits(evt, NewCacheID);
+    
+    bool const hasRoI = hasRegionOfInterest(plane);
+    
+    // - if we don't have a RoI yet, we want to get it while we draw
+    //   * if we are zooming into it now, we have to extract it first, then draw
+    //   * if we are not zooming, we can do both at the same time
+    // - if we have a RoI, we don't want to extract it again
+    if (!bZoomToRoI) { // we are not required to zoom to the RoI
+      
+      std::unique_ptr<OperationBaseClass> operation;
+      
+      // we will do the drawing in one pass
+      LOG_DEBUG("RawDataDrawer")
+        << __func__ << "() setting up one-pass drawing";
+      operation.reset(new BoxDrawer(pid, this, view));
+      
+      if (!hasRoI) { // we don't have any RoI; since it's cheap, let's get it
+        LOG_DEBUG("RawDataDrawer") << __func__ << "() adding RoI extraction";
+        
+        // swap cards: operation becomes a multiple operation:
+        // - prepare the two operations (one is there already, somehow)
+        std::unique_ptr<OperationBaseClass> drawer(std::move(operation));
+        std::unique_ptr<OperationBaseClass> extractor
+          (new RoIextractorClass(pid, this));
+        // - create a new composite operation and give it the sub-ops
+        operation.reset(new ManyOperations(pid, this));
+        ManyOperations* pManyOps
+          = static_cast<ManyOperations*>(operation.get());
+        pManyOps->AddOperation(std::move(drawer));
+        pManyOps->AddOperation(std::move(extractor));
       }
-      if (skipchan) continue;
       
-      raw::RawDigit::ADCvector_t const& uncompressed = digit_info.Data();
+      if (!RunOperation(evt, operation.get())) {
+        throw art::Exception(art::errors::Unknown)
+          << "RawDataDrawer::RunDrawOperation(): "
+          "somewhere something went somehow wrong";
+      }
+    }
+    else { // we are zooming to RoI
+      // first, we want the RoI extracted; the extractor will update this object
+      if (!hasRoI) {
+        LOG_DEBUG("RawDataDrawer") << __func__
+          << "() setting up RoI extraction for " << pid;
+        RoIextractorClass extractor(pid, this);
+        if (!RunOperation(evt, &extractor)) {
+          throw art::Exception(art::errors::Unknown)
+            << "RawDataDrawer::RunDrawOperation():"
+            " something went somehow wrong while extracting RoI";
+        }
+      }
+      else {
+        LOG_DEBUG("RawDataDrawer") << __func__
+          << "() using existing RoI for " << pid
+          << ": wires ( " << fWireMin[plane] << " - " << fWireMax[plane]
+          << " ), ticks ( " << fTimeMin[plane] << " - " << fTimeMax[plane]
+          << " )";
+      }
       
-      for(auto const& wid : wireids){
-	// check that the plane and tpc are the correct ones to draw
-	if(wid.planeID() == pid){
-        
-          // recover the pedestal
-          float pedestal = pedestalRetrievalAlg.PedMean(channel);
-	  
-	  double wire = 1.*wid.Wire;
-	  double tick = 0;
-	  // get an iterator over the adc values
-	  std::vector<short>::const_iterator itr = uncompressed.cbegin(),
-	    dend = uncompressed.end();
-	  while( itr != dend ){
-	    int ticksUsed = 0;
-	    double tdcsum = 0.;
-	    double adcsum = 0.;
-	    while(ticksUsed < ticksPerPoint && itr != dend){
-	      tdcsum  += tick;
-//          adcsum  += (1.*(*itr)) - fPedestalVec[channel]; // pedestals[plane]; //hit.GetPedestal();
-          adcsum  += (1.*(*itr)) - pedestal;
-	      ++ticksUsed;
-	      tick += 1.;
-	      itr++; // this advance of the iterator is sufficient for the external loop too
-	    }
-	    double adc = adcsum/ticksPerPoint;
-	    double tdc = tdcsum/ticksPerPoint;
-	    
-	    if(std::abs(adc) < drawopt->fMinSignal) continue;
-	
-	    fRawCharge[plane] += std::abs(adc);
-	    double const dQdX = std::abs(adc)/wirePitch/detp->ElectronsToADC();
-	    fConvertedCharge[plane] += larp->BirksCorrection(dQdX);
-	
-	    int    co = 0;
-	    double sf = 1.;
-	    constexpr double q0 = 1000.0;
-	    
-	    co = cst->RawQ(sigType).GetColor(adc);
-	    if (drawopt->fScaleDigitsByCharge) {
-	      sf = std::sqrt(adc/q0);
-	      if (sf>1.0) sf = 1.0;
-	    }
-	    if(wire < minw)
-	      minw = wire;
-	    if(wire > maxw)
-	      maxw = wire;
-	    if(tdc < mint)
-	      mint = tdc;
-	    if(tdc > maxt)
-	      maxt = tdc;
-	
-	    // don't draw boxes for tdc values that don't exist
-	    if(tdc > fStartTick+fTicks || tdc < fStartTick) continue;
-	    
-	    /* FIXME need to find which is the right tdc index
-	    BoxInfo_t& boxInfo = BoxInfo[wire * max_ticks + tdc];
-	    boxInfo.color = co;
-	    boxInfo.scale = sf;
-	    */
-	    
-	    TBox* b1;
-	    if(drawopt->fAxisOrientation < 1){
-	      b1 = &(view->AddBox(wire-sf*0.5,
-				      tdc-sf*0.5*ticksPerPoint,
-				      wire+sf*0.5,
-				      tdc+sf*0.5*ticksPerPoint));
-	      ++nBoxes;
-	    }
-	    else{
-	      b1 = &(view->AddBox(tdc-sf*0.5*ticksPerPoint,
-				      wire-sf*0.5,
-				      tdc+sf*0.5*ticksPerPoint,
-				      wire+sf*0.5));
-	      ++nBoxes;
-	    }
-	    b1->SetFillStyle(1001);
-	    b1->SetFillColor(co);    
-	    b1->SetBit(kCannotPick);
-	    
-	    // 	  TBox& b2 = view->AddBox(wire-0.1,tdc-0.1,wire+0.1,tdc+0.1);
-	    // 	  b2.SetFillStyle(0);
-	    // 	  b2.SetLineColor(15);
-	    // 	  b2.SetBit(kCannotPick);
-	 
-	  }// end loop over samples 
-	}// end if in the right plane
-      }// end loopo over wireids
-    }//end loop over raw hits
-
-    fWireMin[plane] = minw;   
-    fWireMax[plane] = maxw;    
-    fTimeMin[plane] = mint;    
-    fTimeMax[plane] = maxt; 
-    
-    // now loop over all the bad channels and set them to 0 adc
-    for(size_t bc = 0; bc < fBadChannels.size(); ++bc){
+      // adopt the drawing limits information from the wire/time limits
+      SetDrawingLimitsFromRoI(pid);
       
-      geo::SigType_t sigType = geo->SignalType(fBadChannels[bc]);
-	
-      std::vector<geo::WireID> wireids = geo->ChannelToWire(fBadChannels[bc]);
-      
-      // check this is the correct plane and tpc
-      for( auto const& wid : wireids){
-	if(wid.planeID() == pid){
-	
-	  if(drawopt->fMinSignal > 0) continue;
-	
-	  int      co = cst->RawQ(sigType).GetColor(0);
-	  double wire = 1.*w;
-	  
-	  for(int iTick = fStartTick; iTick < fStartTick+fTicks;
-            iTick += ticksPerPoint)
-          {
-	    double const tdc = iTick + 0.5*ticksPerPoint;
-	  /* FIXME
-	    BoxInfo_t& boxInfo = BoxInfo[wire * max_ticks + iTick];
-	    boxInfo.color = co;
-	    boxInfo.scale = 1.;
-	  */
-	    if(drawopt->fAxisOrientation < 1){
-	      TBox& b1 = view->AddBox(wire-0.5,tdc-0.5*ticksPerPoint,wire+0.5,tdc+0.5*ticksPerPoint);
-	      b1.SetFillStyle(1001);
-	      b1.SetFillColor(co);    
-	      b1.SetBit(kCannotPick);
-	    }
-	    else{
-	      TBox &b1 = view->AddBox(tdc-0.5*ticksPerPoint,wire-0.5,tdc+0.5*ticksPerPoint,wire+0.5);
-	      b1.SetFillStyle(1001);
-	      b1.SetFillColor(co);    
-	      b1.SetBit(kCannotPick);
-	    }	  
-	  }
-	}// end if in the right plane
-      }// end loop over wireids
-    }// end loop over bad channels    
-    
-#endif // 0
-    
-    mf::LogDebug("RawDataDrawer") << __func__ << "(" << std::string(pid)
-      << ") added " << nDrawnBoxes
-      << " " << fDrawingRange->WireAxis().CellSize()
-      << "x" << fDrawingRange->TDCAxis().CellSize()
-      << " boxes (out of a grid of " << fDrawingRange->WireAxis().NCells()
-      << "x" << fDrawingRange->TDCAxis().NCells() << " cells) covering ( "
-      << fDrawingRange->WireAxis().Min() << " -- " << fDrawingRange->WireAxis().Max()
-      << " ) wire and ( "
-      << fDrawingRange->TDCAxis().Min() << " -- " << fDrawingRange->TDCAxis().Max()
-      << " ) tick ranges";
-    
+      // then we draw
+      LOG_DEBUG("RawDataDrawer") << __func__ << "() setting up drawing";
+      BoxDrawer drawer(pid, this, view);
+      if (!RunOperation(evt, &drawer)) {
+        throw art::Exception(art::errors::Unknown)
+          << "RawDataDrawer::RunDrawOperation():"
+          " something went somehow wrong while drawing";
+      }
+    }
   } // RawDataDrawer::RawDigit2D()
-
+  
+  
   //........................................................................
   int RawDataDrawer::GetRegionOfInterest(int plane,int& minw,int& maxw,int& mint,int& maxt)
   {
     art::ServiceHandle<geo::Geometry> geo;
  
-    if((unsigned int)plane>fWireMin.size())
+    if((unsigned int)plane>=fWireMin.size())
       {mf::LogWarning  ("RawDataDrawer") << " Requested plane " << plane <<" is larger than those available " << std::endl;
 	return -1;
       }
-  
+    
     minw=fWireMin[plane];
     maxw=fWireMax[plane];
     mint=fTimeMin[plane];
     maxt=fTimeMax[plane];
-  
+    
+    if ((minw == maxw) || (mint == maxt)) return 1;
+    
     //make values a bit larger, but make sure they don't go out of bounds 
     minw= (minw-30<0) ? 0 : minw-30;
     mint= (mint-10<0) ? 0 : mint-10;
@@ -1058,15 +1313,15 @@ namespace evd {
   {
 
     // Check if we're supposed to draw raw hits at all
-    art::ServiceHandle<evd::RawDrawingOptions> drawopt;
-    if (drawopt->fDrawRawDataOrCalibWires==1) return;
+    art::ServiceHandle<evd::RawDrawingOptions> rawopt;
+    if (rawopt->fDrawRawDataOrCalibWires==1) return;
 
     art::ServiceHandle<geo::Geometry> geo;
-  
-    GetRawDigits(evt);
     
-    geo::PlaneID pid(drawopt->fCryostat, drawopt->fTPC, plane);
-      
+    geo::PlaneID const pid(rawopt->CurrentTPC(), plane);
+    details::CacheID_t NewCacheID(evt, rawopt->fRawDataLabel, pid);
+    GetRawDigits(evt, NewCacheID);
+    
     // It will be better when this is a service...
     filter::ChannelFilter channelFilter;
       
@@ -1080,7 +1335,7 @@ namespace evd {
       // The following test is meant to be temporary until the "correct" solution is implemented
       auto const channel_status = channelFilter.GetChannelStatus(channel);
       if (channel_status == filter::ChannelFilter::NOTPHYSICAL) continue;
-      if (channel_status >  drawopt->fMaxChannelStatus)         continue;
+      if (channel_status >  rawopt->fMaxChannelStatus)         continue;
       
       // to be explicit: we don't cound bad channels in
       if (channel_status == filter::ChannelFilter::DEAD) continue;
@@ -1102,7 +1357,7 @@ namespace evd {
         break;
       }// end loop over wids
     }//end loop over raw hits
-
+    
   }
 
   //......................................................................
@@ -1113,15 +1368,17 @@ namespace evd {
   {
 
     // Check if we're supposed to draw raw hits at all
-    art::ServiceHandle<evd::RawDrawingOptions> drawopt;
-    if (drawopt->fDrawRawDataOrCalibWires==1) return;
+    art::ServiceHandle<evd::RawDrawingOptions> rawopt;
+    if (rawopt->fDrawRawDataOrCalibWires==1) return;
     
     // make sure we have the raw digits cached
-    GetRawDigits(evt);
+    geo::PlaneID const pid(rawopt->CurrentTPC(), plane);
+    details::CacheID_t NewCacheID(evt, rawopt->fRawDataLabel, pid);
+    GetRawDigits(evt, NewCacheID);
 
     if (digit_cache->empty()) return;
 
-    geo::WireID const wireid(drawopt->fCryostat, drawopt->fTPC, plane, wire);
+    geo::WireID const wireid(pid, wire);
     
     // find the channel
     art::ServiceHandle<geo::Geometry> geom;
@@ -1138,7 +1395,7 @@ namespace evd {
     
     auto const channel_status = channelFilter.GetChannelStatus(channel);
     if (channel_status == filter::ChannelFilter::NOTPHYSICAL) return;
-    if (channel_status >  drawopt->fMaxChannelStatus)         return;
+    if (channel_status >  rawopt->fMaxChannelStatus)         return;
     
     // we accept to see the content of a bad channel
     // if (channel_status == filter::ChannelFilter::DEAD) return;
@@ -1172,8 +1429,8 @@ namespace evd {
   // 				 evdb::View3D*     view)
   //   {
   //     // Check if we're supposed to draw raw hits at all
-  //     art::ServiceHandle<evd::RawDrawingOptions> drawopt;
-  //     if (drawopt->fDrawRawOrCalibHits!=0) return;
+  //     art::ServiceHandle<evd::RawDrawingOptions> rawopt;
+  //     if (rawopt->fDrawRawOrCalibHits!=0) return;
 
 
   //     art::ServiceHandle<geo::Geometry> geom;
@@ -1181,8 +1438,8 @@ namespace evd {
   //     HitTower tower;
   //     tower.fQscale = 0.01;
 
-  //     for (unsigned int imod=0; imod<drawopt->fRawDigitModules.size(); ++imod) {
-  //       const char* which = drawopt->fRawDigitModules[imod].c_str();
+  //     for (unsigned int imod=0; imod<rawopt->fRawDigitModules.size(); ++imod) {
+  //       const char* which = rawopt->fRawDigitModules[imod].c_str();
 
   //       std::vector<raw::RawDigit> rawhits;
   //       GetRawDigits(evt, which, rawhits);
@@ -1205,7 +1462,7 @@ namespace evd {
   // 	geo::View_t v;
   // 	geom->CellInfo(iplane, icell, &v, xyz, dpos);
       
-  // 	switch (drawopt->fRawDigit3DStyle) {
+  // 	switch (rawopt->fRawDigit3DStyle) {
   // 	case 1:
   // 	  //
   // 	  // Render digits as towers
@@ -1253,41 +1510,50 @@ namespace evd {
   //     }// end loop over RawDigit modules
   
   //     // Render the towers for that style choice
-  //     if (drawopt->fRawDigit3DStyle==1) tower.Draw(view);
+  //     if (rawopt->fRawDigit3DStyle==1) tower.Draw(view);
   //   }
 
   //......................................................................    
-
-  void RawDataDrawer::Reset(art::Event const& event) {
-    // Prepares for a new event.
+  bool RawDataDrawer::hasRegionOfInterest(geo::PlaneID::PlaneID_t plane) const {
     
-    // Reset the cache of the raw digits;
-    // This looks very much circular, since in the current implementation
-    // it is precisely GetRawDigits() that gives the trigger for Reset().
-    // In practise the following operation is no-op, since the raw digit cache
-    // is by now already aligned with the event, so no update is performed
-    // and Reset() is not triggered again.
-    // This call is here for the future, if the trigger gets moved from
-    // GetRawDigits() to somewhere else, raw digits will be properly updated
-    // anyway. Not that necessary anyway.
-  //  GetRawDigits(event);
+    return (fWireMax[plane] != -1) && (fTimeMax[plane] != -1);
     
-    // reset the region of interest
+  } // RawDataDrawer::hasRegionOfInterest()
+  
+  
+  //......................................................................    
+  void RawDataDrawer::ResetRegionOfInterest() {
+    
+    LOG_DEBUG("RawDataDrawer") << "RawDataDrawer[" << ((void*) this)
+      << "]: resetting the region of interest";
+    
     std::fill(fWireMin.begin(), fWireMin.end(), -1);
     std::fill(fWireMax.begin(), fWireMax.end(), -1);
     std::fill(fTimeMin.begin(), fTimeMin.end(), -1);
     std::fill(fTimeMax.begin(), fTimeMax.end(), -1);
     
-  } // RawDataDrawer::GetRawDigits()
+  } // RawDataDrawer::ResetRegionOfInterest()
   
   
   //......................................................................    
 
-  void RawDataDrawer::GetRawDigits(art::Event const& evt) {
-  //  digit_cache->Dump(mf::LogDebug("RawDataDrawer"));
+  void RawDataDrawer::GetRawDigits
+    (art::Event const& evt, details::CacheID_t const& new_timestamp)
+  {
+    LOG_DEBUG("RawDataDrawer") << "GetRawDigits() for " << new_timestamp
+      << " (last for: " << *fCacheID << ")";
+    
     // update cache
-    art::ServiceHandle<evd::RawDrawingOptions> rawopt;
-    if (digit_cache->Update(evt, rawopt->fRawDataLabel)) Reset(evt);
+    digit_cache->Update(evt, new_timestamp);
+    
+    // if time stamp is changing, we want to reconsider which region is
+    // interesting
+    if (!fCacheID->sameTPC(new_timestamp)) ResetRegionOfInterest();
+    
+    // all the caches have been properly updated or invalidated;
+    // we are now on a new cache state
+    *fCacheID = new_timestamp;
+    
   } // RawDataDrawer::GetRawDigits()
   
   
@@ -1367,10 +1633,10 @@ namespace evd {
     } // RawDigitInfo_t::Dump()
     
     //--------------------------------------------------------------------------
-    //--- RawDigitCacheClass
+    //--- RawDigitCacheDataClass
     //---
    
-    RawDigitInfo_t const* RawDigitCacheClass::FindChannel
+    RawDigitInfo_t const* RawDigitCacheDataClass::FindChannel
       (raw::ChannelID_t channel) const
     {
       auto iDigit = std::find_if(
@@ -1379,29 +1645,20 @@ namespace evd {
           { return digit.Channel() == channel; }
         );
       return (iDigit == digits.cend())? nullptr: &*iDigit;
-    } // RawDigitCacheClass::FindChannel()
+    } // RawDigitCacheDataClass::FindChannel()
     
-    bool RawDigitCacheClass::Update
-      (art::Event const& evt, art::InputTag const& label)
+    std::vector<raw::RawDigit> const* RawDigitCacheDataClass::ReadProduct
+      (art::Event const& evt, art::InputTag label)
     {
-      CacheTimestamp_t ts = { evt.id(), label };
-      if (isUpToDate(ts)) return false;
-      Refill(evt, ts);
-      return true;
-    } // RawDigitCacheClass::Update()
-    
-    void RawDigitCacheClass::Refill
-      (art::Event const& evt, CacheTimestamp_t const& ts)
-    {
-      Clear();
-      
       art::Handle< std::vector<raw::RawDigit>> rdcol;
-      if (!evt.getByLabel(ts.input_label, rdcol)) {
-        mf::LogWarning("RawDataDrawer")
-          << "no RawDigit collection '" << ts.input_label << "' found";
-        return;
-      }
-      
+      if (!evt.getByLabel(label, rdcol)) return nullptr;
+      return &*rdcol;
+    } // RawDigitCacheDataClass::ReadProduct()
+    
+    
+    void RawDigitCacheDataClass::Refill
+      (art::Handle<std::vector<raw::RawDigit>>& rdcol)
+    {
       digits.resize(rdcol->size());
       for(size_t iDigit = 0; iDigit < rdcol->size(); ++iDigit) {
         art::Ptr<raw::RawDigit> pDigit(rdcol, iDigit);
@@ -1409,43 +1666,96 @@ namespace evd {
         size_t samples = pDigit->Samples();
         if (samples > max_samples) max_samples = samples;
       } // for
-      
-      timestamp = ts;
-      
-    } // RawDigitCacheClass::Refill()
+    } // RawDigitCacheDataClass::Refill()
     
     
-    void RawDigitCacheClass::Invalidate() {
+    void RawDigitCacheDataClass::Invalidate() {
       timestamp.clear();
-    } // RawDigitCacheClass::Invalidate()
+    } // RawDigitCacheDataClass::Invalidate()
     
     
-    void RawDigitCacheClass::Clear() {
+    void RawDigitCacheDataClass::Clear() {
       Invalidate();
       digits.clear();
       max_samples = 0;
-    } // RawDigitCacheClass::Clear()
+    } // RawDigitCacheDataClass::Clear()
     
-    bool RawDigitCacheClass::isUpToDate(CacheTimestamp_t const& ts) const {
-      /*
-        I am disabling the cache.
-        The reason is that I can't reliably determine whether it became invalid.
-        My method was to check whether the event ID or the input tag have changed.
-        Fine, except that there are situations where the event display triggers
-        a complete reread of the event, and therefore the event data (including
-        RawDigit) is deleted. Event the art pointers become "corrupted", because
-        they seem to cache the pointed address.
-        And how can I know that happened? the event ID is not changed, just all
-        the event content is gone.
-        Need to find out if EventDisplayBase, in its infinite wisdom, has a mean
-        to tell me that this slaughter happened.
-      */
-      return false;
-    // return timestamp == ts;
-    } // RawDigitCacheClass::isUpToDate()
+    
+    RawDigitCacheDataClass::BoolWithUpToDateMetadata
+    RawDigitCacheDataClass::CheckUpToDate
+      (CacheID_t const& ts, art::Event const* evt /* = nullptr */) const
+    {
+      BoolWithUpToDateMetadata res{ false, nullptr };
+      
+      // normally only if either the event or the product label have changed,
+      // cache becomes invalid:
+      if (!ts.sameProduct(timestamp)) return res; // outdated cache
+      
+      // But: our cache stores pointers to the original data, and on a new TPC
+      // the event display may reload the event anew, removing the "old" data
+      // from memory.
+      // Since TPC can change with or without the data being invalidated,
+      // a more accurate verification is needed.
+      
+      // if the cache is empty, well, it does not make much difference;
+      // we invalidate it to be sure
+      if (empty())
+        return res; // outdated cache
+      
+      if (!evt)
+        return res; // outdated, since we can't know better without the event
+      
+      // here we force reading of the product
+      res.digits = ReadProduct(*evt, ts.inputLabel());
+      if (!res.digits)
+        return res; // outdated cache; this is actually an error
+      
+      if (res.digits->empty())
+        return res; // outdated; no digits (strange!), invalidate just in case
+      
+      // use the first digit as test
+      raw::ChannelID_t channel = res.digits->front().Channel();
+      RawDigitInfo_t const* pInfo = FindChannel(channel);
+      if (!pInfo)
+        return res; // outdated: we don't even have this channel in cache!
+      
+      if (&(pInfo->Digit()) != &(res.digits->front()))
+        return res; // outdated: different memory address for data
+      
+      res.bUpToDate = true;
+      return res; // cache still valid
+    } // RawDigitCacheDataClass::CheckUpToDate()
+    
+    
+    bool RawDigitCacheDataClass::Update
+      (art::Event const& evt, CacheID_t const& new_timestamp)
+    {
+      BoolWithUpToDateMetadata update_info = CheckUpToDate(new_timestamp, &evt);
+      
+      if (update_info) return false; // already up to date: move on!
+      
+      LOG_DEBUG("RawDataDrawer")
+        << "Refilling raw digit cache RawDigitCacheDataClass["
+        << ((void*) this ) << "] for " << new_timestamp;
+      
+      Clear();
+      
+      art::Handle< std::vector<raw::RawDigit>> rdcol;
+      if (!evt.getByLabel(new_timestamp.inputLabel(), rdcol)) {
+        mf::LogWarning("RawDataDrawer") << "no RawDigit collection '"
+          << new_timestamp.inputLabel() << "' found";
+        return true;
+      }
+      
+      Refill(rdcol);
+      
+      timestamp = new_timestamp;
+      return true;
+    } // RawDigitCacheDataClass::Update()
+    
     
     template <typename Stream>
-    void RawDigitCacheClass::Dump(Stream&& out) const {
+    void RawDigitCacheDataClass::Dump(Stream&& out) const {
       out << "Cache at " << ((void*) this)
         << " with time stamp " << std::string(timestamp)
         << " and " << digits.size()
@@ -1456,7 +1766,7 @@ namespace evd {
         digitInfo.Dump(out);
       } // for
       out << "\n";
-    } // RawDigitCacheClass::Dump()
+    } // RawDigitCacheDataClass::Dump()
     
     
     //--------------------------------------------------------------------------
@@ -1470,14 +1780,20 @@ namespace evd {
     //--------------------------------------------------------------------------
     bool GridAxisClass::Init(size_t nDiv, float new_min, float new_max) {
       
+      n_cells = std::max(nDiv, size_t(1));
+      return SetLimits(new_min, new_max);
+      
+    } // GridAxisClass::Init()
+    
+    
+    //--------------------------------------------------------------------------
+    bool GridAxisClass::SetLimits(float new_min, float new_max) {
       min = new_min;
       max = new_max;
-      n_cells = std::max(nDiv, size_t(1));
-      
       cell_size = Length() / float(n_cells);
       
       return std::isnormal(cell_size);
-    } // GridAxisClass::Init()
+    } // GridAxisClass::SetLimits()
     
     
     //--------------------------------------------------------------------------
@@ -1506,6 +1822,14 @@ namespace evd {
       cell_size = Length() / float(n_cells);
       return true;
     } // GridAxisClass::SetMaxCellSize()
+    
+    
+    //--------------------------------------------------------------------------
+    template <typename Stream>
+    void GridAxisClass::Dump(Stream&& out) const {
+      out << NCells() << " cells from " << Min() << " to " << Max()
+        << " (length: " << Length() << ")";
+    } // GridAxisClass::Dump()
     
     
     //--------------------------------------------------------------------------
@@ -1544,9 +1868,9 @@ namespace evd {
       (std::ptrdiff_t iCell) const
     {
       // { w1, t1, w2, t2 }
-      register size_t const nWireCells = TDCAxis().NCells();
-      std::ptrdiff_t iWireCell = (std::ptrdiff_t) (iCell / nWireCells),
-        iTDCCell = (std::ptrdiff_t) (iCell % nWireCells);
+      register size_t const nTDCCells = TDCAxis().NCells();
+      std::ptrdiff_t iWireCell = (std::ptrdiff_t) (iCell / nTDCCells),
+        iTDCCell = (std::ptrdiff_t) (iCell % nTDCCells);
       
       
       return std::tuple<float, float, float, float>(
@@ -1554,6 +1878,16 @@ namespace evd {
         WireAxis().UpperEdge(iWireCell), TDCAxis().UpperEdge(iTDCCell)
         );
     } // CellGridClass::GetCellBox()
+    
+    
+    //--------------------------------------------------------------------------
+    template <typename Stream>
+    void CellGridClass::Dump(Stream&& out) const {
+      out << "Wire axis: ";
+      WireAxis().Dump(out);
+      out << "; time axis: ";
+      TDCAxis().Dump(out);
+    } // CellGridClass::Dump()
     
     
     //--------------------------------------------------------------------------

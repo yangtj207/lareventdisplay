@@ -209,12 +209,12 @@ namespace evd{
   void TWireProjPad::Draw(const char* opt) 
   {
     // DumpPadsInCanvas(fPad, "TWireProjPad", "Draw()");
-    mf::LogDebug("TWireProjPad") << "Started to draw plane " << fPlane;
+    LOG_DEBUG("TWireProjPad") << "Started to draw plane " << fPlane;
     
     ///\todo: Why is kSelectedColor hard coded?
     int kSelectedColor = 4;
     fView->Clear();
-	
+    
     // grab the singleton holding the art::Event
     const art::Event *evt = evdb::EventHolder::Instance()->GetEvent();
     if(evt){
@@ -225,7 +225,8 @@ namespace evd{
       // the 2D pads have too much detail to be rendered on screen;
       // to act smarter, RawDataDrawer needs to know the range being plotted
       this->RawDataDraw()->   ExtractRange    (fPad, &GetCurrentZoom());
-      this->RawDataDraw()->   RawDigit2D      (*evt, fView, fPlane);
+      this->RawDataDraw()->   RawDigit2D
+        (*evt, fView, fPlane, GetDrawOptions().bZoom2DdrawToRoI);
       
       this->RecoBaseDraw()->  Wire2D          (*evt, fView, fPlane);
       this->RecoBaseDraw()->  Hit2D           (*evt, fView, fPlane);
@@ -276,7 +277,7 @@ namespace evd{
 
       
     // Check if we should zoom the displays;
-    // if there is no event, we have no clue about the regiun of interest
+    // if there is no event, we have no clue about the region of interest
     // and therefore we don't touch anything
     if (opt==0 && evt) {
       //       if (drawopt->fAutoZoom) this->AutoZoom();
@@ -284,12 +285,11 @@ namespace evd{
       this->ShowFull();
     }
     
-    mf::LogDebug("TWireProjPad") << "Started rendering plane " << fPlane;
+    LOG_DEBUG("TWireProjPad") << "Started rendering plane " << fPlane;
     
     fView->Draw();
 
-    mf::LogDebug("TWireProjPad")
-      << "Drawing of plane " << fPlane << " completed";
+    LOG_DEBUG("TWireProjPad") << "Drawing of plane " << fPlane << " completed";
   }
 
   //......................................................................
@@ -352,14 +352,14 @@ namespace evd{
     art::ServiceHandle<evd::EvdLayoutOptions> evdlayoutopt;
     art::ServiceHandle<evd::RawDrawingOptions> rawopt;
     
-    if(evdlayoutopt->fAutoZoomInterest && !override){
+    if(GetDrawOptions().bZoom2DdrawToRoI && !override){
       int test=0;
       if(rawopt->fDrawRawDataOrCalibWires == 0)
 	test=RawDataDraw()->GetRegionOfInterest((int)fPlane,xmin,xmax,ymin,ymax);
       else
 	test=RecoBaseDraw()->GetRegionOfInterest((int)fPlane,xmin,xmax,ymin,ymax);
     
-      if(test==-1) return;     
+      if(test != 0) return;     
     }
 	
     SetZoomRange(xmin, xmax, ymin, ymax);
@@ -404,7 +404,7 @@ namespace evd{
   //
   void TWireProjPad::SetZoomRange(int i1, int i2,int y1, int y2)
   {
-    mf::LogDebug("TWireProjPad")
+    LOG_DEBUG("TWireProjPad")
       << "SetZoomRange(" << i1 << ", " << i2 << ", " << y1 << ", " << y2
       << ") on plane #" << fPlane;
     

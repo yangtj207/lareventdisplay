@@ -242,6 +242,7 @@ void evd::Ortho3DPad::Draw(const char* /*opt*/)
       RecoBaseDraw()->ProngOrtho(*evt, fProj, fMSize, fView);
       RecoBaseDraw()->SeedOrtho(*evt, fProj, fView);
       RecoBaseDraw()->OpFlashOrtho(*evt, fProj, fView);
+      RecoBaseDraw()->VertexOrtho(*evt, fProj, fView);
     }
   // Draw objects on pad.
 

@@ -73,6 +73,8 @@
 #include "EventDisplayBase/EventHolder.h"
 #include "EventDisplay/ColorDrawingOptions.h"
 #include "EventDisplay/RawDrawingOptions.h"
+#include "CalibrationDBI/Interface/IDetPedestalService.h"
+#include "CalibrationDBI/Interface/IDetPedestalProvider.h"
 #include "RawData/raw.h"
 #include "RawData/RawDigit.h"
 #include "Filters/ChannelFilter.h"
@@ -92,8 +94,7 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Persistency/Common/Ptr.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
-#include "CalibrationDBI/Interface/IDetPedestalService.h"
-#include "CalibrationDBI/Interface/IDetPedestalProvider.h"
+#include "cetlib/demangle.h"
 
 
 namespace {

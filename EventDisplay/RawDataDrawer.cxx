@@ -80,8 +80,8 @@
 #include "Geometry/PlaneGeo.h"
 #include "Utilities/StatCollector.h" // lar::util::MinMaxCollector<>
 #include "Geometry/Geometry.h"
-#include "Utilities/LArProperties.h"
-#include "Utilities/DetectorProperties.h"
+#include "Utilities/LArPropertiesService.h"
+#include "Utilities/DetectorPropertiesService.h"
 
 
 #include "art/Utilities/InputTag.h"
@@ -507,7 +507,8 @@ namespace evd {
         {
           if (adc < 0.) return 0.;
           register double const dQdX = adc / wirePitch / electronsToADC;
-          return larp->BirksCorrection(dQdX);
+          const dataprov::DetectorProperties* detp = art::ServiceHandle<util::DetectorPropertiesService>()->getDetectorProperties();
+          return detp->BirksCorrection(dQdX);
         } // Correct()
       double operator() (float adc) const { return Correct(adc); }
       
@@ -516,9 +517,7 @@ namespace evd {
           art::ServiceHandle<geo::Geometry> geo;
           wirePitch = geo->WirePitch(pid);
 
-          larp = &*(art::ServiceHandle<util::LArProperties>());
-          
-          art::ServiceHandle<util::DetectorProperties> detp;
+          const dataprov::DetectorProperties* detp = art::ServiceHandle<util::DetectorPropertiesService>()->getDetectorProperties();
           electronsToADC = detp->ElectronsToADC();
         } // update()
       
@@ -526,8 +525,6 @@ namespace evd {
       float wirePitch; ///< wire pitch
       float electronsToADC; ///< conversion constant
       
-      util::LArProperties const* larp; ///< pointer to LArProperties service
-    
     }; // ADCCorrectorClass
     //--------------------------------------------------------------------------
   } // namespace details
@@ -624,9 +621,6 @@ namespace evd {
     art::ServiceHandle<geo::Geometry> geo;
     art::ServiceHandle<evd::ColorDrawingOptions> cst;
 
-    art::ServiceHandle<util::LArProperties> larp;
-    art::ServiceHandle<util::DetectorProperties> detp;
-    
     //get pedestal conditions
     const lariov::IDetPedestalProvider& pedestalRetrievalAlg = art::ServiceHandle<lariov::IDetPedestalService>()->GetPedestalProvider();  
     
@@ -843,6 +837,8 @@ namespace evd {
     
     
 #if 0
+    const dataprov::DetectorProperties* detp = art::ServiceHandle<util::DetectorPropertiesService>()->getDetectorProperties();
+    
     for (evd::details::RawDigitInfo_t& digit_info: digit_cache->digits) {
       raw::RawDigit const& hit = digit_info.Digit();
       raw::ChannelID_t const channel = hit.Channel();
@@ -897,8 +893,9 @@ namespace evd {
 	    if(std::abs(adc) < drawopt->fMinSignal) continue;
 	
 	    fRawCharge[plane] += std::abs(adc);
+
 	    double const dQdX = std::abs(adc)/wirePitch/detp->ElectronsToADC();
-	    fConvertedCharge[plane] += larp->BirksCorrection(dQdX);
+	    fConvertedCharge[plane] += detp->BirksCorrection(dQdX);
 	
 	    int    co = 0;
 	    double sf = 1.;

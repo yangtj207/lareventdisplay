@@ -7,7 +7,8 @@
 #include <vector>
 #ifndef __CINT__
 
-// nothing special here
+#include "art/Persistency/Common/PtrVector.h"
+#include "Geometry/Geometry.h"
 
 #endif
 

@@ -29,9 +29,8 @@
 #include "EventDisplay/Style.h"
 #include "EventDisplay/SimulationDrawingOptions.h"
 #include "EventDisplay/RawDrawingOptions.h"
-#include "Utilities/LArProperties.h"
-#include "Utilities/DetectorProperties.h"
-#include "Utilities/TimeService.h"
+#include "Utilities/DetectorPropertiesService.h"
+#include "Utilities/DetectorClocksService.h"
 
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Principal/View.h"
@@ -200,10 +199,9 @@ namespace evd{
     // If the option is turned off, there's nothing to do
     if (!drawopt->fShowMCTruthVectors) return;
 
-    art::ServiceHandle<util::DetectorProperties> detprop;
+    const dataprov::DetectorProperties* detprop = art::ServiceHandle<util::DetectorPropertiesService>()->getDetectorProperties();
 
     art::ServiceHandle<geo::Geometry>          geo;
-    art::ServiceHandle<util::LArProperties>    larp;
     art::ServiceHandle<evd::RawDrawingOptions> rawopt;
     // get the x position of the plane in question
     double xyz[3]  = {0.};
@@ -286,8 +284,8 @@ namespace evd{
     if (!drawopt->fShowMCTruthTrajectories) return;
 
     art::ServiceHandle<geo::Geometry>            geom;
-    art::ServiceHandle<util::DetectorProperties> theDetector;
-    art::ServiceHandle<util::TimeService>        timeService;
+    const dataprov::DetectorProperties* theDetector = art::ServiceHandle<util::DetectorPropertiesService>()->getDetectorProperties();
+    const dataprov::DetectorClocks* detClocks = art::ServiceHandle<util::DetectorClocksService>()->getDetectorClocks();
 
     // get the particles from the Geant4 step
     std::vector<const simb::MCParticle*> plist;
@@ -345,13 +343,13 @@ namespace evd{
             {
                 // The following is meant to get the correct offset for drawing the particle trajectory
                 // In particular, the cosmic rays will not be correctly placed without this
-                double g4Ticks(timeService->TPCG4Time2Tick(mcPart->T())+theDetector->GetXTicksOffset(0,0,0)-theDetector->TriggerOffset());
-                double xOffset(theDetector->ConvertTicksToX(g4Ticks, 0, 0, 0));
-            
-                // collect the points from this particle
-                int numTrajPoints = mcTraj.size();
-            
-                std::unique_ptr<double[]> hitPositions(new double[3*numTrajPoints]);
+	        double g4Ticks(detClocks->TPCG4Time2Tick(mcPart->T())+theDetector->GetXTicksOffset(0,0,0)-theDetector->TriggerOffset());
+	        double xOffset(theDetector->ConvertTicksToX(g4Ticks, 0, 0, 0));
+		
+  	        // collect the points from this particle
+	        int numTrajPoints = mcTraj.size();
+		
+	        std::unique_ptr<double[]> hitPositions(new double[3*numTrajPoints]);
                 int                       hitCount(0);
             
                 for(int hitIdx = 0; hitIdx < numTrajPoints; hitIdx++)
@@ -430,7 +428,7 @@ namespace evd{
         
         // The following is meant to get the correct offset for drawing the particle trajectory
         // In particular, the cosmic rays will not be correctly placed without this
-        double g4Ticks(timeService->TPCG4Time2Tick(mcPart->T())+theDetector->GetXTicksOffset(0,0,0)-theDetector->TriggerOffset());
+        double g4Ticks(detClocks->TPCG4Time2Tick(mcPart->T())+theDetector->GetXTicksOffset(0,0,0)-theDetector->TriggerOffset());
         double xOffset(theDetector->ConvertTicksToX(g4Ticks, 0, 0, 0));
         
         int colorIdx(evd::Style::ColorFromPDG(mcPart->PdgCode()));
@@ -521,8 +519,8 @@ namespace evd{
     if (!drawopt->fShowMCTruthTrajectories) return;
       
     art::ServiceHandle<geo::Geometry>            geom;
-    art::ServiceHandle<util::DetectorProperties> theDetector;
-    art::ServiceHandle<util::TimeService>        timeService;
+    const dataprov::DetectorProperties* theDetector = art::ServiceHandle<util::DetectorPropertiesService>()->getDetectorProperties();
+    const dataprov::DetectorClocks* detClocks = art::ServiceHandle<util::DetectorClocksService>()->getDetectorClocks();
     
     // get the particles from the Geant4 step
     std::vector<const simb::MCParticle*> plist;
@@ -579,7 +577,7 @@ namespace evd{
             {
                 // The following is meant to get the correct offset for drawing the particle trajectory
                 // In particular, the cosmic rays will not be correctly placed without this
-	      double g4Ticks(timeService->TPCG4Time2Tick(mcPart->T())+theDetector->GetXTicksOffset(0,0,0)-theDetector->TriggerOffset());
+	      double g4Ticks(detClocks->TPCG4Time2Tick(mcPart->T())+theDetector->GetXTicksOffset(0,0,0)-theDetector->TriggerOffset());
                 double xOffset(theDetector->ConvertTicksToX(g4Ticks, 0, 0, 0));
                 // collect the points from this particle
                 int numTrajPoints = mcTraj.size();
@@ -675,7 +673,7 @@ namespace evd{
         
         //double hit_time_ticks(time0/ns_per_tdc + tdc_offset);
         //double xOffset(theDetector->ConvertTicksToX(hit_time_ticks, 0, 0, 0));
-        double g4Ticks(timeService->TPCG4Time2Tick(mcPart->T())+theDetector->GetXTicksOffset(0,0,0)-theDetector->TriggerOffset());
+        double g4Ticks(detClocks->TPCG4Time2Tick(mcPart->T())+theDetector->GetXTicksOffset(0,0,0)-theDetector->TriggerOffset());
         double xOffset(theDetector->ConvertTicksToX(g4Ticks, 0, 0, 0));
         TPolyMarker& pm = view->AddPolyMarker(partToPosMapItr->second.size(), evd::Style::ColorFromPDG(mcPart->PdgCode()), kFullDotMedium, 2); //kFullCircle, msize);
         

@@ -6,19 +6,25 @@
 #define EVD_RAWDATADRAWER_H
 #include <vector>
 #ifndef __CINT__
-#include "art/Persistency/Common/PtrVector.h"
-#include "Geometry/Geometry.h"
-#include "Utilities/LArProperties.h"
-#include "Utilities/DetectorProperties.h"
+
+// nothing special here
+
 #endif
 
 class TH1F;
+class TVirtualPad;
 namespace art    { class Event;     }
 namespace evdb   { class View2D;    }
 namespace evdb   { class View3D;    }
 namespace raw    { class RawDigit;  }
 
 namespace evd {
+  
+  namespace details {
+    class RawDigitCacheClass;
+    class CellGridClass;
+  } // namespace details
+
   /// Aid in the rendering of RawData objects
   class RawDataDrawer {
   public:
@@ -44,6 +50,9 @@ namespace evd {
     double StartTick()       const { return fStartTick; }
     double TotalClockTicks() const { return fTicks; }
     
+    /// Fills the viewport information from the specified pad
+    void ExtractRange
+      (TVirtualPad* pPad, std::vector<double> const* zoom = nullptr);
    
     int GetRegionOfInterest(int plane,
 			    int& minw,
@@ -56,8 +65,15 @@ namespace evd {
 		      double& convcharge);
    
   private:
-    int GetRawDigits(const art::Event&              evt,
-		     art::PtrVector<raw::RawDigit>& rawhits);
+    /// Cache of raw digits
+    // Never use raw pointers. Unless you are dealing with CINT, that is.
+    evd::details::RawDigitCacheClass* digit_cache;
+    
+    /// Prepares for a new event (if somebody tells it to)
+    void Reset(art::Event const& event);
+    
+    /// Reads raw::RawDigits; also triggers Reset()
+    void GetRawDigits(art::Event const& evt);
 
     double fStartTick;                       ///< low tick
     double fTicks;                           ///< number of ticks of the clock
@@ -69,7 +85,16 @@ namespace evd {
     
     std::vector<double> fRawCharge;     ///< Sum of Raw Charge
     std::vector<double> fConvertedCharge;     ///< Sum of Charge Converted using Birks' formula
-   };
+    
+    // TODO with ROOT 6, turn this into a std::unique_ptr()
+    details::CellGridClass* fDrawingRange; ///< information about the viewport
+    
+    /// Empty collection, used in return value of invalid digits
+    static std::vector<raw::RawDigit> const EmptyRawDigits;
+    
+  }; // class RawDataDrawer
+  
+  
 }
 
 #endif

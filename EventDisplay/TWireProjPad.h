@@ -43,6 +43,9 @@ namespace evd {
 
     void SetZoomRange(int i1, int i2,int y1, int y2);
     
+    /// Sets the zoom parameters from the current histogram view
+    void SetZoomFromView();
+    
     void SaveHitList(double i1, double i2,double y1, double y2, double distance, const char* zoom_opt,bool good_plane=true);
 			
     double SaveSeedList(std::vector < util::PxLine > seedlines, double distance);
@@ -61,7 +64,7 @@ namespace evd {
     double UpdateSeedCurve(std::vector<recob::Seed> SeedVec, int plane);
     evdb::View2D*  View() const { return fView; }
 
-    std::vector<double> GetCurrentZoom() {return fCurrentZoom;}
+    std::vector<double> const& GetCurrentZoom() const {return fCurrentZoom;}
     
   private:
     /*     void AutoZoom(); */

@@ -59,6 +59,7 @@ namespace evd{
   //......................................................................
   TWQProjectionView::TWQProjectionView(TGMainFrame* mf) 
     : evdb::Canvas(mf)
+    , fRedraw(nullptr)
   {  
     
     art::ServiceHandle<geo::Geometry> geo;
@@ -310,6 +311,8 @@ namespace evd{
   //......................................................................
   void TWQProjectionView::Draw(const char* opt) 
   {  
+    mf::LogDebug("TWQProjectionView") << "Starting to draw";
+    
     art::ServiceHandle<geo::Geometry> geo;
 
     ClearAllSeeds();
@@ -333,8 +336,12 @@ namespace evd{
     // Reset current zooming plane - since it's not currently zooming.
     curr_zooming_plane=-1;
   
+    unsigned int const nPlanes = fPlanes.size();
+    mf::LogDebug("TWQProjectionView")
+      << "Start drawing " << nPlanes << " planes";
     //  double Charge=0, ConvCharge=0;
-    for(unsigned int i=0;i<fPlanes.size();++i){
+    for(unsigned int i=0;i<nPlanes;++i){
+      
       fPlanes[i]->Draw(opt);
       fPlanes[i]->Pad()->Update();
       fPlanes[i]->Pad()->GetFrame()->SetBit(TPad::kCannotMove,true);
@@ -353,6 +360,8 @@ namespace evd{
       //   }
    
     }
+    mf::LogDebug("TWQProjectionView")
+      << "Done drawing " << nPlanes << " planes";
   
 
     // Charge deposit feature - not working yet
@@ -382,6 +391,7 @@ namespace evd{
       fAngleInfo->SetForegroundColor(kBlack);
 
     evdb::Canvas::fCanvas->Update();
+    mf::LogDebug("TWQProjectionView") << "Done drawing";
   }
 
   // comment out this method as for now we don't want to change every
@@ -1695,6 +1705,7 @@ namespace evd{
     SetUpZoomButtons();
     SetUpPositionFind();
     SetUpClusterButtons();
+    SetUpDrawingButtons();
   }
 
   //......................................................................
@@ -1703,6 +1714,13 @@ namespace evd{
     art::ServiceHandle<evd::EvdLayoutOptions>   evdlayoutopt;
     evdlayoutopt->fAutoZoomInterest = fToggleAutoZoom->GetState();
   }
+
+  //......................................................................
+  void TWQProjectionView::SetZoomFromView() {
+    for (TWireProjPad* pPlane: fPlanes)
+      pPlane->SetZoomFromView();
+  }
+  
 
   //......................................................................
   void TWQProjectionView::SetClusterInterest()
@@ -1729,6 +1747,17 @@ namespace evd{
     art::ServiceHandle<evd::EvdLayoutOptions>   evdlayoutopt;
     evdlayoutopt->fShowEndPointMarkers= fToggleShowMarkers->GetState();
   }
+  
+  //......................................................................
+  void TWQProjectionView::ForceRedraw() {
+    mf::LogDebug("TWQProjectionView") << "Explicit request for redrawing";
+    
+    // for now, bother only about redrawing the plane pads
+    SetZoomFromView();
+    DrawPads();
+    
+  } // TWQProjectionView::ForceRedraw()
+  
   //......................................................................
   void TWQProjectionView::SetUpZoomButtons()
   {
@@ -1845,6 +1874,20 @@ namespace evd{
     //fVFrame->AddFrame(fClearSeeds, new TGLayoutHints(kLHintsTop|kLHintsLeft,0,0,5,1));
 	
   }
+  
+  //......................................................................
+  void TWQProjectionView::SetUpDrawingButtons()
+  {
+    // enter zoom buttons
+  //  art::ServiceHandle<evd::EvdLayoutOptions>        evdlayoutopt;  
+
+    fRedraw = new TGTextButton(fVFrame, "&Redraw", 120);
+    fRedraw->Connect("Clicked()", "evd::TWQProjectionView", this, "ForceRedraw()");
+
+    fVFrame->AddFrame(fRedraw,           new TGLayoutHints(kLHintsTop | kLHintsLeft, 0,  0, 5, 1 ) );
+    
+  } // SetUpDrawingButtons()
+
 
   //----------------------------------------------------------------------------
   void	TWQProjectionView::RadioButtonsDispatch(int parameter)

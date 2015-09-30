@@ -67,6 +67,7 @@ namespace evd{
    {
       art::ServiceHandle<evd::RecoDrawingOptions>     recoOpt;
       art::ServiceHandle<evd::AnalysisDrawingOptions> anaOpt;
+      art::ServiceHandle<geo::Geometry>               geom;
 
       for(size_t imod = 0; imod < recoOpt->fTrackLabels.size(); ++imod) {
        
@@ -105,6 +106,12 @@ namespace evd{
 		     bestplane = icalo;
 		   }
 		 }
+		 if (anaOpt->fCaloPlane>=0 and anaOpt->fCaloPlane<int(geom->Nplanes())){
+		   for (size_t i = 0; i<geom->Nplanes(); ++i){
+		     if (int(calos[i]->PlaneID().Plane)==anaOpt->fCaloPlane)
+		       bestplane = i;
+		   }
+		 }
 
 		 TPolyMarker& pm = view->AddPolyMarker(calos[bestplane]->dEdx().size(),evd::kColor[color],8,0.8);
 		 for(size_t h = 0; h<calos[bestplane]->dEdx().size();++h){
@@ -118,38 +125,48 @@ namespace evd{
 		 }
 		 
 		 char trackinfo[80];
+		 char pida[80];
 		 char proton[80];
-		 char kaon[80];
+		 //char kaon[80];
 		 char pion[80];
-		 char muon[80];
+		 //char muon[80];
 		 sprintf(trackinfo,"Track #%d: K.E. = %.1f MeV , Range = %.1f cm",
 			 tracklist[trkIter]->ID(),
 			 calos[bestplane]->KineticEnergy(),
 			 calos[bestplane]->Range());
-		 sprintf(proton,"Proton Chi2 = %.1f", 
-			 pids[bestplane]->Chi2Proton());
-		 sprintf(kaon,"Kaon Chi2 = %.1f", 
+		 sprintf(proton,"Proton Chi2 = %.1f, Kaon Chi2 = %.1f", 
+			 pids[bestplane]->Chi2Proton(),
 			 pids[bestplane]->Chi2Kaon());
-		 sprintf(pion,"Pion Chi2 = %.1f", 
-			 pids[bestplane]->Chi2Pion());
-		 sprintf(muon,"Muon Chi2 = %.1f", 
+//		 sprintf(kaon,"Kaon Chi2 = %.1f", 
+//			 pids[bestplane]->Chi2Kaon());
+		 sprintf(pion,"Pion Chi2 = %.1f, Muon Chi2 = %.1f", 
+			 pids[bestplane]->Chi2Pion(),
 			 pids[bestplane]->Chi2Muon());
+//		 sprintf(muon,"Muon Chi2 = %.1f", 
+//			 pids[bestplane]->Chi2Muon());
+		 sprintf(pida,"Plane %d, PIDA = %.1f",
+			 calos[bestplane]->PlaneID().Plane,
+			 pids[bestplane]->PIDA());
+
 		 double offset = ((double)trkIter)*10.0;
 		 TLatex& track_tex  = view->AddLatex(13.0, (46.0)     - offset,trackinfo);
-		 TLatex& proton_tex = view->AddLatex(13.0, (46.0-2.0) - offset,proton);
-		 TLatex& kaon_tex   = view->AddLatex(13.0, (46.0-4.0) - offset,kaon);
-		 TLatex& pion_tex   = view->AddLatex(13.0, (46.0-6.0) - offset,pion);
-		 TLatex& muon_tex   = view->AddLatex(13.0, (46.0-8.0) - offset,muon);
+		 TLatex& pida_tex   = view->AddLatex(13.0, (46.0-2.5) - offset,pida);
+		 TLatex& proton_tex = view->AddLatex(13.0, (46.0-5.0) - offset,proton);
+		 //TLatex& kaon_tex   = view->AddLatex(13.0, (46.0-4.0) - offset,kaon);
+		 TLatex& pion_tex   = view->AddLatex(13.0, (46.0-7.5) - offset,pion);
+		 //TLatex& muon_tex   = view->AddLatex(13.0, (46.0-8.0) - offset,muon);
 		 track_tex.SetTextColor(evd::kColor[color]);
 		 proton_tex.SetTextColor(evd::kColor[color]);
-		 kaon_tex.SetTextColor(evd::kColor[color]);
+		 //kaon_tex.SetTextColor(evd::kColor[color]);
 		 pion_tex.SetTextColor(evd::kColor[color]);
-		 muon_tex.SetTextColor(evd::kColor[color]);
+		 //muon_tex.SetTextColor(evd::kColor[color]);
+		 pida_tex.SetTextColor(evd::kColor[color]);
 		 track_tex.SetTextSize(0.05);
 		 proton_tex.SetTextSize(0.05);
-		 kaon_tex.SetTextSize(0.05);
+		 //kaon_tex.SetTextSize(0.05);
 		 pion_tex.SetTextSize(0.05);
-		 muon_tex.SetTextSize(0.05);
+		 //muon_tex.SetTextSize(0.05);
+		 pida_tex.SetTextSize(0.05);
 	       }
             }
          }
@@ -162,7 +179,7 @@ namespace evd{
    {
       art::ServiceHandle<evd::RecoDrawingOptions>     recoOpt;
       art::ServiceHandle<evd::AnalysisDrawingOptions> anaOpt;
-
+      art::ServiceHandle<geo::Geometry>               geom;
       //add some legend-like labels with appropriate grayscale
       char proton[80];
       char kaon[80];
@@ -220,6 +237,12 @@ namespace evd{
 		   if (calos[icalo]->dEdx().size() > nmaxhits){
 		     nmaxhits = calos[icalo]->dEdx().size();
 		     bestplane = icalo;
+		   }
+		 }
+		 if (anaOpt->fCaloPlane>=0 and anaOpt->fCaloPlane<int(geom->Nplanes())){
+		   for (size_t i = 0; i<geom->Nplanes(); ++i){
+		     if (int(calos[i]->PlaneID().Plane)==anaOpt->fCaloPlane)
+		       bestplane = i;
 		   }
 		 }
 

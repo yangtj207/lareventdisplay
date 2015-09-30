@@ -1851,7 +1851,7 @@ void RecoBaseDrawer::Prong3D(const art::Event& evt,
 
     // Tracks.
 
-    if(recoOpt->fDrawTracks > 2){
+    if(recoOpt->fDrawTracks > 0){
         for(size_t imod = 0; imod < recoOpt->fTrackLabels.size(); ++imod) {
             std::string which = recoOpt->fTrackLabels[imod];
             art::View<recob::Track> trackView;
@@ -1861,7 +1861,7 @@ void RecoBaseDrawer::Prong3D(const art::Event& evt,
             
             trackView.fill(trackVec);
             
-            std::string const cosmicTagLabel(recoOpt->fCosmicTagLabels.size() >= imod ? recoOpt->fCosmicTagLabels[imod] : "");
+            std::string const cosmicTagLabel(recoOpt->fCosmicTagLabels.size() > imod ? recoOpt->fCosmicTagLabels[imod] : "");
             art::FindMany<anab::CosmicTag> cosmicTagAssnVec(trackVec, evt, cosmicTagLabel);
 
             for(const auto& track : trackVec)
@@ -2135,21 +2135,29 @@ void RecoBaseDrawer::Vertex3D(const art::Event& evt,
 	art::FindManyP<recob::Shower> fms(vertex, evt, which);
 	
 	for(size_t v = 0; v < vertex.size(); ++v){
+	  
+	  if (fmt.isValid()){
+	    std::vector< art::Ptr<recob::Track> >  tracks  = fmt.at(v);
+	    
+	    // grab the Prongs from the vertex and draw those
+	    for(size_t t = 0; t < tracks.size(); ++t)
+	      this->DrawTrack3D(*(tracks[t]), view, vertex[v]->ID());
+	    
+	  }
+	  
+	  if (fms.isValid()){
+	    std::vector< art::Ptr<recob::Shower> > showers = fms.at(v);
+	    
+	    for(size_t s = 0; s < showers.size(); ++s)
+	      this->DrawShower3D(*(showers[s]), vertex[v]->ID(), view);
+	    
+	  }
 
-	  std::vector< art::Ptr<recob::Track> >  tracks  = fmt.at(v);
-	  std::vector< art::Ptr<recob::Shower> > showers = fms.at(v);
-	  
-	  // grab the Prongs from the vertex and draw those
-	  for(size_t t = 0; t < tracks.size(); ++t)
-	    this->DrawTrack3D(*(tracks[t]), view, vertex[v]->ID());
-	  
-	  for(size_t s = 0; s < showers.size(); ++s)
-	    this->DrawShower3D(*(showers[s]), vertex[v]->ID(), view);
-	  
 	  double xyz[3] = {0.};
 	  vertex[v]->XYZ(xyz);
 	  TPolyMarker3D& pm = view->AddPolyMarker3D(1, evd::kColor[vertex[v]->ID()%evd::kNCOLS], 29, 6);
 	  pm.SetPoint(0, xyz[0], xyz[1], xyz[2]);
+
 	  
 	} // end loop over vertices to draw from this label
     } // end loop over vertex module lables
@@ -2286,6 +2294,47 @@ void RecoBaseDrawer::OpFlashOrtho(const art::Event& evt,
     } // Flashes with this label
   } // Vector of OpFlash labels
 }
+//......................................................................
+void RecoBaseDrawer::VertexOrtho(const art::Event& evt,
+				  evd::OrthoProj_t  proj,
+				  evdb::View2D*     view) {
+  art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
+  art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
+  art::ServiceHandle<geo::Geometry>            geo;
+  
+  if (rawOpt->fDrawRawDataOrCalibWires < 1) return;
+  if (recoOpt->fDrawVertices == 0)         return;
+  
+  for(size_t imod = 0; imod < recoOpt->fVertexLabels.size(); ++imod) {
+    std::string const which = recoOpt->fVertexLabels[imod];
+    
+    art::PtrVector<recob::Vertex> vertex;
+    this->GetVertices(evt, which, vertex);
+
+    for(size_t v = 0; v < vertex.size(); ++v){
+      
+      double xyz[3] = {0.};
+      vertex[v]->XYZ(xyz);
+      
+      int color = evd::kColor[vertex[v]->ID()%evd::kNCOLS];
+
+      if(proj == evd::kXY){
+	TMarker& strt = view->AddMarker(xyz[1], xyz[0], color, 24, 1.0);
+        strt.SetMarkerColor(color);	
+      }
+      else if(proj == evd::kXZ){
+	TMarker& strt = view->AddMarker(xyz[2], xyz[0], color, 24, 1.0);
+        strt.SetMarkerColor(color);	
+      }
+      else if(proj == evd::kYZ){
+	TMarker& strt = view->AddMarker(xyz[2], xyz[1], color, 24, 1.0);
+        strt.SetMarkerColor(color);	
+      }
+    }
+  }
+  return;
+}
+
 //......................................................................
 void RecoBaseDrawer::SpacePointOrtho(const art::Event& evt,
 				       evd::OrthoProj_t  proj,

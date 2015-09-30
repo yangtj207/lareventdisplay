@@ -135,6 +135,7 @@ public:
     void Vertex2D(const art::Event& evt,
 		          evdb::View2D*     view,
 		          unsigned int      plane);
+
     void Event2D(const art::Event& evt,
 		         evdb::View2D*     view,
 		         unsigned int      plane);
@@ -177,6 +178,9 @@ public:
     void OpFlashOrtho(const art::Event& evt,
 		      evd::OrthoProj_t  proj,
 		      evdb::View2D*     view);
+    void VertexOrtho(const art::Event& evt,
+		     evd::OrthoProj_t  proj,
+		     evdb::View2D*     view);
     void SpacePointOrtho(const art::Event& evt,
 			             evd::OrthoProj_t  proj,
 			             double            msize,

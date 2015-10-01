@@ -74,7 +74,8 @@
 #include "EventDisplay/RawDrawingOptions.h"
 #include "RawData/raw.h"
 #include "RawData/RawDigit.h"
-#include "Filters/ChannelFilter.h"
+#include "CalibrationDBI/Interface/IChannelStatusService.h"
+#include "CalibrationDBI/Interface/IChannelStatusProvider.h"
 #include "Geometry/CryostatGeo.h"
 #include "Geometry/TPCGeo.h"
 #include "Geometry/PlaneGeo.h"
@@ -655,8 +656,8 @@ namespace evd {
     // caller should have user ExtractRange() first.
     std::vector<BoxInfo_t> BoxInfo(fDrawingRange->NCells());
     
-    // It will be better when this is a service...
-    filter::ChannelFilter channelFilter;
+    lariov::IChannelStatusProvider const& channelStatus
+      = art::ServiceHandle<lariov::IChannelStatusService>()->GetProvider();
     
     // collect the interesting range
     lar::util::MinMaxCollector<float> WireRange, TDCrange;
@@ -667,10 +668,12 @@ namespace evd {
       raw::ChannelID_t const channel = hit.Channel();
       
       // skip the bad channels
+      if (!channelStatus.IsPresent(channel)) continue;
       // The following test is meant to be temporary until the "correct" solution is implemented
-      auto const channel_status = channelFilter.GetChannelStatus(channel);
-      if (channel_status == filter::ChannelFilter::NOTPHYSICAL) continue;
-      if (channel_status >  drawopt->fMaxChannelStatus)         continue;
+      auto const channel_status = channelStatus.Status(channel);
+      if (channelStatus.IsValidStatus(channel_status)
+       && (channel_status > drawopt->fMaxChannelStatus))
+        continue;
       
       // we have a list of all channels, but we are drawing only on one plane;
       // most of the channels will not contribute to this plane,
@@ -688,7 +691,7 @@ namespace evd {
       if (!bDrawChannel) continue;
       
       // collect bad channels
-      bool const bGood = (channel_status != filter::ChannelFilter::DEAD);
+      bool const bGood = !channelStatus.IsBad(channel);
       
       // nothing else to be done if the channel is not good:
       // cells are marked bad by default and if any good channel falls in any of
@@ -1066,9 +1069,9 @@ namespace evd {
     
     geo::PlaneID pid(drawopt->fCryostat, drawopt->fTPC, plane);
       
-    // It will be better when this is a service...
-    filter::ChannelFilter channelFilter;
-      
+    lariov::IChannelStatusProvider const& channelStatus
+      = art::ServiceHandle<lariov::IChannelStatusService>()->GetProvider();
+    
     //get pedestal conditions
     const lariov::IDetPedestalProvider& pedestalRetrievalAlg = art::ServiceHandle<lariov::IDetPedestalService>()->GetPedestalProvider();
 
@@ -1076,13 +1079,16 @@ namespace evd {
       raw::RawDigit const& hit = digit_info.Digit();
       raw::ChannelID_t const channel = hit.Channel();
         
+      if (!channelStatus.IsPresent(channel)) continue;
+      
       // The following test is meant to be temporary until the "correct" solution is implemented
-      auto const channel_status = channelFilter.GetChannelStatus(channel);
-      if (channel_status == filter::ChannelFilter::NOTPHYSICAL) continue;
-      if (channel_status >  drawopt->fMaxChannelStatus)         continue;
+      auto const channel_status = channelStatus.Status(channel);
+      if (channelStatus.IsValidStatus(channel)
+        && (channel_status > drawopt->fMaxChannelStatus))
+        continue;
       
       // to be explicit: we don't cound bad channels in
-      if (channel_status == filter::ChannelFilter::DEAD) continue;
+      if (channelStatus.IsBad(channel)) continue;
       
       std::vector<geo::WireID> wireids = geo->ChannelToWire(channel);
       for(auto const& wid : wireids){
@@ -1132,12 +1138,17 @@ namespace evd {
     } // if no channel
     
     // check the channel status; bad channels are still ok.
-    // It will be better when this is a service...
-    filter::ChannelFilter channelFilter;
+    lariov::IChannelStatusProvider const& channelStatus
+      = art::ServiceHandle<lariov::IChannelStatusService>()->GetProvider();
     
-    auto const channel_status = channelFilter.GetChannelStatus(channel);
-    if (channel_status == filter::ChannelFilter::NOTPHYSICAL) return;
-    if (channel_status >  drawopt->fMaxChannelStatus)         return;
+    if (!channelStatus.IsPresent(channel)) return;
+    
+    // The following test is meant to be temporary until the "correct" solution is implemented
+    auto const channel_status = channelStatus.Status(channel);
+    if (channelStatus.IsValidStatus(channel)
+      && (channel_status > drawopt->fMaxChannelStatus))
+      return;
+    
     
     // we accept to see the content of a bad channel
     // if (channel_status == filter::ChannelFilter::DEAD) return;

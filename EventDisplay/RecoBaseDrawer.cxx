@@ -42,7 +42,8 @@
 #include "RecoBase/Vertex.h"
 #include "RecoBase/OpFlash.h"
 #include "AnalysisBase/CosmicTag.h"
-#include "Filters/ChannelFilter.h"
+#include "CalibrationDBI/Interface/IChannelStatusService.h"
+#include "CalibrationDBI/Interface/IChannelStatusProvider.h"
 #include "Geometry/Geometry.h"
 #include "Geometry/CryostatGeo.h"
 #include "Geometry/TPCGeo.h"
@@ -124,9 +125,10 @@ void RecoBaseDrawer::Wire2D(const art::Event& evt,
     art::ServiceHandle<geo::Geometry>            geo;
     art::ServiceHandle<evd::ColorDrawingOptions> cst;
     
-    filter::ChannelFilter cf;
-    
     if(rawOpt->fDrawRawDataOrCalibWires < 1)    return;
+    
+    lariov::IChannelStatusProvider const& channelStatus
+      = art::ServiceHandle<lariov::IChannelStatusService>()->GetProvider();
     
     int ticksPerPoint = rawOpt->fTicksPerPoint;
     
@@ -149,7 +151,7 @@ void RecoBaseDrawer::Wire2D(const art::Event& evt,
       for(size_t i = 0; i < wires.size(); ++i) {
       
         uint32_t channel = wires[i]->Channel();
-	if (cf.BadChannel(channel)) continue;
+	if (channelStatus.IsBad(channel)) continue;
 	
         std::vector<geo::WireID> wireids = geo->ChannelToWire(channel);
       

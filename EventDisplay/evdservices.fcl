@@ -18,6 +18,7 @@
 #include "geometry.fcl"
 #include "detectorproperties.fcl"
 #include "larproperties.fcl"
+#include "channelstatus.fcl"
 #include "timeservice_argoneut.fcl"
 #include "databaseutil.fcl"
 #include "simulationservices.fcl"
@@ -79,6 +80,7 @@ custom_disp:
   InfoTransfer:             @local::custom_infotransfer
   LArG4Parameters:          @local::standard_largeantparameters
   LArVoxelCalculator:       @local::standard_larvoxelcalculator
+  IChannelStatusService:    @local::standard_channelstatus
 }
 custom_disp.RawDrawingOptions.DetPedestalRetrievalAlg.DefaultCollMean:  0
 custom_disp.RawDrawingOptions.DetPedestalRetrievalAlg.DefaultIndMean:  0

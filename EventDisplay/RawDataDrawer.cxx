@@ -1150,8 +1150,8 @@ namespace evd {
       return;
     
     
-    // we accept to see the content of a bad channel
-    // if (channel_status == filter::ChannelFilter::DEAD) return;
+    // we accept to see the content of a bad channel, so this is commented out:
+    // if (channelStatus.IsBad()) return;
     
     //get pedestal conditions
     const lariov::IDetPedestalProvider& pedestalRetrievalAlg = art::ServiceHandle<lariov::IDetPedestalService>()->GetPedestalProvider();

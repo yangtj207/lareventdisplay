@@ -17,6 +17,7 @@
 #include "TPolyMarker3D.h"
 #include "TVector3.h"
 #include "TText.h"
+#include "TColor.h"
 
 #include "EventDisplayBase/View2D.h"
 #include "EventDisplayBase/View3D.h"
@@ -332,6 +333,9 @@ void RecoBaseDrawer::Hit2D(const art::Event& evt,
 	      if(cscore<0.6) b1.SetLineColor(kMagenta);
 	      b1.SetLineWidth(3);
 	    }
+	    if (cscore<-10000){ //shower hits
+	      b1.SetLineWidth(3);
+	    }
         }
         else{
             TBox& b1 = view->AddBox(time-0.5, w-0.5, time+0.5, w+0.5);
@@ -346,6 +350,9 @@ void RecoBaseDrawer::Hit2D(const art::Event& evt,
 	    if(cscore>0.1 && recoOpt->fDrawCosmicTags) {
 	      b1.SetLineColor(kRed);
 	      if(cscore<0.6) b1.SetLineColor(kMagenta);
+	      b1.SetLineWidth(3);
+	    }
+	    if (cscore<-10000){ //shower hits
 	      b1.SetLineWidth(3);
 	    }
         }
@@ -1067,7 +1074,10 @@ void RecoBaseDrawer::GetClusterOutlines(std::vector<const recob::Hit*>& hits,
     unsigned int t = rawOpt->fTPC;
 
     // first draw the hits
-    this->Hit2D(hits, evd::kColor[id%evd::kNCOLS], view, false, cscore);
+    if (cscore<-1000) //shower
+      this->Hit2D(hits, evd::kColor2[id%evd::kNCOLS], view, false, cscore);
+    else
+      this->Hit2D(hits, evd::kColor[id%evd::kNCOLS], view, false, cscore);
 
     // prepare to draw prongs
     double local[3] = {0.};
@@ -1322,7 +1332,8 @@ void RecoBaseDrawer::Prong2D(const art::Event& evt,
                 this->DrawProng2D(hits, view, plane,
                                   startPos,
                                   shower.vals().at(s)->Direction(),
-                                  shower.vals().at(s)->ID());
+                                  shower.vals().at(s)->ID(), 
+				  -10001); //use -10001 to increase shower hit size
             }// end loop over prongs
         }// end loop over labels
     }// end draw showers

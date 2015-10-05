@@ -78,7 +78,6 @@ namespace evd {
 
     double fStartTick;                       ///< low tick
     double fTicks;                           ///< number of ticks of the clock
-    std::vector<unsigned int> fBadChannels;  ///< bad channels in the detector
    
     std::vector<int> fWireMin;     ///< lowest wire in interesting region for each plane
     std::vector<int> fWireMax;     ///< highest wire in interesting region for each plane

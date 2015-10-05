@@ -17,6 +17,7 @@
 #include "TPolyMarker3D.h"
 #include "TVector3.h"
 #include "TText.h"
+#include "TColor.h"
 
 #include "EventDisplayBase/View2D.h"
 #include "EventDisplayBase/View3D.h"
@@ -86,8 +87,7 @@ RecoBaseDrawer::RecoBaseDrawer()
     fRawCharge.resize(0);   
     fConvertedCharge.resize(0);
     
-    // set the list of bad channels in this detector
-    filter::ChannelFilter cf;
+    // set the list of channels in this detector
     for(size_t t = 0; t < geo->NTPC(); ++t)
     {
         unsigned int nplanes = geo->Nplanes(t);
@@ -102,10 +102,6 @@ RecoBaseDrawer::RecoBaseDrawer()
             fWireMax[p] = geo->TPC(t).Plane(p).Nwires();
             fTimeMin[p] = 0;
             fTimeMax[p] = rawopt->fTicks;
-            for(size_t w = 0; w < geo->TPC(t).Plane(p).Nwires(); ++w){
-                uint32_t channel = geo->PlaneWireToChannel(p, w, t);
-                if( cf.BadChannel(channel) ) fBadChannels.push_back(channel);
-            } // end loop over wires
         }// end loop over planes
     }// end loop over TPCs
 }
@@ -126,10 +122,11 @@ void RecoBaseDrawer::Wire2D(const art::Event& evt,
     art::ServiceHandle<geo::Geometry>            geo;
     art::ServiceHandle<evd::ColorDrawingOptions> cst;
     
+    filter::ChannelFilter cf;
+    
     if(rawOpt->fDrawRawDataOrCalibWires < 1)    return;
     
     int ticksPerPoint = rawOpt->fTicksPerPoint;
-    int ticks         = 0; // fill this below
     
     // to make det independent later:
     double mint = 5000;
@@ -146,12 +143,12 @@ void RecoBaseDrawer::Wire2D(const art::Event& evt,
       this->GetWires(evt, which, wires);
 
       if(wires.size() < 1) return;
-
-      ticks = wires[0]->NSignal();
       
       for(size_t i = 0; i < wires.size(); ++i) {
       
         uint32_t channel = wires[i]->Channel();
+	if (cf.BadChannel(channel)) continue;
+	
         std::vector<geo::WireID> wireids = geo->ChannelToWire(channel);
       
         geo::SigType_t sigType = geo->SignalType(channel);
@@ -225,46 +222,7 @@ void RecoBaseDrawer::Wire2D(const art::Event& evt,
     fTimeMin[plane] = mint;
     fTimeMax[plane] = maxt;
     
-    // now loop over all the bad channels and set them to 0 adc
-    for(size_t bc = 0; bc < fBadChannels.size(); ++bc){
-        
-        geo::SigType_t sigType = geo->SignalType(fBadChannels[bc]);
-        
-        std::vector<geo::WireID> wireids = geo->ChannelToWire(fBadChannels[bc]);
-        
-        for( auto const& wid : wireids){
-            if(wid.planeID() != pid) continue;
-            
-            if(rawOpt->fMinSignal > 0) continue;
-            
-            
-            int    co   = cst->CalQ(sigType).GetColor(0);
-            double wire = 1.*wid.Wire;
-            
-            for(int i = 0; i < ticks; i += ticksPerPoint){
-                double tdc = i + 0.5*ticksPerPoint;
-                
-                if(rawOpt->fAxisOrientation < 1){	
-                    TBox& b1 = view->AddBox(wire-0.5,
-                                            tdc-0.5*ticksPerPoint,
-                                            wire+0.5,
-                                            tdc+0.5*ticksPerPoint);
-                    b1.SetFillStyle(1001);
-                    b1.SetFillColor(co);    
-                    b1.SetBit(kCannotPick);
-                }
-                else{
-                    TBox& b1 = view->AddBox(tdc-0.5*ticksPerPoint,
-                                            wire-0.5,
-                                            tdc+0.5*ticksPerPoint,
-                                            wire+0.5);
-                    b1.SetFillStyle(1001);
-                    b1.SetFillColor(co);    
-                    b1.SetBit(kCannotPick);
-                }
-            }
-        }
-    }// end loop over bad channels    
+   
     
     return;
 }
@@ -371,6 +329,9 @@ void RecoBaseDrawer::Hit2D(const art::Event& evt,
 	      if(cscore<0.6) b1.SetLineColor(kMagenta);
 	      b1.SetLineWidth(3);
 	    }
+	    if (cscore<-10000){ //shower hits
+	      b1.SetLineWidth(3);
+	    }
         }
         else{
             TBox& b1 = view->AddBox(time-0.5, w-0.5, time+0.5, w+0.5);
@@ -385,6 +346,9 @@ void RecoBaseDrawer::Hit2D(const art::Event& evt,
 	    if(cscore>0.1 && recoOpt->fDrawCosmicTags) {
 	      b1.SetLineColor(kRed);
 	      if(cscore<0.6) b1.SetLineColor(kMagenta);
+	      b1.SetLineWidth(3);
+	    }
+	    if (cscore<-10000){ //shower hits
 	      b1.SetLineWidth(3);
 	    }
         }
@@ -1105,7 +1069,10 @@ void RecoBaseDrawer::GetClusterOutlines(std::vector<const recob::Hit*>& hits,
     unsigned int t = rawOpt->fTPC;
 
     // first draw the hits
-    this->Hit2D(hits, evd::kColor[id%evd::kNCOLS], view, false, cscore);
+    if (cscore<-1000) //shower
+      this->Hit2D(hits, evd::kColor2[id%evd::kNCOLS], view, false, cscore);
+    else
+      this->Hit2D(hits, evd::kColor[id%evd::kNCOLS], view, false, cscore);
 
     // prepare to draw prongs
     double local[3] = {0.};
@@ -1359,7 +1326,8 @@ void RecoBaseDrawer::Prong2D(const art::Event& evt,
                 this->DrawProng2D(hits, view, plane,
                                   startPos,
                                   shower.vals().at(s)->Direction(),
-                                  shower.vals().at(s)->ID());
+                                  shower.vals().at(s)->ID(), 
+				  -10001); //use -10001 to increase shower hit size
             }// end loop over prongs
         }// end loop over labels
     }// end draw showers

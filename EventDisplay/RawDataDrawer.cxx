@@ -550,7 +550,6 @@ namespace evd {
     fTicks = drawopt->fTicks;
 
     // set the list of bad channels in this detector
-    filter::ChannelFilter cf; 
     unsigned int nplanes=geo->Nplanes(tpcid);
     fWireMin.resize(nplanes,-1);   
     fWireMax.resize(nplanes,-1);    

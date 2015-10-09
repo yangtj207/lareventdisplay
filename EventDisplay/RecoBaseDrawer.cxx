@@ -2739,7 +2739,8 @@ void RecoBaseDrawer::DrawPFParticleOrtho(const art::Ptr<recob::PFParticle>&     
 					   int                 color, 
 					   evd::OrthoProj_t    proj,
 					   double              msize,
-					   evdb::View2D*       view)
+					   evdb::View2D*       view,
+					   int                 mode)
   {
     // Get services.
 
@@ -2760,7 +2761,9 @@ void RecoBaseDrawer::DrawPFParticleOrtho(const art::Ptr<recob::PFParticle>&     
       // By default use event display palette.
 
       int spcolor = evd::kColor[color%evd::kNCOLS];
-
+      if (mode == 1){ //shower hits
+	spcolor = evd::kColor2[color%evd::kNCOLS];
+      }
       // For rainbow effect, choose root colors in range [51,100].
       // We are using 100=best (red), 51=worst (blue).
 
@@ -2929,7 +2932,7 @@ void RecoBaseDrawer::DrawPFParticleOrtho(const art::Ptr<recob::PFParticle>&     
 	  art::Ptr<recob::Shower> p(handle, i);
 	  if(&*p == &shower) {
 	    std::vector<const recob::SpacePoint*> spts = fmsp.at(i);
-	    DrawSpacePointOrtho(spts, color, proj, msize, view);
+	    DrawSpacePointOrtho(spts, color, proj, msize, view, 1);
 	  }
 	}
       }

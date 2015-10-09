@@ -2923,7 +2923,7 @@ void RecoBaseDrawer::DrawPFParticleOrtho(const art::Ptr<recob::PFParticle>&     
       if(handle.isValid()) {
 	const std::string& which = handle.provenance()->moduleLabel();
 	art::FindMany<recob::SpacePoint> fmsp(handle, *evt, which);
-
+	if (!fmsp.isValid()) continue;
 	int n = handle->size();
 	for(int i=0; i<n; ++i) {
 	  art::Ptr<recob::Shower> p(handle, i);

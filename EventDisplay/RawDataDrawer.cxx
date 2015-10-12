@@ -1083,7 +1083,7 @@ namespace evd {
       
       // The following test is meant to be temporary until the "correct" solution is implemented
       auto const channel_status = channelStatus.Status(channel);
-      if (channelStatus.IsValidStatus(channel)
+      if (channelStatus.IsValidStatus(channel_status)
         && (channel_status > drawopt->fMaxChannelStatus))
         continue;
       
@@ -1145,7 +1145,7 @@ namespace evd {
     
     // The following test is meant to be temporary until the "correct" solution is implemented
     auto const channel_status = channelStatus.Status(channel);
-    if (channelStatus.IsValidStatus(channel)
+    if (channelStatus.IsValidStatus(channel_status)
       && (channel_status > drawopt->fMaxChannelStatus))
       return;
     

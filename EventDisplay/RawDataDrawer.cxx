@@ -672,7 +672,7 @@ namespace evd {
       // The following test is meant to be temporary until the "correct" solution is implemented
       auto const channel_status = channelStatus.Status(channel);
       if (channelStatus.IsValidStatus(channel_status)
-       && (channel_status > drawopt->fMaxChannelStatus))
+       && (channel_status < drawopt->fMaxChannelStatus))
         continue;
       
       // we have a list of all channels, but we are drawing only on one plane;
@@ -1084,7 +1084,7 @@ namespace evd {
       // The following test is meant to be temporary until the "correct" solution is implemented
       auto const channel_status = channelStatus.Status(channel);
       if (channelStatus.IsValidStatus(channel_status)
-        && (channel_status > drawopt->fMaxChannelStatus))
+        && (channel_status < drawopt->fMaxChannelStatus))
         continue;
       
       // to be explicit: we don't cound bad channels in
@@ -1146,7 +1146,7 @@ namespace evd {
     // The following test is meant to be temporary until the "correct" solution is implemented
     auto const channel_status = channelStatus.Status(channel);
     if (channelStatus.IsValidStatus(channel_status)
-      && (channel_status > drawopt->fMaxChannelStatus))
+      && (channel_status < drawopt->fMaxChannelStatus))
       return;
     
     

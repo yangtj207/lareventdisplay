@@ -2301,8 +2301,8 @@ void RecoBaseDrawer::OpFlashOrtho(const art::Event& evt,
 	TBox& b1      = view->AddBox(ZCentre-ZHalfWidth, YCentre-YHalfWidth, ZCentre+ZHalfWidth, YCentre+YHalfWidth);
 	b1.SetFillStyle(3004+(iof%3));
 	b1.SetFillColor(Colour);
-	TMarker& strt = view->AddMarker(ZCentre, YCentre, Colour, 4, 1.5);
-      }
+	view->AddMarker(ZCentre, YCentre, Colour, 4, 1.5);
+     }
 
     } // Flashes with this label
   } // Vector of OpFlash labels

@@ -7,7 +7,7 @@
 #include <vector>
 #ifndef __CINT__
 
-// nothing special here
+#include "CalibrationDBI/Interface/IChannelStatusProvider.h" // lariov::IChannelStatusProvider::Status_t
 
 #endif
 
@@ -69,11 +69,17 @@ namespace evd {
     // Never use raw pointers. Unless you are dealing with CINT, that is.
     evd::details::RawDigitCacheClass* digit_cache;
     
+#ifndef __CINT__
     /// Prepares for a new event (if somebody tells it to)
     void Reset(art::Event const& event);
     
     /// Reads raw::RawDigits; also triggers Reset()
     void GetRawDigits(art::Event const& evt);
+    
+    /// Returns whether a channel with the specified status should be processed
+    bool ProcessChannelWithStatus
+      (lariov::IChannelStatusProvider::Status_t channel_status) const;
+#endif // __CINT__
 
     double fStartTick;                       ///< low tick
     double fTicks;                           ///< number of ticks of the clock

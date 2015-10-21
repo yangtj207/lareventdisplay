@@ -75,7 +75,7 @@
 #include "RawData/raw.h"
 #include "RawData/RawDigit.h"
 #include "CalibrationDBI/Interface/IChannelStatusService.h"
-#include "CalibrationDBI/Interface/IChannelStatusProvider.h"
+#include "CalibrationDBI/IOVData/ChannelStatus.h"
 #include "Geometry/CryostatGeo.h"
 #include "Geometry/TPCGeo.h"
 #include "Geometry/PlaneGeo.h"
@@ -672,7 +672,7 @@ namespace evd {
       // The following test is meant to be temporary until the "correct" solution is implemented
       auto const channel_status = channelStatus.Status(channel);
       if (channelStatus.IsValidStatus(channel_status)
-       && (channel_status < drawopt->fMaxChannelStatus))
+       && (channel_status < drawopt->fMinChannelStatus))
         continue;
       
       // we have a list of all channels, but we are drawing only on one plane;
@@ -846,28 +846,28 @@ namespace evd {
     
 #if 0
     for (evd::details::RawDigitInfo_t& digit_info: digit_cache->digits) {
-      raw::RawDigit const& hit = digit_info.Digit();
-      raw::ChannelID_t const channel = hit.Channel();
+        raw::RawDigit const& hit = digit_info.Digit();
+        raw::ChannelID_t const channel = hit.Channel();
       
-      // The following test is meant to be temporary until the "correct" solution is implemented
-      auto const channel_status = channelFilter.GetChannelStatus(channel);
-      if (channel_status == filter::ChannelFilter::NOTPHYSICAL) continue;
-      if (channel_status >  drawopt->fMaxChannelStatus)         continue;
+        // The following test is meant to be temporary until the "correct" solution is implemented
+        auto const channel_status = channelFilter.GetChannelStatus(channel);
+        if (channel_status == lariov::kUNKNOWN)           continue;
+        if (channel_status <  drawopt->fMinChannelStatus) continue;
         
-      geo::SigType_t sigType = geo->SignalType(channel);
-      geo::View_t    v       = geo->View(channel);
-      double const wirePitch = geo->WirePitch(v); // FIXME this assumes all TPC are the same
-      std::vector<geo::WireID> wireids = geo->ChannelToWire(channel);
-      bool skipchan = true;
-      for(auto const& wid : wireids){
-	// check that the plane and tpc are the correct ones to draw
-	if(wid.planeID() == pid){
-	  skipchan = false;
-	}
-      }
-      if (skipchan) continue;
+        geo::SigType_t sigType = geo->SignalType(channel);
+        geo::View_t    v       = geo->View(channel);
+        double const wirePitch = geo->WirePitch(v); // FIXME this assumes all TPC are the same
+        std::vector<geo::WireID> wireids = geo->ChannelToWire(channel);
+        bool skipchan = true;
+        for(auto const& wid : wireids){
+            // check that the plane and tpc are the correct ones to draw
+            if(wid.planeID() == pid){
+                skipchan = false;
+            }
+        }
+        if (skipchan) continue;
       
-      raw::RawDigit::ADCvector_t const& uncompressed = digit_info.Data();
+        raw::RawDigit::ADCvector_t const& uncompressed = digit_info.Data();
       
       for(auto const& wid : wireids){
 	// check that the plane and tpc are the correct ones to draw
@@ -1084,7 +1084,7 @@ namespace evd {
       // The following test is meant to be temporary until the "correct" solution is implemented
       auto const channel_status = channelStatus.Status(channel);
       if (channelStatus.IsValidStatus(channel_status)
-        && (channel_status < drawopt->fMaxChannelStatus))
+        && (channel_status < drawopt->fMinChannelStatus))
         continue;
       
       // to be explicit: we don't cound bad channels in
@@ -1146,7 +1146,7 @@ namespace evd {
     // The following test is meant to be temporary until the "correct" solution is implemented
     auto const channel_status = channelStatus.Status(channel);
     if (channelStatus.IsValidStatus(channel_status)
-      && (channel_status < drawopt->fMaxChannelStatus))
+      && (channel_status < drawopt->fMinChannelStatus))
       return;
     
     

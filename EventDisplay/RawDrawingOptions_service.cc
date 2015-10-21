@@ -8,7 +8,7 @@
 
 /// LArSoft includes
 #include "EventDisplay/RawDrawingOptions.h"
-#include "Filters/ChannelFilter.h"
+#include "CalibrationDBI/IOVData/ChannelStatus.h"
 
 #include <iostream>
 
@@ -39,7 +39,7 @@ namespace evd {
     fRawDataLabel               = pset.get< std::string >("RawDataLabel",         "daq");
     fTPC                        = pset.get< unsigned int>("TPC",                  0    );
     fCryostat                   = pset.get< unsigned int>("Cryostat",             0    );
-    fMaxChannelStatus           = pset.get< unsigned int>("MaxChannelStatus",     filter::ChannelFilter::DEAD);
+    fMinChannelStatus           = pset.get< unsigned int>("MinChannelStatus",     lariov::kDISCONNECTED);
     
   }
 }

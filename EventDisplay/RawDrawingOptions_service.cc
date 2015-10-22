@@ -8,7 +8,7 @@
 
 /// LArSoft includes
 #include "EventDisplay/RawDrawingOptions.h"
-#include "CalibrationDBI/IOVData/ChannelStatus.h"
+#include "Filters/ChannelFilter.h"
 
 #include <iostream>
 

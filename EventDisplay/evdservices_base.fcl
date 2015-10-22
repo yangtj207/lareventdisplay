@@ -62,7 +62,7 @@ standard_recodrawingopt:
  DrawSkeleton3DHitsOnly:    false          # Draw only the "skeleton" 3D hits
  DrawBestPCAAxisOnly:       true           # Draw only the best PCA axis
  WireModuleLabels:          ["caldata"]    # list of module labels in which to look for recob::Wires      
- HitModuleLabels:           ["gaushit"]    # list of module labels in which to look for recob::Hits
+ HitModuleLabels:           ["ffthit"]     # list of module labels in which to look for recob::Hits       
  EndPoint2DModuleLabels:    [""]           # list of module labels in which to look for recob::EndPoint2Ds
  SpacePointModuleLabels:    ["spacepts"]   # list of module labels in which to look for recob::SpacePoints     
  ProngModuleLabels:         [""]           # list of module labels in which to look for recob::Prongs     
@@ -209,13 +209,13 @@ standard_infotransfer:
 
 standard_graphclusteralg:
 {
- HitsModuleLabel: "gaushit"
+ HitsModuleLabel: "ffthit"
 }
 
 standard_graphcluster:
 {
  module_type:     "GraphCluster"
- HitsModuleLabel: "gaushit"
+ HitsModuleLabel: "ffthit"
  GraphClusterAlg: @local::standard_graphclusteralg 
 }
 

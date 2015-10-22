@@ -35,6 +35,7 @@ namespace evd {
     unsigned int fTPC;                                     ///< TPC number to draw, typically set by TWQProjectionView
     unsigned int fCryostat;                                ///< Cryostat number to draw, typically set by TWQProjectionView
     unsigned int fMinChannelStatus;                        ///< Display channels with this status and above
+    unsigned int fMaxChannelStatus;                        ///< Display channels with this status and below
     std::string  fRawDataLabel;                            ///< module label that made the raw digits, default is daq
   };
 }//namespace

@@ -670,10 +670,7 @@ namespace evd {
       // skip the bad channels
       if (!channelStatus.IsPresent(channel)) continue;
       // The following test is meant to be temporary until the "correct" solution is implemented
-      auto const channel_status = channelStatus.Status(channel);
-      if (channelStatus.IsValidStatus(channel_status)
-       && (channel_status < drawopt->fMinChannelStatus))
-        continue;
+      if (!ProcessChannelWithStatus(channelStatus.Status(channel))) continue;
       
       // we have a list of all channels, but we are drawing only on one plane;
       // most of the channels will not contribute to this plane,
@@ -1082,10 +1079,7 @@ namespace evd {
       if (!channelStatus.IsPresent(channel)) continue;
       
       // The following test is meant to be temporary until the "correct" solution is implemented
-      auto const channel_status = channelStatus.Status(channel);
-      if (channelStatus.IsValidStatus(channel_status)
-        && (channel_status < drawopt->fMinChannelStatus))
-        continue;
+      if (!ProcessChannelWithStatus(channelStatus.Status(channel))) continue;
       
       // to be explicit: we don't cound bad channels in
       if (channelStatus.IsBad(channel)) continue;
@@ -1144,10 +1138,7 @@ namespace evd {
     if (!channelStatus.IsPresent(channel)) return;
     
     // The following test is meant to be temporary until the "correct" solution is implemented
-    auto const channel_status = channelStatus.Status(channel);
-    if (channelStatus.IsValidStatus(channel_status)
-      && (channel_status < drawopt->fMinChannelStatus))
-      return;
+    if (!ProcessChannelWithStatus(channelStatus.Status(channel))) return;
     
     
     // we accept to see the content of a bad channel, so this is commented out:
@@ -1300,6 +1291,23 @@ namespace evd {
     if (digit_cache->Update(evt, rawopt->fRawDataLabel)) Reset(evt);
   } // RawDataDrawer::GetRawDigits()
   
+  
+  //......................................................................    
+  bool RawDataDrawer::ProcessChannelWithStatus
+    (lariov::IChannelStatusProvider::Status_t channel_status) const
+  {
+    // if we don't have a valid status, we can't reject the channel
+    if (!lariov::IChannelStatusProvider::IsValidStatus(channel_status))
+      return true;
+    
+    // is the status "too bad"?
+    art::ServiceHandle<evd::RawDrawingOptions> drawopt;
+    if (channel_status > drawopt->fMaxChannelStatus) return false;
+    if (channel_status < drawopt->fMinChannelStatus) return false;
+    
+    // no reason to reject it...
+    return true;
+  } // RawDataDrawer::ProcessChannel()
   
   //----------------------------------------------------------------------------
   namespace details {

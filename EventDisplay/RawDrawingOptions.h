@@ -15,6 +15,7 @@
 #include "art/Framework/Services/Registry/ActivityRegistry.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Services/Registry/ServiceMacros.h"
+#include "art/Utilities/InputTag.h"
 
 namespace evd {
   class RawDrawingOptions 
@@ -36,7 +37,7 @@ namespace evd {
     unsigned int fCryostat;                                ///< Cryostat number to draw, typically set by TWQProjectionView
     unsigned int fMinChannelStatus;                        ///< Display channels with this status and above
     unsigned int fMaxChannelStatus;                        ///< Display channels with this status and below
-    std::string  fRawDataLabel;                            ///< module label that made the raw digits, default is daq
+    art::InputTag fRawDataLabel;                            ///< module label that made the raw digits, default is daq
   };
 }//namespace
 #endif // __CINT__

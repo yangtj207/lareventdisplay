@@ -1113,12 +1113,12 @@ void RecoBaseDrawer::GetClusterOutlines(std::vector<const recob::Hit*>& hits,
     double yprime = std::cos(rotang)*startDir[1]
                    +std::sin(rotang)*startDir[2];
     double dTdW = startDir[0]*wirePitch/driftvelocity/timetick/yprime;
-  
+
     this->Draw2DSlopeEndPoints(wire, tick, dTdW, evd::kColor[id%evd::kNCOLS], view);
 
     return;
 }
-    
+
 //......................................................................
 void RecoBaseDrawer::DrawTrack2D(std::vector<const recob::Hit*>& hits,
                                  evdb::View2D*                   view,
@@ -1305,15 +1305,15 @@ void RecoBaseDrawer::Prong2D(const art::Event& evt,
             // loop over the prongs and get the clusters and hits associated with
             // them.  only keep those that are in this view
             for(size_t s = 0; s < shower.vals().size(); ++s){
+	      
                 std::vector<const recob::Hit*> hits = fmh.at(s);
-	  
                 // only get the hits for the current view
                 std::vector<const recob::Hit*>::iterator itr = hits.begin();
                 while(itr < hits.end()){
                     if((*itr)->View() != gview) hits.erase(itr);
                     else itr++;
                 }
-
+		/*
                 // sort the hits
                 std::sort(hits.begin(), hits.end());
 
@@ -1330,9 +1330,10 @@ void RecoBaseDrawer::Prong2D(const art::Event& evt,
                 TVector3 startPos(detprop->ConvertTicksToX(hits.front()->PeakTime(),
                                                            plane, rawOpt->fTPC, rawOpt->fCryostat),
                                                            wireXYZ[1], wireXYZ[2]);
-
+	      */
                 this->DrawProng2D(hits, view, plane,
-                                  startPos,
+                                  //startPos,
+                                  shower.vals().at(s)->ShowerStart(),
                                   shower.vals().at(s)->Direction(),
                                   shower.vals().at(s)->ID(), 
 				  -10001); //use -10001 to increase shower hit size

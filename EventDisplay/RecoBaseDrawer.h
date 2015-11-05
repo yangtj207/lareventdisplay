@@ -204,7 +204,8 @@ public:
 			                 int                 color,
                              evd::OrthoProj_t    proj,
 			                 double              msize,
-                             evdb::View2D*       view);
+                             evdb::View2D*       view,
+			     int mode = 0); ///< 0: track, 1: shower
     void DrawProngOrtho(const recob::Prong& prong,
 			            int                 color,
 			            evd::OrthoProj_t    proj,
@@ -304,7 +305,6 @@ public:
         
   private:
 
-    std::vector<unsigned int> fBadChannels;     ///< list of bad channels in the detector
     std::vector<int>          fWireMin;         ///< lowest wire in interesting region for each plane
     std::vector<int>          fWireMax;         ///< highest wire in interesting region for each plane
     std::vector<int>          fTimeMin;         ///< lowest time in interesting region for each plane

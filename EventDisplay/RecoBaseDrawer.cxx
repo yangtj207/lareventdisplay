@@ -2980,14 +2980,31 @@ void RecoBaseDrawer::DrawPFParticleOrtho(const art::Ptr<recob::PFParticle>&     
       const art::Handle<std::vector<recob::Shower> > handle = ih;
       if(handle.isValid()) {
 	const std::string& which = handle.provenance()->moduleLabel();
+	
 	art::FindMany<recob::SpacePoint> fmsp(handle, *evt, which);
-	if (!fmsp.isValid()) continue;
 	int n = handle->size();
 	for(int i=0; i<n; ++i) {
 	  art::Ptr<recob::Shower> p(handle, i);
 	  if(&*p == &shower) {
-	    std::vector<const recob::SpacePoint*> spts = fmsp.at(i);
-	    DrawSpacePointOrtho(spts, color, proj, msize, view, 1);
+	    switch (proj) {
+	    case evd::kXY:
+	      view->AddMarker(p->ShowerStart().X(), p->ShowerStart().Y(), evd::kColor2[color%evd::kNCOLS], 5, 2.0);
+	      break;
+	    case evd::kXZ:
+	      view->AddMarker(p->ShowerStart().Z(), p->ShowerStart().X(), evd::kColor2[color%evd::kNCOLS], 5, 2.0);
+	      break;
+	    case evd::kYZ:
+	      view->AddMarker(p->ShowerStart().Z(), p->ShowerStart().Y(), evd::kColor2[color%evd::kNCOLS], 5, 2.0);
+	      break;
+	    default:
+	      throw cet::exception("RecoBaseDrawer") << __func__
+						     << ": unknown projection #" << ((int) proj) << "\n";
+	    } // switch
+
+	    if (fmsp.isValid()){
+	      std::vector<const recob::SpacePoint*> spts = fmsp.at(i);
+	      DrawSpacePointOrtho(spts, color, proj, msize, view, 1);
+	    }
 	  }
 	}
       }

@@ -113,6 +113,12 @@ public:
                               double        slope,
                               int           color,
                               evdb::View2D* view);
+    void Draw2DSlopeEndPoints(double        x,
+                              double        y,
+                              double        cosx,
+			      double        cosy,
+                              int           color,
+                              evdb::View2D* view);
     void Cluster2D(const art::Event& evt,
 		           evdb::View2D*     view,
 		           unsigned int      plane);

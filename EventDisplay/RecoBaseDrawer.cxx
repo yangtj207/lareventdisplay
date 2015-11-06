@@ -991,6 +991,45 @@ void RecoBaseDrawer::Draw2DSlopeEndPoints(double        x,
 }
 
 //......................................................................
+void RecoBaseDrawer::Draw2DSlopeEndPoints(double        x,
+                                          double        y,
+                                          double        cosx,
+					  double        cosy,
+                                          int           color,
+                                          evdb::View2D* view)
+{
+    art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
+    art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
+    
+    if(recoOpt->fDraw2DSlopeEndPoints < 1) return;
+    
+    double x1 = x;
+    double y1 = y;
+    double cosx1 = cosx;
+    double cosy1 = cosy;
+    
+    if(rawOpt->fDrawRawDataOrCalibWires < 1) return;
+    if(rawOpt->fAxisOrientation > 0){
+        x1 = y;
+        y1 = x;
+	cosx1 = cosy;
+	cosy1 = cosx;
+    }
+    
+    TMarker& strt = view->AddMarker(x1, y1, color, kFullStar, 2.0);
+    strt.SetMarkerColor(color); // stupid line to shut up compiler warning
+    
+    //    double stublen = 50.0 ;
+    double stublen = 300.0;
+    TLine& l = view->AddLine(x1, y1, x1+stublen*cosx1, y1 + stublen*cosy1);
+    l.SetLineColor(color);
+    l.SetLineWidth(2);
+    l.SetLineStyle(2);
+    
+    return;
+}
+
+//......................................................................
 ///
 /// Make a set of points which outline a cluster
 ///
@@ -1081,6 +1120,21 @@ void RecoBaseDrawer::GetClusterOutlines(std::vector<const recob::Hit*>& hits,
     else
       this->Hit2D(hits, evd::kColor[id%evd::kNCOLS], view, false, cscore);
 
+    double tick0 = detprop->ConvertXToTicks(startPos.X(), plane, t, c);
+    double wire0 = geo->WireCoordinate(startPos.Y(),startPos.Z(),plane,t,c);
+
+    double tick1 = detprop->ConvertXToTicks((startPos+startDir).X(),plane,t,c);
+    double wire1 = geo->WireCoordinate((startPos+startDir).Y(),
+				       (startPos+startDir).Z(),plane,t,c);
+
+    double cost = 0;
+    double cosw = 0;
+    double ds = sqrt(pow(tick0-tick1,2)+pow(wire0-wire1,2));
+    if (ds){
+      cost = (tick1-tick0)/ds;
+      cosw = (wire1-wire0)/ds;
+    }
+    /*
     // prepare to draw prongs
     double local[3] = {0.};
     double world[3] = {0.};
@@ -1113,8 +1167,8 @@ void RecoBaseDrawer::GetClusterOutlines(std::vector<const recob::Hit*>& hits,
     double yprime = std::cos(rotang)*startDir[1]
                    +std::sin(rotang)*startDir[2];
     double dTdW = startDir[0]*wirePitch/driftvelocity/timetick/yprime;
-
-    this->Draw2DSlopeEndPoints(wire, tick, dTdW, evd::kColor[id%evd::kNCOLS], view);
+    */
+    this->Draw2DSlopeEndPoints(wire0, tick0, cosw, cost, evd::kColor[id%evd::kNCOLS], view);
 
     return;
 }

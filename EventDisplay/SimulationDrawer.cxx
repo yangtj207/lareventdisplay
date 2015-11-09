@@ -18,6 +18,7 @@
 #include "EventDisplay/SimulationDrawer.h"
 #include "EventDisplayBase/View2D.h"
 #include "EventDisplayBase/View3D.h"
+#include "CoreUtils/ServiceUtil.h"
 #include "Geometry/Geometry.h"
 #include "Geometry/PlaneGeo.h"
 #include "Geometry/TPCGeo.h"
@@ -29,8 +30,9 @@
 #include "EventDisplay/Style.h"
 #include "EventDisplay/SimulationDrawingOptions.h"
 #include "EventDisplay/RawDrawingOptions.h"
-#include "Utilities/DetectorPropertiesService.h"
-#include "Utilities/DetectorClocksService.h"
+#include "Utilities/IDetectorPropertiesService.h"
+#include "DataProviders/IDetectorProperties.h"
+#include "Utilities/IDetectorClocksService.h"
 
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Principal/View.h"
@@ -199,7 +201,7 @@ namespace evd{
     // If the option is turned off, there's nothing to do
     if (!drawopt->fShowMCTruthVectors) return;
 
-    const dataprov::DetectorProperties* detprop = art::ServiceHandle<util::DetectorPropertiesService>()->getDetectorProperties();
+    dataprov::IDetectorProperties const* detprop = lar::providerFrom<util::IDetectorPropertiesService>();
 
     art::ServiceHandle<geo::Geometry>          geo;
     art::ServiceHandle<evd::RawDrawingOptions> rawopt;
@@ -283,9 +285,9 @@ namespace evd{
     // If the option is turned off, there's nothing to do
     if (!drawopt->fShowMCTruthTrajectories) return;
 
-    art::ServiceHandle<geo::Geometry>            geom;
-    const dataprov::DetectorProperties* theDetector = art::ServiceHandle<util::DetectorPropertiesService>()->getDetectorProperties();
-    const dataprov::DetectorClocks* detClocks = art::ServiceHandle<util::DetectorClocksService>()->getDetectorClocks();
+  //  geo::GeometryCore const* geom = lar::providerFrom<geo::Geometry>();
+    dataprov::IDetectorProperties const* theDetector = lar::providerFrom<util::IDetectorPropertiesService>();
+    dataprov::IDetectorClocks const* detClocks = lar::providerFrom<util::IDetectorClocksService>();
 
     // get the particles from the Geant4 step
     std::vector<const simb::MCParticle*> plist;
@@ -518,9 +520,9 @@ namespace evd{
     // If the option is turned off, there's nothing to do
     if (!drawopt->fShowMCTruthTrajectories) return;
       
-    art::ServiceHandle<geo::Geometry>            geom;
-    const dataprov::DetectorProperties* theDetector = art::ServiceHandle<util::DetectorPropertiesService>()->getDetectorProperties();
-    const dataprov::DetectorClocks* detClocks = art::ServiceHandle<util::DetectorClocksService>()->getDetectorClocks();
+  //  geo::GeometryCore const* geom = lar::providerFrom<geo::Geometry>();
+    dataprov::IDetectorProperties const* theDetector = lar::providerFrom<util::IDetectorPropertiesService>();
+    dataprov::IDetectorClocks const* detClocks = lar::providerFrom<util::IDetectorClocksService>();
     
     // get the particles from the Geant4 step
     std::vector<const simb::MCParticle*> plist;

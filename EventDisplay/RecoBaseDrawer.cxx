@@ -50,7 +50,7 @@
 #include "Geometry/TPCGeo.h"
 #include "Geometry/PlaneGeo.h"
 #include "Geometry/WireGeo.h"
-#include "Utilities/DetectorPropertiesService.h"
+#include "Utilities/IDetectorPropertiesService.h"
 #include "Utilities/AssociationUtil.h"
 
 #include "cetlib/exception.h"
@@ -244,7 +244,7 @@ void RecoBaseDrawer::Hit2D(const art::Event& evt,
     art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
     art::ServiceHandle<geo::Geometry>            geo;
-    const dataprov::DetectorProperties* detp = art::ServiceHandle<util::DetectorPropertiesService>()->getDetectorProperties();
+    dataprov::IDetectorProperties const* detp = lar::providerFrom<util::IDetectorPropertiesService>();
   
     if (recoOpt->fDrawHits == 0)                return;
     if (rawOpt->fDrawRawDataOrCalibWires < 1)   return;
@@ -572,6 +572,7 @@ void RecoBaseDrawer::Seed2D(const art::Event& evt,
     art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
     art::ServiceHandle<geo::Geometry>            geo;
+    dataprov::IDetectorProperties const* det = lar::providerFrom<util::IDetectorPropertiesService>();
 
     if (rawOpt->fDrawRawDataOrCalibWires < 1) return;
     if (recoOpt->fDrawSeeds == 0)             return;
@@ -628,8 +629,6 @@ void RecoBaseDrawer::Seed2D(const art::Event& evt,
             catch(cet::exception &e){
                 wireend2 = atoi(e.explain_self().substr(e.explain_self().find("#")+1,5).c_str());
             }
-
-            const dataprov::DetectorProperties* det = art::ServiceHandle<util::DetectorPropertiesService>()->getDetectorProperties();
 
             double x =  wirepoint;
             double y =  det->ConvertXToTicks(SeedPoint[0], plane, rawOpt->fTPC, rawOpt->fCryostat);
@@ -773,7 +772,7 @@ void RecoBaseDrawer::Cluster2D(const art::Event& evt,
     art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
     art::ServiceHandle<geo::Geometry>            geo;
-    const dataprov::DetectorProperties* detprop = art::ServiceHandle<util::DetectorPropertiesService>()->getDetectorProperties();
+    dataprov::IDetectorProperties const* detprop = lar::providerFrom<util::IDetectorPropertiesService>();
     //unsigned int c = rawOpt->fCryostat;
     //unsigned int t = rawOpt->fTPC;
 
@@ -1065,7 +1064,7 @@ void RecoBaseDrawer::GetClusterOutlines(std::vector<const recob::Hit*>& hits,
   {
     art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
     art::ServiceHandle<geo::Geometry>            geo;
-    const dataprov::DetectorProperties* detprop = art::ServiceHandle<util::DetectorPropertiesService>()->getDetectorProperties();
+    dataprov::IDetectorProperties const* detprop = lar::providerFrom<util::IDetectorPropertiesService>();
     
     unsigned int c = rawOpt->fCryostat;
     unsigned int t = rawOpt->fTPC;
@@ -1124,7 +1123,7 @@ void RecoBaseDrawer::DrawTrack2D(std::vector<const recob::Hit*>& hits,
 {
     art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
     art::ServiceHandle<geo::Geometry>            geo;
-    const dataprov::DetectorProperties* detprop = art::ServiceHandle<util::DetectorPropertiesService>()->getDetectorProperties();
+    dataprov::IDetectorProperties const* detprop = lar::providerFrom<util::IDetectorPropertiesService>();
     unsigned int c = rawOpt->fCryostat;
     unsigned int t = rawOpt->fTPC;
     
@@ -1206,7 +1205,7 @@ void RecoBaseDrawer::Prong2D(const art::Event& evt,
     art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
     art::ServiceHandle<geo::Geometry>            geo;
-    const dataprov::DetectorProperties* detprop = art::ServiceHandle<util::DetectorPropertiesService>()->getDetectorProperties();
+    dataprov::IDetectorProperties const* detprop = lar::providerFrom<util::IDetectorPropertiesService>();
 
     if(rawOpt->fDrawRawDataOrCalibWires < 1) return;
 
@@ -1346,7 +1345,7 @@ void RecoBaseDrawer::Vertex2D(const art::Event& evt,
     art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
     art::ServiceHandle<geo::Geometry>            geo;
-    const dataprov::DetectorProperties* detprop = art::ServiceHandle<util::DetectorPropertiesService>()->getDetectorProperties();
+    dataprov::IDetectorProperties const* detprop = lar::providerFrom<util::IDetectorPropertiesService>();
 
     if(rawOpt->fDrawRawDataOrCalibWires < 1) return;
     

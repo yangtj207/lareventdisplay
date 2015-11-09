@@ -40,8 +40,8 @@
 #include "RecoBase/Seed.h"
 #include "Geometry/Geometry.h"
 #include "Geometry/PlaneGeo.h"
-#include "Utilities/DetectorPropertiesService.h"
-#include "Utilities/LArPropertiesService.h"
+#include "Utilities/IDetectorPropertiesService.h"
+#include "Utilities/ILArPropertiesService.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 
@@ -632,8 +632,8 @@ namespace evd{
       double y,z;
 
       art::ServiceHandle<geo::Geometry> geom;
-      const dataprov::DetectorProperties* detp = art::ServiceHandle<util::DetectorPropertiesService>()->getDetectorProperties();
-      const dataprov::LArProperties* larp = art::ServiceHandle<util::LArPropertiesService>()->getLArProperties();
+      const dataprov::IDetectorProperties* detp = lar::providerFrom<util::IDetectorPropertiesService>();
+      const dataprov::ILArProperties* larp = lar::providerFrom<util::ILArPropertiesService>();
       art::ServiceHandle<evd::RawDrawingOptions> rawOpt;
       double ftimetick = detp->SamplingRate()/1000.;
       double larv = detp->DriftVelocity(detp->Efield(), larp->Temperature());
@@ -774,8 +774,8 @@ namespace evd{
       double z = 0.;
 
       art::ServiceHandle<geo::Geometry> geom;
-      const dataprov::DetectorProperties* detp = art::ServiceHandle<util::DetectorPropertiesService>()->getDetectorProperties();
-      //      const dataprov::LArProperties* larp = art::ServiceHandle<util::LArPropertiesService>()->getLArProperties();
+      const dataprov::IDetectorProperties* detp = lar::providerFrom<util::IDetectorPropertiesService>();
+      //      const dataprov::ILArProperties* larp = lar::providerFrom<util::ILArPropertiesService>();
       art::ServiceHandle<evd::RawDrawingOptions> rawOpt;
       //double ftimetick = detp->SamplingRate()/1000.;
       //double larv = larp->DriftVelocity(larp->Efield(), larp->Temperature());
@@ -1195,7 +1195,7 @@ namespace evd{
   int TWQProjectionView::DrawLine(int plane,util::PxLine &pline)
   {
     art::ServiceHandle<evd::EvdLayoutOptions>     evdlayoutopt;
-    const dataprov::DetectorProperties* det = art::ServiceHandle<util::DetectorPropertiesService>()->getDetectorProperties();
+    const dataprov::IDetectorProperties* det = lar::providerFrom<util::IDetectorPropertiesService>();
   
     static Float_t w0=-1, t0=-1, w1=-1, t1=-1;
 
@@ -1459,7 +1459,7 @@ namespace evd{
       util::PxLine l0 = seedlines.at(seedlines.size()-1);
       util::PxLine l1 = seedlines.at(seedlines.size()-2);
       
-      const dataprov::DetectorProperties* det = art::ServiceHandle<util::DetectorPropertiesService>()->getDetectorProperties();
+      const dataprov::IDetectorProperties* det = lar::providerFrom<util::IDetectorPropertiesService>();
       
       double x0 = det->ConvertTicksToX(l0.t0, l0.plane, 0,0);
       double x1 = det->ConvertTicksToX(l0.t1, l0.plane, 0,0);

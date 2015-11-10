@@ -39,8 +39,8 @@
 #include "RecoBase/Seed.h"
 #include "Geometry/Geometry.h"
 #include "Geometry/PlaneGeo.h"
-#include "Utilities/IDetectorPropertiesService.h"
-#include "Utilities/ILArPropertiesService.h"
+#include "Utilities/DetectorPropertiesService.h"
+#include "Utilities/LArPropertiesService.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 
@@ -590,8 +590,8 @@ namespace evd{
       double y,z;
 
       art::ServiceHandle<geo::Geometry> geom;
-      const dataprov::IDetectorProperties* detp = lar::providerFrom<util::IDetectorPropertiesService>();
-      const dataprov::ILArProperties* larp = lar::providerFrom<util::ILArPropertiesService>();
+      const dataprov::DetectorProperties* detp = lar::providerFrom<util::DetectorPropertiesService>();
+      const dataprov::LArProperties* larp = lar::providerFrom<util::LArPropertiesService>();
       art::ServiceHandle<evd::RawDrawingOptions> rawOpt;
       double ftimetick = detp->SamplingRate()/1000.;
       double larv = detp->DriftVelocity(detp->Efield(), larp->Temperature());
@@ -722,8 +722,8 @@ namespace evd{
       double z = 0.;
 
       art::ServiceHandle<geo::Geometry> geom;
-      const dataprov::IDetectorProperties* detp = lar::providerFrom<util::IDetectorPropertiesService>();
-      const dataprov::ILArProperties* larp = lar::providerFrom<util::ILArPropertiesService>();
+      const dataprov::DetectorProperties* detp = lar::providerFrom<util::DetectorPropertiesService>();
+      const dataprov::LArProperties* larp = lar::providerFrom<util::LArPropertiesService>();
       art::ServiceHandle<evd::RawDrawingOptions> rawOpt;
       double ftimetick = detp->SamplingRate()/1000.;
       double larv = detp->DriftVelocity(detp->Efield(), larp->Temperature());
@@ -777,7 +777,7 @@ namespace evd{
 	
 	unsigned int wplane = 0;
 	unsigned int wirevertex = 0;
-	const dataprov::ILArProperties* larp = lar::providerFrom<util::ILArPropertiesService>();
+	const dataprov::LArProperties* larp = lar::providerFrom<util::LArPropertiesService>();
 	art::ServiceHandle<evd::EvdLayoutOptions> evdlayoutopt;
 	
 	for(size_t xx = 0; xx < fPlanes.size(); ++xx){

@@ -12,8 +12,8 @@ art_make_library( LIBRARY_NAME ${PACKAGE}
                   LIBRARIES ColorDrawingOptions_service
 	                    InfoTransfer_service
 	                    Filters
-                            LArPropertiesService_service
-                            DetectorPropertiesService_service
+                            LArPropertiesServiceStandard_service
+                            DetectorPropertiesServiceStandard_service
  			    Simulation
 			    RawData
 			    RecoBase

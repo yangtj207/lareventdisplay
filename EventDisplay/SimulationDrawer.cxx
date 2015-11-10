@@ -30,9 +30,9 @@
 #include "EventDisplay/Style.h"
 #include "EventDisplay/SimulationDrawingOptions.h"
 #include "EventDisplay/RawDrawingOptions.h"
-#include "Utilities/IDetectorPropertiesService.h"
-#include "DataProviders/IDetectorProperties.h"
-#include "Utilities/IDetectorClocksService.h"
+#include "Utilities/DetectorPropertiesService.h"
+#include "DataProviders/DetectorProperties.h"
+#include "Utilities/DetectorClocksService.h"
 
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Principal/View.h"
@@ -201,7 +201,7 @@ namespace evd{
     // If the option is turned off, there's nothing to do
     if (!drawopt->fShowMCTruthVectors) return;
 
-    dataprov::IDetectorProperties const* detprop = lar::providerFrom<util::IDetectorPropertiesService>();
+    dataprov::DetectorProperties const* detprop = lar::providerFrom<util::DetectorPropertiesService>();
 
     art::ServiceHandle<geo::Geometry>          geo;
     art::ServiceHandle<evd::RawDrawingOptions> rawopt;
@@ -286,8 +286,8 @@ namespace evd{
     if (!drawopt->fShowMCTruthTrajectories) return;
 
   //  geo::GeometryCore const* geom = lar::providerFrom<geo::Geometry>();
-    dataprov::IDetectorProperties const* theDetector = lar::providerFrom<util::IDetectorPropertiesService>();
-    dataprov::IDetectorClocks const* detClocks = lar::providerFrom<util::IDetectorClocksService>();
+    dataprov::DetectorProperties const* theDetector = lar::providerFrom<util::DetectorPropertiesService>();
+    dataprov::DetectorClocks const* detClocks = lar::providerFrom<util::DetectorClocksService>();
 
     // get the particles from the Geant4 step
     std::vector<const simb::MCParticle*> plist;
@@ -521,8 +521,8 @@ namespace evd{
     if (!drawopt->fShowMCTruthTrajectories) return;
       
   //  geo::GeometryCore const* geom = lar::providerFrom<geo::Geometry>();
-    dataprov::IDetectorProperties const* theDetector = lar::providerFrom<util::IDetectorPropertiesService>();
-    dataprov::IDetectorClocks const* detClocks = lar::providerFrom<util::IDetectorClocksService>();
+    dataprov::DetectorProperties const* theDetector = lar::providerFrom<util::DetectorPropertiesService>();
+    dataprov::DetectorClocks const* detClocks = lar::providerFrom<util::DetectorClocksService>();
     
     // get the particles from the Geant4 step
     std::vector<const simb::MCParticle*> plist;

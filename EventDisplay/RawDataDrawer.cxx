@@ -82,7 +82,7 @@
 #include "Utilities/StatCollector.h" // lar::util::MinMaxCollector<>
 #include "Geometry/Geometry.h"
 #include "Utilities/LArPropertiesService.h"
-#include "Utilities/IDetectorPropertiesService.h"
+#include "Utilities/DetectorPropertiesService.h"
 
 
 #include "art/Utilities/InputTag.h"
@@ -508,7 +508,7 @@ namespace evd {
         {
           if (adc < 0.) return 0.;
           register double const dQdX = adc / wirePitch / electronsToADC;
-          dataprov::IDetectorProperties const* detp = lar::providerFrom<util::IDetectorPropertiesService>();
+          dataprov::DetectorProperties const* detp = lar::providerFrom<util::DetectorPropertiesService>();
           return detp->BirksCorrection(dQdX);
         } // Correct()
       double operator() (float adc) const { return Correct(adc); }
@@ -518,7 +518,7 @@ namespace evd {
           art::ServiceHandle<geo::Geometry> geo;
           wirePitch = geo->WirePitch(pid);
 
-          dataprov::IDetectorProperties const* detp = lar::providerFrom<util::IDetectorPropertiesService>();
+          dataprov::DetectorProperties const* detp = lar::providerFrom<util::DetectorPropertiesService>();
           electronsToADC = detp->ElectronsToADC();
         } // update()
       
@@ -836,7 +836,7 @@ namespace evd {
     
     
 #if 0
-    const dataprov::IDetectorProperties* detp = art::ServiceHandle<util::IDetectorPropertiesService>()->provider();
+    const dataprov::DetectorProperties* detp = art::ServiceHandle<util::DetectorPropertiesService>()->provider();
     
     for (evd::details::RawDigitInfo_t& digit_info: digit_cache->digits) {
       raw::RawDigit const& hit = digit_info.Digit();

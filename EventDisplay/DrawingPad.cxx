@@ -39,7 +39,9 @@ namespace evd{
 			 const char* ti, 
 			 double x1, double y1,
 			 double x2, double y2)
-    : fGeometryDraw(0)
+    : fPad(0)
+    , fHeaderDraw(0) //Every pointer checked for a 0 value in the destructor should be set to 0 here.  aoliv23@lsu.edu
+    , fGeometryDraw(0)
     , fSimulationDraw(0)
     , fRawDataDraw(0)
     , fRecoBaseDraw(0)

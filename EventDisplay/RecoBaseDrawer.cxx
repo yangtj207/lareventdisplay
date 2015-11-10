@@ -1924,7 +1924,8 @@ void RecoBaseDrawer::Prong3D(const art::Event& evt,
             std::string which = recoOpt->fTrackLabels[imod];
             art::View<recob::Track> trackView;
             this->GetTracks(evt, which, trackView);
-            
+            if(!trackView.isValid()) continue; //Prevent potential segmentation fault if no tracks found. aoliv23@lsu.edu
+ 
             art::PtrVector<recob::Track> trackVec;
             
             trackView.fill(trackVec);

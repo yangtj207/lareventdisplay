@@ -19,7 +19,7 @@
 #include "detectorproperties.fcl"
 #include "larproperties.fcl"
 #include "channelstatus.fcl"
-#include "timeservice_argoneut.fcl"
+#include "detectorclocks_argoneut.fcl"
 #include "databaseutil.fcl"
 #include "simulationservices.fcl"
 
@@ -63,9 +63,9 @@ custom_disp:
 {
   Geometry:               @local::argoneut_geo # from geometry.fcl
   ExptGeoHelperInterface: @local::argoneut_geometry_helper # from geometry.fcl
-  DetectorProperties:     @local::standard_detproperties # from detectorproperties.fcl
-  LArProperties:          @local::standard_properties # from larproperties.fcl
-  TimeService:            @local::argoneut_timeservice # from timeservice_argoneut.fcl
+  DetectorPropertiesService:     @local::standard_detproperties # from detectorproperties.fcl
+  LArPropertiesService:          @local::standard_properties # from larproperties.fcl
+  DetectorClocksService:            @local::argoneut_detectorclocks # from detectorclocks_argoneut.fcl
   DatabaseUtil:           @local::standard_database # from databaseutil.fcl
 //  LArFFT:                 @local::argoneut_larfft # from larfft.fcl
  

@@ -190,11 +190,6 @@ evd_message:
      limit:       1
      timespan:    100
     }
-    LArProperties:
-    {
-     limit:       2
-     timespan:    1000
-    }
    }
   }
  }

@@ -43,8 +43,8 @@
 #include "RecoBase/Vertex.h"
 #include "RecoBase/OpFlash.h"
 #include "AnalysisBase/CosmicTag.h"
-#include "CalibrationDBI/Interface/IChannelStatusService.h"
-#include "CalibrationDBI/Interface/IChannelStatusProvider.h"
+#include "CalibrationDBI/Interface/ChannelStatusService.h"
+#include "CalibrationDBI/Interface/ChannelStatusProvider.h"
 #include "Geometry/Geometry.h"
 #include "Geometry/CryostatGeo.h"
 #include "Geometry/TPCGeo.h"
@@ -125,8 +125,8 @@ void RecoBaseDrawer::Wire2D(const art::Event& evt,
     
     if(rawOpt->fDrawRawDataOrCalibWires < 1)    return;
     
-    lariov::IChannelStatusProvider const& channelStatus
-      = art::ServiceHandle<lariov::IChannelStatusService>()->GetProvider();
+    lariov::ChannelStatusProvider const& channelStatus
+      = art::ServiceHandle<lariov::ChannelStatusService>()->GetProvider();
     
     int ticksPerPoint = rawOpt->fTicksPerPoint;
     

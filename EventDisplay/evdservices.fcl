@@ -80,7 +80,7 @@ custom_disp:
   InfoTransfer:             @local::custom_infotransfer
   LArG4Parameters:          @local::standard_largeantparameters
   LArVoxelCalculator:       @local::standard_larvoxelcalculator
-  IChannelStatusService:    @local::standard_channelstatus
+  ChannelStatusService:    @local::standard_channelstatus
 }
 custom_disp.RawDrawingOptions.DetPedestalRetrievalAlg.DefaultCollMean:  0
 custom_disp.RawDrawingOptions.DetPedestalRetrievalAlg.DefaultIndMean:  0

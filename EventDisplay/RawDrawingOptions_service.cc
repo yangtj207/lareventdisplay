@@ -40,7 +40,7 @@ namespace evd {
     fTPC                        = pset.get< unsigned int>("TPC",                  0    );
     fCryostat                   = pset.get< unsigned int>("Cryostat",             0    );
     fMinChannelStatus           = pset.get< unsigned int>("MinChannelStatus",     0    );
-    fMaxChannelStatus           = pset.get< unsigned int>("MaxChannelStatus",     lariov::IChannelStatusProvider::InvalidStatus - 1);
+    fMaxChannelStatus           = pset.get< unsigned int>("MaxChannelStatus",     lariov::ChannelStatusProvider::InvalidStatus - 1);
     
   }
 }

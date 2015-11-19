@@ -74,8 +74,8 @@
 #include "EventDisplay/RawDrawingOptions.h"
 #include "RawData/raw.h"
 #include "RawData/RawDigit.h"
-#include "CalibrationDBI/Interface/IChannelStatusService.h"
-#include "CalibrationDBI/Interface/IChannelStatusProvider.h"
+#include "CalibrationDBI/Interface/ChannelStatusService.h"
+#include "CalibrationDBI/Interface/ChannelStatusProvider.h"
 #include "Geometry/CryostatGeo.h"
 #include "Geometry/TPCGeo.h"
 #include "Geometry/PlaneGeo.h"
@@ -91,8 +91,8 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Persistency/Common/Ptr.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
-#include "CalibrationDBI/Interface/IDetPedestalService.h"
-#include "CalibrationDBI/Interface/IDetPedestalProvider.h"
+#include "CalibrationDBI/Interface/DetPedestalService.h"
+#include "CalibrationDBI/Interface/DetPedestalProvider.h"
 
 
 // internal use classes declaration;
@@ -622,7 +622,7 @@ namespace evd {
     art::ServiceHandle<evd::ColorDrawingOptions> cst;
 
     //get pedestal conditions
-    const lariov::IDetPedestalProvider& pedestalRetrievalAlg = art::ServiceHandle<lariov::IDetPedestalService>()->GetPedestalProvider();  
+    const lariov::DetPedestalProvider& pedestalRetrievalAlg = art::ServiceHandle<lariov::DetPedestalService>()->GetPedestalProvider();  
     
     geo::PlaneID pid(drawopt->fCryostat, drawopt->fTPC, plane);
 
@@ -650,8 +650,8 @@ namespace evd {
     // caller should have user ExtractRange() first.
     std::vector<BoxInfo_t> BoxInfo(fDrawingRange->NCells());
     
-    lariov::IChannelStatusProvider const& channelStatus
-      = art::ServiceHandle<lariov::IChannelStatusService>()->GetProvider();
+    lariov::ChannelStatusProvider const& channelStatus
+      = art::ServiceHandle<lariov::ChannelStatusService>()->GetProvider();
     
     // collect the interesting range
     lar::util::MinMaxCollector<float> WireRange, TDCrange;
@@ -1063,11 +1063,11 @@ namespace evd {
     
     geo::PlaneID pid(drawopt->fCryostat, drawopt->fTPC, plane);
       
-    lariov::IChannelStatusProvider const& channelStatus
-      = art::ServiceHandle<lariov::IChannelStatusService>()->GetProvider();
+    lariov::ChannelStatusProvider const& channelStatus
+      = art::ServiceHandle<lariov::ChannelStatusService>()->GetProvider();
     
     //get pedestal conditions
-    const lariov::IDetPedestalProvider& pedestalRetrievalAlg = art::ServiceHandle<lariov::IDetPedestalService>()->GetPedestalProvider();
+    const lariov::DetPedestalProvider& pedestalRetrievalAlg = art::ServiceHandle<lariov::DetPedestalService>()->GetPedestalProvider();
 
     for (evd::details::RawDigitInfo_t const& digit_info: *digit_cache) {
       raw::RawDigit const& hit = digit_info.Digit();
@@ -1129,8 +1129,8 @@ namespace evd {
     } // if no channel
     
     // check the channel status; bad channels are still ok.
-    lariov::IChannelStatusProvider const& channelStatus
-      = art::ServiceHandle<lariov::IChannelStatusService>()->GetProvider();
+    lariov::ChannelStatusProvider const& channelStatus
+      = art::ServiceHandle<lariov::ChannelStatusService>()->GetProvider();
     
     if (!channelStatus.IsPresent(channel)) return;
     
@@ -1142,7 +1142,7 @@ namespace evd {
     // if (channelStatus.IsBad()) return;
     
     //get pedestal conditions
-    const lariov::IDetPedestalProvider& pedestalRetrievalAlg = art::ServiceHandle<lariov::IDetPedestalService>()->GetPedestalProvider();
+    const lariov::DetPedestalProvider& pedestalRetrievalAlg = art::ServiceHandle<lariov::DetPedestalService>()->GetPedestalProvider();
     
     // find the raw digit
     // (iDigit is an iterator to a evd::details::RawDigitInfo_t)
@@ -1291,10 +1291,10 @@ namespace evd {
   
   //......................................................................    
   bool RawDataDrawer::ProcessChannelWithStatus
-    (lariov::IChannelStatusProvider::Status_t channel_status) const
+    (lariov::ChannelStatusProvider::Status_t channel_status) const
   {
     // if we don't have a valid status, we can't reject the channel
-    if (!lariov::IChannelStatusProvider::IsValidStatus(channel_status))
+    if (!lariov::ChannelStatusProvider::IsValidStatus(channel_status))
       return true;
     
     // is the status "too bad"?

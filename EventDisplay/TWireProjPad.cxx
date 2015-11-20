@@ -512,7 +512,7 @@ namespace evd{
   {
 
     art::ServiceHandle<evd::EvdLayoutOptions>    evdlayoutopt;
-    dataprov::DetectorProperties const* det = lar::providerFrom<util::DetectorPropertiesService>();
+    detinfo::DetectorProperties const* det = lar::providerFrom<detinfo::DetectorPropertiesService>();
 
     fPad->cd();
     if(deleting) {

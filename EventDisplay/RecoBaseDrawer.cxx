@@ -985,6 +985,45 @@ void RecoBaseDrawer::Draw2DSlopeEndPoints(double        x,
 }
 
 //......................................................................
+void RecoBaseDrawer::Draw2DSlopeEndPoints(double        x,
+                                          double        y,
+                                          double        cosx,
+					  double        cosy,
+                                          int           color,
+                                          evdb::View2D* view)
+{
+    art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
+    art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
+    
+    if(recoOpt->fDraw2DSlopeEndPoints < 1) return;
+    
+    double x1 = x;
+    double y1 = y;
+    double cosx1 = cosx;
+    double cosy1 = cosy;
+    
+    if(rawOpt->fDrawRawDataOrCalibWires < 1) return;
+    if(rawOpt->fAxisOrientation > 0){
+        x1 = y;
+        y1 = x;
+	cosx1 = cosy;
+	cosy1 = cosx;
+    }
+    
+    TMarker& strt = view->AddMarker(x1, y1, color, kFullStar, 2.0);
+    strt.SetMarkerColor(color); // stupid line to shut up compiler warning
+    
+    //    double stublen = 50.0 ;
+    double stublen = 300.0;
+    TLine& l = view->AddLine(x1, y1, x1+stublen*cosx1, y1 + stublen*cosy1);
+    l.SetLineColor(color);
+    l.SetLineWidth(2);
+    l.SetLineStyle(2);
+    
+    return;
+}
+
+//......................................................................
 ///
 /// Make a set of points which outline a cluster
 ///
@@ -1075,6 +1114,21 @@ void RecoBaseDrawer::GetClusterOutlines(std::vector<const recob::Hit*>& hits,
     else
       this->Hit2D(hits, evd::kColor[id%evd::kNCOLS], view, false, cscore);
 
+    double tick0 = detprop->ConvertXToTicks(startPos.X(), plane, t, c);
+    double wire0 = geo->WireCoordinate(startPos.Y(),startPos.Z(),plane,t,c);
+
+    double tick1 = detprop->ConvertXToTicks((startPos+startDir).X(),plane,t,c);
+    double wire1 = geo->WireCoordinate((startPos+startDir).Y(),
+				       (startPos+startDir).Z(),plane,t,c);
+
+    double cost = 0;
+    double cosw = 0;
+    double ds = sqrt(pow(tick0-tick1,2)+pow(wire0-wire1,2));
+    if (ds){
+      cost = (tick1-tick0)/ds;
+      cosw = (wire1-wire0)/ds;
+    }
+    /*
     // prepare to draw prongs
     double local[3] = {0.};
     double world[3] = {0.};
@@ -1107,8 +1161,8 @@ void RecoBaseDrawer::GetClusterOutlines(std::vector<const recob::Hit*>& hits,
     double yprime = std::cos(rotang)*startDir[1]
                    +std::sin(rotang)*startDir[2];
     double dTdW = startDir[0]*wirePitch/driftvelocity/timetick/yprime;
-
-    this->Draw2DSlopeEndPoints(wire, tick, dTdW, evd::kColor[id%evd::kNCOLS], view);
+    */
+    this->Draw2DSlopeEndPoints(wire0, tick0, cosw, cost, evd::kColor[id%evd::kNCOLS], view);
 
     return;
 }
@@ -1863,7 +1917,8 @@ void RecoBaseDrawer::Prong3D(const art::Event& evt,
             std::string which = recoOpt->fTrackLabels[imod];
             art::View<recob::Track> trackView;
             this->GetTracks(evt, which, trackView);
-            
+            if(!trackView.isValid()) continue; //Prevent potential segmentation fault if no tracks found. aoliv23@lsu.edu
+ 
             art::PtrVector<recob::Track> trackVec;
             
             trackView.fill(trackVec);
@@ -2919,14 +2974,31 @@ void RecoBaseDrawer::DrawPFParticleOrtho(const art::Ptr<recob::PFParticle>&     
       const art::Handle<std::vector<recob::Shower> > handle = ih;
       if(handle.isValid()) {
 	const std::string& which = handle.provenance()->moduleLabel();
+	
 	art::FindMany<recob::SpacePoint> fmsp(handle, *evt, which);
-	if (!fmsp.isValid()) continue;
 	int n = handle->size();
 	for(int i=0; i<n; ++i) {
 	  art::Ptr<recob::Shower> p(handle, i);
 	  if(&*p == &shower) {
-	    std::vector<const recob::SpacePoint*> spts = fmsp.at(i);
-	    DrawSpacePointOrtho(spts, color, proj, msize, view, 1);
+	    switch (proj) {
+	    case evd::kXY:
+	      view->AddMarker(p->ShowerStart().X(), p->ShowerStart().Y(), evd::kColor2[color%evd::kNCOLS], 5, 2.0);
+	      break;
+	    case evd::kXZ:
+	      view->AddMarker(p->ShowerStart().Z(), p->ShowerStart().X(), evd::kColor2[color%evd::kNCOLS], 5, 2.0);
+	      break;
+	    case evd::kYZ:
+	      view->AddMarker(p->ShowerStart().Z(), p->ShowerStart().Y(), evd::kColor2[color%evd::kNCOLS], 5, 2.0);
+	      break;
+	    default:
+	      throw cet::exception("RecoBaseDrawer") << __func__
+						     << ": unknown projection #" << ((int) proj) << "\n";
+	    } // switch
+
+	    if (fmsp.isValid()){
+	      std::vector<const recob::SpacePoint*> spts = fmsp.at(i);
+	      DrawSpacePointOrtho(spts, color, proj, msize, view, 1);
+	    }
 	  }
 	}
       }

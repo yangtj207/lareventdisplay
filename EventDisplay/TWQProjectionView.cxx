@@ -41,7 +41,6 @@
 #include "Geometry/Geometry.h"
 #include "Geometry/PlaneGeo.h"
 #include "DetectorInfoServices/DetectorPropertiesService.h"
-#include "DetectorInfoServices/LArPropertiesService.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 
@@ -633,10 +632,9 @@ namespace evd{
 
       art::ServiceHandle<geo::Geometry> geom;
       const detinfo::DetectorProperties* detp = lar::providerFrom<detinfo::DetectorPropertiesService>();
-      const detinfo::LArProperties* larp = lar::providerFrom<detinfo::LArPropertiesService>();
       art::ServiceHandle<evd::RawDrawingOptions> rawOpt;
       double ftimetick = detp->SamplingRate()/1000.;
-      double larv = detp->DriftVelocity(detp->Efield(), larp->Temperature());
+      double larv = detp->DriftVelocity(detp->Efield(), detp->Temperature());
 		
       //find wireIDs corresponding to found wires.
       geo::WireID wire1(rawOpt->fCryostat,rawOpt->fTPC,pline[0].plane,pline[0].w0);
@@ -775,10 +773,9 @@ namespace evd{
 
       art::ServiceHandle<geo::Geometry> geom;
       const detinfo::DetectorProperties* detp = lar::providerFrom<detinfo::DetectorPropertiesService>();
-      //      const detinfo::LArProperties* larp = lar::providerFrom<detinfo::LArPropertiesService>();
       art::ServiceHandle<evd::RawDrawingOptions> rawOpt;
       //double ftimetick = detp->SamplingRate()/1000.;
-      //double larv = larp->DriftVelocity(larp->Efield(), larp->Temperature());
+      //double larv = detp->DriftVelocity(detp->Efield(), detp->Temperature());
 		
       //find channels corresponding to found wires.
       geo::WireID wire1(rawOpt->fCryostat,rawOpt->fTPC,ppoints[0].plane,ppoints[0].w);
@@ -838,7 +835,6 @@ namespace evd{
 	
 	unsigned int wplane = 0;
 	unsigned int wirevertex = 0;
-	//	art::ServiceHandle<detinfo::LArPropertiesService> larp;
 	art::ServiceHandle<evd::EvdLayoutOptions> evdlayoutopt;
 	
 	for(size_t xx = 0; xx < fPlanes.size(); ++xx){

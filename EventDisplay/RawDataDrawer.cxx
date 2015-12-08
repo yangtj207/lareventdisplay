@@ -77,7 +77,8 @@
 #include "CalibrationDBI/Interface/IDetPedestalProvider.h"
 #include "RawData/raw.h"
 #include "RawData/RawDigit.h"
-#include "Filters/ChannelFilter.h"
+#include "CalibrationDBI/Interface/IChannelStatusService.h"
+#include "CalibrationDBI/Interface/IChannelStatusProvider.h"
 #include "Geometry/CryostatGeo.h"
 #include "Geometry/TPCGeo.h"
 #include "Geometry/PlaneGeo.h"
@@ -582,7 +583,6 @@ namespace evd {
     fTicks = rawopt->fTicks;
 
     // set the list of bad channels in this detector
-    filter::ChannelFilter cf; 
     unsigned int nplanes=geo->Nplanes(tpcid);
     fWireMin.resize(nplanes,-1);   
     fWireMax.resize(nplanes,-1);    
@@ -828,8 +828,8 @@ namespace evd {
     // but it's way better if the failure throws an exception
     if (!operation->Initialize()) return false;
     
-    // It will be better when this is a service...
-    filter::ChannelFilter channelFilter;
+    lariov::IChannelStatusProvider const& channelStatus
+      = art::ServiceHandle<lariov::IChannelStatusService>()->GetProvider();
     
     //get pedestal conditions
     const lariov::IDetPedestalProvider& pedestalRetrievalAlg = art::ServiceHandle<lariov::IDetPedestalService>()->GetPedestalProvider();
@@ -842,10 +842,9 @@ namespace evd {
       raw::ChannelID_t const channel = hit.Channel();
       
       // skip the bad channels
+      if (!channelStatus.IsPresent(channel)) continue;
       // The following test is meant to be temporary until the "correct" solution is implemented
-      auto const channel_status = channelFilter.GetChannelStatus(channel);
-      if (channel_status == filter::ChannelFilter::NOTPHYSICAL) continue;
-      if (channel_status >  rawopt->fMaxChannelStatus)         continue;
+      if (!ProcessChannelWithStatus(channelStatus.Status(channel))) continue;
       
       // we have a list of all channels, but we are drawing only on one plane;
       // most of the channels will not contribute to this plane,
@@ -863,7 +862,7 @@ namespace evd {
       if (!bDrawChannel) continue;
       
       // collect bad channels
-      bool const bGood = (channel_status != filter::ChannelFilter::DEAD);
+      bool const bGood = !channelStatus.IsBad(channel);
       
       // nothing else to be done if the channel is not good:
       // cells are marked bad by default and if any good channel falls in any of
@@ -1322,10 +1321,10 @@ namespace evd {
     geo::PlaneID const pid(rawopt->CurrentTPC(), plane);
     details::CacheID_t NewCacheID(evt, rawopt->fRawDataLabel, pid);
     GetRawDigits(evt, NewCacheID);
-    
-    // It will be better when this is a service...
-    filter::ChannelFilter channelFilter;
       
+    lariov::IChannelStatusProvider const& channelStatus
+      = art::ServiceHandle<lariov::IChannelStatusService>()->GetProvider();
+    
     //get pedestal conditions
     const lariov::IDetPedestalProvider& pedestalRetrievalAlg = art::ServiceHandle<lariov::IDetPedestalService>()->GetPedestalProvider();
 
@@ -1333,13 +1332,13 @@ namespace evd {
       raw::RawDigit const& hit = digit_info.Digit();
       raw::ChannelID_t const channel = hit.Channel();
         
+      if (!channelStatus.IsPresent(channel)) continue;
+      
       // The following test is meant to be temporary until the "correct" solution is implemented
-      auto const channel_status = channelFilter.GetChannelStatus(channel);
-      if (channel_status == filter::ChannelFilter::NOTPHYSICAL) continue;
-      if (channel_status >  rawopt->fMaxChannelStatus)         continue;
+      if (!ProcessChannelWithStatus(channelStatus.Status(channel))) continue;
       
       // to be explicit: we don't cound bad channels in
-      if (channel_status == filter::ChannelFilter::DEAD) continue;
+      if (channelStatus.IsBad(channel)) continue;
       
       std::vector<geo::WireID> wireids = geo->ChannelToWire(channel);
       for(auto const& wid : wireids){
@@ -1391,15 +1390,17 @@ namespace evd {
     } // if no channel
     
     // check the channel status; bad channels are still ok.
-    // It will be better when this is a service...
-    filter::ChannelFilter channelFilter;
+    lariov::IChannelStatusProvider const& channelStatus
+      = art::ServiceHandle<lariov::IChannelStatusService>()->GetProvider();
     
-    auto const channel_status = channelFilter.GetChannelStatus(channel);
-    if (channel_status == filter::ChannelFilter::NOTPHYSICAL) return;
-    if (channel_status >  rawopt->fMaxChannelStatus)         return;
+    if (!channelStatus.IsPresent(channel)) return;
     
-    // we accept to see the content of a bad channel
-    // if (channel_status == filter::ChannelFilter::DEAD) return;
+    // The following test is meant to be temporary until the "correct" solution is implemented
+    if (!ProcessChannelWithStatus(channelStatus.Status(channel))) return;
+    
+    
+    // we accept to see the content of a bad channel, so this is commented out:
+    // if (channelStatus.IsBad()) return;
     
     //get pedestal conditions
     const lariov::IDetPedestalProvider& pedestalRetrievalAlg = art::ServiceHandle<lariov::IDetPedestalService>()->GetPedestalProvider();
@@ -1557,6 +1558,23 @@ namespace evd {
     
   } // RawDataDrawer::GetRawDigits()
   
+  
+  //......................................................................    
+  bool RawDataDrawer::ProcessChannelWithStatus
+    (lariov::IChannelStatusProvider::Status_t channel_status) const
+  {
+    // if we don't have a valid status, we can't reject the channel
+    if (!lariov::IChannelStatusProvider::IsValidStatus(channel_status))
+      return true;
+    
+    // is the status "too bad"?
+    art::ServiceHandle<evd::RawDrawingOptions> drawopt;
+    if (channel_status > drawopt->fMaxChannelStatus) return false;
+    if (channel_status < drawopt->fMinChannelStatus) return false;
+    
+    // no reason to reject it...
+    return true;
+  } // RawDataDrawer::ProcessChannel()
   
   //----------------------------------------------------------------------------
   namespace details {

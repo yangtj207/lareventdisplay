@@ -36,18 +36,15 @@ namespace evd {
     fStartTick                  = pset.get< double      >("StartTick",            0    );
     fTicks                      = pset.get< double      >("TotalTicks",           2048 );
     fAxisOrientation         	= pset.get< int         >("AxisOrientation",      0    );
-    fRawDataLabel               = pset.get< std::string >("RawDataLabel",         "daq");
+    fRawDataLabel               = pset.get< art::InputTag >("RawDataLabel",        "daq");
     fTPC                        = pset.get< unsigned int>("TPC",                  0    );
     fCryostat                   = pset.get< unsigned int>("Cryostat",             0    );
-    fMaxChannelStatus           = pset.get< unsigned int>("MaxChannelStatus",     filter::ChannelFilter::DEAD);
+    fMinChannelStatus           = pset.get< unsigned int>("MinChannelStatus",     0    );
+    fMaxChannelStatus           = pset.get< unsigned int>("MaxChannelStatus",     lariov::IChannelStatusProvider::InvalidStatus - 1);
     fRoIthresholds              = pset.get< std::vector<float> >("RoIthresholds", std::vector<float>());
     
-    // Explicit checkt to prevent attempt to display non-physical channels (which will crash display)
-    if (fMaxChannelStatus >= filter::ChannelFilter::NOTPHYSICAL) fMaxChannelStatus = filter::ChannelFilter::NOTPHYSICAL - 1;
-    
     if (fRoIthresholds.empty()) fRoIthresholds.push_back((float) fMinSignal);
-    
-  }  
+  }
 }
 
 namespace evd {

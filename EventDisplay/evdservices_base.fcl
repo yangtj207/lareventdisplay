@@ -28,7 +28,6 @@ standard_rawdrawingopt:
  AxisOrientation:            0     # 0 = TDC on y-axis, wire number on x-axis, 1 has that swapped           
  TPC:                        0     # TPC number to display in TWQProjection view
  Cryostat:                   0     # Cryostat number to display in TWQProjection view
- MaxChannelStatus:           2     # Max Channel Status - 0 = good, 1 = noisy, 2 = dead
  RawDataLabel:               "daq" # label of module making the raw digits
 }
 

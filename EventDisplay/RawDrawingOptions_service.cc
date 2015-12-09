@@ -41,7 +41,7 @@ namespace evd {
     fCryostat                   = pset.get< unsigned int>("Cryostat",             0    );
     fMinChannelStatus           = pset.get< unsigned int>("MinChannelStatus",     0    );
     fMaxChannelStatus           = pset.get< unsigned int>("MaxChannelStatus",     lariov::IChannelStatusProvider::InvalidStatus - 1);
-    
+    fUncompressWithPed          = pset.get< bool >("UncompressWithPed",false);
   }
 }
 

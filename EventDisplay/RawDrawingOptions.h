@@ -37,6 +37,7 @@ namespace evd {
     unsigned int fCryostat;                                ///< Cryostat number to draw, typically set by TWQProjectionView
     unsigned int fMinChannelStatus;                        ///< Display channels with this status and above
     unsigned int fMaxChannelStatus;                        ///< Display channels with this status and below
+    bool         fUncompressWithPed;                       ///< Option to uncompress with pedestal. Turned off by default
     art::InputTag fRawDataLabel;                            ///< module label that made the raw digits, default is daq
   };
 }//namespace

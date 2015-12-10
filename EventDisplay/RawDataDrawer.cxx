@@ -1604,16 +1604,26 @@ namespace evd {
       data.Clear();
       
       if (!digit) return; // no original data, can't do anything
-      
+
+      art::ServiceHandle<evd::RawDrawingOptions> drawopt;      
+
       if (digit->Compression() == kNone) {
         // no compression, we can refer to the original data directly
         data.PointToData(digit->ADCs());
       }
       else {
         // data is compressed, need to do the real work
-        raw::RawDigit::ADCvector_t samples;
-        Uncompress(digit->ADCs(), samples, digit->Compression());
-        data.StealData(std::move(samples));
+	if (drawopt->fUncompressWithPed){//Use pedestal in uncompression
+	  int pedestal = (int)digit->GetPedestal();
+	  raw::RawDigit::ADCvector_t samples;
+	  Uncompress(digit->ADCs(), samples, pedestal, digit->Compression());
+	  data.StealData(std::move(samples));
+	}
+	else{
+	  raw::RawDigit::ADCvector_t samples;
+	  Uncompress(digit->ADCs(), samples, digit->Compression());
+	  data.StealData(std::move(samples));
+	}
       }
     } // RawDigitInfo_t::UncompressData()
     

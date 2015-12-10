@@ -58,6 +58,8 @@ namespace evd {
     unsigned int fMaxChannelStatus;                        ///< Display channels with this status and below
     art::InputTag fRawDataLabel;                           ///< module label that made the raw digits, default is daq
     
+    bool         fUncompressWithPed;                       ///< Option to uncompress with pedestal. Turned off by default
+    
     std::vector<float> fRoIthresholds;                     ///< region of interest thresholds, per plane
     
     /// Returns the current TPC as a TPCID

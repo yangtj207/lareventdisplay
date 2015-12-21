@@ -7,7 +7,7 @@
 // Framework includes
 
 /// LArSoft includes
-#include "EventDisplay/SimulationDrawingOptions.h"
+#include "lareventdisplay/EventDisplay/SimulationDrawingOptions.h"
 
 #include <iostream>
 

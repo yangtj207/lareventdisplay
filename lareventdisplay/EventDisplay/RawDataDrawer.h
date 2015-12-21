@@ -7,7 +7,7 @@
 #include <vector>
 #ifndef __CINT__
 
-#include "CalibrationDBI/Interface/ChannelStatusProvider.h" // lariov::ChannelStatusProvider::Status_t
+#include "larevt/CalibrationDBI/Interface/ChannelStatusProvider.h" // lariov::ChannelStatusProvider::Status_t
 
 #endif
 

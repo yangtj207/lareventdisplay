@@ -9,7 +9,7 @@
 
 #ifndef EVD_TWIREPROJPAD_H
 #define EVD_TWIREPROJPAD_H
-#include "EventDisplay/DrawingPad.h"
+#include "lareventdisplay/EventDisplay/DrawingPad.h"
 #include <vector>
 
 

@@ -8,10 +8,10 @@
 #include "TH1F.h"
 #include "TPad.h"
 
-#include "EventDisplay/MCBriefPad.h"
+#include "lareventdisplay/EventDisplay/MCBriefPad.h"
 #include "EventDisplayBase/View2D.h"
 #include "EventDisplayBase/EventHolder.h"
-#include "EventDisplay/SimulationDrawer.h"
+#include "lareventdisplay/EventDisplay/SimulationDrawer.h"
 
 namespace evd{
 

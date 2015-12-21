@@ -7,7 +7,7 @@
 // Framework includes
 
 /// LArSoft includes
-#include "EventDisplay/EvdLayoutOptions.h"
+#include "lareventdisplay/EventDisplay/EvdLayoutOptions.h"
 
 #include <iostream>
 

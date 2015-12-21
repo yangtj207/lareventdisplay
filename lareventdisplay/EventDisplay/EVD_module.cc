@@ -23,11 +23,11 @@ extern "C" {
 
 //LArSoft includes
 #include "EventDisplayBase/DisplayWindow.h"
-#include "EventDisplay/TWQProjectionView.h"
-#include "EventDisplay/TWQMultiTPCProjection.h"
-#include "EventDisplay/Display3DView.h"
-#include "EventDisplay/Ortho3DView.h"
-#include "EventDisplay/CalorView.h"
+#include "lareventdisplay/EventDisplay/TWQProjectionView.h"
+#include "lareventdisplay/EventDisplay/TWQMultiTPCProjection.h"
+#include "lareventdisplay/EventDisplay/Display3DView.h"
+#include "lareventdisplay/EventDisplay/Ortho3DView.h"
+#include "lareventdisplay/EventDisplay/CalorView.h"
 
 // Framework includes
 #include "art/Framework/Principal/Event.h"

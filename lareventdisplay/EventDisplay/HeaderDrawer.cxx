@@ -4,7 +4,7 @@
 /// \author  messier@indiana.edu
 /// \version $Id: HeaderDrawer.cxx,v 1.2 2010/11/11 18:11:22 p-novaart Exp $
 ///
-#include "EventDisplay/HeaderDrawer.h"
+#include "lareventdisplay/EventDisplay/HeaderDrawer.h"
 #include "EventDisplayBase/View2D.h"
 #include "EventDisplayBase/EventHolder.h"
 

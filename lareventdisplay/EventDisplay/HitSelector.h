@@ -21,9 +21,9 @@ namespace trkf
 #include "art/Persistency/Common/PtrVector.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Principal/View.h"
-#include "RecoObjects/BezierTrack.h"
+#include "lardata/RecoObjects/BezierTrack.h"
 #endif
-#include "EventDisplay/OrthoProj.h"
+#include "lareventdisplay/EventDisplay/OrthoProj.h"
 
 class TH1F;
 namespace evdb { 

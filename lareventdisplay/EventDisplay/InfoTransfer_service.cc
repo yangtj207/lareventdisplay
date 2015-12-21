@@ -12,9 +12,9 @@
 // Framework includes
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
-#include "Utilities/AssociationUtil.h"
-#include "Utilities/GeometryUtilities.h"
-#include "EventDisplay/InfoTransfer.h"
+#include "lardata/Utilities/AssociationUtil.h"
+#include "lardata/Utilities/GeometryUtilities.h"
+#include "lareventdisplay/EventDisplay/InfoTransfer.h"
 #include "EventDisplayBase/NavState.h"
 
 namespace{

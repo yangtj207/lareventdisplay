@@ -8,7 +8,7 @@
 ////////////////////////////////////////////////////////////////////////
 #include <algorithm>
 
-#include "EventDisplay/TWireProjPad.h"
+#include "lareventdisplay/EventDisplay/TWireProjPad.h"
 #include "TPad.h"
 #include "TH1F.h"
 #include "TString.h"
@@ -22,23 +22,23 @@
 
 #include "EventDisplayBase/View2D.h"
 #include "EventDisplayBase/EventHolder.h"
-#include "Geometry/Geometry.h"
-#include "Geometry/PlaneGeo.h"
-#include "EventDisplay/GeometryDrawer.h"
-#include "EventDisplay/SimulationDrawer.h"
-#include "EventDisplay/RawDataDrawer.h"
-#include "EventDisplay/RecoBaseDrawer.h"
-#include "EventDisplay/HitSelector.h"
-#include "EventDisplay/RawDrawingOptions.h"
-#include "EventDisplay/RecoDrawingOptions.h"
-#include "EventDisplay/EvdLayoutOptions.h"
-#include "EventDisplay/Style.h"
+#include "larcore/Geometry/Geometry.h"
+#include "larcore/Geometry/PlaneGeo.h"
+#include "lareventdisplay/EventDisplay/GeometryDrawer.h"
+#include "lareventdisplay/EventDisplay/SimulationDrawer.h"
+#include "lareventdisplay/EventDisplay/RawDataDrawer.h"
+#include "lareventdisplay/EventDisplay/RecoBaseDrawer.h"
+#include "lareventdisplay/EventDisplay/HitSelector.h"
+#include "lareventdisplay/EventDisplay/RawDrawingOptions.h"
+#include "lareventdisplay/EventDisplay/RecoDrawingOptions.h"
+#include "lareventdisplay/EventDisplay/EvdLayoutOptions.h"
+#include "lareventdisplay/EventDisplay/Style.h"
 #include "TFrame.h"
 
 
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Principal/Event.h"
-#include "Utilities/GeometryUtilities.h"
+#include "lardata/Utilities/GeometryUtilities.h"
 
 namespace {
   

@@ -4,18 +4,18 @@
 /// \author  messier@indiana.edu
 /// \version $Id: DrawingPad.cxx,v 1.2 2010/11/11 18:11:22 p-novaart Exp $:
 ///
-#include "EventDisplay/DrawingPad.h"
+#include "lareventdisplay/EventDisplay/DrawingPad.h"
 #include <iostream>
 #include <vector>
 #include "TPad.h"
 #include "EventDisplayBase/evdb.h"
-#include "EventDisplay/HeaderDrawer.h"
-#include "EventDisplay/GeometryDrawer.h"
-#include "EventDisplay/SimulationDrawer.h"
-#include "EventDisplay/RecoBaseDrawer.h"
-#include "EventDisplay/RawDataDrawer.h"
-#include "EventDisplay/AnalysisBaseDrawer.h"
-#include "EventDisplay/HitSelector.h"
+#include "lareventdisplay/EventDisplay/HeaderDrawer.h"
+#include "lareventdisplay/EventDisplay/GeometryDrawer.h"
+#include "lareventdisplay/EventDisplay/SimulationDrawer.h"
+#include "lareventdisplay/EventDisplay/RecoBaseDrawer.h"
+#include "lareventdisplay/EventDisplay/RawDataDrawer.h"
+#include "lareventdisplay/EventDisplay/AnalysisBaseDrawer.h"
+#include "lareventdisplay/EventDisplay/HitSelector.h"
 
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Principal/Event.h"

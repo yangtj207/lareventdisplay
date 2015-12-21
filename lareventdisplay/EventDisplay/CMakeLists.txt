@@ -9,8 +9,8 @@ cet_rootcint( ${PACKAGE} )
 
 art_make_library( LIBRARY_NAME ${PACKAGE}
         	  SOURCE ${src_files} ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE}Cint.cc
-                  LIBRARIES ColorDrawingOptions_service
-	                    InfoTransfer_service
+                  LIBRARIES lareventdisplay_EventDisplay_ColorDrawingOptions_service
+	                    lareventdisplay_EventDisplay_InfoTransfer_service
 	                    Filters
  			    Simulation
 			    RawData
@@ -48,7 +48,7 @@ simple_plugin ( GraphCluster module
 			${MF_UTILITIES}
 	                ${FHICLCPP}
 			${CETLIB}
-                BASENAME_ONLY
+                
      )
 
 simple_plugin ( EVD module
@@ -64,11 +64,11 @@ simple_plugin ( EVD module
 			${MF_UTILITIES}
 	                ${FHICLCPP}
 			${CETLIB}
-                BASENAME_ONLY
+                
      )
 
 simple_plugin ( AnalysisDrawingOptions service
-			Geometry_service
+			larcore_Geometry_Geometry_service
 			Geometry
 			RecoBase
 			${EVENTDISPLAYBASE}
@@ -86,11 +86,11 @@ simple_plugin ( AnalysisDrawingOptions service
 	                ${FHICLCPP}
 			${CETLIB}
                         ${ROOT_BASIC_LIB_LIST}
-                BASENAME_ONLY
+                
      )
 
 simple_plugin ( ColorDrawingOptions service
-			Geometry_service
+			larcore_Geometry_Geometry_service
 			Geometry
 			RecoBase
 			${EVENTDISPLAYBASE}
@@ -108,11 +108,11 @@ simple_plugin ( ColorDrawingOptions service
 	                ${FHICLCPP}
 			${CETLIB}
                         ${ROOT_BASIC_LIB_LIST}
-                BASENAME_ONLY
+                
      )
 
 simple_plugin ( EvdLayoutOptions service
-			Geometry_service
+			larcore_Geometry_Geometry_service
 			Geometry
 			RecoBase
 			${EVENTDISPLAYBASE}
@@ -130,11 +130,11 @@ simple_plugin ( EvdLayoutOptions service
 	                ${FHICLCPP}
 			${CETLIB}
                         ${ROOT_BASIC_LIB_LIST}
-                BASENAME_ONLY
+                
      )
 
 simple_plugin ( InfoTransfer service
-			Geometry_service
+			larcore_Geometry_Geometry_service
 			Geometry
 			RecoBase
 			${EVENTDISPLAYBASE}
@@ -152,11 +152,11 @@ simple_plugin ( InfoTransfer service
 	                ${FHICLCPP}
 			${CETLIB}
                         ${ROOT_BASIC_LIB_LIST}
-                BASENAME_ONLY
+                
      )
 
 simple_plugin ( RawDrawingOptions service
-			Geometry_service
+			larcore_Geometry_Geometry_service
 			Geometry
 			RecoBase
 			${EVENTDISPLAYBASE}
@@ -174,11 +174,11 @@ simple_plugin ( RawDrawingOptions service
 	                ${FHICLCPP}
 			${CETLIB}
                         ${ROOT_BASIC_LIB_LIST}
-                BASENAME_ONLY
+                
      )
 
 simple_plugin ( RecoDrawingOptions service
-			Geometry_service
+			larcore_Geometry_Geometry_service
 			Geometry
 			RecoBase
 			${EVENTDISPLAYBASE}
@@ -197,11 +197,11 @@ simple_plugin ( RecoDrawingOptions service
 	                ${FHICLCPP}
 			${CETLIB}
                         ${ROOT_BASIC_LIB_LIST}
-                BASENAME_ONLY
+                
      )
 
 simple_plugin ( SimulationDrawingOptions service
-			Geometry_service
+			larcore_Geometry_Geometry_service
 			Geometry
 			RecoBase
 			${EVENTDISPLAYBASE}
@@ -219,7 +219,7 @@ simple_plugin ( SimulationDrawingOptions service
 	                ${FHICLCPP}
 			${CETLIB}
                         ${ROOT_BASIC_LIB_LIST}
-                BASENAME_ONLY
+                
      )
 
 install_headers()

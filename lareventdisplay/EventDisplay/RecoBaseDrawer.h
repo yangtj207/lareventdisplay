@@ -22,7 +22,7 @@ namespace art {
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Principal/View.h"
 #endif
-#include "EventDisplay/OrthoProj.h"
+#include "lareventdisplay/EventDisplay/OrthoProj.h"
 
 class TVector3;
 class TH1F;

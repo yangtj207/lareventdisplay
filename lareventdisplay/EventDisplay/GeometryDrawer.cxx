@@ -8,10 +8,10 @@
 #include "TBox.h"
 #include "TText.h"
 
-#include "Geometry/Geometry.h"
+#include "larcore/Geometry/Geometry.h"
 #include "EventDisplayBase/View2D.h"
 #include "EventDisplayBase/View3D.h"
-#include "EventDisplay/GeometryDrawer.h"
+#include "lareventdisplay/EventDisplay/GeometryDrawer.h"
 
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 

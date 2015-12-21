@@ -17,13 +17,13 @@
 #include "cetlib/exception.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 
-#include "EventDisplay/Ortho3DPad.h"
-#include "EventDisplay/SimulationDrawer.h"
-#include "EventDisplay/RecoBaseDrawer.h"
+#include "lareventdisplay/EventDisplay/Ortho3DPad.h"
+#include "lareventdisplay/EventDisplay/SimulationDrawer.h"
+#include "lareventdisplay/EventDisplay/RecoBaseDrawer.h"
 #include "EventDisplayBase/View2D.h"
 #include "EventDisplayBase/EventHolder.h"
-#include "Geometry/Geometry.h"
-#include "Geometry/TPCGeo.h"
+#include "larcore/Geometry/Geometry.h"
+#include "larcore/Geometry/TPCGeo.h"
 
 /// Define static data members.
 

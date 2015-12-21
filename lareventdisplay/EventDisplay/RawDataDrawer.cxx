@@ -67,22 +67,22 @@
 #include "TFrame.h"
 #include "TVirtualPad.h"
 
-#include "EventDisplay/RawDataDrawer.h"
+#include "lareventdisplay/EventDisplay/RawDataDrawer.h"
 #include "EventDisplayBase/View2D.h"
 #include "EventDisplayBase/EventHolder.h"
-#include "EventDisplay/ColorDrawingOptions.h"
-#include "EventDisplay/RawDrawingOptions.h"
-#include "RawData/raw.h"
-#include "RawData/RawDigit.h"
-#include "CalibrationDBI/Interface/ChannelStatusService.h"
-#include "CalibrationDBI/Interface/ChannelStatusProvider.h"
-#include "Geometry/CryostatGeo.h"
-#include "Geometry/TPCGeo.h"
-#include "Geometry/PlaneGeo.h"
-#include "Utilities/StatCollector.h" // lar::util::MinMaxCollector<>
-#include "Geometry/Geometry.h"
-#include "DetectorInfoServices/LArPropertiesService.h"
-#include "DetectorInfoServices/DetectorPropertiesService.h"
+#include "lareventdisplay/EventDisplay/ColorDrawingOptions.h"
+#include "lareventdisplay/EventDisplay/RawDrawingOptions.h"
+#include "lardata/RawData/raw.h"
+#include "lardata/RawData/RawDigit.h"
+#include "larevt/CalibrationDBI/Interface/ChannelStatusService.h"
+#include "larevt/CalibrationDBI/Interface/ChannelStatusProvider.h"
+#include "larcore/Geometry/CryostatGeo.h"
+#include "larcore/Geometry/TPCGeo.h"
+#include "larcore/Geometry/PlaneGeo.h"
+#include "lardata/Utilities/StatCollector.h" // lar::util::MinMaxCollector<>
+#include "larcore/Geometry/Geometry.h"
+#include "lardata/DetectorInfoServices/LArPropertiesService.h"
+#include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 
 
 #include "art/Utilities/InputTag.h"
@@ -91,8 +91,8 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Persistency/Common/Ptr.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
-#include "CalibrationDBI/Interface/DetPedestalService.h"
-#include "CalibrationDBI/Interface/DetPedestalProvider.h"
+#include "larevt/CalibrationDBI/Interface/DetPedestalService.h"
+#include "larevt/CalibrationDBI/Interface/DetPedestalProvider.h"
 
 
 // internal use classes declaration;

@@ -7,8 +7,8 @@
 // Framework includes
 
 /// LArSoft includes
-#include "EventDisplay/ColorDrawingOptions.h"
-#include "EventDisplay/RawDrawingOptions.h"
+#include "lareventdisplay/EventDisplay/ColorDrawingOptions.h"
+#include "lareventdisplay/EventDisplay/RawDrawingOptions.h"
 
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Principal/Event.h"

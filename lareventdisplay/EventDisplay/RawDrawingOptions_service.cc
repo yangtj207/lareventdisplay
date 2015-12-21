@@ -7,8 +7,8 @@
 // Framework includes
 
 /// LArSoft includes
-#include "EventDisplay/RawDrawingOptions.h"
-#include "Filters/ChannelFilter.h"
+#include "lareventdisplay/EventDisplay/RawDrawingOptions.h"
+#include "larevt/Filters/ChannelFilter.h"
 
 #include <iostream>
 

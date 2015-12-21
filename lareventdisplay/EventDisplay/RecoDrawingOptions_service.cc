@@ -7,7 +7,7 @@
 // Framework includes
 
 /// LArSoft includes
-#include "EventDisplay/RecoDrawingOptions.h"
+#include "lareventdisplay/EventDisplay/RecoDrawingOptions.h"
 
 #include <iostream>
 

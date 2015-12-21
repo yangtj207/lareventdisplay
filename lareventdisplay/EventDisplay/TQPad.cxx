@@ -4,7 +4,7 @@
 /// \author  messier@indiana.edu
 /// \version $Id: TQPad.cxx,v 1.2 2010/11/11 18:11:22 p-novaart Exp $
 ///
-#include "EventDisplay/TQPad.h"
+#include "lareventdisplay/EventDisplay/TQPad.h"
 
 #include "TBox.h"
 #include "TH1F.h"
@@ -17,14 +17,14 @@
 
 #include "EventDisplayBase/View2D.h"
 #include "EventDisplayBase/EventHolder.h"
-#include "EventDisplay/RawDrawingOptions.h"
-#include "EventDisplay/ColorDrawingOptions.h"
-#include "EventDisplay/RawDataDrawer.h"
-#include "EventDisplay/RecoBaseDrawer.h"
-#include "Geometry/Geometry.h"
-#include "Geometry/CryostatGeo.h"
-#include "Geometry/TPCGeo.h"
-#include "Geometry/PlaneGeo.h"
+#include "lareventdisplay/EventDisplay/RawDrawingOptions.h"
+#include "lareventdisplay/EventDisplay/ColorDrawingOptions.h"
+#include "lareventdisplay/EventDisplay/RawDataDrawer.h"
+#include "lareventdisplay/EventDisplay/RecoBaseDrawer.h"
+#include "larcore/Geometry/Geometry.h"
+#include "larcore/Geometry/CryostatGeo.h"
+#include "larcore/Geometry/TPCGeo.h"
+#include "larcore/Geometry/PlaneGeo.h"
 
 namespace evd{
 

@@ -47,6 +47,7 @@ public:
     bool fUseHitSelector;
     bool fSkeletonOnly;
     bool fBestPCAAxisOnly;
+    bool fDrawTrackVertexAssns;
     
     std::vector<std::string> fWireLabels;           ///< module labels that produced wires
     std::vector<std::string> fHitLabels;     		///< module labels that produced hits  		       
@@ -62,7 +63,10 @@ public:
     std::vector<std::string> fOpFlashLabels;        ///< module labels that produced events
     std::vector<std::string> fSeedLabels;       	///< module labels that produced events                
     std::vector<std::string> fBezierTrackLabels;    ///< module labels that produced events
-    std::vector<std::string> fCosmicTagLabels;	    ///< module labes that produced cosmic tags
+    std::vector<std::string> fCosmicTagLabels;	    ///< module labels that produced cosmic tags
+    std::vector<std::string> fTrkVtxTrackLabels;    ///< module labels that produced tracks (Track/Vertex module)
+    std::vector<std::string> fTrkVtxCosmicLabels;   ///< module labels that tagged track as CR (Track/Vertex module)
+    std::vector<std::string> fTrkVtxFilterLabels;   ///< module labels that filtered event (Track/Vertex module)
 
 
     ///\todo Why are calorimetry related drawing options in RecoDrawingOptions instead of a separate service?

@@ -295,7 +295,7 @@ void RecoBaseDrawer::Hit2D(const art::Event& evt,
 			                 int                            color,
 			                 evdb::View2D*                  view,
                              bool                           drawConnectingLines,
-			                 float                          cscore)
+                             int                            lineWidth)
   {
     art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
@@ -328,16 +328,9 @@ void RecoBaseDrawer::Hit2D(const art::Event& evt,
                 l.SetBit(kCannotPick);
             }
             b1.SetFillStyle(0);
-            b1.SetLineColor(color);
             b1.SetBit(kCannotPick);
-	    if(cscore>0.1 && recoOpt->fDrawCosmicTags) {
-	      b1.SetLineColor(kRed);
-	      if(cscore<0.6) b1.SetLineColor(kMagenta);
-	      b1.SetLineWidth(3);
-	    }
-	    if (cscore<-10000){ //shower hits
-	      b1.SetLineWidth(3);
-	    }
+            b1.SetLineColor(color);
+            b1.SetLineWidth(lineWidth);
         }
         else{
             TBox& b1 = view->AddBox(time-0.5, w-0.5, time+0.5, w+0.5);
@@ -347,16 +340,9 @@ void RecoBaseDrawer::Hit2D(const art::Event& evt,
                 l.SetBit(kCannotPick);
             }
             b1.SetFillStyle(0);
-            b1.SetLineColor(color);
             b1.SetBit(kCannotPick);
-	    if(cscore>0.1 && recoOpt->fDrawCosmicTags) {
-	      b1.SetLineColor(kRed);
-	      if(cscore<0.6) b1.SetLineColor(kMagenta);
-	      b1.SetLineWidth(3);
-	    }
-	    if (cscore<-10000){ //shower hits
-	      b1.SetLineWidth(3);
-	    }
+            b1.SetLineColor(color);
+            b1.SetLineWidth(lineWidth);
         }
         wold = w;
         timeold = time;
@@ -1100,41 +1086,40 @@ void RecoBaseDrawer::GetClusterOutlines(std::vector<const recob::Hit*>& hits,
 
   //......................................................................
   void RecoBaseDrawer::DrawProng2D(std::vector<const recob::Hit*>&     hits,
-				   evdb::View2D*                       view, 
-				   unsigned int                        plane,
-				   TVector3                     const& startPos,
-				   TVector3                     const& startDir,	
-				   int                                 id,
-				   float cscore)   
+                                   evdb::View2D*                       view,
+                                   unsigned int                        plane,
+                                   TVector3                     const& startPos,
+                                   TVector3                     const& startDir,
+                                   int                                 id,
+                                   float                               cscore)
   {
-    art::ServiceHandle<util::DetectorProperties> detprop;
-    art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
-    art::ServiceHandle<geo::Geometry>            geo;
-    art::ServiceHandle<util::LArProperties>      larp;
+    art::ServiceHandle<util::DetectorProperties>  detprop;
+    art::ServiceHandle<evd::RawDrawingOptions>    rawOpt;
+      art::ServiceHandle<evd::RecoDrawingOptions> recoOpt;
+    art::ServiceHandle<geo::Geometry>             geo;
+    art::ServiceHandle<util::LArProperties>       larp;
     unsigned int c = rawOpt->fCryostat;
     unsigned int t = rawOpt->fTPC;
+      
+    int          color(evd::kColor2[id%evd::kNCOLS]);
+    int          lineWidth(1);
+      
+    if(cscore>0.1 && recoOpt->fDrawCosmicTags)
+    {
+        color = kRed;
+        if(cscore<0.6) color = kMagenta;
+        lineWidth = 3;
+    }
+    else if (cscore<-10000){ //shower hits
+        lineWidth = 3;
+    }
 
     // first draw the hits
     if (cscore<-1000) //shower
-      this->Hit2D(hits, evd::kColor2[id%evd::kNCOLS], view, false, cscore);
+      this->Hit2D(hits, color, view, false, lineWidth);
     else
-      this->Hit2D(hits, evd::kColor[id%evd::kNCOLS], view, false, cscore);
+      this->Hit2D(hits, color, view, false, lineWidth);
 
-    double tick0 = detprop->ConvertXToTicks(startPos.X(), plane, t, c);
-    double wire0 = geo->WireCoordinate(startPos.Y(),startPos.Z(),plane,t,c);
-
-    double tick1 = detprop->ConvertXToTicks((startPos+startDir).X(),plane,t,c);
-    double wire1 = geo->WireCoordinate((startPos+startDir).Y(),
-				       (startPos+startDir).Z(),plane,t,c);
-
-    double cost = 0;
-    double cosw = 0;
-    double ds = sqrt(pow(tick0-tick1,2)+pow(wire0-wire1,2));
-    if (ds){
-      cost = (tick1-tick0)/ds;
-      cosw = (wire1-wire0)/ds;
-    }
-    /*
     // prepare to draw prongs
     double local[3] = {0.};
     double world[3] = {0.};
@@ -1167,8 +1152,8 @@ void RecoBaseDrawer::GetClusterOutlines(std::vector<const recob::Hit*>& hits,
     double yprime = std::cos(rotang)*startDir[1]
                    +std::sin(rotang)*startDir[2];
     double dTdW = startDir[0]*wirePitch/driftvelocity/timetick/yprime;
-    */
-    this->Draw2DSlopeEndPoints(wire0, tick0, cosw, cost, evd::kColor[id%evd::kNCOLS], view);
+  
+    this->Draw2DSlopeEndPoints(wire, tick, dTdW, evd::kColor[id%evd::kNCOLS], view);
 
     return;
 }
@@ -1178,18 +1163,19 @@ void RecoBaseDrawer::DrawTrack2D(std::vector<const recob::Hit*>& hits,
                                  evdb::View2D*                   view,
                                  unsigned int                    plane,
                                  const recob::Track*             track,
-                                 int                             id, 
-				                 float                           cscore)
+                                 int                             color,
+				                 int                             lineWidth)
 {
     art::ServiceHandle<util::DetectorProperties> detprop;
     art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
+    art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
     art::ServiceHandle<geo::Geometry>            geo;
     art::ServiceHandle<util::LArProperties>      larp;
     unsigned int c = rawOpt->fCryostat;
     unsigned int t = rawOpt->fTPC;
     
     // first draw the hits
-    this->Hit2D(hits, evd::kColor[(id)%evd::kNCOLS], view, true, cscore);
+    this->Hit2D(hits, color, view, true, lineWidth);
     
     const TVector3& startPos = track->Vertex();
     const TVector3& startDir = track->VertexDirection();
@@ -1227,7 +1213,7 @@ void RecoBaseDrawer::DrawTrack2D(std::vector<const recob::Hit*>& hits,
     +std::sin(rotang)*startDir[2];
     double dTdW = startDir[0]*wirePitch/driftvelocity/timetick/yprime;
     
-    this->Draw2DSlopeEndPoints(wire, tick, dTdW, evd::kColor[(id)%evd::kNCOLS], view);
+    this->Draw2DSlopeEndPoints(wire, tick, dTdW, color, view);
     
     // Draw a line to the hit positions, starting from the vertex
     size_t     nTrackHits = track->NumberTrajectoryPoints();
@@ -1257,18 +1243,170 @@ void RecoBaseDrawer::DrawTrack2D(std::vector<const recob::Hit*>& hits,
     return;
 }
     
+    
+    //......................................................................
+    void RecoBaseDrawer::Prong2D(const art::Event& evt,
+                                 evdb::View2D*     view,
+                                 unsigned int      plane)
+    {
+        art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
+        art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
+        art::ServiceHandle<geo::Geometry>            geo;
+        art::ServiceHandle<util::DetectorProperties> detprop;
+        
+        if(rawOpt->fDrawRawDataOrCalibWires < 1) return;
+        
+        geo::View_t gview = geo->TPC(rawOpt->fTPC).Plane(plane).View();
+        
+        // annoying for now, but have to have multiple copies of basically the
+        // same code to draw prongs, showers and tracks so that we can use
+        // the art::Assns to get the hits and clusters.
+        
+        unsigned int cstat = rawOpt->fCryostat;
+        unsigned int tpc   = rawOpt->fTPC;
+        int          tid   = 0;
+        
+        if(recoOpt->fDrawTracks != 0)
+        {
+            for(size_t imod = 0; imod < recoOpt->fTrackLabels.size(); ++imod)
+            {
+                std::string const which = recoOpt->fTrackLabels[imod];
+                
+                art::View<recob::Track> track;
+                this->GetTracks(evt, which, track);
+                
+                if(track.vals().size() < 1) continue;
+                
+                art::FindMany<recob::Hit> fmh(track, evt, which);
+                
+                std::string const whichTag( recoOpt->fCosmicTagLabels.size() > imod ? recoOpt->fCosmicTagLabels[imod] : "");
+                art::FindManyP<anab::CosmicTag> cosmicTrackTags( track, evt, whichTag );
+                
+                // loop over the prongs and get the clusters and hits associated with
+                // them.  only keep those that are in this view
+                for(size_t t = 0; t < track.vals().size(); ++t)
+                {
+                    if(recoOpt->fDrawTracks > 1)
+                    {
+                        // BB: draw the track ID at the end of the track
+                        double x = track.vals().at(t)->End()(0);
+                        double y = track.vals().at(t)->End()(1);
+                        double z = track.vals().at(t)->End()(2);
+                        double tick = 30 + detprop->ConvertXToTicks(x, plane, tpc, cstat);
+                        double wire = geo->WireCoordinate(y, z, plane, tpc, cstat);
+                        tid = track.vals().at(t)->ID();
+                        std::string s = std::to_string(tid);
+                        char const* txt = s.c_str();
+                        TText& trkID = view->AddText(wire, tick, txt);
+                        trkID.SetTextColor(evd::kColor[tid%evd::kNCOLS]);
+                        trkID.SetTextSize(0.1);
+                    }
+                    
+                    std::vector<const recob::Hit*> hits = fmh.at(t);
+                    
+                    float Score = -999;
+                    if( cosmicTrackTags.isValid() ){
+                        if( cosmicTrackTags.at(t).size() > 0 ) {
+                            art::Ptr<anab::CosmicTag> currentTag = cosmicTrackTags.at(t).at(0);
+                            Score = currentTag->CosmicScore();
+                        }
+                    }
+                    
+                    // only get the hits for the current view
+                    std::vector<const recob::Hit*>::iterator itr = hits.begin();
+                    while(itr < hits.end()){
+                        if((*itr)->View() != gview) hits.erase(itr);
+                        else itr++;
+                    }
+                    
+                    //this->DrawProng2D(hits, view, plane,
+                    //                  track.vals().at(t)->Vertex(),
+                    //                  track.vals().at(t)->VertexDirection(),
+                    //                  track.vals().at(t)->ID());
+                    const recob::Track* aTrack(track.vals().at(t));
+                    int   color(evd::kColor[(aTrack->ID())%evd::kNCOLS]);
+                    int   lineWidth(1);
+                    
+                    if(Score>0.1 && recoOpt->fDrawCosmicTags)
+                    {
+                        color = kRed;
+                        if(Score<0.6) color = kMagenta;
+                        lineWidth = 3;
+                    }
+                    else if (Score<-10000){ //shower hits
+                        lineWidth = 3;
+                    }
+                    
+                    this->DrawTrack2D(hits, view, plane,
+                                      aTrack,
+                                      color, lineWidth);
+                }// end loop over prongs
+            }// end loop over labels
+        }// end draw tracks
+        
+        if(recoOpt->fDrawShowers != 0){
+            for(size_t imod = 0; imod < recoOpt->fShowerLabels.size(); ++imod){
+                std::string const which = recoOpt->fShowerLabels[imod];
+                
+                art::View<recob::Shower> shower;
+                this->GetShowers(evt, which, shower);
+                
+                if(shower.vals().size() < 1) continue;
+                
+                art::FindMany<recob::Hit>     fmh(shower, evt, which);
+                
+                // loop over the prongs and get the clusters and hits associated with
+                // them.  only keep those that are in this view
+                for(size_t s = 0; s < shower.vals().size(); ++s){
+                    std::vector<const recob::Hit*> hits = fmh.at(s);
+                    
+                    // only get the hits for the current view
+                    std::vector<const recob::Hit*>::iterator itr = hits.begin();
+                    while(itr < hits.end()){
+                        if((*itr)->View() != gview) hits.erase(itr);
+                        else itr++;
+                    }
+                    
+                    // sort the hits
+                    std::sort(hits.begin(), hits.end());
+                    
+                    // use the first hit in the collection until
+                    // we start filling shower vertex points
+                    // get the center of the first hit for now
+                    // to get the y and z position
+                    double wireXYZ[3] = {0.};
+                    unsigned int cstat = hits.front()->WireID().Cryostat;
+                    unsigned int tpc   = hits.front()->WireID().TPC;
+                    unsigned int plane = hits.front()->WireID().Plane;
+                    unsigned int wire  = hits.front()->WireID().Wire;
+                    geo->Cryostat(cstat).TPC(tpc).Plane(plane).Wire(wire).GetCenter(wireXYZ);
+                    TVector3 startPos(detprop->ConvertTicksToX(hits.front()->PeakTime(),
+                                                               plane, rawOpt->fTPC, rawOpt->fCryostat),
+                                      wireXYZ[1], wireXYZ[2]);
+                    
+                    this->DrawProng2D(hits, view, plane,
+                                      startPos,
+                                      shower.vals().at(s)->Direction(),
+                                      shower.vals().at(s)->ID(), 
+                                      -10001); //use -10001 to increase shower hit size
+                }// end loop over prongs
+            }// end loop over labels
+        }// end draw showers
+        
+        return;
+    }
 
 //......................................................................
-void RecoBaseDrawer::Prong2D(const art::Event& evt,
-                             evdb::View2D*     view,
-                             unsigned int      plane)
+void RecoBaseDrawer::DrawTrackVertexAssns2D(const art::Event& evt,
+                                            evdb::View2D*     view,
+                                            unsigned int      plane)
 {    
     art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
     art::ServiceHandle<geo::Geometry>            geo;
     art::ServiceHandle<util::DetectorProperties> detprop;
 
-    if(rawOpt->fDrawRawDataOrCalibWires < 1) return;
+    if(!recoOpt->fDrawTrackVertexAssns) return;
 
     geo::View_t gview = geo->TPC(rawOpt->fTPC).Plane(plane).View();
 
@@ -1280,120 +1418,117 @@ void RecoBaseDrawer::Prong2D(const art::Event& evt,
     unsigned int tpc   = rawOpt->fTPC;
     int          tid   = 0;
 
-    if(recoOpt->fDrawTracks != 0)
+    for(size_t imod = 0; imod < recoOpt->fTrkVtxTrackLabels.size(); ++imod)
     {
-        for(size_t imod = 0; imod < recoOpt->fTrackLabels.size(); ++imod)
+        std::string const which = recoOpt->fTrkVtxTrackLabels[imod];
+
+        art::View<recob::Track> trackCol;
+        this->GetTracks(evt, which, trackCol);
+
+        if(trackCol.vals().size() < 1) continue;
+
+        // Recover associations output from the filter
+        std::unique_ptr<art::Assns<recob::Vertex, recob::Track> > vertexTrackAssociations(new art::Assns<recob::Vertex, recob::Track>);
+        
+        // Recover a handle to the collection of associations between vertices and tracks
+        // This is a bit non-standard way to do this but trying to avoid complications
+        art::Handle< art::Assns<recob::Vertex, recob::Track> > vertexTrackAssnsHandle;
+        
+        evt.getByLabel(recoOpt->fTrkVtxFilterLabels[imod], vertexTrackAssnsHandle);
+        
+        if (vertexTrackAssnsHandle->size() < 1) continue;
+        
+        // Get the rest of the associations in the standard way
+        art::FindMany<recob::Hit> fmh(trackCol, evt, which);
+
+        art::FindManyP<anab::CosmicTag> cosmicTrackTags( trackCol, evt, recoOpt->fTrkVtxCosmicLabels[imod] );
+        
+        // Need to keep track of vertices unfortunately
+        int lastVtxIdx(-1);
+        int color(kRed);
+        
+        std::cout << "==> Neutrino Candidate drawing for tagger " << recoOpt->fTrkVtxFilterLabels[imod] << std::endl;
+        
+        // Now we can iterate over the vertex/track associations and do some drawing
+        for(const auto& vertexTrackAssn : *vertexTrackAssnsHandle)
         {
-            std::string const which = recoOpt->fTrackLabels[imod];
-
-            art::View<recob::Track> track;
-            this->GetTracks(evt, which, track);
-
-            if(track.vals().size() < 1) continue;
-
-            art::FindMany<recob::Hit> fmh(track, evt, which);
-
-            std::string const whichTag( recoOpt->fCosmicTagLabels.size() > imod ? recoOpt->fCosmicTagLabels[imod] : "");
-            art::FindManyP<anab::CosmicTag> cosmicTrackTags( track, evt, whichTag );
-
-            // loop over the prongs and get the clusters and hits associated with
-            // them.  only keep those that are in this view
-            for(size_t t = 0; t < track.vals().size(); ++t)
+            // Start by drawing the vertex
+            art::Ptr<recob::Vertex> vertex = vertexTrackAssn.first;
+            
+            if (vertex->ID() != lastVtxIdx)
             {
-                if(recoOpt->fDrawTracks > 1)
-                {
-                    // BB: draw the track ID at the end of the track
-                    double x = track.vals().at(t)->End()(0);
-                    double y = track.vals().at(t)->End()(1);
-                    double z = track.vals().at(t)->End()(2);
-                    double tick = 30 + detprop->ConvertXToTicks(x, plane, tpc, cstat);
-                    double wire = geo->WireCoordinate(y, z, plane, tpc, cstat);
-                    tid = track.vals().at(t)->ID();
-                    std::string s = std::to_string(tid);
-                    char const* txt = s.c_str();
-                    TText& trkID = view->AddText(wire, tick, txt);
-                    trkID.SetTextColor(evd::kColor[tid%evd::kNCOLS]);
-                }
-	  
-                std::vector<const recob::Hit*> hits = fmh.at(t);
+                // BB: draw polymarker at the vertex position in this plane
+                double xyz[3];
+            
+                vertex->XYZ(xyz);
+            
+                double wire  = geo->WireCoordinate(xyz[1], xyz[2], plane, rawOpt->fTPC, rawOpt->fCryostat);
+                double time  = detprop->ConvertXToTicks(xyz[0], plane, rawOpt->fTPC, rawOpt->fCryostat);
                 
-		float Score = -999;
-                if( cosmicTrackTags.isValid() ){
-		  if( cosmicTrackTags.at(t).size() > 0 ) {
-		    art::Ptr<anab::CosmicTag> currentTag = cosmicTrackTags.at(t).at(0);
-		    Score = currentTag->CosmicScore();
-		  }
+//                color = evd::kColor[vertex->ID()%evd::kNCOLS];
+            
+                TMarker& strt = view->AddMarker(wire, time, color, 24, 3.0);
+                strt.SetMarkerColor(color);
+                
+                std::cout << "    --> Drawing vertex id: " << vertex->ID() << std::endl;
+            }
+            
+            lastVtxIdx = vertex->ID();
+            
+            const art::Ptr<recob::Track>& track = vertexTrackAssn.second;
+            
+            // BB: draw the track ID at the end of the track
+            double x    = track->End()(0);
+            double y    = track->End()(1);
+            double z    = track->End()(2);
+            double tick = 30 + detprop->ConvertXToTicks(x, plane, tpc, cstat);
+            double wire = geo->WireCoordinate(y, z, plane, tpc, cstat);
+            
+            tid = track->ID();
+            
+            std::cout << "        --> Drawing Track id: " << tid << std::endl;
+            
+            std::string s   = std::to_string(tid);
+            char const* txt = s.c_str();
+            
+            TText& trkID = view->AddText(wire, tick, txt);
+            trkID.SetTextColor(color);
+            trkID.SetTextSize(0.1);
+	
+            std::vector<const recob::Hit*> hits = fmh.at(track->ID());
+            
+            float cosmicScore = -999;
+            if( cosmicTrackTags.isValid() ){
+                if( cosmicTrackTags.at(track->ID()).size() > 0 ) {
+                    art::Ptr<anab::CosmicTag> currentTag = cosmicTrackTags.at(track.key()).at(0);
+                    cosmicScore = currentTag->CosmicScore();
                 }
+            }
+            
+            // only get the hits for the current view
+            std::vector<const recob::Hit*>::iterator itr = hits.begin();
+            while(itr < hits.end()){
+                if((*itr)->View() != gview) hits.erase(itr);
+                else itr++;
+            }
+            
+            int lineWidth(1);
+            
+            if(cosmicScore>0.1)
+            {
+                color = kRed;
+                if(cosmicScore<0.6) color = kMagenta;
+                lineWidth = 3;
+            }
+            else if (cosmicScore<-10000){ //shower hits
+                lineWidth = 3;
+            }
 
-
-                // only get the hits for the current view
-                std::vector<const recob::Hit*>::iterator itr = hits.begin();
-                while(itr < hits.end()){
-                    if((*itr)->View() != gview) hits.erase(itr);
-                    else itr++;
-                }
-
-                //this->DrawProng2D(hits, view, plane,
-                //                  track.vals().at(t)->Vertex(),
-                //                  track.vals().at(t)->VertexDirection(),
-                //                  track.vals().at(t)->ID());
-                const recob::Track* aTrack(track.vals().at(t));
-                this->DrawTrack2D(hits, view, plane,
-                                  aTrack,
-                                  aTrack->ID(), Score);
-            }// end loop over prongs
-        }// end loop over labels
-    }// end draw tracks
-
-    if(recoOpt->fDrawShowers != 0){
-        for(size_t imod = 0; imod < recoOpt->fShowerLabels.size(); ++imod){
-            std::string const which = recoOpt->fShowerLabels[imod];
-
-            art::View<recob::Shower> shower;
-            this->GetShowers(evt, which, shower);
-
-            if(shower.vals().size() < 1) continue;
-
-            art::FindMany<recob::Hit>     fmh(shower, evt, which);
-
-            // loop over the prongs and get the clusters and hits associated with
-            // them.  only keep those that are in this view
-            for(size_t s = 0; s < shower.vals().size(); ++s){
-	      
-                std::vector<const recob::Hit*> hits = fmh.at(s);
-                // only get the hits for the current view
-                std::vector<const recob::Hit*>::iterator itr = hits.begin();
-                while(itr < hits.end()){
-                    if((*itr)->View() != gview) hits.erase(itr);
-                    else itr++;
-                }
-		/*
-                // sort the hits
-                std::sort(hits.begin(), hits.end());
-
-                // use the first hit in the collection until
-                // we start filling shower vertex points
-                // get the center of the first hit for now
-                // to get the y and z position
-                double wireXYZ[3] = {0.};
-                unsigned int cstat = hits.front()->WireID().Cryostat;
-                unsigned int tpc   = hits.front()->WireID().TPC;
-                unsigned int plane = hits.front()->WireID().Plane;
-                unsigned int wire  = hits.front()->WireID().Wire;
-                geo->Cryostat(cstat).TPC(tpc).Plane(plane).Wire(wire).GetCenter(wireXYZ);
-                TVector3 startPos(detprop->ConvertTicksToX(hits.front()->PeakTime(),
-                                                           plane, rawOpt->fTPC, rawOpt->fCryostat),
-                                                           wireXYZ[1], wireXYZ[2]);
-	      */
-                this->DrawProng2D(hits, view, plane,
-                                  //startPos,
-                                  shower.vals().at(s)->ShowerStart(),
-                                  shower.vals().at(s)->Direction(),
-                                  shower.vals().at(s)->ID(), 
-				  -10001); //use -10001 to increase shower hit size
-            }// end loop over prongs
-        }// end loop over labels
-    }// end draw showers
+            this->DrawTrack2D(hits, view, plane, track.get(), color, lineWidth);
+            
+        }// end loop over vertex/track associations
+        
+    }// end loop over labels
 
     return;
 }
@@ -1421,14 +1556,21 @@ void RecoBaseDrawer::Vertex2D(const art::Event& evt,
       if(vertex.size() < 1) continue;
 
       for(size_t v = 0; v < vertex.size(); ++v){
-        // BB: draw polymarker at the vertex position in this plane
-        double xyz[3];
-        vertex[v]->XYZ(xyz);
-        double wire = geo->WireCoordinate(xyz[1], xyz[2], plane, rawOpt->fTPC, rawOpt->fCryostat);
-        double time = detprop->ConvertXToTicks(xyz[0], plane, rawOpt->fTPC, rawOpt->fCryostat);
-        int color  = evd::kColor[vertex[v]->ID()%evd::kNCOLS];
-        TMarker& strt = view->AddMarker(wire, time, color, 24, 1.0);
-        strt.SetMarkerColor(color);
+          // BB: draw polymarker at the vertex position in this plane
+          double xyz[3];
+          vertex[v]->XYZ(xyz);
+          double wire = geo->WireCoordinate(xyz[1], xyz[2], plane, rawOpt->fTPC, rawOpt->fCryostat);
+          double time = detprop->ConvertXToTicks(xyz[0], plane, rawOpt->fTPC, rawOpt->fCryostat);
+          int color  = evd::kColor[vertex[v]->ID()%evd::kNCOLS];
+          TMarker& strt = view->AddMarker(wire, time, color, 24, 1.0);
+          strt.SetMarkerColor(color);
+          
+          // BB: draw the vertex ID
+          std::string s = std::to_string(vertex[v]->ID());
+          char const* txt = s.c_str();
+          TText& vtxID = view->AddText(wire, time+10, txt);
+          vtxID.SetTextColor(color);
+          vtxID.SetTextSize(0.1);
       } // end loop over vertices to draw from this label
     } // end loop over vertex module lables
     
@@ -2981,8 +3123,8 @@ void RecoBaseDrawer::DrawPFParticleOrtho(const art::Ptr<recob::PFParticle>&     
       const art::Handle<std::vector<recob::Shower> > handle = ih;
       if(handle.isValid()) {
 	const std::string& which = handle.provenance()->moduleLabel();
-	
 	art::FindMany<recob::SpacePoint> fmsp(handle, *evt, which);
+	if (!fmsp.isValid()) continue;
 	int n = handle->size();
 	for(int i=0; i<n; ++i) {
 	  art::Ptr<recob::Shower> p(handle, i);

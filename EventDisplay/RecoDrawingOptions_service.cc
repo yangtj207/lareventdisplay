@@ -48,6 +48,7 @@ void RecoDrawingOptions::reconfigure(fhicl::ParameterSet const& pset)
     fUseHitSelector            = pset.get< bool                     >("UseHitSelector"           );
     fSkeletonOnly              = pset.get< bool                     >("DrawSkeleton3DHitsOnly"   );
     fBestPCAAxisOnly           = pset.get< bool                     >("DrawBestPCAAxisOnly"      );
+    fDrawTrackVertexAssns      = pset.get< bool                     >("DrawTrackVertexAssns"     );
     fHitLabels                 = pset.get< std::vector<std::string> >("HitModuleLabels"          );
     fSpacePointLabels 	       = pset.get< std::vector<std::string> >("SpacePointModuleLabels"	 );
     fProngLabels      	       = pset.get< std::vector<std::string> >("ProngModuleLabels"     	 );
@@ -60,6 +61,9 @@ void RecoDrawingOptions::reconfigure(fhicl::ParameterSet const& pset)
     fOpFlashLabels             = pset.get< std::vector<std::string> >("OpFlashModuleLabels"      );
     fSeedLabels       	       = pset.get< std::vector<std::string> >("SeedModuleLabels"      	 );
     fBezierTrackLabels         = pset.get< std::vector<std::string> >("BezierTrackModuleLabels"  );
+    fTrkVtxTrackLabels         = pset.get< std::vector<std::string> >("TrkVtxTrackLabels"        );
+    fTrkVtxCosmicLabels        = pset.get< std::vector<std::string> >("TrkVtxCosmicLabels"       );
+    fTrkVtxFilterLabels        = pset.get< std::vector<std::string> >("TrkVtxFilterLabels"       );
 
     fEventLabels      	       = pset.get< std::vector<std::string> >("EventModuleLabels"     	 );
     fWireLabels       	       = pset.get< std::vector<std::string> >("WireModuleLabels"      	 );

@@ -84,7 +84,7 @@ public:
 	           int                            color,
 	           evdb::View2D*                  view,
                bool                           drawConnectingLines = false,
-               float                          cscore = -1.);
+               int                            lineWidth = 1);
     void EndPoint2D(const art::Event& evt,
 		            evdb::View2D*     view,
                     unsigned int      plane);
@@ -125,6 +125,9 @@ public:
     void Prong2D(const art::Event&        evt,
 		         evdb::View2D*            view,
 		         unsigned int             plane);
+    void DrawTrackVertexAssns2D(const art::Event& evt,
+                                evdb::View2D*     view,
+                                unsigned int      plane);
     void DrawProng2D(std::vector<const recob::Hit*>& hits,
                      evdb::View2D*                   view,
                      unsigned int                    plane,
@@ -136,8 +139,8 @@ public:
                      evdb::View2D*                   view,
                      unsigned int                    plane,
                      const recob::Track*             track,
-                     int                             id,
-                     float                           cscore = -5.);
+                     int                             color,
+                     int                             lineWidth);
     void Vertex2D(const art::Event& evt,
 		          evdb::View2D*     view,
 		          unsigned int      plane);

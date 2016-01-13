@@ -236,14 +236,15 @@ namespace evd{
                                     kSelectedColor,
                                     fView);
    
-      this->RecoBaseDraw()->  Cluster2D       (*evt, fView, fPlane);
-      this->RecoBaseDraw()->  EndPoint2D      (*evt, fView, fPlane);
-      this->RecoBaseDraw()->  Prong2D         (*evt, fView, fPlane);
-      this->RecoBaseDraw()->  Vertex2D        (*evt, fView, fPlane);
-      this->RecoBaseDraw()->  Seed2D          (*evt, fView, fPlane);
-      this->RecoBaseDraw()->  BezierTrack2D   (*evt, fView, fPlane);
-      this->RecoBaseDraw()->  OpFlash2D       (*evt, fView, fPlane);
-      this->RecoBaseDraw()->  Event2D         (*evt, fView, fPlane);
+      this->RecoBaseDraw()->  Cluster2D             (*evt, fView, fPlane);
+      this->RecoBaseDraw()->  EndPoint2D            (*evt, fView, fPlane);
+      this->RecoBaseDraw()->  Prong2D               (*evt, fView, fPlane);
+      this->RecoBaseDraw()->  Vertex2D              (*evt, fView, fPlane);
+      this->RecoBaseDraw()->  Seed2D                (*evt, fView, fPlane);
+      this->RecoBaseDraw()->  BezierTrack2D         (*evt, fView, fPlane);
+      this->RecoBaseDraw()->  OpFlash2D             (*evt, fView, fPlane);
+      this->RecoBaseDraw()->  Event2D               (*evt, fView, fPlane);
+      this->RecoBaseDraw()->  DrawTrackVertexAssns2D(*evt, fView, fPlane);
       
     //  DumpPadsInCanvas(fPad, "TWireProjPad", "Before UpdatePad()");
       UpdatePad();

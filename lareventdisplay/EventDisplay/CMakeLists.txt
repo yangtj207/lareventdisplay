@@ -2,25 +2,25 @@
 include(CetRootCint)
 include_directories ( ${CMAKE_CURRENT_SOURCE_DIR} )
 
-set( PACKAGE EventDisplay )
+set( PACKAGE lareventdisplay_EventDisplay )
 FILE( GLOB src_files *.cxx )
 
 cet_rootcint( ${PACKAGE} )
 
-art_make_library( LIBRARY_NAME ${PACKAGE}
+art_make_library( 
         	  SOURCE ${src_files} ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE}Cint.cc
                   LIBRARIES lareventdisplay_EventDisplay_ColorDrawingOptions_service
 	                    lareventdisplay_EventDisplay_InfoTransfer_service
-	                    Filters
- 			    Simulation
-			    RawData
-			    RecoBase
-			    RecoObjects
-			    Utilities
-			    AnalysisBase
-			    AnalysisAlg
-		 	    CalibrationDBI_IOVData
-			    CalibrationDBI_Providers
+	                    larevt_Filters
+ 			    larsim_Simulation
+			    lardata_RawData
+			    lardata_RecoBase
+			    lardata_RecoObjects
+			    lardata_Utilities
+			    lardata_AnalysisBase
+			    lardata_AnalysisAlg
+		 	    larevt_CalibrationDBI_IOVData
+			    larevt_CalibrationDBI_Providers
 	                    ${SIMULATIONBASE}
 			    ${EVENTDISPLAYBASE}
                             ${ART_FRAMEWORK_CORE}
@@ -36,7 +36,7 @@ art_make_library( LIBRARY_NAME ${PACKAGE}
                 )
 
 simple_plugin ( GraphCluster module
-                        EventDisplay
+                        lareventdisplay_EventDisplay
 			${EVENTDISPLAYBASE}
                         ${ART_FRAMEWORK_CORE}
 			${ART_FRAMEWORK_PRINCIPAL}
@@ -52,7 +52,7 @@ simple_plugin ( GraphCluster module
      )
 
 simple_plugin ( EVD module
-                        EventDisplay
+                        lareventdisplay_EventDisplay
 			${EVENTDISPLAYBASE}
                         ${ART_FRAMEWORK_CORE}
 			${ART_FRAMEWORK_PRINCIPAL}
@@ -69,8 +69,8 @@ simple_plugin ( EVD module
 
 simple_plugin ( AnalysisDrawingOptions service
 			larcore_Geometry_Geometry_service
-			Geometry
-			RecoBase
+			larcore_Geometry
+			lardata_RecoBase
 			${EVENTDISPLAYBASE}
                         ${ART_FRAMEWORK_CORE}
 			${ART_FRAMEWORK_PRINCIPAL}
@@ -91,8 +91,8 @@ simple_plugin ( AnalysisDrawingOptions service
 
 simple_plugin ( ColorDrawingOptions service
 			larcore_Geometry_Geometry_service
-			Geometry
-			RecoBase
+			larcore_Geometry
+			lardata_RecoBase
 			${EVENTDISPLAYBASE}
                         ${ART_FRAMEWORK_CORE}
 			${ART_FRAMEWORK_PRINCIPAL}
@@ -113,8 +113,8 @@ simple_plugin ( ColorDrawingOptions service
 
 simple_plugin ( EvdLayoutOptions service
 			larcore_Geometry_Geometry_service
-			Geometry
-			RecoBase
+			larcore_Geometry
+			lardata_RecoBase
 			${EVENTDISPLAYBASE}
                         ${ART_FRAMEWORK_CORE}
 			${ART_FRAMEWORK_PRINCIPAL}
@@ -135,8 +135,8 @@ simple_plugin ( EvdLayoutOptions service
 
 simple_plugin ( InfoTransfer service
 			larcore_Geometry_Geometry_service
-			Geometry
-			RecoBase
+			larcore_Geometry
+			lardata_RecoBase
 			${EVENTDISPLAYBASE}
                         ${ART_FRAMEWORK_CORE}
 			${ART_FRAMEWORK_PRINCIPAL}
@@ -157,8 +157,8 @@ simple_plugin ( InfoTransfer service
 
 simple_plugin ( RawDrawingOptions service
 			larcore_Geometry_Geometry_service
-			Geometry
-			RecoBase
+			larcore_Geometry
+			lardata_RecoBase
 			${EVENTDISPLAYBASE}
                         ${ART_FRAMEWORK_CORE}
 			${ART_FRAMEWORK_PRINCIPAL}
@@ -179,8 +179,8 @@ simple_plugin ( RawDrawingOptions service
 
 simple_plugin ( RecoDrawingOptions service
 			larcore_Geometry_Geometry_service
-			Geometry
-			RecoBase
+			larcore_Geometry
+			lardata_RecoBase
 			${EVENTDISPLAYBASE}
                         ${ART_FRAMEWORK_CORE}
 			${ART_FRAMEWORK_PRINCIPAL}
@@ -202,8 +202,8 @@ simple_plugin ( RecoDrawingOptions service
 
 simple_plugin ( SimulationDrawingOptions service
 			larcore_Geometry_Geometry_service
-			Geometry
-			RecoBase
+			larcore_Geometry
+			lardata_RecoBase
 			${EVENTDISPLAYBASE}
                         ${ART_FRAMEWORK_CORE}
 			${ART_FRAMEWORK_PRINCIPAL}

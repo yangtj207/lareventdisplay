@@ -83,6 +83,9 @@ standard_recodrawingopt:
  ColorProngsByLabel:        0              # 0 = generate color from id.
                                            # 1 = generate color from label.
  ColorSpacePointsByChisq:   0              # 0 = off, 1 = on
+ FlashMinPE:                0.0            # Minimal PE for a flash to be displayed. 
+ FlashTMin:                 -1e9           # Minimal time for a flash to be displayed.
+ FlashTMax:                 1e9            # Maximum time for a flash to be displayed.
  CalorimetryAlgorithm:      @local::standard_calorimetryalgdata
 }
 

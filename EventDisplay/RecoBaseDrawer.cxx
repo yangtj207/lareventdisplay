@@ -467,20 +467,24 @@ void RecoBaseDrawer::OpFlash2D(const art::Event& evt,
         int NFlashes = opflashes.size();
         double TopCoord = 1000;
 
+	LOG_VERBATIM("RecoBaseDrawer") <<"Total "<<NFlashes<<" flashes.";
+
         // project each seed into this view
         for (size_t iof = 0; iof < opflashes.size(); ++iof) {
             std::vector<double> WireCenters = opflashes[iof]->WireCenters();
             std::vector<double> WireWidths = opflashes[iof]->WireWidths();
-	
+	    if (opflashes[iof]->TotalPE() < recoOpt->fFlashMinPE) continue;
+	    if (opflashes[iof]->Time() < recoOpt->fFlashTMin) continue;
+	    if (opflashes[iof]->Time() > recoOpt->fFlashTMax) continue;
+
             LOG_VERBATIM("RecoBaseDrawer") << "Flash t: "
                         << opflashes[iof]->Time()
                         << "\t y,z : "
                         << opflashes[iof]->YCenter()
                         << ", "
                         << opflashes[iof]->ZCenter()
-                        << " \t"
+                        << " \t PE :"
                         << opflashes[iof]->TotalPE();
-		
             double LineTop = TopCoord * float(iof) / NFlashes;
 
             double x1 =  WireCenters.at(plane)+WireWidths.at(plane);
@@ -2473,6 +2477,10 @@ void RecoBaseDrawer::OpFlashOrtho(const art::Event& evt,
 
     // project each seed into this view
     for (int iof = 0; iof < NFlashes; ++iof) {
+
+      if (opflashes[iof]->TotalPE() < recoOpt->fFlashMinPE) continue;
+      if (opflashes[iof]->Time() < recoOpt->fFlashTMin) continue;
+      if (opflashes[iof]->Time() > recoOpt->fFlashTMax) continue;
 
       double YCentre    = opflashes[iof]->YCenter();
       double YHalfWidth = opflashes[iof]->YWidth();

@@ -74,6 +74,9 @@ void RecoDrawingOptions::reconfigure(fhicl::ParameterSet const& pset)
     
     fCosmicTagLabels           = pset.get< std::vector<std::string> >("CosmicTagLabels", std::vector<std::string>() );
     fDrawCosmicTags            = pset.get< int                      >("DrawCosmicTags"           );
+    fFlashMinPE                = pset.get< double                   >("FlashMinPE", 0.0          );
+    fFlashTMin                 = pset.get< double                   >("FlashTMin", -1e9          );
+    fFlashTMax                 = pset.get< double                   >("FlashTMax", 1e9          );
   }
   
 }

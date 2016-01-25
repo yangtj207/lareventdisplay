@@ -77,6 +77,9 @@ public:
     int                      fColorProngsByLabel;       ///< Generate prong colors by label or id?
     int                      fColorSpacePointsByChisq;  ///< Generate space point colors by chisquare?
 
+    double fFlashMinPE;                                 ///< Minimal PE for a flash to be displayed. 
+    double fFlashTMin;                                  ///< Minimal time for a flash to be displayed.
+    double fFlashTMax;                                  ///< Maximum time for a flash to be displayed. 
   };
 }//namespace
 #endif // __CINT__

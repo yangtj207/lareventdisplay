@@ -1124,40 +1124,23 @@ void RecoBaseDrawer::GetClusterOutlines(std::vector<const recob::Hit*>& hits,
     else
       this->Hit2D(hits, color, view, false, lineWidth);
 
-    // prepare to draw prongs
-    double local[3] = {0.};
-    double world[3] = {0.};
-    geo->Cryostat(c).TPC(t).Plane(plane).LocalToWorld(local, world);
-    world[1] = startPos.Y();
-    world[2] = startPos.Z();
+    double tick0 = detprop->ConvertXToTicks(startPos.X(), plane, t, c);
+    double wire0 = geo->WireCoordinate(startPos.Y(),startPos.Z(),plane,t,c);
 
-    // convert the starting position and direction from 3D to 2D coordinates
-    double tick = detprop->ConvertXToTicks(startPos.X(), plane, t, c);
-    double wire = 0.;
-    try{
-        wire = 1.*geo->NearestWire(world, plane, t, c);
-    }
-    catch(cet::exception &e){
-        wire = 1.*atoi(e.explain_self().substr(e.explain_self().find("#")+1,5).c_str());
+    double tick1 = detprop->ConvertXToTicks((startPos+startDir).X(),plane,t,c);
+    double wire1 = geo->WireCoordinate((startPos+startDir).Y(),
+                                       (startPos+startDir).Z(),plane,t,c);
+
+    double cost = 0;
+    double cosw = 0;
+    double ds = sqrt(pow(tick0-tick1,2)+pow(wire0-wire1,2));
+
+    if (ds){
+      cost = (tick1-tick0)/ds;
+      cosw = (wire1-wire0)/ds;
     }
 
-    // thetawire is the angle measured CW from +z axis to wire
-    double thetawire = geo->TPC(t).Plane(plane).Wire(0).ThetaZ();
-    double wirePitch = geo->WirePitch(hits[0]->View());
-    double driftvelocity = larp->DriftVelocity(); // cm/us
-    double timetick = detprop->SamplingRate()*1e-3;  // time sample in us
-    //rotate coord system CCW around x-axis by pi-thetawire
-    //   new yprime direction is perpendicular to the wire direction
-    //   in the same plane as the wires and in the direction of
-    //   increasing wire number
-    //use yprime-component of dir cos in rotated coord sys to get
-    //   dTdW (number of time ticks per unit of wire pitch)
-    double rotang = TMath::Pi()-thetawire;
-    double yprime = std::cos(rotang)*startDir[1]
-                   +std::sin(rotang)*startDir[2];
-    double dTdW = startDir[0]*wirePitch/driftvelocity/timetick/yprime;
-  
-    this->Draw2DSlopeEndPoints(wire, tick, dTdW, evd::kColor[id%evd::kNCOLS], view);
+    this->Draw2DSlopeEndPoints(wire0, tick0, cosw, cost, evd::kColor[id%evd::kNCOLS], view);
 
     return;
 }
@@ -1362,37 +1345,21 @@ void RecoBaseDrawer::DrawTrack2D(std::vector<const recob::Hit*>& hits,
                 // loop over the prongs and get the clusters and hits associated with
                 // them.  only keep those that are in this view
                 for(size_t s = 0; s < shower.vals().size(); ++s){
-                    std::vector<const recob::Hit*> hits = fmh.at(s);
-                    
-                    // only get the hits for the current view
-                    std::vector<const recob::Hit*>::iterator itr = hits.begin();
-                    while(itr < hits.end()){
-                        if((*itr)->View() != gview) hits.erase(itr);
-                        else itr++;
-                    }
-                    
-                    // sort the hits
-                    std::sort(hits.begin(), hits.end());
-                    
-                    // use the first hit in the collection until
-                    // we start filling shower vertex points
-                    // get the center of the first hit for now
-                    // to get the y and z position
-                    double wireXYZ[3] = {0.};
-                    unsigned int cstat = hits.front()->WireID().Cryostat;
-                    unsigned int tpc   = hits.front()->WireID().TPC;
-                    unsigned int plane = hits.front()->WireID().Plane;
-                    unsigned int wire  = hits.front()->WireID().Wire;
-                    geo->Cryostat(cstat).TPC(tpc).Plane(plane).Wire(wire).GetCenter(wireXYZ);
-                    TVector3 startPos(detprop->ConvertTicksToX(hits.front()->PeakTime(),
-                                                               plane, rawOpt->fTPC, rawOpt->fCryostat),
-                                      wireXYZ[1], wireXYZ[2]);
-                    
-                    this->DrawProng2D(hits, view, plane,
-                                      startPos,
-                                      shower.vals().at(s)->Direction(),
-                                      shower.vals().at(s)->ID(), 
-                                      -10001); //use -10001 to increase shower hit size
+
+		  std::vector<const recob::Hit*> hits = fmh.at(s);
+		  // only get the hits for the current view
+		  std::vector<const recob::Hit*>::iterator itr = hits.begin();
+		  while(itr < hits.end()){
+                    if((*itr)->View() != gview) hits.erase(itr);
+                    else itr++;
+		  }
+
+		  this->DrawProng2D(hits, view, plane,
+				    //startPos,
+				    shower.vals().at(s)->ShowerStart(),
+				    shower.vals().at(s)->Direction(),
+				    shower.vals().at(s)->ID(), 
+				    -10001); //use -10001 to increase shower hit size
                 }// end loop over prongs
             }// end loop over labels
         }// end draw showers

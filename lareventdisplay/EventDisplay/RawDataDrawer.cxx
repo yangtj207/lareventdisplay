@@ -67,25 +67,25 @@
 #include "TFrame.h"
 #include "TVirtualPad.h"
 
-#include "EventDisplay/ChangeTrackers.h" // util::PlaneDataChangeTracker_t
-#include "EventDisplay/RawDataDrawer.h"
+#include "lareventdisplay/EventDisplay/ChangeTrackers.h" // util::PlaneDataChangeTracker_t
+#include "lareventdisplay/EventDisplay/RawDataDrawer.h"
 #include "EventDisplayBase/View2D.h"
 #include "EventDisplayBase/EventHolder.h"
-#include "EventDisplay/ColorDrawingOptions.h"
-#include "EventDisplay/RawDrawingOptions.h"
-#include "CalibrationDBI/Interface/IDetPedestalService.h"
-#include "CalibrationDBI/Interface/IDetPedestalProvider.h"
-#include "RawData/raw.h"
-#include "RawData/RawDigit.h"
-#include "CalibrationDBI/Interface/IChannelStatusService.h"
-#include "CalibrationDBI/Interface/IChannelStatusProvider.h"
-#include "Geometry/CryostatGeo.h"
-#include "Geometry/TPCGeo.h"
-#include "Geometry/PlaneGeo.h"
-#include "Utilities/StatCollector.h" // lar::util::MinMaxCollector<>
-#include "Geometry/Geometry.h"
-#include "Utilities/LArProperties.h"
-#include "Utilities/DetectorProperties.h"
+#include "lareventdisplay/EventDisplay/ColorDrawingOptions.h"
+#include "lareventdisplay/EventDisplay/RawDrawingOptions.h"
+#include "larevt/CalibrationDBI/Interface/IDetPedestalService.h"
+#include "larevt/CalibrationDBI/Interface/IDetPedestalProvider.h"
+#include "lardata/RawData/raw.h"
+#include "lardata/RawData/RawDigit.h"
+#include "larevt/CalibrationDBI/Interface/IChannelStatusService.h"
+#include "larevt/CalibrationDBI/Interface/IChannelStatusProvider.h"
+#include "larcore/Geometry/CryostatGeo.h"
+#include "larcore/Geometry/TPCGeo.h"
+#include "larcore/Geometry/PlaneGeo.h"
+#include "lardata/Utilities/StatCollector.h" // lar::util::MinMaxCollector<>
+#include "larcore/Geometry/Geometry.h"
+#include "lardata/Utilities/LArProperties.h"
+#include "lardata/Utilities/DetectorProperties.h"
 
 
 #include "art/Utilities/InputTag.h"

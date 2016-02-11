@@ -6,8 +6,8 @@
 ///
 #include "TCanvas.h"
 #include "TVirtualViewer3D.h"
-#include "EventDisplay/Display3DView.h"
-#include "EventDisplay/Display3DPad.h"
+#include "lareventdisplay/EventDisplay/Display3DView.h"
+#include "lareventdisplay/EventDisplay/Display3DPad.h"
 
 #include "art/Framework/Principal/Event.h"
 

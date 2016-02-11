@@ -35,8 +35,8 @@ namespace recob {
 #include "art/Framework/Services/Registry/ActivityRegistry.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Principal/View.h"
-#include "EventDisplay/InfoTransfer.h"
-#include "Geometry/Geometry.h"
+#include "lareventdisplay/EventDisplay/InfoTransfer.h"
+#include "larcore/Geometry/Geometry.h"
 #include "fhiclcpp/ParameterSet.h" 
 #include <vector>
 #endif

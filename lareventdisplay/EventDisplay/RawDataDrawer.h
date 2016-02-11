@@ -5,12 +5,12 @@
 #ifndef EVD_RAWDATADRAWER_H
 #define EVD_RAWDATADRAWER_H
 
-#include "SimpleTypesAndConstants/geo_types.h" // geo::PlaneID
+#include "larcore/SimpleTypesAndConstants/geo_types.h" // geo::PlaneID
 
 #include <vector>
 #ifndef __CINT__
 
-#include "CalibrationDBI/Interface/IChannelStatusProvider.h" // lariov::IChannelStatusProvider::Status_t
+#include "larevt/CalibrationDBI/Interface/IChannelStatusProvider.h" // lariov::IChannelStatusProvider::Status_t
 
 #endif
 

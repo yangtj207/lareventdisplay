@@ -11,8 +11,8 @@
 #include "TGNumberEntry.h"
 #include "TVirtualX.h"
 #include "TRootEmbeddedCanvas.h"
-#include "EventDisplay/Ortho3DView.h"
-#include "EventDisplay/Ortho3DPad.h"
+#include "lareventdisplay/EventDisplay/Ortho3DView.h"
+#include "lareventdisplay/EventDisplay/Ortho3DPad.h"
 
 #include "cetlib/exception.h"
 #include "art/Framework/Principal/Event.h"

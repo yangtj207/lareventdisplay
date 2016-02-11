@@ -6,7 +6,7 @@
 #define EVD_COLORDRAWINGOPTIONS_H
 #ifndef __CINT__
 #include "EventDisplayBase/ColorScale.h"
-#include "Geometry/Geometry.h"
+#include "larcore/Geometry/Geometry.h"
 
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Services/Registry/ActivityRegistry.h"

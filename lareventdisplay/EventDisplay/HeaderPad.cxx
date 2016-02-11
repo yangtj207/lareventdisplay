@@ -4,9 +4,9 @@
 /// \author  messier@indiana.edu
 /// \version $Id: HeaderPad.cxx,v 1.2 2010/11/11 18:11:22 p-novaart Exp $
 ///
-#include "EventDisplay/HeaderPad.h"
+#include "lareventdisplay/EventDisplay/HeaderPad.h"
 #include "EventDisplayBase/View2D.h"
-#include "EventDisplay/HeaderDrawer.h"
+#include "lareventdisplay/EventDisplay/HeaderDrawer.h"
 
 #include "TPad.h"
 #include "TText.h"

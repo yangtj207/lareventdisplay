@@ -39,9 +39,9 @@ namespace recob {
 #include "art/Framework/Services/Registry/ActivityRegistry.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Principal/View.h"
-#include "EventDisplay/InfoTransfer.h"
-#include "Geometry/Geometry.h"
-#include "Utilities/StatCollector.h"
+#include "lareventdisplay/EventDisplay/InfoTransfer.h"
+#include "larcore/Geometry/Geometry.h"
+#include "lardata/Utilities/StatCollector.h"
 
 #endif
 
@@ -77,12 +77,12 @@ extern "C" {
 
 // LArSoft Includes
 
-#include "RecoBase/Cluster.h"
-#include "RecoBase/Hit.h"
-#include "Utilities/AssociationUtil.h"
-#include "Geometry/PlaneGeo.h"
-#include "Utilities/GeometryUtilities.h"
-#include "EventDisplay/GraphClusterAlg.h"
+#include "lardata/RecoBase/Cluster.h"
+#include "lardata/RecoBase/Hit.h"
+#include "lardata/Utilities/AssociationUtil.h"
+#include "larcore/Geometry/PlaneGeo.h"
+#include "lardata/Utilities/GeometryUtilities.h"
+#include "lareventdisplay/EventDisplay/GraphClusterAlg.h"
 
 // ROOT 
 #include "TMath.h"

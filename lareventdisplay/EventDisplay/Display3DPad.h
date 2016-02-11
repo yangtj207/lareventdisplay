@@ -6,7 +6,7 @@
 ///
 #ifndef EVD_DISPLAY3DPAD_H
 #define EVD_DISPLAY3DPAD_H
-#include "EventDisplay/DrawingPad.h"
+#include "lareventdisplay/EventDisplay/DrawingPad.h"
 class TH3F;
 namespace evdb { class View3D; }
 

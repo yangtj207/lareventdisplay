@@ -9,7 +9,7 @@
 #define UTIL_CHANGETRACKERS_H
 
 // LArSoft libraries
-#include "SimpleTypesAndConstants/geo_types.h" // geo::PlaneID
+#include "larcore/SimpleTypesAndConstants/geo_types.h" // geo::PlaneID
 
 // framework libraries
 #include "art/Utilities/InputTag.h"

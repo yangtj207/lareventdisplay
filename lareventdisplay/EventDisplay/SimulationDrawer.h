@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 #include <map>
-#include "EventDisplay/OrthoProj.h"
+#include "lareventdisplay/EventDisplay/OrthoProj.h"
 
 namespace art  { class Event;       }
 namespace evdb { class View2D;      }

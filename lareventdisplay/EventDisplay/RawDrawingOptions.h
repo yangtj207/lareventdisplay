@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 
-#include "SimpleTypesAndConstants/geo_types.h" // geo::TPCID
+#include "larcore/SimpleTypesAndConstants/geo_types.h" // geo::TPCID
 
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Services/Registry/ActivityRegistry.h"

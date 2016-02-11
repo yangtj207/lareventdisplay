@@ -10,9 +10,9 @@
 #include "TCanvas.h"
 #include "TVirtualX.h"
 #include "TRootEmbeddedCanvas.h"
-#include "EventDisplay/CalorView.h"
-#include "EventDisplay/CalorPad.h"
-#include "EventDisplay/AnalysisDrawingOptions.h"
+#include "lareventdisplay/EventDisplay/CalorView.h"
+#include "lareventdisplay/EventDisplay/CalorPad.h"
+#include "lareventdisplay/EventDisplay/AnalysisDrawingOptions.h"
 
 #include "art/Framework/Principal/Event.h"
 

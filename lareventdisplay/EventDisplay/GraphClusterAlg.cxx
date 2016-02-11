@@ -7,8 +7,8 @@
 //
 //  Methods to use by a dummy producer
 ////////////////////////////////////////////////////////////////////////
-#include "EventDisplay/GraphClusterAlg.h"
-#include "Utilities/GeometryUtilities.h"
+#include "lareventdisplay/EventDisplay/GraphClusterAlg.h"
+#include "lardata/Utilities/GeometryUtilities.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "art/Framework/Principal/Event.h" 
 #include "art/Persistency/Common/PtrVector.h"

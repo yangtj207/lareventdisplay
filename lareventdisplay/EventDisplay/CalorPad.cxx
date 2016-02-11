@@ -5,16 +5,16 @@
 ///
 
 #include <iostream>
-#include "EventDisplay/CalorPad.h"
-#include "EventDisplay/Style.h"
-#include "EventDisplay/AnalysisBaseDrawer.h"
-#include "EventDisplay/AnalysisDrawingOptions.h"
+#include "lareventdisplay/EventDisplay/CalorPad.h"
+#include "lareventdisplay/EventDisplay/Style.h"
+#include "lareventdisplay/EventDisplay/AnalysisBaseDrawer.h"
+#include "lareventdisplay/EventDisplay/AnalysisDrawingOptions.h"
 #include "EventDisplayBase/View2D.h"
 #include "EventDisplayBase/EventHolder.h"
-#include "EventDisplay/EvdLayoutOptions.h"
-#include "EventDisplay/RecoDrawingOptions.h"
-#include "EventDisplay/HitSelector.h"
-#include "RecoObjects/BezierTrack.h"
+#include "lareventdisplay/EventDisplay/EvdLayoutOptions.h"
+#include "lareventdisplay/EventDisplay/RecoDrawingOptions.h"
+#include "lareventdisplay/EventDisplay/HitSelector.h"
+#include "lardata/RecoObjects/BezierTrack.h"
 
 #include "TPad.h"
 #include "TH1F.h"

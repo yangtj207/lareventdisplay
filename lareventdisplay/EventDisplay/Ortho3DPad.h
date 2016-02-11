@@ -8,8 +8,8 @@
 #ifndef EVD_ORTHO3DPAD_H
 #define EVD_ORTHO3DPAD_H
 
-#include "EventDisplay/DrawingPad.h"
-#include "EventDisplay/OrthoProj.h"
+#include "lareventdisplay/EventDisplay/DrawingPad.h"
+#include "lareventdisplay/EventDisplay/OrthoProj.h"
 #include "RQ_OBJECT.h"
 #include <vector>
 

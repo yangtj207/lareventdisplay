@@ -4,7 +4,7 @@
 /// \version $Id: Style.cxx,v 1.1.1.1 2010/11/10 19:44:54 p-novaart Exp $
 /// \author messier@indiana.edu
 ////////////////////////////////////////////////////////////////////////
-#include "EventDisplay/Style.h"
+#include "lareventdisplay/EventDisplay/Style.h"
 #include "TLine.h"
 
 namespace evd{

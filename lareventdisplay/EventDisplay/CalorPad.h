@@ -6,7 +6,7 @@
 #ifndef EVD_CALORPAD_H
 #define EVD_CALORPAD_H
 
-#include "EventDisplay/DrawingPad.h"
+#include "lareventdisplay/EventDisplay/DrawingPad.h"
 
 class TGraph;
 

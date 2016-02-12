@@ -18,6 +18,7 @@
 #include "lareventdisplay/EventDisplay/SimulationDrawer.h"
 #include "EventDisplayBase/View2D.h"
 #include "EventDisplayBase/View3D.h"
+#include "larcore/CoreUtils/ServiceUtil.h"
 #include "larcore/Geometry/Geometry.h"
 #include "larcore/Geometry/PlaneGeo.h"
 #include "larcore/Geometry/TPCGeo.h"
@@ -29,9 +30,9 @@
 #include "lareventdisplay/EventDisplay/Style.h"
 #include "lareventdisplay/EventDisplay/SimulationDrawingOptions.h"
 #include "lareventdisplay/EventDisplay/RawDrawingOptions.h"
-#include "lardata/Utilities/LArProperties.h"
-#include "lardata/Utilities/DetectorProperties.h"
-#include "lardata/Utilities/TimeService.h"
+#include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
+#include "lardata/DetectorInfo/DetectorProperties.h"
+#include "lardata/DetectorInfoServices/DetectorClocksService.h"
 
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Principal/View.h"
@@ -200,10 +201,9 @@ namespace evd{
     // If the option is turned off, there's nothing to do
     if (!drawopt->fShowMCTruthVectors) return;
 
-    art::ServiceHandle<util::DetectorProperties> detprop;
+    detinfo::DetectorProperties const* detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
 
     art::ServiceHandle<geo::Geometry>          geo;
-    art::ServiceHandle<util::LArProperties>    larp;
     art::ServiceHandle<evd::RawDrawingOptions> rawopt;
     // get the x position of the plane in question
     double xyz[3]  = {0.};
@@ -285,9 +285,9 @@ namespace evd{
     // If the option is turned off, there's nothing to do
     if (!drawopt->fShowMCTruthTrajectories) return;
 
-    art::ServiceHandle<geo::Geometry>            geom;
-    art::ServiceHandle<util::DetectorProperties> theDetector;
-    art::ServiceHandle<util::TimeService>        timeService;
+  //  geo::GeometryCore const* geom = lar::providerFrom<geo::Geometry>();
+    detinfo::DetectorProperties const* theDetector = lar::providerFrom<detinfo::DetectorPropertiesService>();
+    detinfo::DetectorClocks const* detClocks = lar::providerFrom<detinfo::DetectorClocksService>();
 
     // get the particles from the Geant4 step
     std::vector<const simb::MCParticle*> plist;
@@ -345,13 +345,13 @@ namespace evd{
             {
                 // The following is meant to get the correct offset for drawing the particle trajectory
                 // In particular, the cosmic rays will not be correctly placed without this
-                double g4Ticks(timeService->TPCG4Time2Tick(mcPart->T())+theDetector->GetXTicksOffset(0,0,0)-theDetector->TriggerOffset());
-                double xOffset(theDetector->ConvertTicksToX(g4Ticks, 0, 0, 0));
-            
-                // collect the points from this particle
-                int numTrajPoints = mcTraj.size();
-            
-                std::unique_ptr<double[]> hitPositions(new double[3*numTrajPoints]);
+	        double g4Ticks(detClocks->TPCG4Time2Tick(mcPart->T())+theDetector->GetXTicksOffset(0,0,0)-theDetector->TriggerOffset());
+	        double xOffset(theDetector->ConvertTicksToX(g4Ticks, 0, 0, 0));
+		
+  	        // collect the points from this particle
+	        int numTrajPoints = mcTraj.size();
+		
+	        std::unique_ptr<double[]> hitPositions(new double[3*numTrajPoints]);
                 int                       hitCount(0);
             
                 for(int hitIdx = 0; hitIdx < numTrajPoints; hitIdx++)
@@ -430,7 +430,7 @@ namespace evd{
         
         // The following is meant to get the correct offset for drawing the particle trajectory
         // In particular, the cosmic rays will not be correctly placed without this
-        double g4Ticks(timeService->TPCG4Time2Tick(mcPart->T())+theDetector->GetXTicksOffset(0,0,0)-theDetector->TriggerOffset());
+        double g4Ticks(detClocks->TPCG4Time2Tick(mcPart->T())+theDetector->GetXTicksOffset(0,0,0)-theDetector->TriggerOffset());
         double xOffset(theDetector->ConvertTicksToX(g4Ticks, 0, 0, 0));
         
         int colorIdx(evd::Style::ColorFromPDG(mcPart->PdgCode()));
@@ -520,9 +520,9 @@ namespace evd{
     // If the option is turned off, there's nothing to do
     if (!drawopt->fShowMCTruthTrajectories) return;
       
-    art::ServiceHandle<geo::Geometry>            geom;
-    art::ServiceHandle<util::DetectorProperties> theDetector;
-    art::ServiceHandle<util::TimeService>        timeService;
+  //  geo::GeometryCore const* geom = lar::providerFrom<geo::Geometry>();
+    detinfo::DetectorProperties const* theDetector = lar::providerFrom<detinfo::DetectorPropertiesService>();
+    detinfo::DetectorClocks const* detClocks = lar::providerFrom<detinfo::DetectorClocksService>();
     
     // get the particles from the Geant4 step
     std::vector<const simb::MCParticle*> plist;
@@ -579,7 +579,7 @@ namespace evd{
             {
                 // The following is meant to get the correct offset for drawing the particle trajectory
                 // In particular, the cosmic rays will not be correctly placed without this
-	      double g4Ticks(timeService->TPCG4Time2Tick(mcPart->T())+theDetector->GetXTicksOffset(0,0,0)-theDetector->TriggerOffset());
+	      double g4Ticks(detClocks->TPCG4Time2Tick(mcPart->T())+theDetector->GetXTicksOffset(0,0,0)-theDetector->TriggerOffset());
                 double xOffset(theDetector->ConvertTicksToX(g4Ticks, 0, 0, 0));
                 // collect the points from this particle
                 int numTrajPoints = mcTraj.size();
@@ -675,7 +675,7 @@ namespace evd{
         
         //double hit_time_ticks(time0/ns_per_tdc + tdc_offset);
         //double xOffset(theDetector->ConvertTicksToX(hit_time_ticks, 0, 0, 0));
-        double g4Ticks(timeService->TPCG4Time2Tick(mcPart->T())+theDetector->GetXTicksOffset(0,0,0)-theDetector->TriggerOffset());
+        double g4Ticks(detClocks->TPCG4Time2Tick(mcPart->T())+theDetector->GetXTicksOffset(0,0,0)-theDetector->TriggerOffset());
         double xOffset(theDetector->ConvertTicksToX(g4Ticks, 0, 0, 0));
         TPolyMarker& pm = view->AddPolyMarker(partToPosMapItr->second.size(), evd::Style::ColorFromPDG(mcPart->PdgCode()), kFullDotMedium, 2); //kFullCircle, msize);
         

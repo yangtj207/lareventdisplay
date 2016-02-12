@@ -55,7 +55,7 @@ namespace anab {
 }
 
 namespace util {
-    class LArProperties;
+    class LArPropertiesService;
     class DetectorProperties;
 }
 

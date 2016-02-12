@@ -39,6 +39,7 @@
 #include "lardata/RecoBase/Seed.h"
 #include "larcore/Geometry/Geometry.h"
 #include "larcore/Geometry/PlaneGeo.h"
+#include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 
@@ -588,11 +589,10 @@ namespace evd{
       double y,z;
 
       art::ServiceHandle<geo::Geometry> geom;
-      art::ServiceHandle<util::DetectorProperties> detp;
-      art::ServiceHandle<util::LArProperties> larp;
+      const detinfo::DetectorProperties* detp = lar::providerFrom<detinfo::DetectorPropertiesService>();
       art::ServiceHandle<evd::RawDrawingOptions> rawOpt;
       double ftimetick = detp->SamplingRate()/1000.;
-      double larv = larp->DriftVelocity(larp->Efield(), larp->Temperature());
+      double larv = detp->DriftVelocity(detp->Efield(), detp->Temperature());
 		
       //find channels corresponding to found wires.
       int chan1 = geom->PlaneWireToChannel(pline[0].plane,pline[0].w0, rawOpt->fTPC, rawOpt->fCryostat);
@@ -720,11 +720,10 @@ namespace evd{
       double z = 0.;
 
       art::ServiceHandle<geo::Geometry> geom;
-      art::ServiceHandle<util::DetectorProperties> detp;
-      art::ServiceHandle<util::LArProperties> larp;
+      const detinfo::DetectorProperties* detp = lar::providerFrom<detinfo::DetectorPropertiesService>();
       art::ServiceHandle<evd::RawDrawingOptions> rawOpt;
       double ftimetick = detp->SamplingRate()/1000.;
-      double larv = larp->DriftVelocity(larp->Efield(), larp->Temperature());
+      double larv = detp->DriftVelocity(detp->Efield(), detp->Temperature());
 		
       //find channels corresponding to found wires.
       int chan1 = geom->PlaneWireToChannel(ppoints[0].plane,ppoints[0].w, rawOpt->fTPC, rawOpt->fCryostat);
@@ -775,7 +774,6 @@ namespace evd{
 	
 	unsigned int wplane = 0;
 	unsigned int wirevertex = 0;
-	art::ServiceHandle<util::LArProperties> larp;
 	art::ServiceHandle<evd::EvdLayoutOptions> evdlayoutopt;
 	
 	for(size_t xx = 0; xx < fPlanes.size(); ++xx){
@@ -797,8 +795,8 @@ namespace evd{
 	
 	wirevertex = geom->NearestWire(pos, wplane, rawOpt->fTPC, rawOpt->fCryostat);
 	
-	double drifttick=((xyz_vertex_fit[0])/larp->DriftVelocity(larp->Efield(),larp->Temperature()))*(1./ftimetick);
-	double timestart=drifttick-(pos[0]/larp->DriftVelocity(larp->Efield(),larp->Temperature()))*(1./ftimetick)+detp->TriggerOffset();
+	double drifttick=((xyz_vertex_fit[0])/detp->DriftVelocity(detp->Efield(),detp->Temperature()))*(1./ftimetick);
+	double timestart=drifttick-(pos[0]/detp->DriftVelocity(detp->Efield(),detp->Temperature()))*(1./ftimetick)+detp->TriggerOffset();
 	
 	fPlanes[wplane]->Pad()->cd();
 	fPlanes[wplane]->View()->Clear();

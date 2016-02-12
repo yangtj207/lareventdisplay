@@ -18,6 +18,7 @@
 #include "TClass.h"
 #include "TVirtualPad.h"
 #include "TCanvas.h"
+#include "TList.h"
 
 #include "EventDisplayBase/View2D.h"
 #include "EventDisplayBase/EventHolder.h"
@@ -512,7 +513,7 @@ namespace evd{
   {
 
     art::ServiceHandle<evd::EvdLayoutOptions>    evdlayoutopt;
-    art::ServiceHandle<util::DetectorProperties> det;
+    detinfo::DetectorProperties const* det = lar::providerFrom<detinfo::DetectorPropertiesService>();
 
     fPad->cd();
     if(deleting) {

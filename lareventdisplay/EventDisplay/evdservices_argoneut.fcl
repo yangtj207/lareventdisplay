@@ -40,8 +40,8 @@ argoneut_disp:
 {
  ExptGeoHelperInterface:   @local::argoneut_geometry_helper
  Geometry:                 @local::argoneut_geo 
- LArProperties:            @local::argoneut_properties
- DetectorProperties:       @local::argoneut_detproperties
+ LArPropertiesService:            @local::argoneut_properties
+ DetectorPropertiesService:       @local::argoneut_detproperties
  DatabaseUtil:		   @local::argoneut_database   
  ColorDrawingOptions:      @local::argoneut_colordrawingopt
  SimulationDrawingOptions: @local::argoneut_simdrawingopt  
@@ -54,8 +54,8 @@ argoneut_disp:
  LArG4Parameters:          @local::argoneut_largeantparameters
  LArVoxelCalculator:       @local::argoneut_larvoxelcalculator
  InfoTransfer:		   @local::argoneut_infotransfer
- TimeService:              @local::argoneut_timeservice # defined in timeservice.fcl
- IChannelStatusService:    @local::argoneut_channelstatus # defined in channelstatus_argoneut.fcl
+ DetectorClocksService:              @local::argoneut_detectorclocks # defined in detectorclocks.fcl
+ ChannelStatusService:    @local::argoneut_channelstatus # defined in channelstatus_argoneut.fcl
 }
 argoneut_disp.RawDrawingOptions.DetPedestalRetrievalAlg.DefaultCollMean:  0
 argoneut_disp.RawDrawingOptions.DetPedestalRetrievalAlg.DefaultIndMean:  0

@@ -43,6 +43,7 @@
 #include "larcore/Geometry/Geometry.h"
 #include "larcore/Geometry/GeometryCore.h"
 #include "larcore/Geometry/PlaneGeo.h"
+#include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 
@@ -659,11 +660,10 @@ namespace evd{
       double y,z;
 
       art::ServiceHandle<geo::Geometry> geom;
-      art::ServiceHandle<util::DetectorProperties> detp;
-      art::ServiceHandle<util::LArProperties> larp;
+      const detinfo::DetectorProperties* detp = lar::providerFrom<detinfo::DetectorPropertiesService>();
       art::ServiceHandle<evd::RawDrawingOptions> rawOpt;
       double ftimetick = detp->SamplingRate()/1000.;
-      double larv = larp->DriftVelocity(larp->Efield(), larp->Temperature());
+      double larv = detp->DriftVelocity(detp->Efield(), detp->Temperature());
 		
       //find wireIDs corresponding to found wires.
       geo::WireID wire1(rawOpt->fCryostat,rawOpt->fTPC,pline[0].plane,pline[0].w0);
@@ -801,11 +801,10 @@ namespace evd{
       double z = 0.;
 
       art::ServiceHandle<geo::Geometry> geom;
-      art::ServiceHandle<util::DetectorProperties> detp;
-      art::ServiceHandle<util::LArProperties> larp;
+      const detinfo::DetectorProperties* detp = lar::providerFrom<detinfo::DetectorPropertiesService>();
       art::ServiceHandle<evd::RawDrawingOptions> rawOpt;
       //double ftimetick = detp->SamplingRate()/1000.;
-      //double larv = larp->DriftVelocity(larp->Efield(), larp->Temperature());
+      //double larv = detp->DriftVelocity(detp->Efield(), detp->Temperature());
 		
       //find channels corresponding to found wires.
       geo::WireID wire1(rawOpt->fCryostat,rawOpt->fTPC,ppoints[0].plane,ppoints[0].w);
@@ -865,7 +864,6 @@ namespace evd{
 	
 	unsigned int wplane = 0;
 	unsigned int wirevertex = 0;
-	art::ServiceHandle<util::LArProperties> larp;
 	art::ServiceHandle<evd::EvdLayoutOptions> evdlayoutopt;
 	
 	for(size_t xx = 0; xx < fPlanes.size(); ++xx){
@@ -1223,7 +1221,7 @@ namespace evd{
   int TWQProjectionView::DrawLine(int plane,util::PxLine &pline)
   {
     art::ServiceHandle<evd::EvdLayoutOptions>     evdlayoutopt;
-    art::ServiceHandle<util::DetectorProperties>  det;
+    const detinfo::DetectorProperties* det = lar::providerFrom<detinfo::DetectorPropertiesService>();
   
     static Float_t w0=-1, t0=-1, w1=-1, t1=-1;
 
@@ -1487,9 +1485,7 @@ namespace evd{
       util::PxLine l0 = seedlines.at(seedlines.size()-1);
       util::PxLine l1 = seedlines.at(seedlines.size()-2);
       
-      art::ServiceHandle<util::DetectorProperties> det;
-      art::ServiceHandle<util::DetectorProperties> geom;
-      
+      const detinfo::DetectorProperties* det = lar::providerFrom<detinfo::DetectorPropertiesService>();
       
       double x0 = det->ConvertTicksToX(l0.t0, l0.plane, 0,0);
       double x1 = det->ConvertTicksToX(l0.t1, l0.plane, 0,0);

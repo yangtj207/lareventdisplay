@@ -34,8 +34,8 @@ bo_disp:
 {
  ExptGeoHelperInterface:   @local::bo_geometry_helper
  Geometry:                 @local::bo_geo 
- LArProperties:            @local::bo_properties
- DetectorProperties:       @local::bo_detproperties
+ LArPropertiesService:            @local::bo_properties
+ DetectorPropertiesService:       @local::bo_detproperties
  DatabaseUtil:		   @local::bo_database   
  ColorDrawingOptions:      @local::bo_colordrawingopt
  SimulationDrawingOptions: @local::bo_simdrawingopt  
@@ -44,7 +44,7 @@ bo_disp:
  EvdLayoutOptions:	   @local::bo_evdlayoutopt
  EventDisplay:             @local::bo_evd            
  ScanOptions:              @local::bo_scanopt
- TimeService:              @local::bo_timeservice # defined in timeservice.fcl
+ DetectorClocksService:              @local::bo_detectorclocks # defined in detectorclocks.fcl
 }
 
 END_PROLOG

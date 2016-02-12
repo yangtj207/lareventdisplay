@@ -10,7 +10,7 @@
 #include <vector>
 #ifndef __CINT__
 
-#include "larevt/CalibrationDBI/Interface/IChannelStatusProvider.h" // lariov::IChannelStatusProvider::Status_t
+#include "larevt/CalibrationDBI/Interface/ChannelStatusProvider.h" // lariov::ChannelStatusProvider::Status_t
 
 #endif
 
@@ -157,7 +157,7 @@ namespace evd {
     
     /// Returns whether a channel with the specified status should be processed
     bool ProcessChannelWithStatus
-      (lariov::IChannelStatusProvider::Status_t channel_status) const;
+      (lariov::ChannelStatusProvider::Status_t channel_status) const;
 #endif // __CINT__
 
     double fStartTick;                       ///< low tick

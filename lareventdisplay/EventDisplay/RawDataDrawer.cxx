@@ -73,19 +73,19 @@
 #include "EventDisplayBase/EventHolder.h"
 #include "lareventdisplay/EventDisplay/ColorDrawingOptions.h"
 #include "lareventdisplay/EventDisplay/RawDrawingOptions.h"
-#include "larevt/CalibrationDBI/Interface/IDetPedestalService.h"
-#include "larevt/CalibrationDBI/Interface/IDetPedestalProvider.h"
+#include "larevt/CalibrationDBI/Interface/DetPedestalService.h"
+#include "larevt/CalibrationDBI/Interface/DetPedestalProvider.h"
 #include "lardata/RawData/raw.h"
 #include "lardata/RawData/RawDigit.h"
-#include "larevt/CalibrationDBI/Interface/IChannelStatusService.h"
-#include "larevt/CalibrationDBI/Interface/IChannelStatusProvider.h"
+#include "larevt/CalibrationDBI/Interface/ChannelStatusService.h"
+#include "larevt/CalibrationDBI/Interface/ChannelStatusProvider.h"
 #include "larcore/Geometry/CryostatGeo.h"
 #include "larcore/Geometry/TPCGeo.h"
 #include "larcore/Geometry/PlaneGeo.h"
 #include "lardata/Utilities/StatCollector.h" // lar::util::MinMaxCollector<>
 #include "larcore/Geometry/Geometry.h"
-#include "lardata/Utilities/LArProperties.h"
-#include "lardata/Utilities/DetectorProperties.h"
+#include "lardata/DetectorInfoServices/LArPropertiesService.h"
+#include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 
 
 #include "art/Utilities/InputTag.h"
@@ -536,7 +536,8 @@ namespace evd {
         {
           if (adc < 0.) return 0.;
           register double const dQdX = adc / wirePitch / electronsToADC;
-          return larp->BirksCorrection(dQdX);
+          detinfo::DetectorProperties const* detp = lar::providerFrom<detinfo::DetectorPropertiesService>();
+          return detp->BirksCorrection(dQdX);
         } // Correct()
       double operator() (float adc) const { return Correct(adc); }
       
@@ -545,9 +546,7 @@ namespace evd {
           art::ServiceHandle<geo::Geometry> geo;
           wirePitch = geo->WirePitch(pid);
 
-          larp = &*(art::ServiceHandle<util::LArProperties>());
-          
-          art::ServiceHandle<util::DetectorProperties> detp;
+          detinfo::DetectorProperties const* detp = lar::providerFrom<detinfo::DetectorPropertiesService>();
           electronsToADC = detp->ElectronsToADC();
         } // update()
       
@@ -555,8 +554,6 @@ namespace evd {
       float wirePitch; ///< wire pitch
       float electronsToADC; ///< conversion constant
       
-      util::LArProperties const* larp; ///< pointer to LArProperties service
-    
     }; // ADCCorrectorClass
     //--------------------------------------------------------------------------
   } // namespace details
@@ -828,13 +825,13 @@ namespace evd {
     // but it's way better if the failure throws an exception
     if (!operation->Initialize()) return false;
     
-    lariov::IChannelStatusProvider const& channelStatus
-      = art::ServiceHandle<lariov::IChannelStatusService>()->GetProvider();
+    lariov::ChannelStatusProvider const& channelStatus
+      = art::ServiceHandle<lariov::ChannelStatusService>()->GetProvider();
     
     //get pedestal conditions
-    const lariov::IDetPedestalProvider& pedestalRetrievalAlg = art::ServiceHandle<lariov::IDetPedestalService>()->GetPedestalProvider();
+    const lariov::DetPedestalProvider& pedestalRetrievalAlg = *(lar::providerFrom<lariov::DetPedestalService>());
     
-    geo::GeometryCore const& geom = *art::ServiceHandle<geo::Geometry>();
+    geo::GeometryCore const& geom = *(lar::providerFrom<geo::Geometry>());
     
     // loop over all the channels/raw digits
     for (evd::details::RawDigitInfo_t const& digit_info: *digit_cache) {
@@ -1322,11 +1319,11 @@ namespace evd {
     details::CacheID_t NewCacheID(evt, rawopt->fRawDataLabel, pid);
     GetRawDigits(evt, NewCacheID);
       
-    lariov::IChannelStatusProvider const& channelStatus
-      = art::ServiceHandle<lariov::IChannelStatusService>()->GetProvider();
+    lariov::ChannelStatusProvider const& channelStatus
+      = art::ServiceHandle<lariov::ChannelStatusService>()->GetProvider();
     
     //get pedestal conditions
-    const lariov::IDetPedestalProvider& pedestalRetrievalAlg = art::ServiceHandle<lariov::IDetPedestalService>()->GetPedestalProvider();
+    const lariov::DetPedestalProvider& pedestalRetrievalAlg = art::ServiceHandle<lariov::DetPedestalService>()->GetPedestalProvider();
 
     for (evd::details::RawDigitInfo_t const& digit_info: *digit_cache) {
       raw::RawDigit const& hit = digit_info.Digit();
@@ -1390,8 +1387,8 @@ namespace evd {
     } // if no channel
     
     // check the channel status; bad channels are still ok.
-    lariov::IChannelStatusProvider const& channelStatus
-      = art::ServiceHandle<lariov::IChannelStatusService>()->GetProvider();
+    lariov::ChannelStatusProvider const& channelStatus
+      = art::ServiceHandle<lariov::ChannelStatusService>()->GetProvider();
     
     if (!channelStatus.IsPresent(channel)) return;
     
@@ -1403,7 +1400,7 @@ namespace evd {
     // if (channelStatus.IsBad()) return;
     
     //get pedestal conditions
-    const lariov::IDetPedestalProvider& pedestalRetrievalAlg = art::ServiceHandle<lariov::IDetPedestalService>()->GetPedestalProvider();
+    const lariov::DetPedestalProvider& pedestalRetrievalAlg = art::ServiceHandle<lariov::DetPedestalService>()->GetPedestalProvider();
     
     // find the raw digit
     // (iDigit is an iterator to a evd::details::RawDigitInfo_t)
@@ -1561,10 +1558,10 @@ namespace evd {
   
   //......................................................................    
   bool RawDataDrawer::ProcessChannelWithStatus
-    (lariov::IChannelStatusProvider::Status_t channel_status) const
+    (lariov::ChannelStatusProvider::Status_t channel_status) const
   {
     // if we don't have a valid status, we can't reject the channel
-    if (!lariov::IChannelStatusProvider::IsValidStatus(channel_status))
+    if (!lariov::ChannelStatusProvider::IsValidStatus(channel_status))
       return true;
     
     // is the status "too bad"?

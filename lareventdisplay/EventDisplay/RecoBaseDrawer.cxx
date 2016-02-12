@@ -43,15 +43,14 @@
 #include "lardata/RecoBase/Vertex.h"
 #include "lardata/RecoBase/OpFlash.h"
 #include "lardata/AnalysisBase/CosmicTag.h"
-#include "larevt/CalibrationDBI/Interface/IChannelStatusService.h"
-#include "larevt/CalibrationDBI/Interface/IChannelStatusProvider.h"
+#include "larevt/CalibrationDBI/Interface/ChannelStatusService.h"
+#include "larevt/CalibrationDBI/Interface/ChannelStatusProvider.h"
 #include "larcore/Geometry/Geometry.h"
 #include "larcore/Geometry/CryostatGeo.h"
 #include "larcore/Geometry/TPCGeo.h"
 #include "larcore/Geometry/PlaneGeo.h"
 #include "larcore/Geometry/WireGeo.h"
-#include "lardata/Utilities/LArProperties.h"
-#include "lardata/Utilities/DetectorProperties.h"
+#include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 #include "lardata/Utilities/AssociationUtil.h"
 
 #include "cetlib/exception.h"
@@ -80,8 +79,6 @@ namespace evd{
 RecoBaseDrawer::RecoBaseDrawer()
 {
     art::ServiceHandle<geo::Geometry>            geo;
-    art::ServiceHandle<util::LArProperties>      larp;
-    art::ServiceHandle<util::DetectorProperties> detp;
     art::ServiceHandle<evd::RawDrawingOptions>   rawopt;
 
     fWireMin.resize(0);   
@@ -128,8 +125,8 @@ void RecoBaseDrawer::Wire2D(const art::Event& evt,
     
     if(rawOpt->fDrawRawDataOrCalibWires < 1)    return;
     
-    lariov::IChannelStatusProvider const& channelStatus
-      = art::ServiceHandle<lariov::IChannelStatusService>()->GetProvider();
+    lariov::ChannelStatusProvider const& channelStatus
+      = art::ServiceHandle<lariov::ChannelStatusService>()->GetProvider();
     
     int ticksPerPoint = rawOpt->fTicksPerPoint;
     
@@ -247,8 +244,7 @@ void RecoBaseDrawer::Hit2D(const art::Event& evt,
     art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
     art::ServiceHandle<geo::Geometry>            geo;
-    art::ServiceHandle<util::LArProperties>      larp;
-    art::ServiceHandle<util::DetectorProperties> detp;
+    detinfo::DetectorProperties const* detp = lar::providerFrom<detinfo::DetectorPropertiesService>();
   
     if (recoOpt->fDrawHits == 0)                return;
     if (rawOpt->fDrawRawDataOrCalibWires < 1)   return;
@@ -272,7 +268,7 @@ void RecoBaseDrawer::Hit2D(const art::Event& evt,
         // the calibration chain
         fRawCharge[itr->WireID().Plane]    += itr->PeakAmplitude();
         double dQdX = itr->PeakAmplitude()/geo->WirePitch()/detp->ElectronsToADC();
-        fConvertedCharge[itr->WireID().Plane] += larp->BirksCorrection(dQdX);
+        fConvertedCharge[itr->WireID().Plane] += detp->BirksCorrection(dQdX);
       } // loop on hits
 
       this->Hit2D(hits, kBlack, view);
@@ -566,6 +562,7 @@ void RecoBaseDrawer::Seed2D(const art::Event& evt,
     art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
     art::ServiceHandle<geo::Geometry>            geo;
+    detinfo::DetectorProperties const* det = lar::providerFrom<detinfo::DetectorPropertiesService>();
 
     if (rawOpt->fDrawRawDataOrCalibWires < 1) return;
     if (recoOpt->fDrawSeeds == 0)             return;
@@ -622,8 +619,6 @@ void RecoBaseDrawer::Seed2D(const art::Event& evt,
             catch(cet::exception &e){
                 wireend2 = atoi(e.explain_self().substr(e.explain_self().find("#")+1,5).c_str());
             }
-
-            art::ServiceHandle<util::DetectorProperties> det;
 
             double x =  wirepoint;
             double y =  det->ConvertXToTicks(SeedPoint[0], plane, rawOpt->fTPC, rawOpt->fCryostat);
@@ -767,8 +762,7 @@ void RecoBaseDrawer::Cluster2D(const art::Event& evt,
     art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
     art::ServiceHandle<geo::Geometry>            geo;
-    art::ServiceHandle<util::LArProperties>      larp;
-    art::ServiceHandle<util::DetectorProperties> detprop;
+    detinfo::DetectorProperties const* detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
     //unsigned int c = rawOpt->fCryostat;
     //unsigned int t = rawOpt->fTPC;
 
@@ -877,7 +871,7 @@ void RecoBaseDrawer::Cluster2D(const art::Event& evt,
     // thetawire is the angle measured CW from +z axis to wire
 	//double thetawire = geo->TPC(t).Plane(plane).Wire(0).ThetaZ();
 	double wirePitch = geo->WirePitch(gview);
-	double driftvelocity = larp->DriftVelocity(); // cm/us
+	double driftvelocity = detprop->DriftVelocity(); // cm/us
 	double timetick = detprop->SamplingRate()*1e-3;  // time sample in us
 	//rotate coord system CCW around x-axis by pi-thetawire
 	//   new yprime direction is perpendicular to the wire direction
@@ -1087,7 +1081,7 @@ void RecoBaseDrawer::GetClusterOutlines(std::vector<const recob::Hit*>& hits,
 
     return;
 }
-
+  
   //......................................................................
   void RecoBaseDrawer::DrawProng2D(std::vector<const recob::Hit*>&     hits,
                                    evdb::View2D*                       view,
@@ -1097,11 +1091,11 @@ void RecoBaseDrawer::GetClusterOutlines(std::vector<const recob::Hit*>& hits,
                                    int                                 id,
                                    float                               cscore)
   {
-    art::ServiceHandle<util::DetectorProperties>  detprop;
-    art::ServiceHandle<evd::RawDrawingOptions>    rawOpt;
-      art::ServiceHandle<evd::RecoDrawingOptions> recoOpt;
-    art::ServiceHandle<geo::Geometry>             geo;
-    art::ServiceHandle<util::LArProperties>       larp;
+    art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
+    art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
+    art::ServiceHandle<geo::Geometry>            geo;
+    detinfo::DetectorProperties const* detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
+    
     unsigned int c = rawOpt->fCryostat;
     unsigned int t = rawOpt->fTPC;
       
@@ -1144,7 +1138,7 @@ void RecoBaseDrawer::GetClusterOutlines(std::vector<const recob::Hit*>& hits,
     // thetawire is the angle measured CW from +z axis to wire
     double thetawire = geo->TPC(t).Plane(plane).Wire(0).ThetaZ();
     double wirePitch = geo->WirePitch(hits[0]->View());
-    double driftvelocity = larp->DriftVelocity(); // cm/us
+    double driftvelocity = detprop->DriftVelocity(); // cm/us
     double timetick = detprop->SamplingRate()*1e-3;  // time sample in us
     //rotate coord system CCW around x-axis by pi-thetawire
     //   new yprime direction is perpendicular to the wire direction
@@ -1170,11 +1164,10 @@ void RecoBaseDrawer::DrawTrack2D(std::vector<const recob::Hit*>& hits,
                                  int                             color,
 				                 int                             lineWidth)
 {
-    art::ServiceHandle<util::DetectorProperties> detprop;
     art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
     art::ServiceHandle<geo::Geometry>            geo;
-    art::ServiceHandle<util::LArProperties>      larp;
+    detinfo::DetectorProperties const* detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
     unsigned int c = rawOpt->fCryostat;
     unsigned int t = rawOpt->fTPC;
     
@@ -1204,7 +1197,7 @@ void RecoBaseDrawer::DrawTrack2D(std::vector<const recob::Hit*>& hits,
     // thetawire is the angle measured CW from +z axis to wire
     double thetawire = geo->TPC(t).Plane(plane).Wire(0).ThetaZ();
     double wirePitch = geo->WirePitch(hits[0]->View());
-    double driftvelocity = larp->DriftVelocity(); // cm/us
+    double driftvelocity = detprop->DriftVelocity(); // cm/us
     double timetick = detprop->SamplingRate()*1e-3;  // time sample in us
     //rotate coord system CCW around x-axis by pi-thetawire
     //   new yprime direction is perpendicular to the wire direction
@@ -1256,7 +1249,7 @@ void RecoBaseDrawer::DrawTrack2D(std::vector<const recob::Hit*>& hits,
         art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
         art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
         art::ServiceHandle<geo::Geometry>            geo;
-        art::ServiceHandle<util::DetectorProperties> detprop;
+        auto const* detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
         
         if(rawOpt->fDrawRawDataOrCalibWires < 1) return;
         
@@ -1408,7 +1401,7 @@ void RecoBaseDrawer::DrawTrackVertexAssns2D(const art::Event& evt,
     art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
     art::ServiceHandle<geo::Geometry>            geo;
-    art::ServiceHandle<util::DetectorProperties> detprop;
+    detinfo::DetectorProperties const* detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
 
     if(!recoOpt->fDrawTrackVertexAssns) return;
 
@@ -1545,7 +1538,7 @@ void RecoBaseDrawer::Vertex2D(const art::Event& evt,
     art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
     art::ServiceHandle<geo::Geometry>            geo;
-    art::ServiceHandle<util::DetectorProperties> detprop;
+    detinfo::DetectorProperties const* detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
 
     if(rawOpt->fDrawRawDataOrCalibWires < 1) return;
     

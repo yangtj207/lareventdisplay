@@ -1,12 +1,12 @@
 # The parent line must be the first non-comment line in the file
 # This line defines the product name and version
-parent	lareventdisplay	v04_14_03
+parent	lareventdisplay	v05_00_01
 defaultqual	e9
 #
 fcldir		product_dir	job
 #
 product         version
-larsim		v04_21_00
+larsim		v05_00_01
 gcc		v4_9_3
 
 cetbuildtools	v4_18_02	-	only_for_build
@@ -18,9 +18,6 @@ qualifier	larsim	 	gcc	notes
 e9:debug	e9:debug	-nq-
 e9:opt		e9:opt		-nq-
 e9:prof		e9:prof		-nq-
-e9:noifdh:debug	e9:noifdh:debug	-nq-
-e9:noifdh:opt	e9:noifdh:opt	-nq-
-e9:noifdh:prof	e9:noifdh:prof	-nq-
 end_qualifier_list
 
 # Preserve tabs and formatting in emacs and vi / vim:

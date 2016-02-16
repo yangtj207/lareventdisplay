@@ -1,0 +1,68 @@
+#include "calorimetry_argoneut.fcl"
+#include "evdservices_base.fcl"
+#include "services_argoneut.fcl"
+#include "channelstatus_argoneut.fcl"
+#include "trackfinderalgorithms.fcl"
+
+
+BEGIN_PROLOG
+
+argoneut_colordrawingopt:                    @local::standard_colordrawingopt
+
+argoneut_rawdrawingopt:                         @local::standard_rawdrawingopt
+argoneut_rawdrawingopt.DrawRawDataOrCalibWires: 1
+
+argoneut_recodrawingopt:          @local::standard_recodrawingopt
+argoneut_recodrawingopt.CalorimetryAlgorithm: @local::argoneut_calorimetryalgdata
+#argoneut_recodrawingopt.CalorimetryAlgorithm: @local::argoneut_calorimetryalgmc
+argoneut_analysisdrawingopt:      @local::standard_analysisdrawingopt
+
+argoneut_simdrawingopt:   @local::standard_simdrawingopt
+
+argoneut_evdlayoutopt:   		   @local::standard_evdlayoutopt
+argoneut_evdlayoutopt.ShowSideBar:	   1
+argoneut_evdlayoutopt.AutoZoomInterest:	   0
+argoneut_evdlayoutopt.PrintTotalCharge:	   0
+argoneut_evdlayoutopt.ShowEndPointSection: 1	
+argoneut_evdlayoutopt.ShowEndPointMarkers: 1
+argoneut_evdlayoutopt.MakeSeeds:	   0
+argoneut_evdlayoutopt.ChangeWire:	   0
+argoneut_evdlayoutopt.MakeSeeds:	   0
+argoneut_evdlayoutopt.ChangeWire:	   1
+
+argoneut_scanopt:                 @local::standard_scanopt
+
+argoneut_evd:   @local::standard_evd
+
+argoneut_infotransfer:   @local::standard_infotransfer
+
+argoneut_disp:
+{
+ ExptGeoHelperInterface:   @local::argoneut_geometry_helper
+ Geometry:                 @local::argoneut_geo 
+ LArPropertiesService:            @local::argoneut_properties
+ DetectorPropertiesService:       @local::argoneut_detproperties
+ DatabaseUtil:		   @local::argoneut_database   
+ ColorDrawingOptions:      @local::argoneut_colordrawingopt
+ SimulationDrawingOptions: @local::argoneut_simdrawingopt  
+ RawDrawingOptions:        @local::argoneut_rawdrawingopt  
+ RecoDrawingOptions:       @local::argoneut_recodrawingopt 
+ AnalysisDrawingOptions:   @local::argoneut_analysisdrawingopt
+ EvdLayoutOptions:	   @local::argoneut_evdlayoutopt
+ EventDisplay:             @local::argoneut_evd            
+ ScanOptions:              @local::argoneut_scanopt
+ LArG4Parameters:          @local::argoneut_largeantparameters
+ LArVoxelCalculator:       @local::argoneut_larvoxelcalculator
+ InfoTransfer:		   @local::argoneut_infotransfer
+ DetectorClocksService:              @local::argoneut_detectorclocks # defined in detectorclocks.fcl
+ ChannelStatusService:    @local::argoneut_channelstatus # defined in channelstatus_argoneut.fcl
+}
+argoneut_disp.RawDrawingOptions.DetPedestalRetrievalAlg.DefaultCollMean:  0
+argoneut_disp.RawDrawingOptions.DetPedestalRetrievalAlg.DefaultIndMean:  0
+
+
+#######################################
+
+argoneut_graphcluster:                 @local::standard_graphcluster
+
+END_PROLOG

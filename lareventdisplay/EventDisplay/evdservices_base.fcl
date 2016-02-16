@@ -1,0 +1,227 @@
+##include "services.fcl"
+#include "calorimetry.fcl"
+##include "trackfinderservices.fcl"
+#include "database_standard.fcl"
+BEGIN_PROLOG
+
+standard_colordrawingopt:
+{
+ ColorOrGrayScale:  1         # 0 = color, 1 = grayscale
+                              # the following parameters assume the first entry in the arrays
+                              # is for induction planes, the second for collection planes
+ RawDiv:           [ 100  ]   # number of divisions to use for the color scale
+ RawQLow:	   [ -20. ]   # minimum raw ADC value used in determining colors
+ RawQHigh:         [  60. ]   # maximum raw ADC value used in determining colors
+ RecoDiv:          [ 100  ]   # number of divisions to use for the color scale
+ RecoQLow:         [ -20. ]   # minimum calibrated ADC value used in determining colors
+ RecoQHigh:        [  60. ]   # maximum calibrated ADC value used in determining colors
+}
+
+standard_rawdrawingopt:
+{
+ DrawRawDataOrCalibWires:    0     # 0 = raw, 1 = calibrated signals, 2 = both for ADC vs TDC views         
+ TicksPerPoint:              1     # number of TDC ticks to combine for each point in the TDC vs Wire veiws 
+ ScaleDigitsByCharge:        0     # 0 = off, 1 = on                                                        
+ MinimumSignal:              5.    # minimum ADC value to draw in TDC vs Wire views
+ StartTick:                  0.    # Starting tick for the display
+ TotalTicks:                 2048. # display TDC ticks 0 -> TotalTicks
+ AxisOrientation:            0     # 0 = TDC on y-axis, wire number on x-axis, 1 has that swapped           
+ TPC:                        0     # TPC number to display in TWQProjection view
+ Cryostat:                   0     # Cryostat number to display in TWQProjection view
+ RawDataLabel:               "daq" # label of module making the raw digits
+}
+
+standard_recodrawingopt:
+{
+ DrawHits:                  1              # 0 = off, 1 = on, will not draw if DrawRawDataOrCalibWires      
+                                           # is set to 0                                                  
+ DrawClusters:              1              # set to 1 to draw markers for each hit in the cluster - is working
+                                           # 2 to draw outlines - not working yet,    
+ DrawPFParticles:           0              # 1 to draw PFParticles
+                                           # 4 to have 3D display "white out" if tagged as cosmic
+ Draw2DSlopeEndPoints:      0              # draws end points and slopes for clusters, 0 = off, 1 = on
+ DrawSpacePoints:           0              # 0 = off, 1 = on                                              
+ DrawProngs:                0              # 0 = off, 1 = on                                              
+ DrawTracks:                0  		       # 0 = off, 1 = on
+ DrawTrackTrajectoryPoints: 0  		       # 0 = off, 1 = on
+ DrawTrackSpacePoints:      0              # 0 = off, 1 = on
+ DrawShowers:               0  		       # 0 = off, 1 = on
+ DrawVertices:              0  		       # 0 = off, 1 = on
+ DrawSeeds:                 0  		       # 0 = off, 1 = on
+ DrawBezierTracks:          0  		       # 0 = off, 1 = on
+ DrawOpFlashes:             0              # 0 = off, 1 = on   
+ DrawCosmicTags:            0  		       # 0 = off, 1 = on
+
+ DrawEvents:                0  		       # 0 = off, 1 = on
+ Draw2DEndPoints:           0              # 0 = off, 1 = on, this is for the recob::EndPoint2D objects
+ SelectedHitColor:	        6		       # color to display hits selected via handscan.
+                                           # 0:white, 1:black 2:red 3:green 4:blue 
+                                           # 5: yellow 6:magenta 7:cyan		
+ UseHitSelector:            true           # turn on ability to use hit selector or not
+ DrawSkeleton3DHitsOnly:    false          # Draw only the "skeleton" 3D hits
+ DrawBestPCAAxisOnly:       true           # Draw only the best PCA axis
+ DrawTrackVertexAssns:      false          # Draw Track/Vertex associations
+ WireModuleLabels:          ["caldata"]    # list of module labels in which to look for recob::Wires
+ HitModuleLabels:           ["gaushit"]    # list of module labels in which to look for recob::Hits
+ EndPoint2DModuleLabels:    [""]           # list of module labels in which to look for recob::EndPoint2Ds
+ SpacePointModuleLabels:    ["spacepts"]   # list of module labels in which to look for recob::SpacePoints     
+ ProngModuleLabels:         [""]           # list of module labels in which to look for recob::Prongs     
+ ClusterModuleLabels:       ["dbcluster"]  # list of module labels in which to look for recob::Clusters  
+ PFParticleModuleLabels:    ["pandora"]    # list of module labels in which to look for recob::PFParticles 
+ TrackModuleLabels:         [""]           # list of module labels in which to look for recob::Tracks     
+ ShowerModuleLabels:        ["showerreco"] # list of module labels in which to look for recob::Showers    
+ VertexModuleLabels:        [""]           # list of module labels in which to look for recob::Vertexs    
+ SeedModuleLabels:          ["seedfinder"] # list of module labels in which to look for recob::Seeds  
+ BezierTrackModuleLabels:   ["beziertracker"] # list of module labels in which to look for Bezier Tracks    
+ OpFlashModuleLabels:       ["opflashnew"] # list of module labels in which to look for recob::OpFlashes
+ CosmicTagModuleLabels:     [""]           # list of module labels in which to look for recob::Tracks
+ TrkVtxTrackLabels:         [""]           # list of track producers for track/vertex associations
+ TrkVtxCosmicLabels:        [""]           # list of vertex producers for track/vertex associations
+ TrkVtxFilterLabels:        [""]           # list of producers of associations between the two above
+
+ EventModuleLabels:         [""]           # list of module labels in which to look for recob::Events     
+ ColorProngsByLabel:        0              # 0 = generate color from id.
+                                           # 1 = generate color from label.
+ ColorSpacePointsByChisq:   0              # 0 = off, 1 = on
+ FlashMinPE:                0.0            # Minimal PE for a flash to be displayed. 
+ FlashTMin:                 -1e9           # Minimal time for a flash to be displayed.
+ FlashTMax:                 1e9            # Maximum time for a flash to be displayed.
+ CalorimetryAlgorithm:      @local::standard_calorimetryalgdata
+}
+
+standard_analysisdrawingopt:
+{
+ DrawCalorimetry:          1
+ DrawParticleID:           1
+ DrawShowerCalor:          0
+ CaloPlane:                -1
+ CalorimetryModuleLabels:  ["calo"]
+ ParticleIDModuleLabels:   ["pid"]
+ CalorTemplateFileName:    "dEdxKinErestemplate" # without .root
+}
+
+standard_simdrawingopt:
+{
+ ShowMCTruthText:         true       # toggle showing of MC interaction on or off
+ ShowMCTruthVectors:      true       # toggle showing of MC truth directions in 2D
+ ShowMCTruthTrajectories: true       # toggle showing of MC truth trajectories in 3D, all depositions
+ ShowMCTruthColors:       true       # toggle to use PDG colors for particles
+ ShowMCTruthFullSize:     true       # toggle to use larger size markers for visibility
+ MinimumEnergyDeposition: 5e-5       # in GeV
+ G4ModuleLabel:           "largeant" # module labels producing sim::SimChannel objects
+}
+
+standard_evdlayoutopt:
+{
+ ShowSideBar:		1          # toggle extra sidebar visibility option
+ AutoZoomInterest:	1          # toggle the auto zoom to interesting region option
+ PrintTotalCharge:	1          # Print out the sum of collected charge 
+ ShowEndPointSection:	1          # Show Sidebar section with EndPoint extrapolation
+ ShowEndPointMarkers:	1          # toggle visbility of markers for EndPoint finding
+ ShowClusterSection:    0          # Show Sidebar section for making clusters
+ MakeClusters: 		0	   # draw two lines to create clusters
+ MakeSeeds: 		0	   # draw two lines to create clusters
+ ChangeWire: 		1	   # change wire with mouse click
+ EnableMCTruthCheckBox: 1          # 1 turn on the check box, 0 don't make it
+}
+
+standard_scanopt:
+{
+ IncludeMCInfo:     false                # include MC information in scan file if true
+ FileNameBase:      "ScanFile"           # base name for scan file
+ Categories:        ["Neutrino",         # categories for collecting information
+ 		     "Induction Plane", 
+		     "Collection Plane"]
+ FieldLabels:       ["No_nu", "Possible_nu", "nu",  # fields for each category
+                     "Tracks", "Showers", "Vertex_w", "Vertex_t",  
+                     "Tracks", "Showers", "Vertex_w", "Vertex_t"]
+ FieldTypes:        ["RadioButton", "RadioButton", "RadioButton",  # type of each field
+		     "Number", "Number", "Number", "Number",  
+		     "Number", "Number", "Number", "Number"]
+ FieldsPerCategory: [3, 4, 4]          # number of fields for each category
+}
+
+standard_evd:
+{
+ AutoAdvanceInterval: 1000
+}
+
+evd_message:
+{
+ debugModules: [ "*" ]
+ destinations:
+ {
+  Drawers:
+  {
+   type: "cerr"
+   threshold: "INFO"
+   categories:
+   {
+    SimulationDrawer:
+    {     
+     limit:       5
+     timespan:    100
+    }
+    RecoBaseDrawer:
+    {     
+     limit:       5
+     timespan:    100
+    }
+    RawDataDrawer:
+    {     
+     limit:       5
+     timespan:    100
+    }
+    ConfigurationChecker:
+    {     
+     limit:       5
+     timespan:    100
+    }
+    HitSelector:
+    {
+     limit:    	  5
+     timespan:    100
+    }
+    GraphCluster:
+    {
+     limit:       5
+     timespan:    100
+    }
+    InfoTransfer:
+    {
+     limit:       5
+     timespan:    100
+    }
+    RecoBaseDefaultCtor:
+    {
+     limit:       1
+     timespan:    100
+    }
+   }
+  }
+ }
+}
+
+standard_infotransfer:
+{
+}
+
+#######################################
+
+standard_graphclusteralg:
+{
+ HitsModuleLabel: "gaushit"
+}
+
+standard_graphcluster:
+{
+ module_type:     "GraphCluster"
+ HitsModuleLabel: "gaushit"
+ GraphClusterAlg: @local::standard_graphclusteralg 
+}
+
+
+
+
+
+END_PROLOG

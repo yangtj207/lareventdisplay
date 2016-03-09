@@ -1274,7 +1274,7 @@ void RecoBaseDrawer::DrawTrack2D(std::vector<const recob::Hit*>& hits,
                         double z = track.vals().at(t)->End()(2);
                         double tick = 30 + detprop->ConvertXToTicks(x, plane, tpc, cstat);
                         double wire = geo->WireCoordinate(y, z, plane, tpc, cstat);
-                        tid = track.vals().at(t)->ID();
+                        tid = track.vals().at(t)->ID()&65535; //this is a hack for PMA track id which uses the 16th bit to identify shower-like track.;
                         std::string s = std::to_string(tid);
                         char const* txt = s.c_str();
                         TText& trkID = view->AddText(wire, tick, txt);
@@ -1304,7 +1304,7 @@ void RecoBaseDrawer::DrawTrack2D(std::vector<const recob::Hit*>& hits,
                     //                  track.vals().at(t)->VertexDirection(),
                     //                  track.vals().at(t)->ID());
                     const recob::Track* aTrack(track.vals().at(t));
-                    int   color(evd::kColor[(aTrack->ID())%evd::kNCOLS]);
+                    int   color(evd::kColor[(aTrack->ID()&65535)%evd::kNCOLS]);
                     int   lineWidth(1);
                     
                     if(Score>0.1 && recoOpt->fDrawCosmicTags)
@@ -1448,7 +1448,7 @@ void RecoBaseDrawer::DrawTrackVertexAssns2D(const art::Event& evt,
             double tick = 30 + detprop->ConvertXToTicks(x, plane, tpc, cstat);
             double wire = geo->WireCoordinate(y, z, plane, tpc, cstat);
             
-            tid = track->ID();
+            tid = track->ID()&65535;
             
             std::cout << "        --> Drawing Track id: " << tid << std::endl;
             
@@ -1459,14 +1459,14 @@ void RecoBaseDrawer::DrawTrackVertexAssns2D(const art::Event& evt,
             trkID.SetTextColor(color);
             trkID.SetTextSize(0.1);
 	
-            std::vector<const recob::Hit*> hits = fmh.at(track->ID());
+            std::vector<const recob::Hit*> hits = fmh.at(track.key());
             
             float cosmicScore = -999;
             if( cosmicTrackTags.isValid() ){
-                if( cosmicTrackTags.at(track->ID()).size() > 0 ) {
+	      if( cosmicTrackTags.at(track.key()).size() > 0 ) {
                     art::Ptr<anab::CosmicTag> currentTag = cosmicTrackTags.at(track.key()).at(0);
                     cosmicScore = currentTag->CosmicScore();
-                }
+	      }
             }
             
             // only get the hits for the current view
@@ -2041,7 +2041,7 @@ void RecoBaseDrawer::Prong3D(const art::Event& evt,
 
             for(const auto& track : trackVec)
             {
-                int color  = evd::kColor[track->ID()%evd::kNCOLS];
+	        int color  = evd::kColor[track.key()%evd::kNCOLS];
                 int marker = kFullDotMedium;
                 int size   = 2;
                 
@@ -2871,7 +2871,7 @@ void RecoBaseDrawer::DrawPFParticleOrtho(const art::Ptr<recob::PFParticle>&     
 
 	for(size_t t = 0; t < track.vals().size(); ++t) {
 	  const recob::Track* ptrack = track.vals().at(t);
-	  int color = ptrack->ID();
+	  int color = ptrack->ID()&65535;
 
 	  // Draw track using only embedded information.
 
@@ -3048,7 +3048,7 @@ void RecoBaseDrawer::DrawPFParticleOrtho(const art::Ptr<recob::PFParticle>&     
       } // p
       // BB: draw the track ID at the end of the track
       if(recoOpt->fDrawTracks > 1) {
-        int tid = track.ID();
+        int tid = track.ID()&65535; //this is a hack for PMA track id which uses the 16th bit to identify shower-like track.
         std::string s = std::to_string(tid);
         char const* txt = s.c_str();
         double x = track.End()(0);

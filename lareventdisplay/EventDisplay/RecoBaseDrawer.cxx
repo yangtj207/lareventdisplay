@@ -2474,6 +2474,30 @@ void RecoBaseDrawer::OpFlashOrtho(const art::Event& evt,
   } // Vector of OpFlash labels
 }
 //......................................................................
+void RecoBaseDrawer::VertexOrtho(const art::PtrVector<recob::Vertex>& vertex,
+				  evd::OrthoProj_t proj, evdb::View2D* view, int marker)
+{
+  for(size_t v = 0; v < vertex.size(); ++v){
+      
+    double xyz[3] = {0.};
+    vertex[v]->XYZ(xyz);
+      
+    int color = evd::kColor[vertex[v]->ID()%evd::kNCOLS];
+
+    if(proj == evd::kXY){
+	  TMarker& strt = view->AddMarker(xyz[1], xyz[0], color, marker, 1.0);
+      strt.SetMarkerColor(color);	
+    }
+    else if(proj == evd::kXZ){
+	  TMarker& strt = view->AddMarker(xyz[2], xyz[0], color, marker, 1.0);
+      strt.SetMarkerColor(color);	
+    }
+    else if(proj == evd::kYZ){
+	  TMarker& strt = view->AddMarker(xyz[2], xyz[1], color, marker, 1.0);
+      strt.SetMarkerColor(color);	
+    }
+  }
+}
 void RecoBaseDrawer::VertexOrtho(const art::Event& evt,
 				  evd::OrthoProj_t  proj,
 				  evdb::View2D*     view) {
@@ -2489,27 +2513,10 @@ void RecoBaseDrawer::VertexOrtho(const art::Event& evt,
     
     art::PtrVector<recob::Vertex> vertex;
     this->GetVertices(evt, which, vertex);
+	this->VertexOrtho(vertex, proj, view, 24);
 
-    for(size_t v = 0; v < vertex.size(); ++v){
-      
-      double xyz[3] = {0.};
-      vertex[v]->XYZ(xyz);
-      
-      int color = evd::kColor[vertex[v]->ID()%evd::kNCOLS];
-
-      if(proj == evd::kXY){
-	TMarker& strt = view->AddMarker(xyz[1], xyz[0], color, 24, 1.0);
-        strt.SetMarkerColor(color);	
-      }
-      else if(proj == evd::kXZ){
-	TMarker& strt = view->AddMarker(xyz[2], xyz[0], color, 24, 1.0);
-        strt.SetMarkerColor(color);	
-      }
-      else if(proj == evd::kYZ){
-	TMarker& strt = view->AddMarker(xyz[2], xyz[1], color, 24, 1.0);
-        strt.SetMarkerColor(color);	
-      }
-    }
+    this->GetVertices(evt, art::InputTag(which, "kink"), vertex);
+	this->VertexOrtho(vertex, proj, view, 27);
   }
   return;
 }
@@ -3395,7 +3402,7 @@ int RecoBaseDrawer::GetPFParticles(const art::Event&                  evt,
 
   //......................................................................
   int RecoBaseDrawer::GetVertices(const art::Event&              evt, 
-				  const std::string&             which,
+				  const art::InputTag&             which,
 				  art::PtrVector<recob::Vertex>& vertex)
   {
     vertex.clear();

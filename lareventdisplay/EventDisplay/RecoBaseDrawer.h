@@ -187,6 +187,10 @@ public:
     void OpFlashOrtho(const art::Event& evt,
 		      evd::OrthoProj_t  proj,
 		      evdb::View2D*     view);
+    void VertexOrtho(const art::PtrVector<recob::Vertex>& vertex,
+				  evd::OrthoProj_t proj,
+				  evdb::View2D* view,
+				  int marker);
     void VertexOrtho(const art::Event& evt,
 		     evd::OrthoProj_t  proj,
 		     evdb::View2D*     view);
@@ -291,7 +295,7 @@ public:
 		           art::View<recob::Shower>& shower);
 
     int GetVertices(const art::Event&              evt,
-		            const std::string&             which,
+		            const art::InputTag&           which,
 		            art::PtrVector<recob::Vertex>& vertex);
 
     int GetSeeds(const art::Event&            evt,

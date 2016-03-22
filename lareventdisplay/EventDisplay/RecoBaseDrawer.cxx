@@ -149,7 +149,8 @@ void RecoBaseDrawer::Wire2D(const art::Event& evt,
       for(size_t i = 0; i < wires.size(); ++i) {
       
         uint32_t channel = wires[i]->Channel();
-	if (channelStatus.IsBad(channel)) continue;
+          
+	    if (!rawOpt->fSeeBadChannels && channelStatus.IsBad(channel)) continue;
 	
         std::vector<geo::WireID> wireids = geo->ChannelToWire(channel);
       
@@ -2179,15 +2180,18 @@ void RecoBaseDrawer::DrawTrack3D(const recob::Track& track,
             {
 	            const std::string& which = handle.provenance()->moduleLabel();
 	            art::FindMany<recob::SpacePoint> fmsp(handle, *evt, which);
-
-	            int n = handle->size();
-	            for(int i=0; i<n; ++i)
+                
+                if (fmsp.isValid() && fmsp.size() > 0)
                 {
-	                art::Ptr<recob::Track> p(handle, i);
-                    if(&*p == &track)
+                    int n = handle->size();
+                    for(int i=0; i<n; ++i)
                     {
-	                    std::vector<const recob::SpacePoint*> spts = fmsp.at(i);
-	                    DrawSpacePoint3D(spts, view, color, marker, 1);
+                        art::Ptr<recob::Track> p(handle, i);
+                        if(&*p == &track)
+                        {
+                            std::vector<const recob::SpacePoint*> spts = fmsp.at(i);
+                            DrawSpacePoint3D(spts, view, color, marker, 1);
+                        }
 	                }
                 }
             }

@@ -59,6 +59,7 @@ namespace evd {
     art::InputTag fRawDataLabel;                           ///< module label that made the raw digits, default is daq
     
     bool         fUncompressWithPed;                       ///< Option to uncompress with pedestal. Turned off by default
+    bool         fSeeBadChannels;                          ///< Allow "bad" channels to be viewed
     
     std::vector<float> fRoIthresholds;                     ///< region of interest thresholds, per plane
     

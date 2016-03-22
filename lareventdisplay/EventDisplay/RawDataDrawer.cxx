@@ -859,7 +859,7 @@ namespace evd {
       if (!bDrawChannel) continue;
       
       // collect bad channels
-      bool const bGood = !channelStatus.IsBad(channel);
+      bool const bGood = rawopt->fSeeBadChannels || !channelStatus.IsBad(channel);
       
       // nothing else to be done if the channel is not good:
       // cells are marked bad by default and if any good channel falls in any of
@@ -1335,7 +1335,7 @@ namespace evd {
       if (!ProcessChannelWithStatus(channelStatus.Status(channel))) continue;
       
       // to be explicit: we don't cound bad channels in
-      if (channelStatus.IsBad(channel)) continue;
+      if (!rawopt->fSeeBadChannels && channelStatus.IsBad(channel)) continue;
       
       std::vector<geo::WireID> wireids = geo->ChannelToWire(channel);
       for(auto const& wid : wireids){
@@ -1397,7 +1397,7 @@ namespace evd {
     
     
     // we accept to see the content of a bad channel, so this is commented out:
-    // if (channelStatus.IsBad()) return;
+    if (!rawopt->fSeeBadChannels && channelStatus.IsBad(channel)) return;
     
     //get pedestal conditions
     const lariov::DetPedestalProvider& pedestalRetrievalAlg = art::ServiceHandle<lariov::DetPedestalService>()->GetPedestalProvider();

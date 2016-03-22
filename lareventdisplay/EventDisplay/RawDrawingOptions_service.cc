@@ -42,6 +42,7 @@ namespace evd {
     fMinChannelStatus           = pset.get< unsigned int>("MinChannelStatus",     0    );
     fMaxChannelStatus           = pset.get< unsigned int>("MaxChannelStatus",     lariov::ChannelStatusProvider::InvalidStatus - 1);
     fUncompressWithPed          = pset.get< bool >("UncompressWithPed",false);
+    fSeeBadChannels             = pset.get< bool >("SeeBadChannels", false);
     fRoIthresholds              = pset.get< std::vector<float> >("RoIthresholds", std::vector<float>());
     
     if (fRoIthresholds.empty()) fRoIthresholds.push_back((float) fMinSignal);

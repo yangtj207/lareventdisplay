@@ -9,27 +9,9 @@
 #ifndef GRAPHCLUSTERALG_H
 #define GRAPHCLUSTERALG_H
 
+#ifndef __ROOTCLING__
 
 
-#ifdef __CINT__
-namespace art { 
-  class Event;
-  class PtrVector;
-  class Ptr;
-  class ServiceHandle;
-  class View;
-}
-
-namespace fhicl {
-  class ParameterSet; 
-}
-
-namespace recob {
- class Hit; 
-}
-
-
-#else
 #include "art/Persistency/Common/PtrVector.h"
 #include "art/Persistency/Common/Ptr.h"
 #include "art/Framework/Services/Registry/ActivityRegistry.h"
@@ -39,7 +21,6 @@ namespace recob {
 #include "larcore/Geometry/Geometry.h"
 #include "fhiclcpp/ParameterSet.h" 
 #include <vector>
-#endif
 
 
 
@@ -129,6 +110,7 @@ namespace evd {
 
 
 
+#endif // root 6
 
 
 

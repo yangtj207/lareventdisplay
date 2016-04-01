@@ -4,24 +4,14 @@
 /// \version $Id: RecoBaseDrawer.h,v 1.3 2010/11/11 22:47:20 p-novaart Exp $
 #ifndef EVD_RECOBASEDRAWER_H
 #define EVD_RECOBASEDRAWER_H
+
+#ifndef __ROOTCLING__
+
 #include <vector>
-#ifdef __CINT__
-
-namespace art { 
-    class Event;
-    class FindMany;
-    class PtrVector;
-    class Ptr;
-    class ServiceHandle;
-    class View;
-}
-
-#else
 #include "art/Persistency/Common/PtrVector.h"
 #include "art/Framework/Core/FindMany.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Principal/View.h"
-#endif
 #include "lareventdisplay/EventDisplay/OrthoProj.h"
 
 class TVector3;
@@ -328,6 +318,7 @@ public:
     
   };
 }
+#endif // root 6
 
 #endif
 ////////////////////////////////////////////////////////////////////////

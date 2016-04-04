@@ -5,14 +5,25 @@
 #ifndef EVD_RECOBASEDRAWER_H
 #define EVD_RECOBASEDRAWER_H
 
-#ifndef __ROOTCLING__
-
 #include <vector>
+
 #include "art/Persistency/Common/PtrVector.h"
 #include "art/Framework/Core/FindMany.h"
-#include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Principal/View.h"
+
+#ifdef __ROOTCLING__
+
+namespace art { 
+    class Event;
+    class ServiceHandle;
+}
+
+#else
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#endif
+
 #include "lareventdisplay/EventDisplay/OrthoProj.h"
+#include "lardata/RecoBase/SpacePoint.h"
 
 class TVector3;
 class TH1F;
@@ -29,7 +40,6 @@ namespace recob {
     class PCAxis;
     class PFParticle;
     class EndPoint2D;
-    class SpacePoint;
     class Prong;
     class Track;
     class Shower;
@@ -318,7 +328,6 @@ public:
     
   };
 }
-#endif // root 6
 
 #endif
 ////////////////////////////////////////////////////////////////////////

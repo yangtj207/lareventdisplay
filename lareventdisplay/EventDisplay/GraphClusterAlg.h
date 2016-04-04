@@ -9,22 +9,34 @@
 #ifndef GRAPHCLUSTERALG_H
 #define GRAPHCLUSTERALG_H
 
-#ifndef __ROOTCLING__
-
+#include <vector>
 
 #include "art/Persistency/Common/PtrVector.h"
 #include "art/Persistency/Common/Ptr.h"
+#include "art/Framework/Principal/View.h"
+
+#ifdef __ROOTCLING__
+namespace art { 
+  class Event;
+  class ServiceHandle;
+}
+
+namespace fhicl {
+  class ParameterSet; 
+}
+
+namespace recob {
+ class Hit; 
+}
+
+
+#else
 #include "art/Framework/Services/Registry/ActivityRegistry.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Principal/View.h"
 #include "lareventdisplay/EventDisplay/InfoTransfer.h"
 #include "larcore/Geometry/Geometry.h"
 #include "fhiclcpp/ParameterSet.h" 
-#include <vector>
-
-
-
-
+#endif
 
 
 namespace util {
@@ -107,10 +119,6 @@ namespace evd {
 } //namespace evd
 
 
-
-
-
-#endif // root 6
 
 
 

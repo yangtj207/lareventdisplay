@@ -3,13 +3,22 @@
 #ifndef EVD_ANALYSISBASEDRAWER_H
 #define EVD_ANALYSISBASEDRAWER_H
 
-#ifndef __ROOTCLING__
-
 #include <vector>
 
 #include "art/Persistency/Common/PtrVector.h"
-#include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Principal/View.h"
+
+#ifdef __ROOTCLING__
+namespace art { 
+  class Event;
+  class ServiceHandle;
+}
+namespace recob{
+  class Hit;
+}
+#else
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#endif
 
 namespace evdb{
    class View2D;
@@ -55,6 +64,5 @@ namespace evd {
   };
 }
 
-#endif // root 6
 #endif
 ////////////////////////////////////////////////////////////////////////

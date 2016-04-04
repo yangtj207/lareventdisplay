@@ -5,14 +5,25 @@
 #ifndef EVD_HITSELECTOR_H
 #define EVD_HITSELECTOR_H
 
-#ifndef __ROOTCLING__
-
 #include <vector>
 
 #include "art/Persistency/Common/PtrVector.h"
-#include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Principal/View.h"
+
+#ifdef __ROOTCLING__
+namespace art { 
+  class Event;
+  class ServiceHandle;
+}
+namespace trkf
+{
+ class HitPtrVec;
+}
+#else
+#include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "lardata/RecoObjects/BezierTrack.h"
+#endif
+
 #include "lareventdisplay/EventDisplay/OrthoProj.h"
 
 class TH1F;
@@ -78,7 +89,6 @@ namespace evd {
       
   };
 }
-#endif // root 6
 
 #endif
 ////////////////////////////////////////////////////////////////////////

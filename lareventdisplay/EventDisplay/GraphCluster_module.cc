@@ -13,7 +13,7 @@
 #include <string>
 #include "art/Framework/Core/ModuleMacros.h" 
 
-#ifdef __CINT__
+#ifdef __ROOTCLING__
 namespace art { 
   class EDProducer;
   class Event;

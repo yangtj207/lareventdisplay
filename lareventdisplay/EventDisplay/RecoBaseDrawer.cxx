@@ -2521,6 +2521,9 @@ void RecoBaseDrawer::VertexOrtho(const art::Event& evt,
 
     this->GetVertices(evt, art::InputTag(which, "kink"), vertex);
 	this->VertexOrtho(vertex, proj, view, 27);
+
+    this->GetVertices(evt, art::InputTag(which, "node"), vertex);
+	this->VertexOrtho(vertex, proj, view, 22);
   }
   return;
 }

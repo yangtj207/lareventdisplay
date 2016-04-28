@@ -1,8 +1,7 @@
 
 include(CetRootCint)
-include_directories ( ${CMAKE_CURRENT_SOURCE_DIR} )
 
-set( PACKAGE lareventdisplay_EventDisplay )
+set( PACKAGE EventDisplay )
 FILE( GLOB src_files *.cxx )
 
 cet_rootcint( ${PACKAGE} )

@@ -9,11 +9,11 @@
 #define UTIL_CHANGETRACKERS_H
 
 // LArSoft libraries
-#include "larcore/SimpleTypesAndConstants/geo_types.h" // geo::PlaneID
+#include "larcoreobj/SimpleTypesAndConstants/geo_types.h" // geo::PlaneID
 
 // framework libraries
-#include "art/Utilities/InputTag.h"
-#include "art/Persistency/Provenance/EventID.h"
+#include "canvas/Utilities/InputTag.h"
+#include "canvas/Persistency/Provenance/EventID.h"
 #include "art/Framework/Principal/Event.h"
 
 // C/C++ standard libraries

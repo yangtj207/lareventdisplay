@@ -11,21 +11,21 @@ art_make_library(
                   LIBRARIES lareventdisplay_EventDisplay_ColorDrawingOptions_service
 	                    lareventdisplay_EventDisplay_InfoTransfer_service
 	                    larevt_Filters
- 			    larsim_Simulation
-			    lardata_RawData
-			    lardata_RecoBase
+ 			    larsim_Simulation larsimobj_Simulation
+			    lardataobj_RawData
+			    lardataobj_RecoBase
 			    lardata_RecoObjects
 			    lardata_Utilities
-			    lardata_AnalysisBase
+			    lardataobj_AnalysisBase
 			    lardata_AnalysisAlg
 		 	    larevt_CalibrationDBI_IOVData
 			    larevt_CalibrationDBI_Providers
-	                    ${SIMULATIONBASE}
-			    ${EVENTDISPLAYBASE}
+	                    nusimdata_SimulationBase
+			    nutools_EventDisplayBase
                             ${ART_FRAMEWORK_CORE}
 			    ${ART_FRAMEWORK_PRINCIPAL}
-			    ${ART_PERSISTENCY_COMMON}
-			    ${ART_UTILITIES}
+			    art_Persistency_Common canvas_Persistency_Common
+			    art_Utilities canvas_Utilities
 			    ${MF_MESSAGELOGGER}
 			    ${MF_UTILITIES}
 	                    ${FHICLCPP}
@@ -36,13 +36,13 @@ art_make_library(
 
 simple_plugin ( GraphCluster module
                         lareventdisplay_EventDisplay
-			${EVENTDISPLAYBASE}
+			nutools_EventDisplayBase
                         ${ART_FRAMEWORK_CORE}
 			${ART_FRAMEWORK_PRINCIPAL}
 			${ART_FRAMEWORK_SERVICES_REGISTRY}
 			${ART_FRAMEWORK_SERVICES_BASIC}
 			${ART_FRAMEWORK_SERVICES_OPTIONAL}
-			${ART_UTILITIES}
+			art_Utilities canvas_Utilities
 			${MF_MESSAGELOGGER}
 			${MF_UTILITIES}
 	                ${FHICLCPP}
@@ -52,13 +52,13 @@ simple_plugin ( GraphCluster module
 
 simple_plugin ( EVD module
                         lareventdisplay_EventDisplay
-			${EVENTDISPLAYBASE}
+			nutools_EventDisplayBase
                         ${ART_FRAMEWORK_CORE}
 			${ART_FRAMEWORK_PRINCIPAL}
 			${ART_FRAMEWORK_SERVICES_REGISTRY}
 			${ART_FRAMEWORK_SERVICES_BASIC}
 			${ART_FRAMEWORK_SERVICES_OPTIONAL}
-			${ART_UTILITIES}
+			art_Utilities canvas_Utilities
 			${MF_MESSAGELOGGER}
 			${MF_UTILITIES}
 	                ${FHICLCPP}
@@ -69,17 +69,17 @@ simple_plugin ( EVD module
 simple_plugin ( AnalysisDrawingOptions service
 			larcore_Geometry_Geometry_service
 			larcore_Geometry
-			lardata_RecoBase
-			${EVENTDISPLAYBASE}
+			lardataobj_RecoBase
+			nutools_EventDisplayBase
                         ${ART_FRAMEWORK_CORE}
 			${ART_FRAMEWORK_PRINCIPAL}
 			${ART_FRAMEWORK_SERVICES_REGISTRY}
 			${ART_FRAMEWORK_SERVICES_BASIC}
 			${ART_FRAMEWORK_SERVICES_OPTIONAL}
 			${ART_FRAMEWORK_SERVICES_OPTIONAL_TFILESERVICE_SERVICE}
-			${ART_PERSISTENCY_COMMON}
-			${ART_PERSISTENCY_PROVENANCE}
-			${ART_UTILITIES}
+			art_Persistency_Common canvas_Persistency_Common
+			art_Persistency_Provenance canvas_Persistency_Provenance
+			art_Utilities canvas_Utilities
 			${MF_MESSAGELOGGER}
 			${MF_UTILITIES}
 	                ${FHICLCPP}
@@ -91,17 +91,17 @@ simple_plugin ( AnalysisDrawingOptions service
 simple_plugin ( ColorDrawingOptions service
 			larcore_Geometry_Geometry_service
 			larcore_Geometry
-			lardata_RecoBase
-			${EVENTDISPLAYBASE}
+			lardataobj_RecoBase
+			nutools_EventDisplayBase
                         ${ART_FRAMEWORK_CORE}
 			${ART_FRAMEWORK_PRINCIPAL}
 			${ART_FRAMEWORK_SERVICES_REGISTRY}
 			${ART_FRAMEWORK_SERVICES_BASIC}
 			${ART_FRAMEWORK_SERVICES_OPTIONAL}
 			${ART_FRAMEWORK_SERVICES_OPTIONAL_TFILESERVICE_SERVICE}
-			${ART_PERSISTENCY_COMMON}
-			${ART_PERSISTENCY_PROVENANCE}
-			${ART_UTILITIES}
+			art_Persistency_Common canvas_Persistency_Common
+			art_Persistency_Provenance canvas_Persistency_Provenance
+			art_Utilities canvas_Utilities
 			${MF_MESSAGELOGGER}
 			${MF_UTILITIES}
 	                ${FHICLCPP}
@@ -113,17 +113,17 @@ simple_plugin ( ColorDrawingOptions service
 simple_plugin ( EvdLayoutOptions service
 			larcore_Geometry_Geometry_service
 			larcore_Geometry
-			lardata_RecoBase
-			${EVENTDISPLAYBASE}
+			lardataobj_RecoBase
+			nutools_EventDisplayBase
                         ${ART_FRAMEWORK_CORE}
 			${ART_FRAMEWORK_PRINCIPAL}
 			${ART_FRAMEWORK_SERVICES_REGISTRY}
 			${ART_FRAMEWORK_SERVICES_BASIC}
 			${ART_FRAMEWORK_SERVICES_OPTIONAL}
 			${ART_FRAMEWORK_SERVICES_OPTIONAL_TFILESERVICE_SERVICE}
-			${ART_PERSISTENCY_COMMON}
-			${ART_PERSISTENCY_PROVENANCE}
-			${ART_UTILITIES}
+			art_Persistency_Common canvas_Persistency_Common
+			art_Persistency_Provenance canvas_Persistency_Provenance
+			art_Utilities canvas_Utilities
 			${MF_MESSAGELOGGER}
 			${MF_UTILITIES}
 	                ${FHICLCPP}
@@ -135,17 +135,17 @@ simple_plugin ( EvdLayoutOptions service
 simple_plugin ( InfoTransfer service
 			larcore_Geometry_Geometry_service
 			larcore_Geometry
-			lardata_RecoBase
-			${EVENTDISPLAYBASE}
+			lardataobj_RecoBase
+			nutools_EventDisplayBase
                         ${ART_FRAMEWORK_CORE}
 			${ART_FRAMEWORK_PRINCIPAL}
 			${ART_FRAMEWORK_SERVICES_REGISTRY}
 			${ART_FRAMEWORK_SERVICES_BASIC}
 			${ART_FRAMEWORK_SERVICES_OPTIONAL}
 			${ART_FRAMEWORK_SERVICES_OPTIONAL_TFILESERVICE_SERVICE}
-			${ART_PERSISTENCY_COMMON}
-			${ART_PERSISTENCY_PROVENANCE}
-			${ART_UTILITIES}
+			art_Persistency_Common canvas_Persistency_Common
+			art_Persistency_Provenance canvas_Persistency_Provenance
+			art_Utilities canvas_Utilities
 			${MF_MESSAGELOGGER}
 			${MF_UTILITIES}
 	                ${FHICLCPP}
@@ -157,17 +157,17 @@ simple_plugin ( InfoTransfer service
 simple_plugin ( RawDrawingOptions service
 			larcore_Geometry_Geometry_service
 			larcore_Geometry
-			lardata_RecoBase
-			${EVENTDISPLAYBASE}
+			lardataobj_RecoBase
+			nutools_EventDisplayBase
                         ${ART_FRAMEWORK_CORE}
 			${ART_FRAMEWORK_PRINCIPAL}
 			${ART_FRAMEWORK_SERVICES_REGISTRY}
 			${ART_FRAMEWORK_SERVICES_BASIC}
 			${ART_FRAMEWORK_SERVICES_OPTIONAL}
 			${ART_FRAMEWORK_SERVICES_OPTIONAL_TFILESERVICE_SERVICE}
-			${ART_PERSISTENCY_COMMON}
-			${ART_PERSISTENCY_PROVENANCE}
-			${ART_UTILITIES}
+			art_Persistency_Common canvas_Persistency_Common
+			art_Persistency_Provenance canvas_Persistency_Provenance
+			art_Utilities canvas_Utilities
 			${MF_MESSAGELOGGER}
 			${MF_UTILITIES}
 	                ${FHICLCPP}
@@ -179,17 +179,17 @@ simple_plugin ( RawDrawingOptions service
 simple_plugin ( RecoDrawingOptions service
 			larcore_Geometry_Geometry_service
 			larcore_Geometry
-			lardata_RecoBase
-			${EVENTDISPLAYBASE}
+			lardataobj_RecoBase
+			nutools_EventDisplayBase
                         ${ART_FRAMEWORK_CORE}
 			${ART_FRAMEWORK_PRINCIPAL}
 			${ART_FRAMEWORK_SERVICES_REGISTRY}
 			${ART_FRAMEWORK_SERVICES_BASIC}
 			${ART_FRAMEWORK_SERVICES_OPTIONAL}
 			${ART_FRAMEWORK_SERVICES_OPTIONAL_TFILESERVICE_SERVICE}
-			${ART_PERSISTENCY_COMMON}
-			${ART_PERSISTENCY_PROVENANCE}
-			${ART_UTILITIES}
+			art_Persistency_Common canvas_Persistency_Common
+			art_Persistency_Provenance canvas_Persistency_Provenance
+			art_Utilities canvas_Utilities
 			${MF_MESSAGELOGGER}
 			${MF_UTILITIES}
 			${MF_UTILITIES}
@@ -202,17 +202,17 @@ simple_plugin ( RecoDrawingOptions service
 simple_plugin ( SimulationDrawingOptions service
 			larcore_Geometry_Geometry_service
 			larcore_Geometry
-			lardata_RecoBase
-			${EVENTDISPLAYBASE}
+			lardataobj_RecoBase
+			nutools_EventDisplayBase
                         ${ART_FRAMEWORK_CORE}
 			${ART_FRAMEWORK_PRINCIPAL}
 			${ART_FRAMEWORK_SERVICES_REGISTRY}
 			${ART_FRAMEWORK_SERVICES_BASIC}
 			${ART_FRAMEWORK_SERVICES_OPTIONAL}
 			${ART_FRAMEWORK_SERVICES_OPTIONAL_TFILESERVICE_SERVICE}
-			${ART_PERSISTENCY_COMMON}
-			${ART_PERSISTENCY_PROVENANCE}
-			${ART_UTILITIES}
+			art_Persistency_Common canvas_Persistency_Common
+			art_Persistency_Provenance canvas_Persistency_Provenance
+			art_Utilities canvas_Utilities
 			${MF_MESSAGELOGGER}
 			${MF_UTILITIES}
 	                ${FHICLCPP}

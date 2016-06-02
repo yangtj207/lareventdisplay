@@ -22,7 +22,7 @@ extern "C" {
 }
 
 //LArSoft includes
-#include "EventDisplayBase/DisplayWindow.h"
+#include "nutools/EventDisplayBase/DisplayWindow.h"
 #include "lareventdisplay/EventDisplay/TWQProjectionView.h"
 #include "lareventdisplay/EventDisplay/TWQMultiTPCProjection.h"
 #include "lareventdisplay/EventDisplay/Display3DView.h"

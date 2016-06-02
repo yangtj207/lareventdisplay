@@ -20,7 +20,7 @@
 #include "TROOT.h"
 #include "sstream"
 
-#include "EventDisplayBase/View2D.h"
+#include "nutools/EventDisplayBase/View2D.h"
 #include "lareventdisplay/EventDisplay/TWQMultiTPCProjection.h"
 #include "lareventdisplay/EventDisplay/HeaderPad.h"
 #include "lareventdisplay/EventDisplay/ColorDrawingOptions.h"
@@ -36,7 +36,7 @@
 #include "lareventdisplay/EventDisplay/HitSelector.h"
 #include "lareventdisplay/EventDisplay/Style.h"
 
-#include "lardata/RecoBase/Seed.h"
+#include "lardataobj/RecoBase/Seed.h"
 #include "larcore/Geometry/Geometry.h"
 #include "larcore/Geometry/PlaneGeo.h"
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"

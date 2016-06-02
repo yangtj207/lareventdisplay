@@ -69,14 +69,14 @@
 
 #include "lareventdisplay/EventDisplay/ChangeTrackers.h" // util::PlaneDataChangeTracker_t
 #include "lareventdisplay/EventDisplay/RawDataDrawer.h"
-#include "EventDisplayBase/View2D.h"
-#include "EventDisplayBase/EventHolder.h"
+#include "nutools/EventDisplayBase/View2D.h"
+#include "nutools/EventDisplayBase/EventHolder.h"
 #include "lareventdisplay/EventDisplay/ColorDrawingOptions.h"
 #include "lareventdisplay/EventDisplay/RawDrawingOptions.h"
 #include "larevt/CalibrationDBI/Interface/DetPedestalService.h"
 #include "larevt/CalibrationDBI/Interface/DetPedestalProvider.h"
-#include "lardata/RawData/raw.h"
-#include "lardata/RawData/RawDigit.h"
+#include "lardataobj/RawData/raw.h"
+#include "lardataobj/RawData/RawDigit.h"
 #include "larevt/CalibrationDBI/Interface/ChannelStatusService.h"
 #include "larevt/CalibrationDBI/Interface/ChannelStatusProvider.h"
 #include "larcore/Geometry/CryostatGeo.h"
@@ -88,12 +88,12 @@
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 
 
-#include "art/Utilities/InputTag.h"
-#include "art/Utilities/Exception.h"
+#include "canvas/Utilities/InputTag.h"
+#include "canvas/Utilities/Exception.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
-#include "art/Persistency/Common/Ptr.h"
+#include "canvas/Persistency/Common/Ptr.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "cetlib/demangle.h"
 

@@ -8,7 +8,7 @@
 #define EVD_DISPLAY3DVIEW_H
 #include "RQ_OBJECT.h"
 
-#include "EventDisplayBase/Canvas.h"
+#include "nutools/EventDisplayBase/Canvas.h"
 
 namespace evd {
   class Display3DPad;

@@ -7,8 +7,8 @@
 
 #include <vector>
 
-#include "art/Persistency/Common/PtrVector.h"
-#include "art/Framework/Core/FindMany.h"
+#include "canvas/Persistency/Common/PtrVector.h"
+#include "canvas/Persistency/Common/FindMany.h"
 #include "art/Framework/Principal/View.h"
 
 #ifdef __ROOTCLING__
@@ -23,7 +23,7 @@ namespace art {
 #endif
 
 #include "lareventdisplay/EventDisplay/OrthoProj.h"
-#include "lardata/RecoBase/SpacePoint.h"
+#include "lardataobj/RecoBase/SpacePoint.h"
 
 class TVector3;
 class TH1F;

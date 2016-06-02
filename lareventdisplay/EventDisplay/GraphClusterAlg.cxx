@@ -11,8 +11,8 @@
 #include "lardata/Utilities/GeometryUtilities.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "art/Framework/Principal/Event.h" 
-#include "art/Persistency/Common/PtrVector.h"
-#include "art/Persistency/Common/Ptr.h"
+#include "canvas/Persistency/Common/PtrVector.h"
+#include "canvas/Persistency/Common/Ptr.h"
 
 
  //-------------------------------------------------

@@ -5,7 +5,7 @@
 #ifndef EVD_RAWDATADRAWER_H
 #define EVD_RAWDATADRAWER_H
 
-#include "larcore/SimpleTypesAndConstants/geo_types.h" // geo::PlaneID
+#include "larcoreobj/SimpleTypesAndConstants/geo_types.h" // geo::PlaneID
 
 #include <vector>
 #ifndef __CINT__

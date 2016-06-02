@@ -15,7 +15,7 @@
 #include "lardata/Utilities/AssociationUtil.h"
 #include "lardata/Utilities/GeometryUtilities.h"
 #include "lareventdisplay/EventDisplay/InfoTransfer.h"
-#include "EventDisplayBase/NavState.h"
+#include "nutools/EventDisplayBase/NavState.h"
 
 namespace{
   void WriteMsg(const char* fcn)

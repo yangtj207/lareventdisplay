@@ -12,7 +12,7 @@
 
 #include "TGButton.h" // For TGCheckButton
 
-#include "EventDisplayBase/Canvas.h"
+#include "nutools/EventDisplayBase/Canvas.h"
 
 #include "RQ_OBJECT.h"
 

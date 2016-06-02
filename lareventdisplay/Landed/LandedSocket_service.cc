@@ -11,26 +11,16 @@
 #include <iostream>
 #include <sstream>
 #include <stdio.h>
-#include <sys/socket.h>
-#include <sys/un.h>
-#include <unistd.h>
 #include <string.h>
 
-// defining MSG_NOSIGNAL for OSX
-#ifndef MSG_NOSIGNAL
-# define MSG_NOSIGNAL 0
-# ifdef SO_NOSIGPIPE
-#  define CEPH_USE_SO_NOSIGPIPE
-# else
-#  error "Cannot block SIGPIPE!"
-# endif
-#endif
+#include <boost/array.hpp>
 
 namespace evd
 {
   LandedSocket::LandedSocket(fhicl::ParameterSet const& pset,
 		 art::ActivityRegistry& reg):
-    socket_(-1)
+    endpoint_(nullptr),
+    socket_(nullptr)
   {
    
     reg.sPostBeginJob.watch       (this, &LandedSocket::postBeginJob);
@@ -60,25 +50,18 @@ namespace evd
   void LandedSocket::
   postProcessEvent(art::Event const& event)
   {
-    if (socket_>=0)
+    if (socket_!=nullptr)
       {
 	art::RootInput* rootinput = dynamic_cast<art::RootInput*>(inputSource_);
 	if (!rootinput)
 	  {
 	    throw cet::exception("Landed") << "input is not root file, therefore not seekable and therefore unsuitable for EventViewer\n";
 	  }
-	char instr[64];
-	memset(instr, 0, sizeof(instr));
-	int i=0;
-	int ret;
-	//	std::cout << "waiting for instruction\n";
-	while ((ret=recv(socket_, &(instr[i]), 1, MSG_NOSIGNAL))==1 && i<63 && instr[i]!='\n')
+	boost::array<char, 128> instr;
+	size_t len=socket_->receive_from(boost::asoi::buffer(instr), *endpoint_);
+	if (len>0)
 	  {
-	    i++;
-	  }
-	if (ret==1 && instr[i]=='\n')
-	  {
-	    long newrec=atol(instr);
+	    long newrec=atol(instr.data());
 	    long diff=newrec-record_;
 	    diff--;
 	    //	    std::cout << "seek: " << diff << std::endl;
@@ -119,6 +102,7 @@ namespace evd
       }
     std::ostringstream sockfile;
     sockfile << getenv("HOME") << "/.landed.sock";
+    boost::asio::local::stream_protocol::endpoint ep(sockfile.str());
     struct sockaddr_un address;
     memset(&address, 0, sizeof(struct sockaddr_un));
     address.sun_family=AF_UNIX;

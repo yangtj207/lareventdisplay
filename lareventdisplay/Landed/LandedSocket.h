@@ -11,6 +11,7 @@ namespace art   { class EventID; }
 namespace art   { class Event; }
 
 #include <zlib.h>
+#include <boost/asio.hpp>
 
 namespace evd
 {
@@ -29,7 +30,8 @@ namespace evd
 
   private:
     art::InputSource* inputSource_;
-    int socket_;
+    boost::asio::local::stream_protocol::endpoint* endpoint_;
+    boost::asio::local::stream_protocol::socket* socket_;
     unsigned long record_;
 
   public:

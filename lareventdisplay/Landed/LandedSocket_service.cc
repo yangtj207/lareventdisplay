@@ -129,6 +129,7 @@ namespace evd
   void LandedSocket::
   sendEvent(int nhits, int nvertex, int run, int subrun, int event)
   {
+    std::cout << "sending event\n";
     std::ostringstream ss;
     ss << "EVT:" << record_ << "," << nhits << "," << nvertex << ", " << run << "," << subrun << "," << event << "\n";
     //    std::cout << ss.str();

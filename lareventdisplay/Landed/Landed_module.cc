@@ -99,7 +99,7 @@ evd::Landed::Landed(fhicl::ParameterSet const & p):
   outputFilename_(p.get<std::string>("outputFilename", "")),
   which_(p.get<std::string>("which", "truth")),
   ppDb_(nullptr),
-  events_(p.get<std::vector<int> >("events"))
+  events_(p.get<std::vector<int> >("events", std::vector<int>()))
 {
   
   if (!outputFilename_.length() && !sock_->connect())

@@ -102,7 +102,7 @@ evd::Landed::Landed(fhicl::ParameterSet const & p):
   events_(p.get<std::vector<int> >("events", std::vector<int>()))
 {
   
-  if (!outputFilename_.length() && !sock_->connect())
+  if (outputFilename_.empty() && !sock_->connect())
     {
       throw cet::exception("Landed") << "no output filename specified and unable to connect to LANDED app using local socket\n" << 
 	"please either specify a filename, or check LANDED is running and that you have started the server\n";	  
@@ -162,7 +162,7 @@ evd::Landed::Landed(fhicl::ParameterSet const & p):
 void evd::Landed::beginJob()
 {
 
-  if (outputFilename_.length())
+  if (!outputFilename_.empty())
     {
       //compress geometry
       uLongf complen=compressBound(vrml_.length());
@@ -236,7 +236,7 @@ void evd::Landed::endJob()
 }
 void evd::Landed::analyze(art::Event const & event)
 {
-  if (!events_.size() || !outputFilename_.length() || std::find(events_.begin(), events_.end(), event.event())!=events_.end())
+  if (!events_.size() || outputFilename_.empty() || std::find(events_.begin(), events_.end(), event.event())!=events_.end())
     {
       sqlite3_stmt* stmt;
       char * sErrMsg = 0;
@@ -350,7 +350,7 @@ void evd::Landed::analyze(art::Event const & event)
 	    }
 	}
 
-      if (outputFilename_.length())
+      if (!outputFilename_.empty())
 	{
 	  if (sqlite3_prepare(ppDb_, "INSERT INTO Events (RunNumber, SubRunNumber, EventNumber) VALUES ( ?, ?, ? );", 200, &stmt, nullptr)!=SQLITE_OK)
 	    throw cet::exception("Landed") << "failed to fill events table on prepare\n";

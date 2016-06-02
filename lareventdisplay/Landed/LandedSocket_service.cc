@@ -68,7 +68,7 @@ namespace evd
 	    //	    std::cout << "seek: " << diff << std::endl;
 	    if (rootinput->seekToEvent(diff, true))
 	      {
-		std::cout << "seek succeeded\n";
+		LOG_DEBUG("Landed") << "seek succeeded\n";
 		socket_->send(boost::asio::buffer("OK\n", 3));
 		record_=newrec;
 	      }
@@ -100,7 +100,7 @@ namespace evd
     endpoint_=new boost::asio::local::stream_protocol::endpoint(sockfile.str());
     if (!endpoint_)
       {
-	std::cerr << "Landed: failed to create socket for connection to LANDED app\n";	
+	mf::LogError("Landed") << "failed to create socket for connection to LANDED app\n";	
 	return false;
       }
     socket_=new boost::asio::local::stream_protocol::socket(service_);
@@ -123,13 +123,12 @@ namespace evd
     if (socket_->receive(boost::asio::buffer(conf))!=1)
       throw cet::exception("Landed") << "LANDED app did not confirm detector geometry\n";
     else
-      std::cout << "LANDED app has confirmed detector geometry\n";
+      LOG_DEBUG("Landed") << "LANDED app has confirmed detector geometry\n";
 
   }
   void LandedSocket::
   sendEvent(int nhits, int nvertex, int run, int subrun, int event)
   {
-    std::cout << "sending event\n";
     std::ostringstream ss;
     ss << "EVT:" << record_ << "," << nhits << "," << nvertex << ", " << run << "," << subrun << "," << event << "\n";
     //    std::cout << ss.str();

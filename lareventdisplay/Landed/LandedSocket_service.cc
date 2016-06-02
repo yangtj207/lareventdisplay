@@ -20,7 +20,8 @@ namespace evd
   LandedSocket::LandedSocket(fhicl::ParameterSet const& pset,
 		 art::ActivityRegistry& reg):
     endpoint_(nullptr),
-    socket_(nullptr)
+    socket_(nullptr),
+    service_()
   {
    
     reg.sPostBeginJob.watch       (this, &LandedSocket::postBeginJob);
@@ -58,7 +59,7 @@ namespace evd
 	    throw cet::exception("Landed") << "input is not root file, therefore not seekable and therefore unsuitable for EventViewer\n";
 	  }
 	boost::array<char, 128> instr;
-	size_t len=socket_->receive_from(boost::asoi::buffer(instr), *endpoint_);
+	size_t len=socket_->receive(boost::asio::buffer(instr));
 	if (len>0)
 	  {
 	    long newrec=atol(instr.data());
@@ -68,7 +69,7 @@ namespace evd
 	    if (rootinput->seekToEvent(diff, true))
 	      {
 		std::cout << "seek succeeded\n";
-		send(socket_, "OK\n", 3, 0);
+		socket_->send(boost::asio::buffer("OK\n", 3));
 		record_=newrec;
 	      }
 	    else
@@ -76,12 +77,12 @@ namespace evd
 		//		std::cout << "no such event, reloading\n";
 		if (!rootinput->seekToEvent(event.id(), true))
 		  throw cet::exception("Landed") << "problem performing seek on input, lost track of input event\n";
-		send(socket_, "NO\n", 3, 0);
+		socket_->send(boost::asio::buffer("NO\n", 3));
 		//		std::cout << "reload performed\n";
 	      }
 	    //wait for message confirmation
-	    char conf;
-	    if (recv(socket_, &conf, 1, 0)!=1)
+	    boost::array<char, 2> conf; 
+	    if (socket_->receive(boost::asio::buffer(conf))!=1)
 	      throw cet::exception("Landed") << "LANDED app did not confirm instruction result\n";	
 	    
 	  }
@@ -94,26 +95,18 @@ namespace evd
   connect(void)
   {
     //connect to landed app
-    socket_=socket(AF_UNIX, SOCK_STREAM, 0);
-    if (socket_<0)
+    std::ostringstream sockfile;
+    sockfile << getenv("HOME") << "/.landed.sock";
+    endpoint_=new boost::asio::local::stream_protocol::endpoint(sockfile.str());
+    if (!endpoint_)
       {
 	std::cerr << "Landed: failed to create socket for connection to LANDED app\n";	
 	return false;
       }
-    std::ostringstream sockfile;
-    sockfile << getenv("HOME") << "/.landed.sock";
-    boost::asio::local::stream_protocol::endpoint ep(sockfile.str());
-    struct sockaddr_un address;
-    memset(&address, 0, sizeof(struct sockaddr_un));
-    address.sun_family=AF_UNIX;
-    strncpy(address.sun_path, sockfile.str().c_str(), sizeof(address.sun_path));
-    address.sun_path[sizeof(address.sun_path)-1]=0;
-    if (::connect(socket_, (struct sockaddr*)&address,strlen(address.sun_path)+sizeof(address.sun_family))!=0)
-      {
-	std::cerr << "Landed: failed to connect to LANDED app\n";
-	socket_=-1;
-      }
-    return socket>=0;
+    socket_=new boost::asio::local::stream_protocol::socket(service_);
+    if (socket_!=nullptr)
+      socket_->connect(*endpoint_);
+    return socket_!=nullptr;
   }
 
   void LandedSocket::
@@ -121,13 +114,13 @@ namespace evd
   {
     std::ostringstream ss;
     ss << "GEO:"<< vrml.length() << "\n";
-    if (send(socket_, ss.str().c_str(), ss.str().length(), 0)!=(ssize_t)ss.str().length() ||
-	send(socket_, vrml.c_str(), vrml.length(), 0)!=(ssize_t)(vrml.length()))
+    if (socket_->send(boost::asio::buffer(ss.str().c_str(), ss.str().length()))!=ss.str().length() ||
+	socket_->send(boost::asio::buffer(vrml.c_str(), vrml.length()))!=vrml.length())
       {
 	throw cet::exception("Landed") << "failed to send detector geometry to LANDED app\n";	
       }
-    char conf;
-    if (recv(socket_, &conf, 1, 0)!=1)
+    boost::array<char, 2> conf; 
+    if (socket_->receive(boost::asio::buffer(conf))!=1)
       throw cet::exception("Landed") << "LANDED app did not confirm detector geometry\n";
     else
       std::cout << "LANDED app has confirmed detector geometry\n";
@@ -139,10 +132,10 @@ namespace evd
     std::ostringstream ss;
     ss << "EVT:" << record_ << "," << nhits << "," << nvertex << ", " << run << "," << subrun << "," << event << "\n";
     //    std::cout << ss.str();
-     if (send(socket_, ss.str().c_str(), ss.str().length(), 0)!=(ssize_t)ss.str().length())
-	throw cet::exception("Landed") << "failed to send event introduction to LANDED app\n";	
-    char conf;
-    if (recv(socket_, &conf, 1, 0)!=1)
+    if (socket_->send(boost::asio::buffer(ss.str().c_str(), ss.str().length()))!=ss.str().length())
+       throw cet::exception("Landed") << "failed to send event introduction to LANDED app\n";	
+    boost::array<char, 2> conf; 
+    if (socket_->receive(boost::asio::buffer(conf))!=1)
       throw cet::exception("Landed") << "LANDED app did not confirm event\n";	
   }
   void LandedSocket::
@@ -151,10 +144,10 @@ namespace evd
     std::ostringstream ss;
     ss << "HIT:" << x << "," << y << "," << z << "," << e << "," << ne << "," << track << "\n";
     //    std::cout << ss.str();
-     if (send(socket_, ss.str().c_str(), ss.str().length(), 0)!=(ssize_t)ss.str().length())
-	throw cet::exception("Landed") << "failed to send hit to LANDED app\n";	
-    char conf;
-    if (recv(socket_, &conf, 1, 0)!=1)
+    if (socket_->send(boost::asio::buffer(ss.str().c_str(), ss.str().length()))!=ss.str().length())
+      throw cet::exception("Landed") << "failed to send hit to LANDED app\n";	
+    boost::array<char, 2> conf; 
+    if (socket_->receive(boost::asio::buffer(conf))!=1)
       throw cet::exception("Landed") << "LANDED app did not confirm hit\n";	
 
   }
@@ -163,10 +156,10 @@ namespace evd
   {
     std::ostringstream ss;
     ss << "VTX:" << x << "," << y << "," << z << "," << e << "," << id << "," << pdgcode << "\n";
-     if (send(socket_, ss.str().c_str(), ss.str().length(), 0)!=(ssize_t)ss.str().length())
+    if (socket_->send(boost::asio::buffer(ss.str().c_str(), ss.str().length()))!=ss.str().length())
 	throw cet::exception("Landed") << "failed to send vertex to LANDED app\n";	
-    char conf;
-    if (recv(socket_, &conf, 1, 0)!=1)
+    boost::array<char, 2> conf; 
+    if (socket_->receive(boost::asio::buffer(conf))!=1)
       throw cet::exception("Landed") << "LANDED app did not confirm vertex\n";	
   }
 }

@@ -236,7 +236,7 @@ void evd::Landed::endJob()
 }
 void evd::Landed::analyze(art::Event const & event)
 {
-  if (!events_.size() || std::find(events_.begin(), events_.end(), event.event())!=events_.end())
+  if (!events_.size() || !outputFilename_.length() || std::find(events_.begin(), events_.end(), event.event())!=events_.end())
     {
       sqlite3_stmt* stmt;
       char * sErrMsg = 0;

@@ -4,7 +4,7 @@
 #include "art/Framework/Services/Registry/ActivityRegistry.h"
 #include "art/Framework/Core/InputSource.h"
 #include "art/Framework/Principal/Worker.h"
-#include "art/Persistency/Provenance/EventID.h"
+#include "canvas/Persistency/Provenance/EventID.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/IO/Root/RootInput.h"
 

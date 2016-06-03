@@ -13,10 +13,10 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/SubRun.h"
-#include "art/Utilities/InputTag.h"
+#include "canvas/Utilities/InputTag.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
-#include "art/Persistency/Common/Assns.h"
+#include "canvas/Persistency/Common/Assns.h"
 
 //root
 #include "TDatabasePDG.h"
@@ -25,14 +25,14 @@
 
 //larsoft
 #include "larcore/Geometry/Geometry.h"
-#include "larsim/Simulation/SimPhotons.h"
-#include "larsim/Simulation/SimChannel.h"
-#include "larsim/Simulation/AuxDetSimChannel.h"
-#include "lardata/RawData/RawDigit.h"
-#include "lardata/RecoBase/Track.h"
-#include "lardata/RecoBase/SpacePoint.h"
-#include "lardata/RecoBase/PFParticle.h"
-#include "lardata/AnalysisBase/Calorimetry.h"
+#include "larsimobj/Simulation/SimPhotons.h"
+#include "larsimobj/Simulation/SimChannel.h"
+#include "larsimobj/Simulation/AuxDetSimChannel.h"
+#include "lardataobj/RawData/RawDigit.h"
+#include "lardataobj/RecoBase/Track.h"
+#include "lardataobj/RecoBase/SpacePoint.h"
+#include "lardataobj/RecoBase/PFParticle.h"
+#include "lardataobj/AnalysisBase/Calorimetry.h"
 
 
 //geant4
@@ -42,10 +42,10 @@
 #include "Geant4/QGSP_BERT.hh"
 
 //nusoft
-#include "SimulationBase/MCTruth.h"
-#include "SimulationBase/GTruth.h"
-#include "SimulationBase/MCParticle.h"
-#include "G4Base/DetectorConstruction.h"
+#include "nusimdata/SimulationBase/MCTruth.h"
+#include "nusimdata/SimulationBase/GTruth.h"
+#include "nusimdata/SimulationBase/MCParticle.h"
+#include "nutools/G4Base/DetectorConstruction.h"
 
 //system
 #include <iostream>

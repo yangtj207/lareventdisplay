@@ -1,6 +1,6 @@
 cet_find_library( SQLITE3  NAMES sqlite3  PATHS ENV NO_DEFAULT_PATH )
 cet_find_library( ZLIB  NAMES z  PATHS ENV NO_DEFAULT_PATH )
-cet_find_library( G4BASE  NAMES G4Base  PATHS ENV NO_DEFAULT_PATH )
+cet_find_library( G4BASE  NAMES nutools_G4Base  PATHS ENV NO_DEFAULT_PATH )
 
 art_make( BASENAME_ONLY
           LIBRARY_NAME Landed
@@ -10,19 +10,19 @@ art_make( BASENAME_ONLY
             ${ART_FRAMEWORK_SERVICES_OPTIONAL_TFILESERVICE_SERVICE}
             ${ART_FRAMEWORK_SERVICES_OPTIONAL_RANDOMNUMBERGENERATOR_SERVICE}
             larcore_Geometry
-            larsim_Simulation
+            larsim_Simulation larsimobj_Simulation
             lardata_Utilities
             larevt_Filters
-            lardata_RawData
-            NuReweightArt
-            ${SIMULATIONBASE}
+            lardataobj_RawData
+            nutools_NuReweight_art
+            nusimdata_SimulationBase
             ${ART_FRAMEWORK_CORE}
             ${ART_FRAMEWORK_PRINCIPAL}
             ${ART_FRAMEWORK_SERVICES_REGISTRY}
             ${ART_FRAMEWORK_SERVICES_OPTIONAL}
-            ${ART_PERSISTENCY_COMMON}
-            ${ART_PERSISTENCY_PROVENANCE}
-            ${ART_UTILITIES}
+            art_Persistency_Common canvas_Persistency_Common
+            art_Persistency_Provenance canvas_Persistency_Provenance
+            art_Utilities canvas_Utilities
             ${MF_MESSAGELOGGER}
             ${MF_UTILITIES}
             ${FHICLCPP}
@@ -32,7 +32,7 @@ art_make( BASENAME_ONLY
 	    ${SQLITE3}
 	    ${ZLIB}
 	    ${G4VRML}
-	    ${G4BASE}
+	    nutools_G4Base
 	    ${G4GLOBAL}   
 	    ${G4INTERFACES}   
 	    ${G4INTERCOMS}   
@@ -47,10 +47,10 @@ art_make( BASENAME_ONLY
 	    ${G4PHYSICSLISTS}
 	    SERVICE_LIBRARIES
     	    ${ART_FRAMEWORK_CORE}
-    	    ${ART_UTILITIES}
+    	    art_Utilities canvas_Utilities
     	    ${ART_FRAMEWORK_IO_ROOT_ROOTINPUT_SOURCE}
     	    ${ART_FRAMEWORK_IO_ROOT}
-    	    ${ART_PERSISTENCY_PROVENANCE}
+    	    art_Persistency_Provenance canvas_Persistency_Provenance
     	    ${MF_MESSAGELOGGER}
             ${ROOT_BASIC_LIB_LIST}
           )

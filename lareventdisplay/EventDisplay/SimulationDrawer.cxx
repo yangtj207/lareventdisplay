@@ -561,6 +561,9 @@ namespace evd{
     bool   displayMcTrajectories(true);
     double minPartEnergy(0.025);
     
+    double tpcminx = 1.0; double tpcmaxx = -1.0;
+    double xOffset = 0.0; double g4Ticks = 0.0;
+    double vtx[3] = {0.0, 0.0, 0.0};
     for(size_t p = 0; p < plist.size(); ++p)
     {
         trackToMcParticleMap[plist[p]->TrackId()] = plist[p];
@@ -591,9 +594,9 @@ namespace evd{
                 double yPos = mcTraj.Y(0);
                 double zPos = mcTraj.Z(0);
                 
-                double tpcminx = 1.0; double tpcmaxx = -1.0;
-                double xOffset = 0.0; double g4Ticks = 0.0;
-                double vtx[3] = {0.0, 0.0, 0.0};
+                tpcminx = 1.0; tpcmaxx = -1.0;
+                xOffset = 0.0; g4Ticks = 0.0;
+                vtx[0] = 0.0; vtx[1] = 0.0; vtx[2] = 0.0;
                 for(int hitIdx = 0; hitIdx < numTrajPoints; hitIdx++)
                 {
                     xPos = mcTraj.X(hitIdx);
@@ -690,9 +693,7 @@ namespace evd{
     // draw the trajectories
     std::map<const simb::MCParticle*, std::vector<std::vector<double> > >::iterator partToPosMapItr;
 
-    double tpcminx = 1.0; double tpcmaxx = -1.0;
-    double xOffset = 0.0; double g4Ticks = 0.0;
-    double vtx[3] = {0.0, 0.0, 0.0};
+
     for(partToPosMapItr = partToPosMap.begin(); partToPosMapItr != partToPosMap.end(); partToPosMapItr++)
     {
         // Recover the McParticle, we'll need to access several data members so may as well dereference it
@@ -703,6 +704,9 @@ namespace evd{
 
         TPolyMarker& pm = view->AddPolyMarker(partToPosMapItr->second.size(), evd::Style::ColorFromPDG(mcPart->PdgCode()), kFullDotMedium, 2); //kFullCircle, msize);
         
+        tpcminx = 1.0; tpcmaxx = -1.0;
+    	xOffset = 0.0; g4Ticks = 0.0;
+    	vtx[0] = 0.0; vtx[1] = 0.0; vtx[2] = 0.0;
         // Now loop over points and add to trajectory
         for(size_t posIdx = 0; posIdx < partToPosMapItr->second.size(); posIdx++)
         {

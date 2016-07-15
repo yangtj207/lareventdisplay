@@ -28,7 +28,7 @@ services:
   LandedSocket: {}
  ExptGeoHelperInterface:   @local::dune_geometry_helper
   Geometry:                 @local::dune10kt_geo
-  MagneticField:                  @local::no_mag  
+  MagneticField:                  @local::no_mag_larsoft
 
 }
 #source is now a root file

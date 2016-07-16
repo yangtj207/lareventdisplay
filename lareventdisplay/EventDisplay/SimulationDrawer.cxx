@@ -6,6 +6,7 @@
 ///
 
 #include <iomanip>
+#include <algorithm>
 
 #include "TParticle.h"
 #include "TLatex.h"
@@ -519,10 +520,8 @@ namespace evd{
       
     // If the option is turned off, there's nothing to do
     if (!drawopt->fShowMCTruthTrajectories) return;
-    
-    ///...  
+     
     geo::GeometryCore const* geom = lar::providerFrom<geo::Geometry>();
-    ///...
     detinfo::DetectorProperties const* theDetector = lar::providerFrom<detinfo::DetectorPropertiesService>();
     detinfo::DetectorClocks const* detClocks = lar::providerFrom<detinfo::DetectorClocksService>();
     
@@ -563,6 +562,7 @@ namespace evd{
     
     double tpcminx = 1.0; double tpcmaxx = -1.0;
     double xOffset = 0.0; double g4Ticks = 0.0;
+    double coeff = 0.0; double readoutwindowsize = 0.0;
     double vtx[3] = {0.0, 0.0, 0.0};
     for(size_t p = 0; p < plist.size(); ++p)
     {
@@ -597,6 +597,7 @@ namespace evd{
                 tpcminx = 1.0; tpcmaxx = -1.0;
                 xOffset = 0.0; g4Ticks = 0.0;
                 vtx[0] = 0.0; vtx[1] = 0.0; vtx[2] = 0.0;
+                coeff = 0.0; readoutwindowsize = 0.0;
                 for(int hitIdx = 0; hitIdx < numTrajPoints; hitIdx++)
                 {
                     xPos = mcTraj.X(hitIdx);
@@ -605,7 +606,7 @@ namespace evd{
                     
                     // If the original simulated hit did not occur in the TPC volume then don't draw it
                     if (xPos < minx || xPos > maxx || yPos < miny || yPos > maxy|| zPos < minz || zPos > maxz) continue;
-                    
+                                        
                     if ((xPos < tpcminx) || (xPos > tpcmaxx))
 		    {
 		        vtx[0] = xPos; vtx[1] = yPos; vtx[2] = zPos; 
@@ -615,23 +616,38 @@ namespace evd{
                     	if (tpcid.isValid) 
                     	{
                     		unsigned int tpc = tpcid.TPC;
-                    	
                     		const geo::TPCGeo& tpcgeo = geom->GetElement(tpcid);	    	
 		    		tpcminx = tpcgeo.MinX(); tpcmaxx = tpcgeo.MaxX();
-                    	
+                   		
+                    		coeff = theDetector->GetXTicksCoefficient(tpc, cryo);
+                    		readoutwindowsize = theDetector->ConvertTicksToX(theDetector->ReadOutWindowSize(), 0, tpc, cryo);
+                    		
 		    		// The following is meant to get the correct offset for drawing the particle trajectory
                     		// In particular, the cosmic rays will not be correctly placed without this		    
 		    		g4Ticks = detClocks->TPCG4Time2Tick(mcPart->T())
 		    			+theDetector->GetXTicksOffset(0, tpc, cryo)
 		    			-theDetector->TriggerOffset();
+		    		
 		    		xOffset = theDetector->ConvertTicksToX(g4Ticks, 0, tpc, cryo);
 		    	}
-		    	else { xOffset = 0; tpcminx = 1.0; tpcmaxx = -1.0; }
+		    	else { xOffset = 0; tpcminx = 1.0; tpcmaxx = -1.0; coeff = 0.0; readoutwindowsize = 0.0;}
 		    }
    		    	    
 		    // Now move the hit position to correspond to the timing
                     xPos += xOffset;
-                
+                    
+                    bool inreadoutwindow = false;
+   		    if (coeff < 0) 
+   		    {
+   		    	if ((xPos > readoutwindowsize) && (xPos < tpcmaxx)) inreadoutwindow = true;
+   		    }
+                    else if (coeff > 0) 
+   		    {
+   		    	if ((xPos > tpcminx) && (xPos < readoutwindowsize)) inreadoutwindow = true;	
+   		    }
+   		    		    
+                    if (!inreadoutwindow) continue;
+                	
                     // Check fiducial limits
                     if (xPos > xMinimum && xPos < xMaximum)
                     {
@@ -679,12 +695,12 @@ namespace evd{
                 
                 // It can be in some instances that mcPart here could be zero.
                 const simb::MCParticle* mcPart = trackToMcParticleMap[trackId];
+                             
+	        partToPosMap[mcPart].push_back(std::vector<double>(3));
                 
-                partToPosMap[mcPart].push_back(std::vector<double>(3));
-                
-                partToPosMap[mcPart].back()[0] = vxd.VoxelID().X();
-                partToPosMap[mcPart].back()[1] = vxd.VoxelID().Y();
-                partToPosMap[mcPart].back()[2] = vxd.VoxelID().Z();
+        	partToPosMap[mcPart].back()[0] = vxd.VoxelID().X();
+        	partToPosMap[mcPart].back()[1] = vxd.VoxelID().Y();
+        	partToPosMap[mcPart].back()[2] = vxd.VoxelID().Z();
             }
         } // end if this track id is in the current voxel
     }// end loop over voxels
@@ -693,7 +709,6 @@ namespace evd{
     // draw the trajectories
     std::map<const simb::MCParticle*, std::vector<std::vector<double> > >::iterator partToPosMapItr;
 
-
     for(partToPosMapItr = partToPosMap.begin(); partToPosMapItr != partToPosMap.end(); partToPosMapItr++)
     {
         // Recover the McParticle, we'll need to access several data members so may as well dereference it
@@ -701,12 +716,13 @@ namespace evd{
         
         // Apparently, it can happen that we get a null pointer here or maybe no points to plot
         if (!mcPart || partToPosMapItr->second.empty()) continue;
-
-        TPolyMarker& pm = view->AddPolyMarker(partToPosMapItr->second.size(), evd::Style::ColorFromPDG(mcPart->PdgCode()), kFullDotMedium, 2); //kFullCircle, msize);
-        
+	
         tpcminx = 1.0; tpcmaxx = -1.0;
     	xOffset = 0.0; g4Ticks = 0.0;
-    	vtx[0] = 0.0; vtx[1] = 0.0; vtx[2] = 0.0;
+    	std::vector< std::array<double, 3> > posVecCorr;
+    	posVecCorr.reserve(partToPosMapItr->second.size());
+    	coeff = 0.0; readoutwindowsize = 0.0;
+    	
         // Now loop over points and add to trajectory
         for(size_t posIdx = 0; posIdx < partToPosMapItr->second.size(); posIdx++)
         {
@@ -725,27 +741,47 @@ namespace evd{
                     		const geo::TPCGeo& tpcgeo = geom->GetElement(tpcid);	    	
 		    		tpcminx = tpcgeo.MinX(); tpcmaxx = tpcgeo.MaxX();
                     	
+                    	        coeff = theDetector->GetXTicksCoefficient(tpc, cryo);
+                    		readoutwindowsize = theDetector->ConvertTicksToX(theDetector->ReadOutWindowSize(), 0, tpc, cryo);
 		    		// The following is meant to get the correct offset for drawing the particle trajectory
                     		// In particular, the cosmic rays will not be correctly placed without this		    
 		    		g4Ticks = detClocks->TPCG4Time2Tick(mcPart->T())
 		    			+theDetector->GetXTicksOffset(0, tpc, cryo)
 		    			-theDetector->TriggerOffset();
+		    			
 		    		xOffset = theDetector->ConvertTicksToX(g4Ticks, 0, tpc, cryo);
 		    	}
-		    	else { xOffset = 0; tpcminx = 1.0; tpcmaxx = -1.0; }	
+		    	else { xOffset = 0; tpcminx = 1.0; tpcmaxx = -1.0; coeff = 0.0; readoutwindowsize = 0.0; }	
 		}
             	
-            
             	double xCoord = posVec[0] + xOffset;
-            	if (xCoord > xMinimum && xCoord < xMaximum)
+            	
+            	bool inreadoutwindow = false;
+   		if (coeff < 0) 
+   		{
+   		    	if ((xCoord > readoutwindowsize) && (xCoord < tpcmaxx)) inreadoutwindow = true;
+   		}                    
+                else if (coeff > 0) 
+   		{
+   		    	if ((xCoord > tpcminx) && (xCoord < readoutwindowsize)) inreadoutwindow = true;	
+   		}	    		    
+            	
+            	if (inreadoutwindow && (xCoord > xMinimum && xCoord < xMaximum))
             	{
-                	if(proj == evd::kXY)
-                    		pm.SetPoint(posIdx, xCoord, posVec[1]);
-                	else if(proj == evd::kXZ)
-                    		pm.SetPoint(posIdx, posVec[2], xCoord);
-                	else if(proj == evd::kYZ)
-                    		pm.SetPoint(posIdx, posVec[2], posVec[1]);
+            		posVecCorr.push_back({xCoord, posVec[1], posVec[2] });              	
             	}
+        }
+        
+        TPolyMarker& pm = view->AddPolyMarker(posVecCorr.size(), evd::Style::ColorFromPDG(mcPart->PdgCode()), kFullDotMedium, 2); //kFullCircle, msize);
+        
+        for (size_t p = 0; p < posVecCorr.size(); ++p)
+        {
+        	        if(proj == evd::kXY)
+                    		pm.SetPoint(p, posVecCorr[p][0], posVecCorr[p][1]);
+                	else if(proj == evd::kXZ)
+                    		pm.SetPoint(p, posVecCorr[p][2], posVecCorr[p][0]);
+                	else if(proj == evd::kYZ)
+                    		pm.SetPoint(p, posVecCorr[p][2], posVecCorr[p][1]);
         }
     }
    

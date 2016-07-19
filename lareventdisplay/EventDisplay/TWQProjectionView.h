@@ -10,7 +10,7 @@
 #ifndef EVD_TWQPROJECTION_H
 #define EVD_TWQPROJECTION_H
 
-#include "EventDisplayBase/Canvas.h"
+#include "nutools/EventDisplayBase/Canvas.h"
 #include "RQ_OBJECT.h"
 #include <vector>
 #include <deque>

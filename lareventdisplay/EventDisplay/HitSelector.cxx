@@ -10,7 +10,7 @@
 #include "art/Framework/Principal/Handle.h" 
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
-#include "EventDisplayBase/evdb.h"
+#include "nutools/EventDisplayBase/evdb.h"
 #include "lareventdisplay/EventDisplay/RecoDrawingOptions.h"
 #include "lareventdisplay/EventDisplay/EvdLayoutOptions.h"
 #include "lareventdisplay/EventDisplay/HitSelector.h"
@@ -18,7 +18,7 @@
 #include "lardata/Utilities/PxHitConverter.h"
 #include "lareventdisplay/EventDisplay/InfoTransfer.h"
 #include "lareventdisplay/EventDisplay/HitSelector.h"
-#include "lardata/RecoBase/Seed.h"
+#include "lardataobj/RecoBase/Seed.h"
 #include "lardata/AnalysisAlg/CalorimetryAlg.h"
 #include "TMath.h"
 namespace{

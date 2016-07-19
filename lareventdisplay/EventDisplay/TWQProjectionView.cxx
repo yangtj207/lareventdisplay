@@ -20,8 +20,8 @@
 #include "TROOT.h"
 #include "sstream"
 
-#include "EventDisplayBase/View2D.h"
-#include "EventDisplayBase/EventHolder.h"
+#include "nutools/EventDisplayBase/View2D.h"
+#include "nutools/EventDisplayBase/EventHolder.h"
 #include "lareventdisplay/EventDisplay/ChangeTrackers.h" // util::DataProductChangeTracker_t
 #include "lareventdisplay/EventDisplay/TWQProjectionView.h"
 #include "lareventdisplay/EventDisplay/HeaderPad.h"
@@ -39,7 +39,7 @@
 #include "lareventdisplay/EventDisplay/Style.h"
 #include "lareventdisplay/EventDisplay/InfoTransfer.h"
 
-#include "lardata/RecoBase/Seed.h"
+#include "lardataobj/RecoBase/Seed.h"
 #include "larcore/Geometry/Geometry.h"
 #include "larcore/Geometry/GeometryCore.h"
 #include "larcore/Geometry/PlaneGeo.h"

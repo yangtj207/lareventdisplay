@@ -5,8 +5,8 @@
 /// \version $Id: HeaderDrawer.cxx,v 1.2 2010/11/11 18:11:22 p-novaart Exp $
 ///
 #include "lareventdisplay/EventDisplay/HeaderDrawer.h"
-#include "EventDisplayBase/View2D.h"
-#include "EventDisplayBase/EventHolder.h"
+#include "nutools/EventDisplayBase/View2D.h"
+#include "nutools/EventDisplayBase/EventHolder.h"
 
 #include "TText.h"
 #include "TTimeStamp.h"

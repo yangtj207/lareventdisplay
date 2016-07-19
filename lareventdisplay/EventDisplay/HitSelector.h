@@ -4,25 +4,26 @@
 
 #ifndef EVD_HITSELECTOR_H
 #define EVD_HITSELECTOR_H
+
 #include <vector>
-#ifdef __CINT__
+
+#include "canvas/Persistency/Common/PtrVector.h"
+#include "art/Framework/Principal/View.h"
+
+#ifdef __ROOTCLING__
 namespace art { 
   class Event;
-  class PtrVector;
-  class Ptr;
   class ServiceHandle;
-  class View;
 }
 namespace trkf
 {
  class HitPtrVec;
 }
 #else
-#include "art/Persistency/Common/PtrVector.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Principal/View.h"
 #include "lardata/RecoObjects/BezierTrack.h"
 #endif
+
 #include "lareventdisplay/EventDisplay/OrthoProj.h"
 
 class TH1F;

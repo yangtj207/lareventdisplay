@@ -9,8 +9,8 @@
 #include "TPad.h"
 
 #include "lareventdisplay/EventDisplay/MCBriefPad.h"
-#include "EventDisplayBase/View2D.h"
-#include "EventDisplayBase/EventHolder.h"
+#include "nutools/EventDisplayBase/View2D.h"
+#include "nutools/EventDisplayBase/EventHolder.h"
 #include "lareventdisplay/EventDisplay/SimulationDrawer.h"
 
 namespace evd{

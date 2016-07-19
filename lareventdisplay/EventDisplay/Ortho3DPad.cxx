@@ -20,8 +20,8 @@
 #include "lareventdisplay/EventDisplay/Ortho3DPad.h"
 #include "lareventdisplay/EventDisplay/SimulationDrawer.h"
 #include "lareventdisplay/EventDisplay/RecoBaseDrawer.h"
-#include "EventDisplayBase/View2D.h"
-#include "EventDisplayBase/EventHolder.h"
+#include "nutools/EventDisplayBase/View2D.h"
+#include "nutools/EventDisplayBase/EventHolder.h"
 #include "larcore/Geometry/Geometry.h"
 #include "larcore/Geometry/TPCGeo.h"
 

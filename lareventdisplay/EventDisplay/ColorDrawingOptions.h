@@ -5,7 +5,7 @@
 #ifndef EVD_COLORDRAWINGOPTIONS_H
 #define EVD_COLORDRAWINGOPTIONS_H
 #ifndef __CINT__
-#include "EventDisplayBase/ColorScale.h"
+#include "nutools/EventDisplayBase/ColorScale.h"
 #include "larcore/Geometry/Geometry.h"
 
 #include "fhiclcpp/ParameterSet.h"

@@ -2,22 +2,22 @@
 /// \brief   Class to aid in the rendering of AnalysisBase objects
 #ifndef EVD_ANALYSISBASEDRAWER_H
 #define EVD_ANALYSISBASEDRAWER_H
+
 #include <vector>
-#ifdef __CINT__
+
+#include "canvas/Persistency/Common/PtrVector.h"
+#include "art/Framework/Principal/View.h"
+
+#ifdef __ROOTCLING__
 namespace art { 
   class Event;
-  class PtrVector;
-  class Ptr;
   class ServiceHandle;
-  class View;
 }
 namespace recob{
   class Hit;
 }
 #else
-#include "art/Persistency/Common/PtrVector.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Principal/View.h"
 #endif
 
 namespace evdb{

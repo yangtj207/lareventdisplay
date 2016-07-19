@@ -20,8 +20,8 @@
 #include "TCanvas.h"
 #include "TList.h"
 
-#include "EventDisplayBase/View2D.h"
-#include "EventDisplayBase/EventHolder.h"
+#include "nutools/EventDisplayBase/View2D.h"
+#include "nutools/EventDisplayBase/EventHolder.h"
 #include "larcore/Geometry/Geometry.h"
 #include "larcore/Geometry/PlaneGeo.h"
 #include "lareventdisplay/EventDisplay/GeometryDrawer.h"

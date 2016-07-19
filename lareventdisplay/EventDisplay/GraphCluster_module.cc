@@ -13,7 +13,7 @@
 #include <string>
 #include "art/Framework/Core/ModuleMacros.h" 
 
-#ifdef __CINT__
+#ifdef __ROOTCLING__
 namespace art { 
   class EDProducer;
   class Event;
@@ -34,8 +34,8 @@ namespace recob {
 
 #else
 #include "art/Framework/Core/EDProducer.h" 
-#include "art/Persistency/Common/PtrVector.h"
-#include "art/Persistency/Common/Ptr.h"
+#include "canvas/Persistency/Common/PtrVector.h"
+#include "canvas/Persistency/Common/Ptr.h"
 #include "art/Framework/Services/Registry/ActivityRegistry.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Principal/View.h"
@@ -68,8 +68,8 @@ extern "C" {
 #include "art/Framework/Principal/Event.h" 
 #include "fhiclcpp/ParameterSet.h" 
 #include "art/Framework/Principal/Handle.h" 
-#include "art/Persistency/Common/Ptr.h" 
-#include "art/Persistency/Common/PtrVector.h" 
+#include "canvas/Persistency/Common/Ptr.h" 
+#include "canvas/Persistency/Common/PtrVector.h" 
 
 #include "art/Framework/Services/Optional/TFileService.h" 
 #include "art/Framework/Services/Optional/TFileDirectory.h" 
@@ -77,8 +77,8 @@ extern "C" {
 
 // LArSoft Includes
 
-#include "lardata/RecoBase/Cluster.h"
-#include "lardata/RecoBase/Hit.h"
+#include "lardataobj/RecoBase/Cluster.h"
+#include "lardataobj/RecoBase/Hit.h"
 #include "lardata/Utilities/AssociationUtil.h"
 #include "larcore/Geometry/PlaneGeo.h"
 #include "lardata/Utilities/GeometryUtilities.h"

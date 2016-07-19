@@ -11,8 +11,8 @@
 #include "TPolyLine3D.h"
 
 #include "lareventdisplay/EventDisplay/Display3DPad.h"
-#include "EventDisplayBase/View3D.h"
-#include "EventDisplayBase/EventHolder.h"
+#include "nutools/EventDisplayBase/View3D.h"
+#include "nutools/EventDisplayBase/EventHolder.h"
 #include "larcore/Geometry/Geometry.h"
 #include "lareventdisplay/EventDisplay/GeometryDrawer.h"
 #include "lareventdisplay/EventDisplay/RawDataDrawer.h"
@@ -20,7 +20,7 @@
 #include "lareventdisplay/EventDisplay/RecoBaseDrawer.h"
 #include "lareventdisplay/EventDisplay/EvdLayoutOptions.h"
 #include "lareventdisplay/EventDisplay/HitSelector.h"
-#include "lardata/RecoBase/Seed.h"
+#include "lardataobj/RecoBase/Seed.h"
 #include "lardata/RecoObjects/BezierTrack.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 

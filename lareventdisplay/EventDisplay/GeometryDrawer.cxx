@@ -9,8 +9,8 @@
 #include "TText.h"
 
 #include "larcore/Geometry/Geometry.h"
-#include "EventDisplayBase/View2D.h"
-#include "EventDisplayBase/View3D.h"
+#include "nutools/EventDisplayBase/View2D.h"
+#include "nutools/EventDisplayBase/View3D.h"
 #include "lareventdisplay/EventDisplay/GeometryDrawer.h"
 
 #include "art/Framework/Services/Registry/ServiceHandle.h"

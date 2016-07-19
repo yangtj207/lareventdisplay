@@ -9,15 +9,16 @@
 #ifndef GRAPHCLUSTERALG_H
 #define GRAPHCLUSTERALG_H
 
+#include <vector>
 
+#include "canvas/Persistency/Common/PtrVector.h"
+#include "canvas/Persistency/Common/Ptr.h"
+#include "art/Framework/Principal/View.h"
 
-#ifdef __CINT__
+#ifdef __ROOTCLING__
 namespace art { 
   class Event;
-  class PtrVector;
-  class Ptr;
   class ServiceHandle;
-  class View;
 }
 
 namespace fhicl {
@@ -30,20 +31,12 @@ namespace recob {
 
 
 #else
-#include "art/Persistency/Common/PtrVector.h"
-#include "art/Persistency/Common/Ptr.h"
 #include "art/Framework/Services/Registry/ActivityRegistry.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Principal/View.h"
 #include "lareventdisplay/EventDisplay/InfoTransfer.h"
 #include "larcore/Geometry/Geometry.h"
 #include "fhiclcpp/ParameterSet.h" 
-#include <vector>
 #endif
-
-
-
-
 
 
 namespace util {
@@ -124,9 +117,6 @@ namespace evd {
   }; //class GraphClusterAlg
   
 } //namespace evd
-
-
-
 
 
 

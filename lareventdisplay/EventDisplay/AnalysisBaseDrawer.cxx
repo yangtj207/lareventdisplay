@@ -144,9 +144,10 @@ namespace evd{
 			 pids[bestplane]->Chi2Muon());
 //		 sprintf(muon,"Muon Chi2 = %.1f", 
 //			 pids[bestplane]->Chi2Muon());
-		 sprintf(pida,"Plane %d, PIDA = %.1f",
+		 sprintf(pida,"Plane %d, PIDA = %.1f, NHits = %d",
 			 calos[bestplane]->PlaneID().Plane,
-			 pids[bestplane]->PIDA());
+			 pids[bestplane]->PIDA(),
+                         int(calos[bestplane]->dEdx().size()));
 
 		 double offset = ((double)trkIter)*10.0;
 		 TLatex& track_tex  = view->AddLatex(13.0, (46.0)     - offset,trackinfo);

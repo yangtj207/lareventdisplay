@@ -144,7 +144,7 @@ namespace evd{
                                            hpeaktimes);
          
          // draw with histogram style, only (square) lines, no errors
-         static const std::string defaultDrawOptions = "HIST L";
+         static const std::string defaultDrawOptions = "HIST";
          
          switch (drawopt->fDrawRawDataOrCalibWires) {
            case kRAW:
@@ -198,10 +198,10 @@ namespace evd{
         plnwir.SetTextColor(kBlack);
         plnwir.Draw("same");
 */
-         if     (drawopt->fDrawRawDataOrCalibWires == kCALIB) fRecoHisto->Draw("same");
+         if     (drawopt->fDrawRawDataOrCalibWires == kCALIB) fRecoHisto->Draw((defaultDrawOptions + " same").c_str());
          else if(drawopt->fDrawRawDataOrCalibWires == kRAWCALIB){
-            fRawHisto->Draw("same");
-            fRecoHisto->Draw("same");
+            fRawHisto->Draw((defaultDrawOptions + " same").c_str());
+            fRecoHisto->Draw((defaultDrawOptions + " same").c_str());
          }
 
          fRawHisto->SetTitleOffset(0.2, "Y");

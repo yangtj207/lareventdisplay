@@ -93,7 +93,7 @@ namespace evd{
          
                //Loop over Tracks
                for(size_t trkIter = 0; trkIter<tracklist.size(); ++trkIter){
-		 int color = tracklist[trkIter]->ID()%evd::kNCOLS;
+		 int color = tracklist[trkIter].key()%evd::kNCOLS;
 		 std::vector<const anab::Calorimetry*> calos = fmcal.at(trkIter);
 		 std::vector<const anab::ParticleID*> pids = fmpid.at(trkIter);
 		 if (!calos.size()) continue;

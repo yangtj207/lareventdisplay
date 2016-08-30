@@ -25,9 +25,9 @@
 
 //larsoft
 #include "larcore/Geometry/Geometry.h"
-#include "larsimobj/Simulation/SimPhotons.h"
-#include "larsimobj/Simulation/SimChannel.h"
-#include "larsimobj/Simulation/AuxDetSimChannel.h"
+#include "lardataobj/Simulation/SimPhotons.h"
+#include "lardataobj/Simulation/SimChannel.h"
+#include "lardataobj/Simulation/AuxDetSimChannel.h"
 #include "lardataobj/RawData/RawDigit.h"
 #include "lardataobj/RecoBase/Track.h"
 #include "lardataobj/RecoBase/SpacePoint.h"

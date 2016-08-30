@@ -11,7 +11,7 @@ art_make_library(
                   LIBRARIES lareventdisplay_EventDisplay_ColorDrawingOptions_service
 	                    lareventdisplay_EventDisplay_InfoTransfer_service
 	                    larevt_Filters
- 			    larsim_Simulation larsimobj_Simulation
+ 			    larsim_Simulation lardataobj_Simulation
 			    lardataobj_RawData
 			    lardataobj_RecoBase
 			    lardata_RecoObjects

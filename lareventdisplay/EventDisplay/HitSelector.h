@@ -21,7 +21,7 @@ namespace trkf
 }
 #else
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "lardata/RecoObjects/BezierTrack.h"
+#include "larreco/Deprecated/BezierTrack.h"
 #endif
 
 #include "lareventdisplay/EventDisplay/OrthoProj.h"

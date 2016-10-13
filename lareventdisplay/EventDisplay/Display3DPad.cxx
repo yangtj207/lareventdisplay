@@ -21,7 +21,7 @@
 #include "lareventdisplay/EventDisplay/EvdLayoutOptions.h"
 #include "lareventdisplay/EventDisplay/HitSelector.h"
 #include "lardataobj/RecoBase/Seed.h"
-#include "lardata/RecoObjects/BezierTrack.h"
+#include "larreco/Deprecated/BezierTrack.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 
 namespace evd{

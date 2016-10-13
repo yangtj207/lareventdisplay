@@ -19,7 +19,7 @@
 #include "lareventdisplay/EventDisplay/InfoTransfer.h"
 #include "lareventdisplay/EventDisplay/HitSelector.h"
 #include "lardataobj/RecoBase/Seed.h"
-#include "lardata/AnalysisAlg/CalorimetryAlg.h"
+#include "larreco/Calorimetry/CalorimetryAlg.h"
 #include "TMath.h"
 namespace{
   void WriteMsg(const char* fcn)

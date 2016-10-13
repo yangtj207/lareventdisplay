@@ -11,13 +11,13 @@ art_make_library(
                   LIBRARIES lareventdisplay_EventDisplay_ColorDrawingOptions_service
 	                    lareventdisplay_EventDisplay_InfoTransfer_service
 	                    larevt_Filters
- 			    larsim_Simulation lardataobj_Simulation
+ 			    larsim_Simulation nutools_ParticleNavigation lardataobj_Simulation
 			    lardataobj_RawData
 			    lardataobj_RecoBase
-			    lardata_RecoObjects
+			    lardata_RecoObjects larreco_Deprecated
 			    lardata_Utilities
 			    lardataobj_AnalysisBase
-			    lardata_AnalysisAlg
+			    larreco_Calorimetry
 		 	    larevt_CalibrationDBI_IOVData
 			    larevt_CalibrationDBI_Providers
 	                    nusimdata_SimulationBase

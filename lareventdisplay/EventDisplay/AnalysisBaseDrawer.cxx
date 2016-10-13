@@ -22,8 +22,8 @@
 #include "lardataobj/RecoBase/Track.h"
 #include "lardataobj/RecoBase/Hit.h"
 #include "lardata/Utilities/AssociationUtil.h"
-#include "lardata/RecoObjects/BezierTrack.h"
-#include "lardata/AnalysisAlg/CalorimetryAlg.h"
+#include "larreco/Deprecated/BezierTrack.h"
+#include "larreco/Calorimetry/CalorimetryAlg.h"
 
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Principal/Event.h"

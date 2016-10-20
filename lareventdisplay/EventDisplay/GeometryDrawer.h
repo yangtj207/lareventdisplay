@@ -12,14 +12,20 @@ namespace evdb{
 }
 
 namespace evd {
-  /// Aid in the rendering of Geometry objects
-  class GeometryDrawer {
-  public:
+
+/// Aid in the rendering of Geometry objects
+class GeometryDrawer {
+public:
     GeometryDrawer();
     ~GeometryDrawer();
     void DetOutline3D(evdb::View3D* view);
+private:
+    void DrawRectangularBox(evdb::View3D* view, double* coordsLo, double* coordsHi, int color=kGray, int width = 1, int style = 1);
+    void DrawGrids(evdb::View3D* view, double* coordsLo, double* coordsHi, int color=kGray, int width = 1, int style = 1);
+    void DrawAxes(evdb::View3D* view, double* coordsLo, double* coordsHi, int color=kGray, int width = 1, int style = 1);
+    void DrawBadChannels(evdb::View3D* view, double* coords, int color, int width, int style);
+};
 
-  };
 }
 
 #endif

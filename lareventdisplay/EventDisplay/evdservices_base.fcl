@@ -44,6 +44,7 @@ standard_recodrawingopt:
  DrawProngs:                0              # 0 = off, 1 = on                                              
  DrawTracks:                0  		       # 0 = off, 1 = on
  DrawTrackTrajectoryPoints: 0  		       # 0 = off, 1 = on
+ DrawTrackSegments:         0              # 0 = off, 1 = on
  DrawTrackSpacePoints:      0              # 0 = off, 1 = on
  DrawShowers:               0  		       # 0 = off, 1 = on
  DrawVertices:              0  		       # 0 = off, 1 = on
@@ -123,6 +124,9 @@ standard_evdlayoutopt:
  MakeSeeds: 		0	   # draw two lines to create clusters
  ChangeWire: 		1	   # change wire with mouse click
  EnableMCTruthCheckBox: 1          # 1 turn on the check box, 0 don't make it
+ ThreeWindowReadout:    true
+ DisplayBackingGrid:    true
+ DisplayAxes:           true
 }
 
 standard_scanopt:

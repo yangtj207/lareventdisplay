@@ -225,6 +225,23 @@ void RecoBaseDrawer::Wire2D(const art::Event& evt,
     fTimeMin[plane] = mint;
     fTimeMax[plane] = maxt;
     
+    // Add a loop to draw dead wires in 2D display
+    double startTick(50.);
+    double endTick((rawOpt->fTicks - 50.) * ticksPerPoint);
+    
+    for(size_t wireNo = 0; wireNo < geo->Nwires(pid); wireNo++)
+    {
+        raw::ChannelID_t channel = geo->PlaneWireToChannel(geo::WireID(rawOpt->fCryostat, rawOpt->fTPC, plane, wireNo));
+        
+        if (!rawOpt->fSeeBadChannels && channelStatus.IsBad(channel))
+        {
+            double wire = 1.*wireNo;
+            TLine&   line = view->AddLine(wire, startTick, wire, endTick);
+            line.SetLineColor(kGray);
+            line.SetLineWidth(1.0);
+            line.SetBit(kCannotPick);
+        }
+    }
    
     
     return;
@@ -1702,18 +1719,21 @@ void RecoBaseDrawer::SpacePoint3D(const art::Event& evt,
     if(rawOpt->fDrawRawDataOrCalibWires < 1) return;
 
     std::vector<std::string> labels;
-    if(recoOpt->fDrawSpacePoints != 0){
+    if(recoOpt->fDrawSpacePoints != 0)
+    {
         for(size_t imod = 0; imod < recoOpt->fSpacePointLabels.size(); ++imod)
             labels.push_back(recoOpt->fSpacePointLabels[imod]);
     }
 
-    for(size_t imod = 0; imod < labels.size(); ++imod) {
+    for(size_t imod = 0; imod < labels.size(); ++imod)
+    {
         std::string const which = labels[imod];
     
         std::vector<const recob::SpacePoint*> spts;
         this->GetSpacePoints(evt, which, spts);
-        int color = imod;
-        this->DrawSpacePoint3D(spts, view, color);
+        int color = 10*imod + 11;
+        
+        this->DrawSpacePoint3D(spts, view, color, kFullDotMedium, 1);
     }
 
     return;
@@ -1777,7 +1797,6 @@ void RecoBaseDrawer::PFParticle3D(const art::Event& evt,
             DrawPFParticle3D(pfParticle, pfParticleVec, spacePointAssnVec, pfTrackAssns, pcAxisAssnVec, pfCosmicAssns, 0, view);
         }
     }
-
 
     return;
 }
@@ -1887,26 +1906,29 @@ void RecoBaseDrawer::DrawPFParticle3D(const art::Ptr<recob::PFParticle>&       p
             TPolyMarker3D& pm = view->AddPolyMarker3D(1, colorIdx, kFullDotMedium, 1);
             pm.SetPolyMarker(nHits, hitPositions.get(), kFullDotMedium);
         
-            TPolyMarker3D& pm5 = view->AddPolyMarker3D(1, 1, kFullDotMedium, 1);
+            TPolyMarker3D& pm5 = view->AddPolyMarker3D(1, 46, kFullDotMedium, 1);
             pm5.SetPolyMarker(nEdgeHits, edgePoints.get(), kFullDotMedium);
         
-            TPolyMarker3D& pm6 = view->AddPolyMarker3D(1, 2, kFullDotMedium, 1);
+            TPolyMarker3D& pm6 = view->AddPolyMarker3D(1, 38, kFullDotMedium, 1);
             pm6.SetPolyMarker(nPairHits, pairPoints.get(), kFullDotMedium);
         }
         
         int skeletonColorIdx = !isCosmic ? 0 : colorIdx + 3;
         
-        TPolyMarker3D& pm2 = view->AddPolyMarker3D(1, skeletonColorIdx, kFullDotMedium, 1);
+        //TPolyMarker3D& pm2 = view->AddPolyMarker3D(1, skeletonColorIdx, kFullDotMedium, 4);
+        TPolyMarker3D& pm2 = view->AddPolyMarker3D(1, skeletonColorIdx, kFullDotLarge, 4);
         pm2.SetPolyMarker(nSkeletonHits, skeletonPositions.get(), kFullDotMedium);
         
         int skelEdgeColorIdx = !isCosmic ? 3 : colorIdx;
         
-        TPolyMarker3D& pm3 = view->AddPolyMarker3D(1, skelEdgeColorIdx, kFullDotMedium, 1);
+        //TPolyMarker3D& pm3 = view->AddPolyMarker3D(1, skelEdgeColorIdx, kFullDotMedium, 4);
+        TPolyMarker3D& pm3 = view->AddPolyMarker3D(1, skelEdgeColorIdx, kFullDotLarge, 4);
         pm3.SetPolyMarker(nSkelEdgeHits, skelEdgePositions.get(), kFullDotMedium);
         
         int seedColorIdx = !isCosmic ? 5 : colorIdx;
         
-        TPolyMarker3D& pm4 = view->AddPolyMarker3D(1, seedColorIdx, kFullDotMedium, 1);
+        //TPolyMarker3D& pm4 = view->AddPolyMarker3D(nSeedHits, seedColorIdx, kFullDotMedium, 4);
+        TPolyMarker3D& pm4 = view->AddPolyMarker3D(nSeedHits, seedColorIdx, kFullDotLarge, 4);
         pm4.SetPolyMarker(nSeedHits, seedPoints.get(), kFullDotMedium);
     }
     
@@ -2120,13 +2142,15 @@ void RecoBaseDrawer::DrawSpacePoint3D(const std::vector<const recob::SpacePoint*
         // For rainbow effect, choose root colors in range [51,100].
         // We are using 100=best (red), 51=worst (blue).
 
-        if(recoOpt->fColorSpacePointsByChisq) {
+        if(recoOpt->fColorSpacePointsByChisq)
+        {
             spcolor = 100 - 2.5 * pspt->Chisq();
-            if(spcolor < 51)
-                spcolor = 51;
-            if(spcolor > 100)
-                spcolor = 100;
+            
+            if(spcolor < 51)  spcolor = 51;
+            if(spcolor > 100) spcolor = 100;
         }
+        else if (pspt->Chisq() < -1.) spcolor += 6;
+        
         spmap[spcolor].push_back(pspt);
     }
 
@@ -2134,7 +2158,8 @@ void RecoBaseDrawer::DrawSpacePoint3D(const std::vector<const recob::SpacePoint*
     // Note that larger (=better) space points are plotted on
     // top for optimal visibility.
 
-    for(auto const icolor : spmap) {
+    for(auto const icolor : spmap)
+    {
         int spcolor = icolor.first;
         const std::vector<const recob::SpacePoint*>& psps = icolor.second;
 
@@ -2142,7 +2167,8 @@ void RecoBaseDrawer::DrawSpacePoint3D(const std::vector<const recob::SpacePoint*
 
         TPolyMarker3D& pm = view->AddPolyMarker3D(psps.size(), spcolor, marker, size);
 
-        for(size_t s = 0; s < psps.size(); ++s){
+        for(size_t s = 0; s < psps.size(); ++s)
+        {
             const recob::SpacePoint& spt = *psps[s];
 
             const double *xyz = spt.XYZ();

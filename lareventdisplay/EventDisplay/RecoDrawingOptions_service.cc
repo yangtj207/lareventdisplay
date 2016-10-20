@@ -35,6 +35,7 @@ void RecoDrawingOptions::reconfigure(fhicl::ParameterSet const& pset)
     fDrawProngs      	       = pset.get< int                      >("DrawProngs"     	         );
     fDrawTracks      	       = pset.get< int                      >("DrawTracks"     	         );
     fDrawTrackTrajectoryPoints = pset.get< int                      >("DrawTrackTrajectoryPoints");
+    fDrawTrackSegments         = pset.get< int                      >("DrawTrackSegments"        );
     fDrawTrackSpacePoints      = pset.get< int                      >("DrawTrackSpacePoints"     );
     fDrawShowers     	       = pset.get< int                      >("DrawShowers"    	         );
     fDrawVertices    	       = pset.get< int                      >("DrawVertices"   	     	 );

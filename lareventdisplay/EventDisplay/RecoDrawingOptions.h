@@ -35,6 +35,7 @@ public:
     int  fDrawTracks;
     int  fDrawOpFlashes;
     int  fDrawTrackTrajectoryPoints;
+    int  fDrawTrackSegments;
     int  fDrawTrackSpacePoints;
     int  fDrawShowers;
     int  fDrawVertices;

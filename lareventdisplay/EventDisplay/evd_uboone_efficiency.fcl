@@ -13,7 +13,7 @@ services:
   Timing:       {}
   RandomNumberGenerator: {} #ART native random number generator
   message:      @local::evd_message
-  user:         @local::microboone_disp
+                @table::microboone_disp
 }
 
 # Define the services
@@ -61,22 +61,22 @@ physics:
 physics.producers.showeranglecluster.ClusterModuleLabel:       "graph"
 physics.producers.spacepts.ClusterModuleLabel:		       "graph"
 
-services.user.EvdLayoutOptions.ShowSideBar:		1
-services.user.EvdLayoutOptions.ShowClusterSection:      1
-services.user.EvdLayoutOptions.ChangeWire:		1
-services.user.EvdLayoutOptions.EnableMCTruthCheckBox:	0
-services.user.RecoDrawingOptions.ClusterModuleLabels:	["graph"]
-services.user.RecoDrawingOptions.DrawClusters: 		1
-services.user.AnalysisDrawingOptions.CalorimetryModuleLabels: ["showerreco"]
-services.user.ScanOptions.Categories:    ["Interaction Type", "Particles Coinciding wih the Vertex"]
-services.user.ScanOptions.FieldLabels:   ["nu_e CC", "nu_mu CC", "NC","unambiguous", 
+services.EvdLayoutOptions.ShowSideBar:		1
+services.EvdLayoutOptions.ShowClusterSection:      1
+services.EvdLayoutOptions.ChangeWire:		1
+services.EvdLayoutOptions.EnableMCTruthCheckBox:	0
+services.RecoDrawingOptions.ClusterModuleLabels:	["graph"]
+services.RecoDrawingOptions.DrawClusters: 		1
+services.AnalysisDrawingOptions.CalorimetryModuleLabels: ["showerreco"]
+services.ScanOptions.Categories:    ["Interaction Type", "Particles Coinciding wih the Vertex"]
+services.ScanOptions.FieldLabels:   ["nu_e CC", "nu_mu CC", "NC","unambiguous", 
                                           "# of muons ","unambiguous","# of protons","unambiguous","# of charged pions","unambiguous",
                                           "# other tracks","unambiguous",
                                           "# of electrons","unambiguous","# of single photons","unambiguous","# of pi0" , "unambiguous"] 
-services.user.ScanOptions.FieldTypes:    ["RadioButton", "RadioButton", "RadioButton","CheckButton",
+services.ScanOptions.FieldTypes:    ["RadioButton", "RadioButton", "RadioButton","CheckButton",
                                           "Number","CheckButton","Number","CheckButton","Number","CheckButton","Number","CheckButton"
                                           ,"Number", "CheckButton","Number","CheckButton","Number", "CheckButton"]  # type of each fieldd
-services.user.ScanOptions.FieldsPerCategory: [4,14]
+services.ScanOptions.FieldsPerCategory: [4,14]
 
 
 

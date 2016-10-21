@@ -6,7 +6,7 @@ process_name: EVD
 services:
 {
   message:      @local::evd_message
-  user:         @local::argoneut_disp
+                @table::argoneut_disp
 }
 
 # Define the services
@@ -47,13 +47,13 @@ physics:
  trigger_paths: [recopath]
  end_paths: [evd]  
 }
-services.user.RecoDrawingOptions.DrawClusters: 0
-services.user.RecoDrawingOptions.ClusterModuleLabels: ["trajcluster"]
-services.user.RecoDrawingOptions.HitModuleLabels: ["trajcluster"]
-services.user.RecoDrawingOptions.DrawTracks: 3
-services.user.RecoDrawingOptions.DrawTrackSpacePoints: 1
-services.user.RecoDrawingOptions.TrackModuleLabels: ["pmtrack"]
-services.user.RecoDrawingOptions.Draw2DEndPoints: 1
-services.user.RecoDrawingOptions.EndPoint2DModuleLabels: ["trajcluster"]
-services.user.RecoDrawingOptions.DrawVertices: 1
-services.user.RecoDrawingOptions.VertexModuleLabels: ["pmtrack"]
+services.RecoDrawingOptions.DrawClusters: 0
+services.RecoDrawingOptions.ClusterModuleLabels: ["trajcluster"]
+services.RecoDrawingOptions.HitModuleLabels: ["trajcluster"]
+services.RecoDrawingOptions.DrawTracks: 3
+services.RecoDrawingOptions.DrawTrackSpacePoints: 1
+services.RecoDrawingOptions.TrackModuleLabels: ["pmtrack"]
+services.RecoDrawingOptions.Draw2DEndPoints: 1
+services.RecoDrawingOptions.EndPoint2DModuleLabels: ["trajcluster"]
+services.RecoDrawingOptions.DrawVertices: 1
+services.RecoDrawingOptions.VertexModuleLabels: ["pmtrack"]

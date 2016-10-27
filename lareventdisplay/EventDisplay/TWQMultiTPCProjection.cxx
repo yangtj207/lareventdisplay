@@ -411,9 +411,11 @@ namespace evd{
 
     art::ServiceHandle<geo::Geometry> geo;
     art::ServiceHandle<evd::RawDrawingOptions> rawopt;
+    
+    geo::TPCID tpcid = rawopt->CurrentTPC();
 
     for(size_t iplane = 0; iplane < fPlanes.size(); ++iplane){ 
-      if(geo->Plane(iplane).SignalType()==geo::kCollection){
+      if(geo->SignalType(geo::PlaneID(tpcid, iplane))==geo::kCollection){
 	double ch=0,convch=0;
 	if(rawopt->fDrawRawDataOrCalibWires == 0){
 	  fPlanes[iplane]->RawDataDraw()->GetChargeSum(iplane,ch,convch);

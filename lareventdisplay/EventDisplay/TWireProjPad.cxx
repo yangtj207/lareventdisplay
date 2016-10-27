@@ -154,9 +154,11 @@ namespace evd{
     TString planeNo = "fTWirePlane";
     planeNo += fPlane;
     
-    
+    // picking the information from the current TPC
+    art::ServiceHandle<evd::RawDrawingOptions> rawopt;
+    auto const signalType = geo->SignalType({ rawopt->CurrentTPC(), fPlane });
     TString xtitle = ";Induction Wire;t (tdc)";
-    if(geo->Plane(fPlane).SignalType() == geo::kCollection) xtitle = ";Collection Wire;t (tdc)";
+    if(signalType == geo::kCollection) xtitle = ";Collection Wire;t (tdc)";
     
     unsigned int const nWires = geo->Nwires(fPlane);
     unsigned int const nTicks = RawDataDraw()->TotalClockTicks();
@@ -166,7 +168,6 @@ namespace evd{
     fYLo =  0.990*(unsigned int)(this->RawDataDraw()->StartTick());
     fYHi =  1.005*std::min((unsigned int)(this->RawDataDraw()->StartTick()+nTicks), nTicks);
     
-    art::ServiceHandle<evd::RawDrawingOptions> rawopt;
     fOri = rawopt->fAxisOrientation;
     if(fOri > 0){
       fYLo = -0.005 * (nWires - 1);
@@ -176,7 +177,7 @@ namespace evd{
       fXLo = -0.005 * nTicks;
       fXHi =  1.010 * nTicks;
       xtitle = ";t (tdc);InductionWire";
-      if(geo->Plane(fPlane).SignalType() == geo::kCollection) xtitle = ";t (tdc);Collection Wire";
+      if(signalType == geo::kCollection) xtitle = ";t (tdc);Collection Wire";
     }      
     
     // make the range of the histogram be the biggest extent 

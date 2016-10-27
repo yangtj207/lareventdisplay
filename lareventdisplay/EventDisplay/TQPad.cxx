@@ -293,9 +293,9 @@ namespace evd{
 
      // figure out the signal type for this plane, assume that
      // plane n in each TPC/cryostat has the same type
-     /// \todo: May need to figure out cryostat and tpc number to be displayed
+     geo::PlaneID planeid(rawopt->CurrentTPC(), fPlane);
      art::ServiceHandle<geo::Geometry> geo;
-     geo::SigType_t sigType = geo->Cryostat(0).TPC(0).Plane(fPlane).SignalType();
+     geo::SigType_t sigType = geo->Plane(planeid).SignalType();
      
      /// \todo decide if ndivraw and ndivreco are useful
      //     int    ndivraw   = cst->fRawDiv;

@@ -10,10 +10,10 @@ services:
 {
   # Load the service that manages root files for histograms.
   TFileService: { fileName: "cosmics_hist.root" closeFileFast: false }
-  Timing:       {}
+  TimeTracker:  {}
   RandomNumberGenerator: {} #ART native random number generator
   message:      @local::evd_message
-  user:         @local::microboone_disp
+                @table::microboone_disp
 }
 
 # Define the services
@@ -60,11 +60,11 @@ physics:
  trigger_paths: [recopath]
  end_paths: [evd]  
 }
-services.user.EvdLayoutOptions.ShowSideBar:		1
-services.user.EvdLayoutOptions.ShowClusterSection:      1
-services.user.EvdLayoutOptions.ChangeWire:		1
-services.user.RecoDrawingOptions.ClusterModuleLabels:	["graph"]
-services.user.AnalysisDrawingOptions.CalorimetryModuleLabels: ["showerreco"]
-services.user.RecoDrawingOptions.DrawClusters: 		1
+services.EvdLayoutOptions.ShowSideBar:		1
+services.EvdLayoutOptions.ShowClusterSection:      1
+services.EvdLayoutOptions.ChangeWire:		1
+services.RecoDrawingOptions.ClusterModuleLabels:	["graph"]
+services.AnalysisDrawingOptions.CalorimetryModuleLabels: ["showerreco"]
+services.RecoDrawingOptions.DrawClusters: 		1
 physics.producers.showeranglecluster.ClusterModuleLabel:       "graph"
 physics.producers.spacepts.ClusterModuleLabel:		       "graph"

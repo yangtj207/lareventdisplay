@@ -1729,11 +1729,16 @@ void RecoBaseDrawer::SpacePoint3D(const art::Event& evt,
     {
         std::string const which = labels[imod];
     
-        std::vector<const recob::SpacePoint*> spts;
+        art::PtrVector<recob::SpacePoint> spts;
         this->GetSpacePoints(evt, which, spts);
         int color = 10*imod + 11;
         
-        this->DrawSpacePoint3D(spts, view, color, kFullDotMedium, 1);
+        std::vector<const recob::SpacePoint*> sptsVec;
+        
+        sptsVec.resize(spts.size());
+        for(const auto& spt : spts) sptsVec.push_back(&*spt);
+        
+        this->DrawSpacePoint3D(sptsVec, view, color, kFullDotMedium, 1);
     }
 
     return;
@@ -1763,8 +1768,16 @@ void RecoBaseDrawer::PFParticle3D(const art::Event& evt,
         // Make sure we have some clusters
         if (pfParticleVec.size() < 1) continue;
         
+        // Get the space points created by the PFParticle producer
+        art::PtrVector<recob::SpacePoint> spacePointVec;
+        this->GetSpacePoints(evt, which, spacePointVec);
+        
+        // No space points no continue
+        if (spacePointVec.size() < 1) continue;
+        
         // Add the relations to recover associations cluster hits
-        art::FindMany<recob::SpacePoint> spacePointAssnVec(pfParticleVec, evt, which);
+        art::FindManyP<recob::SpacePoint> spacePointAssnVec(pfParticleVec, evt, which);
+        art::FindManyP<recob::Hit>        spHitAssnVec(spacePointVec, evt, which);
         
         // If no valid space point associations then nothing to do
         if (!spacePointAssnVec.isValid()) continue;
@@ -1794,7 +1807,7 @@ void RecoBaseDrawer::PFParticle3D(const art::Event& evt,
             if (!pfParticle->IsPrimary()) continue;
             
             // Call the recursive drawing routine
-            DrawPFParticle3D(pfParticle, pfParticleVec, spacePointAssnVec, pfTrackAssns, pcAxisAssnVec, pfCosmicAssns, 0, view);
+            DrawPFParticle3D(pfParticle, pfParticleVec, spacePointAssnVec, spHitAssnVec, pfTrackAssns, pcAxisAssnVec, pfCosmicAssns, 0, view);
         }
     }
 
@@ -1803,7 +1816,8 @@ void RecoBaseDrawer::PFParticle3D(const art::Event& evt,
     
 void RecoBaseDrawer::DrawPFParticle3D(const art::Ptr<recob::PFParticle>&       pfPart,
                                       const art::PtrVector<recob::PFParticle>& pfParticleVec,
-                                      const art::FindMany<recob::SpacePoint>&  spacePointAssnVec,
+                                      const art::FindManyP<recob::SpacePoint>& spacePointAssnVec,
+                                      const art::FindManyP<recob::Hit>&        spHitAssnVec,
                                       const art::FindMany<recob::Track>&       trackAssnVec,
                                       const art::FindMany<recob::PCAxis>&      pcAxisAssnVec,
                                       const art::FindMany<anab::CosmicTag>&    cosmicTagAssnVec,
@@ -1811,9 +1825,11 @@ void RecoBaseDrawer::DrawPFParticle3D(const art::Ptr<recob::PFParticle>&       p
                                       evdb::View3D*                            view)
 {
     art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
+    art::ServiceHandle<evd::ColorDrawingOptions> cst;
     
     // First let's draw the hits associated to this cluster
-    const std::vector<const recob::SpacePoint*>& hitsVec(spacePointAssnVec.at(pfPart->Self()));
+    //const std::vector<const recob::SpacePoint*>& hitsVec(spacePointAssnVec.at(pfPart->Self()));
+    const std::vector<art::Ptr<recob::SpacePoint>>& hitsVec(spacePointAssnVec.at(pfPart->Self()));
     
     // Use the particle ID to determine the color to draw the points
     // Ok, this is what we would like to do eventually but currently all particles are the same...
@@ -1839,97 +1855,64 @@ void RecoBaseDrawer::DrawPFParticle3D(const art::Ptr<recob::PFParticle>&       p
     
     if (!hitsVec.empty())
     {
-        std::unique_ptr<double[]> hitPositions(new double[3*hitsVec.size()]);
-        std::unique_ptr<double[]> skeletonPositions(new double[3*hitsVec.size()]);
-        std::unique_ptr<double[]> skelEdgePositions(new double[3*hitsVec.size()]);
-        std::unique_ptr<double[]> edgePoints(new double[3*hitsVec.size()]);
-        std::unique_ptr<double[]> seedPoints(new double[3*hitsVec.size()]);
-        std::unique_ptr<double[]> pairPoints(new double[3*hitsVec.size()]);
-        
-        int nHits(0);
-        int nSkeletonHits(0);
-        int nSkelEdgeHits(0);
-        int nEdgeHits(0);
-        int nSeedHits(0);
-        int nPairHits(0);
+        using HitPosition = std::array<double,3>;
+        std::map<int,std::vector<HitPosition>> colorToHitMap;
         
         for(const auto& spacePoint : hitsVec)
         {
             const double* pos = spacePoint->XYZ();
             
-            if (spacePoint->Chisq() > 0.)
+            const std::vector<art::Ptr<recob::Hit>>& hitVec = spHitAssnVec.at(spacePoint.key());
+            
+            bool   storeHit(false);
+            int    chargeColorIdx(-1);
+            double pulseHeights[] = {0.,0.,0.};
+            
+            for(const auto& hit : hitVec)
             {
-                hitPositions[3*nHits + 0] = pos[0];
-                hitPositions[3*nHits + 1] = pos[1];
-                hitPositions[3*nHits + 2] = pos[2];
-                nHits++;
+                if (!hit) break;
+                pulseHeights[hit->View()] = hit->Integral(); //PeakAmplitude();
             }
-            else if (spacePoint->Chisq() == -1.)
+            
+            if (pulseHeights[2] > 0.) chargeColorIdx = cst->CalQ(geo::kCollection).GetColor(pulseHeights[2]);
+            
+            if (spacePoint->Chisq() > 0. && !recoOpt->fSkeletonOnly)         // All cluster hits which are unmarked
             {
-                skeletonPositions[3*nSkeletonHits + 0] = pos[0];
-                skeletonPositions[3*nSkeletonHits + 1] = pos[1];
-                skeletonPositions[3*nSkeletonHits + 2] = pos[2];
-                nSkeletonHits++;
+                storeHit = true;
             }
-            else if (spacePoint->Chisq() == -3.)
+            else if (spacePoint->Chisq() == -1.)                             // Skeleton hits
             {
-                skelEdgePositions[3*nSkelEdgeHits + 0] = pos[0];
-                skelEdgePositions[3*nSkelEdgeHits + 1] = pos[1];
-                skelEdgePositions[3*nSkelEdgeHits + 2] = pos[2];
-                nSkelEdgeHits++;
+                storeHit = true;
             }
-            else if (spacePoint->Chisq() == -4.)
+            else if (spacePoint->Chisq() == -3.)                             // Skeleton hits which are also edge hits
             {
-                seedPoints[3*nSeedHits + 0] = pos[0];
-                seedPoints[3*nSeedHits + 1] = pos[1];
-                seedPoints[3*nSeedHits + 2] = pos[2];
-                nSeedHits++;
+                if (chargeColorIdx < 0) chargeColorIdx = !isCosmic ? 0 : colorIdx + 3;
+                storeHit = true;
             }
-            else if (spacePoint->Chisq() > -10.)
+            else if (spacePoint->Chisq() == -4.)                             // Hits which form seeds for tracks
             {
-                edgePoints[3*nEdgeHits + 0] = pos[0];
-                edgePoints[3*nEdgeHits + 1] = pos[1];
-                edgePoints[3*nEdgeHits + 2] = pos[2];
-                nEdgeHits++;
+                if (chargeColorIdx < 0) chargeColorIdx = !isCosmic ? 5 : colorIdx + 3;
+                storeHit = true;
             }
-            else
+            else if (spacePoint->Chisq() > -10. && !recoOpt->fSkeletonOnly)  // Edge hits
             {
-                pairPoints[3*nPairHits + 0] = pos[0];
-                pairPoints[3*nPairHits + 1] = pos[1];
-                pairPoints[3*nPairHits + 2] = pos[2];
-                nPairHits++;
+                if (chargeColorIdx < 0) chargeColorIdx = !isCosmic ? 3 : colorIdx + 3;
+                storeHit = true;
             }
+            else if (!recoOpt->fSkeletonOnly)                                // hits made from pairs
+            {
+                chargeColorIdx = 15;
+                storeHit       = true;
+            }
+            
+            if (storeHit) colorToHitMap[chargeColorIdx].push_back(HitPosition()={pos[0],pos[1],pos[2]});
         }
         
-        if (!recoOpt->fSkeletonOnly)
+        for(auto& hitPair : colorToHitMap)
         {
-            TPolyMarker3D& pm = view->AddPolyMarker3D(1, colorIdx, kFullDotMedium, 1);
-            pm.SetPolyMarker(nHits, hitPositions.get(), kFullDotMedium);
-        
-            TPolyMarker3D& pm5 = view->AddPolyMarker3D(1, 46, kFullDotMedium, 1);
-            pm5.SetPolyMarker(nEdgeHits, edgePoints.get(), kFullDotMedium);
-        
-            TPolyMarker3D& pm6 = view->AddPolyMarker3D(1, 38, kFullDotMedium, 1);
-            pm6.SetPolyMarker(nPairHits, pairPoints.get(), kFullDotMedium);
+            TPolyMarker3D& pm = view->AddPolyMarker3D(hitPair.second.size(), hitPair.first, kFullDotMedium, 1);
+            for (const auto& hit : hitPair.second) pm.SetNextPoint(hit[0],hit[1],hit[2]);
         }
-        
-        int skeletonColorIdx = !isCosmic ? 0 : colorIdx + 3;
-        
-        //TPolyMarker3D& pm2 = view->AddPolyMarker3D(1, skeletonColorIdx, kFullDotMedium, 4);
-        TPolyMarker3D& pm2 = view->AddPolyMarker3D(1, skeletonColorIdx, kFullDotLarge, 4);
-        pm2.SetPolyMarker(nSkeletonHits, skeletonPositions.get(), kFullDotMedium);
-        
-        int skelEdgeColorIdx = !isCosmic ? 3 : colorIdx;
-        
-        //TPolyMarker3D& pm3 = view->AddPolyMarker3D(1, skelEdgeColorIdx, kFullDotMedium, 4);
-        TPolyMarker3D& pm3 = view->AddPolyMarker3D(1, skelEdgeColorIdx, kFullDotLarge, 4);
-        pm3.SetPolyMarker(nSkelEdgeHits, skelEdgePositions.get(), kFullDotMedium);
-        
-        int seedColorIdx = !isCosmic ? 5 : colorIdx;
-        
-        //TPolyMarker3D& pm4 = view->AddPolyMarker3D(nSeedHits, seedColorIdx, kFullDotMedium, 4);
-        TPolyMarker3D& pm4 = view->AddPolyMarker3D(nSeedHits, seedColorIdx, kFullDotLarge, 4);
-        pm4.SetPolyMarker(nSeedHits, seedPoints.get(), kFullDotMedium);
     }
     
     // Draw associated tracks
@@ -2026,7 +2009,7 @@ void RecoBaseDrawer::DrawPFParticle3D(const art::Ptr<recob::PFParticle>&       p
         
         for(const auto& daughterIdx : pfPart->Daughters())
         {
-            DrawPFParticle3D(pfParticleVec.at(daughterIdx), pfParticleVec, spacePointAssnVec, trackAssnVec, pcAxisAssnVec, cosmicTagAssnVec, depth, view);
+            DrawPFParticle3D(pfParticleVec.at(daughterIdx), pfParticleVec, spacePointAssnVec, spHitAssnVec, trackAssnVec, pcAxisAssnVec, cosmicTagAssnVec, depth, view);
         }
     }
     
@@ -2151,7 +2134,7 @@ void RecoBaseDrawer::DrawSpacePoint3D(const std::vector<const recob::SpacePoint*
         }
         else if (pspt->Chisq() < -1.) spcolor += 6;
         
-        spmap[spcolor].push_back(pspt);
+        spmap[spcolor].push_back(&*pspt);
     }
 
     // Loop over colors.
@@ -2574,10 +2557,16 @@ void RecoBaseDrawer::SpacePointOrtho(const art::Event& evt,
   for(size_t imod = 0; imod < labels.size(); ++imod) {
 	std::string const which = labels[imod];
     
-	std::vector<const recob::SpacePoint*> spts;
+    art::PtrVector<recob::SpacePoint> spts;
 	this->GetSpacePoints(evt, which, spts);
 	int color = imod;
-	this->DrawSpacePointOrtho(spts, color, proj, msize, view);
+      
+    std::vector<const recob::SpacePoint*> sptsVec;
+      
+    sptsVec.resize(spts.size());
+    for(const auto& spt : spts) sptsVec.push_back(&*spt);
+      
+	this->DrawSpacePointOrtho(sptsVec, color, proj, msize, view);
   }
     
   return;
@@ -3378,12 +3367,12 @@ int RecoBaseDrawer::GetPFParticles(const art::Event&                  evt,
 
 
   //......................................................................
-  int RecoBaseDrawer::GetSpacePoints(const art::Event&               evt,
-				     const std::string&              which,
-				     std::vector<const recob::SpacePoint*>& spts)
+  int RecoBaseDrawer::GetSpacePoints(const art::Event&                  evt,
+                                     const std::string&                 which,
+                                     art::PtrVector<recob::SpacePoint>& spts)
   {
     spts.clear();
-    std::vector<const recob::SpacePoint*> temp;
+    art::PtrVector<recob::SpacePoint> temp;
    
     art::Handle< std::vector<recob::SpacePoint> > spcol;
     
@@ -3392,7 +3381,7 @@ int RecoBaseDrawer::GetPFParticles(const art::Event&                  evt,
       temp.reserve(spcol->size());
       for(unsigned int i = 0; i < spcol->size(); ++i){
         art::Ptr<recob::SpacePoint> spt(spcol, i);
-        temp.push_back(&*spt);
+        temp.push_back(spt);
       }
       temp.swap(spts);
     }

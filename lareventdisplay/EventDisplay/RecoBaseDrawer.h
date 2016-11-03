@@ -9,6 +9,7 @@
 
 #include "canvas/Persistency/Common/PtrVector.h"
 #include "canvas/Persistency/Common/FindMany.h"
+#include "canvas/Persistency/Common/FindManyP.h"
 #include "art/Framework/Principal/View.h"
 
 #ifdef __ROOTCLING__
@@ -155,7 +156,8 @@ public:
 		              evdb::View3D*     view);
     void DrawPFParticle3D(const art::Ptr<recob::PFParticle>&       pfPart,
                           const art::PtrVector<recob::PFParticle>& pfParticleVec,
-                          const art::FindMany<recob::SpacePoint>&  spacePointAssnsVec,
+                          const art::FindManyP<recob::SpacePoint>& spacePointAssnsVec,
+                          const art::FindManyP<recob::Hit>&        spHitAssnVec,
                           const art::FindMany<recob::Track>&       trackAssnVec,
                           const art::FindMany<recob::PCAxis>&      pcAxisAssnVec,
                           const art::FindMany<anab::CosmicTag>&    cosmicTagAssnVec,
@@ -284,7 +286,7 @@ public:
 		              art::PtrVector<recob::EndPoint2D>& ep2d);
     int GetSpacePoints(const art::Event&               evt,
 		               const std::string&              which,
-		               std::vector<const recob::SpacePoint*>& spts);
+                       art::PtrVector<recob::SpacePoint>& spts);
 
     int GetTracks(const art::Event&        evt,
 		          const std::string&       which,

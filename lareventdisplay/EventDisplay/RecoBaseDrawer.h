@@ -35,7 +35,8 @@ namespace evdb {
 
 namespace geo   { class Geometry; }
 
-namespace recob { 
+namespace recob {
+    class Edge;
     class Hit;
     class Cluster;
     class PCAxis;
@@ -156,6 +157,8 @@ public:
 		              evdb::View3D*     view);
     void DrawPFParticle3D(const art::Ptr<recob::PFParticle>&       pfPart,
                           const art::PtrVector<recob::PFParticle>& pfParticleVec,
+                          const art::PtrVector<recob::SpacePoint>& spacePointVec,
+                          const art::FindManyP<recob::Edge>&       edgeAssnsVec,
                           const art::FindManyP<recob::SpacePoint>& spacePointAssnsVec,
                           const art::FindManyP<recob::Hit>&        spHitAssnVec,
                           const art::FindMany<recob::Track>&       trackAssnVec,
@@ -287,6 +290,9 @@ public:
     int GetSpacePoints(const art::Event&               evt,
 		               const std::string&              which,
                        art::PtrVector<recob::SpacePoint>& spts);
+    int GetEdges(const art::Event&            evt,
+                  const std::string&           which,
+                  art::PtrVector<recob::Edge>& edges);
 
     int GetTracks(const art::Event&        evt,
 		          const std::string&       which,

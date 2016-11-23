@@ -29,6 +29,7 @@
 #include "lareventdisplay/EventDisplay/RawDrawingOptions.h"
 #include "lareventdisplay/EventDisplay/Style.h"
 #include "lardataobj/RecoBase/Wire.h"
+#include "lardataobj/RecoBase/Edge.h"
 #include "lardataobj/RecoBase/Hit.h"
 #include "lardataobj/RecoBase/Cluster.h"
 #include "lardataobj/RecoBase/PCAxis.h"
@@ -1772,12 +1773,18 @@ void RecoBaseDrawer::PFParticle3D(const art::Event& evt,
         art::PtrVector<recob::SpacePoint> spacePointVec;
         this->GetSpacePoints(evt, which, spacePointVec);
         
+        // Recover the edges
+//        art::PtrVector<recob::Edge> edgeVec;
+//        this->GetEdges(evt, which, edgeVec);
+        
         // No space points no continue
         if (spacePointVec.size() < 1) continue;
         
         // Add the relations to recover associations cluster hits
         art::FindManyP<recob::SpacePoint> spacePointAssnVec(pfParticleVec, evt, which);
         art::FindManyP<recob::Hit>        spHitAssnVec(spacePointVec, evt, which);
+        
+        art::FindManyP<recob::Edge>       edgeAssnsVec(pfParticleVec, evt, which);
         
         // If no valid space point associations then nothing to do
         if (!spacePointAssnVec.isValid()) continue;
@@ -1807,7 +1814,7 @@ void RecoBaseDrawer::PFParticle3D(const art::Event& evt,
             if (!pfParticle->IsPrimary()) continue;
             
             // Call the recursive drawing routine
-            DrawPFParticle3D(pfParticle, pfParticleVec, spacePointAssnVec, spHitAssnVec, pfTrackAssns, pcAxisAssnVec, pfCosmicAssns, 0, view);
+            DrawPFParticle3D(pfParticle, pfParticleVec, spacePointVec, edgeAssnsVec, spacePointAssnVec, spHitAssnVec, pfTrackAssns, pcAxisAssnVec, pfCosmicAssns, 0, view);
         }
     }
 
@@ -1816,6 +1823,8 @@ void RecoBaseDrawer::PFParticle3D(const art::Event& evt,
     
 void RecoBaseDrawer::DrawPFParticle3D(const art::Ptr<recob::PFParticle>&       pfPart,
                                       const art::PtrVector<recob::PFParticle>& pfParticleVec,
+                                      const art::PtrVector<recob::SpacePoint>& spacePointVec,
+                                      const art::FindManyP<recob::Edge>&       edgeAssnsVec,
                                       const art::FindManyP<recob::SpacePoint>& spacePointAssnVec,
                                       const art::FindManyP<recob::Hit>&        spHitAssnVec,
                                       const art::FindMany<recob::Track>&       trackAssnVec,
@@ -1828,7 +1837,6 @@ void RecoBaseDrawer::DrawPFParticle3D(const art::Ptr<recob::PFParticle>&       p
     art::ServiceHandle<evd::ColorDrawingOptions> cst;
     
     // First let's draw the hits associated to this cluster
-    //const std::vector<const recob::SpacePoint*>& hitsVec(spacePointAssnVec.at(pfPart->Self()));
     const std::vector<art::Ptr<recob::SpacePoint>>& hitsVec(spacePointAssnVec.at(pfPart->Self()));
     
     // Use the particle ID to determine the color to draw the points
@@ -1910,8 +1918,79 @@ void RecoBaseDrawer::DrawPFParticle3D(const art::Ptr<recob::PFParticle>&       p
         
         for(auto& hitPair : colorToHitMap)
         {
-            TPolyMarker3D& pm = view->AddPolyMarker3D(hitPair.second.size(), hitPair.first, kFullDotMedium, 1);
+            //TPolyMarker3D& pm = view->AddPolyMarker3D(hitPair.second.size(), hitPair.first, kFullDotMedium, 3);
+            TPolyMarker3D& pm = view->AddPolyMarker3D(hitPair.second.size(), hitPair.first, kFullDotLarge, 0.3);
             for (const auto& hit : hitPair.second) pm.SetNextPoint(hit[0],hit[1],hit[2]);
+        }
+    }
+    
+    // Now try to draw any associated edges
+    const std::vector<art::Ptr<recob::Edge>>& edgeVec(edgeAssnsVec.at(pfPart->Self()));
+    
+    if (!edgeVec.empty())
+    {
+        std::map<int,int> indexMap;
+        
+        for (const auto& edge : edgeVec)
+        {
+            if (indexMap.find(edge->getSecondPointID()) != indexMap.end()) continue;
+            
+            indexMap[edge->getFirstPointID()] = edge->getSecondPointID();
+        }
+        
+        for(const auto& indexPair : indexMap)
+        {
+            art::Ptr<recob::SpacePoint> firstSP  = spacePointVec.at(indexPair.first);
+            art::Ptr<recob::SpacePoint> secondSP = spacePointVec.at(indexPair.second);
+            
+            if (indexPair.second == 0) continue;
+            
+            TVector3 lineVec(secondSP->XYZ()[0]-firstSP->XYZ()[0],secondSP->XYZ()[1]-firstSP->XYZ()[1],secondSP->XYZ()[2]-firstSP->XYZ()[2]);
+            TVector3 startPoint(firstSP->XYZ()[0],firstSP->XYZ()[1],firstSP->XYZ()[2]);
+            TVector3 endPoint(startPoint + lineVec);
+            
+            double length = lineVec.Mag();
+            
+            // Is there a bug in the associations code?
+            if (length > 5.)
+            {
+                std::cout << ">>>> Found bad edge length: " << length << std::endl;
+                continue;
+            }
+            
+            double minLen = std::max(2.01,length);
+            
+            lineVec.SetMag(1.);
+            
+            if (minLen > length)
+            {
+                startPoint += -0.5 * (minLen - length) * lineVec;
+                endPoint   +=  0.5 * (minLen - length) * lineVec;
+            }
+            
+            // Want color to reflect "heat map"
+            const std::vector<art::Ptr<recob::Hit>>& hitVec = spHitAssnVec.at(firstSP.key());
+            
+            int    chargeColorIdx(15);
+            
+            if (firstSP->Chisq() > -10.)
+            {
+                double pulseHeights[] = {0.,0.,0.};
+                
+                for(const auto& hit : hitVec)
+                {
+                    if (!hit) break;
+                    pulseHeights[hit->View()] = hit->Integral(); //PeakAmplitude();
+                }
+                
+                if (pulseHeights[2] > 0.) chargeColorIdx = cst->CalQ(geo::kCollection).GetColor(pulseHeights[2]);
+            }
+            
+            // Get a polyline object to draw from the first to the second space point
+            TPolyLine3D& pl = view->AddPolyLine3D(2, chargeColorIdx, 4, 1);
+            
+            pl.SetPoint(0, startPoint[0], startPoint[1], startPoint[2]);
+            pl.SetPoint(1, endPoint[0],   endPoint[1],   endPoint[2]);
         }
     }
     
@@ -1935,10 +2014,13 @@ void RecoBaseDrawer::DrawPFParticle3D(const art::Ptr<recob::PFParticle>&       p
         {
             // For each axis we are going to draw a solid line between two points
             int numPoints(2);
-            int lineWidth[2] = {       3,  1};
+            //int lineWidth[2] = {       3,  1};
+            int lineWidth[2] = {       2,  1};
             int lineStyle[2] = {       1, 13};
             int lineColor[2] = {colorIdx, 18};
-            int markStyle[2] = {       4,  4};
+            //int markStyle[2] = {       4,  4};
+            int    markStyle[2] = {kFullDotLarge, kFullDotLarge};
+            double markSize[2]  = {          0.5,           0.2};
             int pcaIdx(0);
 
             if (!isCosmic) lineColor[2] = colorIdx;
@@ -1954,7 +2036,7 @@ void RecoBaseDrawer::DrawPFParticle3D(const art::Ptr<recob::PFParticle>&       p
         
                 // Let's draw a marker at the interesting points
                 int             pmrkIdx(0);
-                TPolyMarker3D&  pmrk = view->AddPolyMarker3D(7, lineColor[pcaIdx], markStyle[pcaIdx], 1);
+                TPolyMarker3D&  pmrk = view->AddPolyMarker3D(7, lineColor[pcaIdx], markStyle[pcaIdx], markSize[pcaIdx]);
         
                 pmrk.SetPoint(pmrkIdx++, avePosition[0], avePosition[1], avePosition[2]);
         
@@ -2009,7 +2091,7 @@ void RecoBaseDrawer::DrawPFParticle3D(const art::Ptr<recob::PFParticle>&       p
         
         for(const auto& daughterIdx : pfPart->Daughters())
         {
-            DrawPFParticle3D(pfParticleVec.at(daughterIdx), pfParticleVec, spacePointAssnVec, spHitAssnVec, trackAssnVec, pcAxisAssnVec, cosmicTagAssnVec, depth, view);
+            DrawPFParticle3D(pfParticleVec.at(daughterIdx), pfParticleVec, spacePointVec, edgeAssnsVec, spacePointAssnVec, spHitAssnVec, trackAssnVec, pcAxisAssnVec, cosmicTagAssnVec, depth, view);
         }
     }
     
@@ -3362,35 +3444,61 @@ int RecoBaseDrawer::GetPFParticles(const art::Event&                  evt,
     
     return btbs.size();
   }
-
-
-
-
-  //......................................................................
-  int RecoBaseDrawer::GetSpacePoints(const art::Event&                  evt,
-                                     const std::string&                 which,
-                                     art::PtrVector<recob::SpacePoint>& spts)
-  {
+    
+//......................................................................
+int RecoBaseDrawer::GetSpacePoints(const art::Event&                  evt,
+                                   const std::string&                 which,
+                                   art::PtrVector<recob::SpacePoint>& spts)
+{
     spts.clear();
     art::PtrVector<recob::SpacePoint> temp;
-   
+    
     art::Handle< std::vector<recob::SpacePoint> > spcol;
     
     try{
-      evt.getByLabel(which, spcol);
-      temp.reserve(spcol->size());
-      for(unsigned int i = 0; i < spcol->size(); ++i){
-        art::Ptr<recob::SpacePoint> spt(spcol, i);
-        temp.push_back(spt);
-      }
-      temp.swap(spts);
+        evt.getByLabel(which, spcol);
+        temp.reserve(spcol->size());
+        for(unsigned int i = 0; i < spcol->size(); ++i){
+            art::Ptr<recob::SpacePoint> spt(spcol, i);
+            temp.push_back(spt);
+        }
+        temp.swap(spts);
     }
     catch(cet::exception& e){
-      writeErrMsg("GetSpacePoints", e);
+        writeErrMsg("GetSpacePoints", e);
     }
     
     return spts.size();
-  }
+}
+
+//......................................................................
+int RecoBaseDrawer::GetEdges(const art::Event&            evt,
+                             const std::string&           which,
+                             art::PtrVector<recob::Edge>& edges)
+{
+    edges.clear();
+    art::PtrVector<recob::Edge> temp;
+    
+    art::Handle< std::vector<recob::Edge> > edgeCol;
+    
+    try
+    {
+        evt.getByLabel(which, edgeCol);
+        temp.reserve(edgeCol->size());
+        for(unsigned int i = 0; i < edgeCol->size(); ++i)
+        {
+            art::Ptr<recob::Edge> edge(edgeCol, i);
+            temp.push_back(edge);
+        }
+        temp.swap(edges);
+    }
+    catch(cet::exception& e)
+    {
+        writeErrMsg("GetEdges", e);
+    }
+    
+    return edges.size();
+}
   
 //......................................................................
   int RecoBaseDrawer::GetTracks(const art::Event&        evt, 

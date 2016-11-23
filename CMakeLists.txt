@@ -53,6 +53,10 @@ find_ups_product( art v1_09_00 )
 find_ups_product( cetbuildtools v4_09_00 )
 find_ups_product( postgresql v9_1_5 )
 
+# use the system zlib
+find_package( ZLIB REQUIRED )
+include_directories( ZLIB_INCLUDE_DIRS )
+
 # macros for dictionary and simple_plugin
 include(ArtDictionary)
 include(ArtMake)

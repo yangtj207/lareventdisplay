@@ -482,22 +482,23 @@ namespace evd{
 
     art::ServiceHandle<geo::Geometry> geo;
     art::ServiceHandle<evd::RawDrawingOptions> rawopt;
-
-    for(size_t iplane = 0; iplane < fPlanes.size(); ++iplane){ 
-      if(geo->Plane(iplane).SignalType()==geo::kCollection){
-	double ch=0,convch=0;
-	if(rawopt->fDrawRawDataOrCalibWires == 0){
-	  fPlanes[iplane]->RawDataDraw()->GetChargeSum(iplane,ch,convch);
-	  mf::LogVerbatim("TWQProjectionView") << "Warning! Calculating for RawData! ";
-	}
-	else{  
-	  fPlanes[iplane]->RecoBaseDraw()->GetChargeSum(iplane,ch,convch);  
-	}    
-
-	mf::LogVerbatim("TWQProjectionView") << "\ncharge collected at collection plane: " 
-					     << iplane << " " << ch << " " << convch;
+    
+    for(size_t iplane = 0; iplane < fPlanes.size(); ++iplane){
+      geo::PlaneID planeid(rawopt->CurrentTPC(), iplane);
+      if (geo->SignalType(planeid) != geo::kCollection) continue;
+        
+      double ch=0,convch=0;
+      if(rawopt->fDrawRawDataOrCalibWires == 0){
+        fPlanes[iplane]->RawDataDraw()->GetChargeSum(iplane,ch,convch);
+        mf::LogVerbatim("TWQProjectionView") << "Warning! Calculating for RawData! ";
       }
-    }
+      else{  
+        fPlanes[iplane]->RecoBaseDraw()->GetChargeSum(iplane,ch,convch);  
+      }    
+
+      mf::LogVerbatim("TWQProjectionView") << "\ncharge collected at collection plane: " 
+                                           << iplane << " " << ch << " " << convch;
+    } // for
 
 
   }

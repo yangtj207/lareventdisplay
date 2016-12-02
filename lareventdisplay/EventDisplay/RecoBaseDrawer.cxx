@@ -1285,6 +1285,13 @@ void RecoBaseDrawer::DrawTrack2D(std::vector<const recob::Hit*>& hits,
                 // them.  only keep those that are in this view
                 for(size_t t = 0; t < track.vals().size(); ++t)
                 {
+                    // Check for possible issue
+                    if (track.vals().at(t)->NumberTrajectoryPoints() == 0)
+                    {
+                        std::cout << "***** Track with no trajectory points ********" << std::endl;
+                        continue;
+                    }
+                    
                     if(recoOpt->fDrawTracks > 1)
                     {
                         // BB: draw the track ID at the end of the track
@@ -1925,72 +1932,75 @@ void RecoBaseDrawer::DrawPFParticle3D(const art::Ptr<recob::PFParticle>&       p
     }
     
     // Now try to draw any associated edges
-    const std::vector<art::Ptr<recob::Edge>>& edgeVec(edgeAssnsVec.at(pfPart->Self()));
-    
-    if (!edgeVec.empty())
+    if (edgeAssnsVec.isValid())
     {
-        std::map<int,int> indexMap;
-        
-        for (const auto& edge : edgeVec)
+        const std::vector<art::Ptr<recob::Edge>>& edgeVec(edgeAssnsVec.at(pfPart->Self()));
+    
+        if (!edgeVec.empty())
         {
-            if (indexMap.find(edge->getSecondPointID()) != indexMap.end()) continue;
-            
-            indexMap[edge->getFirstPointID()] = edge->getSecondPointID();
-        }
+            std::map<int,int> indexMap;
         
-        for(const auto& indexPair : indexMap)
-        {
-            art::Ptr<recob::SpacePoint> firstSP  = spacePointVec.at(indexPair.first);
-            art::Ptr<recob::SpacePoint> secondSP = spacePointVec.at(indexPair.second);
-            
-            if (indexPair.second == 0) continue;
-            
-            TVector3 lineVec(secondSP->XYZ()[0]-firstSP->XYZ()[0],secondSP->XYZ()[1]-firstSP->XYZ()[1],secondSP->XYZ()[2]-firstSP->XYZ()[2]);
-            TVector3 startPoint(firstSP->XYZ()[0],firstSP->XYZ()[1],firstSP->XYZ()[2]);
-            TVector3 endPoint(startPoint + lineVec);
-            
-            double length = lineVec.Mag();
-            
-            // Is there a bug in the associations code?
-            if (length > 5.)
+            for (const auto& edge : edgeVec)
             {
-                std::cout << ">>>> Found bad edge length: " << length << std::endl;
-                continue;
+                if (indexMap.find(edge->getSecondPointID()) != indexMap.end()) continue;
+            
+                indexMap[edge->getFirstPointID()] = edge->getSecondPointID();
             }
-            
-            double minLen = std::max(2.01,length);
-            
-            lineVec.SetMag(1.);
-            
-            if (minLen > length)
+        
+            for(const auto& indexPair : indexMap)
             {
-                startPoint += -0.5 * (minLen - length) * lineVec;
-                endPoint   +=  0.5 * (minLen - length) * lineVec;
-            }
+                art::Ptr<recob::SpacePoint> firstSP  = spacePointVec.at(indexPair.first);
+                art::Ptr<recob::SpacePoint> secondSP = spacePointVec.at(indexPair.second);
             
-            // Want color to reflect "heat map"
-            const std::vector<art::Ptr<recob::Hit>>& hitVec = spHitAssnVec.at(firstSP.key());
+                if (indexPair.second == 0) continue;
             
-            int    chargeColorIdx(15);
+                TVector3 lineVec(secondSP->XYZ()[0]-firstSP->XYZ()[0],secondSP->XYZ()[1]-firstSP->XYZ()[1],secondSP->XYZ()[2]-firstSP->XYZ()[2]);
+                TVector3 startPoint(firstSP->XYZ()[0],firstSP->XYZ()[1],firstSP->XYZ()[2]);
+                TVector3 endPoint(startPoint + lineVec);
             
-            if (firstSP->Chisq() > -10.)
-            {
-                double pulseHeights[] = {0.,0.,0.};
-                
-                for(const auto& hit : hitVec)
+                double length = lineVec.Mag();
+            
+                // Is there a bug in the associations code?
+                if (length > 5.)
                 {
-                    if (!hit) break;
-                    pulseHeights[hit->View()] = hit->Integral(); //PeakAmplitude();
+                    std::cout << ">>>> Found bad edge length: " << length << std::endl;
+                    continue;
                 }
+            
+                double minLen = std::max(2.01,length);
+            
+                lineVec.SetMag(1.);
+            
+                if (minLen > length)
+                {
+                    startPoint += -0.5 * (minLen - length) * lineVec;
+                    endPoint   +=  0.5 * (minLen - length) * lineVec;
+                }
+            
+                // Want color to reflect "heat map"
+                const std::vector<art::Ptr<recob::Hit>>& hitVec = spHitAssnVec.at(firstSP.key());
+            
+                int    chargeColorIdx(15);
+            
+                if (firstSP->Chisq() > -10.)
+                {
+                    double pulseHeights[] = {0.,0.,0.};
                 
-                if (pulseHeights[2] > 0.) chargeColorIdx = cst->CalQ(geo::kCollection).GetColor(pulseHeights[2]);
+                    for(const auto& hit : hitVec)
+                    {
+                        if (!hit) break;
+                        pulseHeights[hit->View()] = hit->Integral(); //PeakAmplitude();
+                    }
+                
+                    if (pulseHeights[2] > 0.) chargeColorIdx = cst->CalQ(geo::kCollection).GetColor(pulseHeights[2]);
+                }
+            
+                // Get a polyline object to draw from the first to the second space point
+                TPolyLine3D& pl = view->AddPolyLine3D(2, chargeColorIdx, 4, 1);
+            
+                pl.SetPoint(0, startPoint[0], startPoint[1], startPoint[2]);
+                pl.SetPoint(1, endPoint[0],   endPoint[1],   endPoint[2]);
             }
-            
-            // Get a polyline object to draw from the first to the second space point
-            TPolyLine3D& pl = view->AddPolyLine3D(2, chargeColorIdx, 4, 1);
-            
-            pl.SetPoint(0, startPoint[0], startPoint[1], startPoint[2]);
-            pl.SetPoint(1, endPoint[0],   endPoint[1],   endPoint[2]);
         }
     }
     

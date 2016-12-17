@@ -1897,6 +1897,7 @@ void RecoBaseDrawer::DrawPFParticle3D(const art::Ptr<recob::PFParticle>&       p
             }
             else if (spacePoint->Chisq() == -1.)                             // Skeleton hits
             {
+                chargeColorIdx = 5;
                 storeHit = true;
             }
             else if (spacePoint->Chisq() == -3.)                             // Skeleton hits which are also edge hits

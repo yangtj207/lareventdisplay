@@ -6,7 +6,7 @@ defaultqual	e10
 fcldir		product_dir	job
 #
 product         version
-larreco		v06_13_01
+larreco		v06_14_00
 gcc		v4_9_3a
 
 cetbuildtools	v5_06_01	-	only_for_build

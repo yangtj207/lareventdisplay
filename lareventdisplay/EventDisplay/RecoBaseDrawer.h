@@ -172,12 +172,12 @@ public:
                           evdb::View3D*                                view,
                           int                                          color,
                           int                                          marker = 3,
-                          int                                          size = 1);
+                          float                                        size = 1.);
     void DrawTrack3D(const recob::Track& track,
 		             evdb::View3D*       view,
                      int                 color,
                      int                 marker = 1,
-                     int                 size = 2);
+                     float               size = 2.);
     void DrawShower3D(const recob::Shower& shower,
 		              int                  color,
                       evdb::View3D*        view);

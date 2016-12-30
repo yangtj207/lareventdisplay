@@ -1860,7 +1860,7 @@ void RecoBaseDrawer::DrawPFParticle3D(const art::Ptr<recob::PFParticle>&       p
         {
             const anab::CosmicTag* cosmicTag = pfCosmicTagVec.front();
             
-            if (cosmicTag->CosmicScore() > 0.4) isCosmic = true;
+            if (cosmicTag->CosmicScore() > 0.6) isCosmic = true;
         }
         
     }
@@ -1880,39 +1880,41 @@ void RecoBaseDrawer::DrawPFParticle3D(const art::Ptr<recob::PFParticle>&       p
             const std::vector<art::Ptr<recob::Hit>>& hitVec = spHitAssnVec.at(spacePoint.key());
             
             bool   storeHit(false);
-            int    chargeColorIdx(-1);
+            int    chargeColorIdx(0);
             double pulseHeights[] = {0.,0.,0.};
+            double spacePointChiSq(spacePoint->Chisq());
+            double overlapFraction = std::fabs(spacePointChiSq - int(spacePointChiSq));
             
             for(const auto& hit : hitVec)
             {
-                if (!hit) break;
-                pulseHeights[hit->View()] = hit->Integral(); //PeakAmplitude();
+                if (!hit) continue;
+                pulseHeights[hit->View()] = overlapFraction * hit->Integral(); //PeakAmplitude();
             }
             
-            if (pulseHeights[2] > 0.) chargeColorIdx = cst->CalQ(geo::kCollection).GetColor(pulseHeights[2]);
+            if (pulseHeights[2] >= 0.) chargeColorIdx = cst->CalQ(geo::kCollection).GetColor(pulseHeights[2]);
             
-            if (spacePoint->Chisq() > 0. && !recoOpt->fSkeletonOnly)         // All cluster hits which are unmarked
+            if (spacePointChiSq > 0. && !recoOpt->fSkeletonOnly)         // All cluster hits which are unmarked
             {
                 storeHit = true;
             }
-            else if (spacePoint->Chisq() == -1.)                             // Skeleton hits
+            else if (spacePointChiSq > -2.)                              // Skeleton hits
             {
                 chargeColorIdx = 5;
                 storeHit = true;
             }
-            else if (spacePoint->Chisq() == -3.)                             // Skeleton hits which are also edge hits
+            else if (spacePointChiSq > -3.)                              // Pure edge hits
+            {
+                if (chargeColorIdx < 0) chargeColorIdx = !isCosmic ? 3 : colorIdx + 3;
+                storeHit = true;
+            }
+            else if (spacePointChiSq > -4.)                              // Skeleton hits which are also edge hits
             {
                 if (chargeColorIdx < 0) chargeColorIdx = !isCosmic ? 0 : colorIdx + 3;
                 storeHit = true;
             }
-            else if (spacePoint->Chisq() == -4.)                             // Hits which form seeds for tracks
+            else if (spacePoint->Chisq() > -5.)                             // Hits which form seeds for tracks
             {
                 if (chargeColorIdx < 0) chargeColorIdx = !isCosmic ? 5 : colorIdx + 3;
-                storeHit = true;
-            }
-            else if (spacePoint->Chisq() > -10. && !recoOpt->fSkeletonOnly)  // Edge hits
-            {
-                if (chargeColorIdx < 0) chargeColorIdx = !isCosmic ? 3 : colorIdx + 3;
                 storeHit = true;
             }
             else if (!recoOpt->fSkeletonOnly)                                // hits made from pairs
@@ -1920,6 +1922,8 @@ void RecoBaseDrawer::DrawPFParticle3D(const art::Ptr<recob::PFParticle>&       p
                 chargeColorIdx = 15;
                 storeHit       = true;
             }
+            
+            if (chargeColorIdx < 0) chargeColorIdx = 0;
             
             if (storeHit) colorToHitMap[chargeColorIdx].push_back(HitPosition()={pos[0],pos[1],pos[2]});
         }
@@ -2012,7 +2016,7 @@ void RecoBaseDrawer::DrawPFParticle3D(const art::Ptr<recob::PFParticle>&       p
         
         if (!trackVec.empty())
         {
-            for(const auto& track : trackVec) DrawTrack3D(*track, view, colorIdx);
+            for(const auto& track : trackVec) DrawTrack3D(*track, view, colorIdx, kFullDotLarge, 0.5);
         }
     }
     
@@ -2140,9 +2144,9 @@ void RecoBaseDrawer::Prong3D(const art::Event& evt,
 
             for(const auto& track : trackVec)
             {
-	        int color  = evd::kColor[track.key()%evd::kNCOLS];
-                int marker = kFullDotMedium;
-                int size   = 2;
+                int   color  = evd::kColor[track.key()%evd::kNCOLS];
+                int   marker = kFullDotLarge;
+                float size   = 2.0;
                 
                 // Check if a CosmicTag object is available
                 
@@ -2156,11 +2160,10 @@ void RecoBaseDrawer::Prong3D(const art::Event& evt,
                         const anab::CosmicTag* cosmicTag = tkCosmicTagVec.front();
                         
                         // If tagged as Cosmic then neutralize the color
-                        if (cosmicTag->CosmicScore() > 0.4)
+                        if (cosmicTag->CosmicScore() > 0.6)
                         {
-                            color  = 14;
-                            marker = kFullDotSmall;
-                            size   = 1;
+                            color = 14;
+                            size  = 0.5;
                         }
                     }
                 }
@@ -2196,7 +2199,7 @@ void RecoBaseDrawer::DrawSpacePoint3D(const std::vector<const recob::SpacePoint*
 					                  evdb::View3D*                                view,
                                       int                                          color,
                                       int                                          marker,
-                                      int                                          size)
+                                      float                                        size)
 {
     // Get services.
 
@@ -2260,7 +2263,7 @@ void RecoBaseDrawer::DrawTrack3D(const recob::Track& track,
                                  evdb::View3D*       view,
                                  int                 color,
                                  int                 marker,
-                                 int                 size)
+                                 float               size)
 {
     // Get options.
     art::ServiceHandle<evd::RecoDrawingOptions> recoOpt;
@@ -2292,7 +2295,7 @@ void RecoBaseDrawer::DrawTrack3D(const recob::Track& track,
                         if(&*p == &track)
                         {
                             std::vector<const recob::SpacePoint*> spts = fmsp.at(i);
-                            DrawSpacePoint3D(spts, view, color, marker, 1);
+                            DrawSpacePoint3D(spts, view, color, marker, size);
                         }
 	                }
                 }
@@ -2304,15 +2307,20 @@ void RecoBaseDrawer::DrawTrack3D(const recob::Track& track,
     {
         // Draw trajectory points.
         int np = track.NumberTrajectoryPoints();
+        
+        int lineSize = size;
+        
+        if (lineSize < 1) lineSize = 1;
       
         // Make and fill a special polymarker for the head of the track
-        TPolyMarker3D& pmStart = view->AddPolyMarker3D(1, color, 4, 3);
+        //TPolyMarker3D& pmStart = view->AddPolyMarker3D(1, color, 4, 3);
+        TPolyMarker3D& pmStart = view->AddPolyMarker3D(1, 0, marker, 2.*size);
       
         const TVector3& firstPos = track.LocationAtPoint(0);
         pmStart.SetPoint(0, firstPos.X(), firstPos.Y(), firstPos.Z());
       
         // Make and fill a polymarker.
-        TPolyMarker3D& pm = view->AddPolyMarker3D(np, color, 1, 3);
+        TPolyMarker3D& pm = view->AddPolyMarker3D(np, color, marker, 0.5*size);
       
         for(int p = 0; p < np; ++p)
         {
@@ -2321,7 +2329,7 @@ void RecoBaseDrawer::DrawTrack3D(const recob::Track& track,
         }
       
         // As we are a track, should we not be drawing a line here?
-        TPolyLine3D& pl = view->AddPolyLine3D(np, color, size, 7);
+        TPolyLine3D& pl = view->AddPolyLine3D(np, color, lineSize, 7);
       
         for(int p = 0; p < np; ++p)
         {
@@ -2337,7 +2345,7 @@ void RecoBaseDrawer::DrawTrack3D(const recob::Track& track,
       
         for(int p = 1; p < np; ++p)
         {
-            TPolyLine3D& pl = view->AddPolyLine3D(2, (color+1)%evd::kNCOLS, size, 7); //1, 3);
+            TPolyLine3D& pl = view->AddPolyLine3D(2, (color+1)%evd::kNCOLS, lineSize, 7); //1, 3);
           
             TVector3 nextPos(track.LocationAtPoint(p));
             TVector3 deltaPos = nextPos - startPos;

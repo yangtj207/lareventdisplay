@@ -257,8 +257,8 @@ void RecoBaseDrawer::Wire2D(const art::Event& evt,
 /// @param plane  : plane number of view
 ///
 void RecoBaseDrawer::Hit2D(const art::Event& evt,
-			     evdb::View2D*     view,
-			     unsigned int      plane)
+                           evdb::View2D*     view,
+                           unsigned int      plane)
 {
     art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
@@ -791,8 +791,8 @@ void RecoBaseDrawer::Cluster2D(const art::Event& evt,
     geo::View_t gview = geo->TPC(rawOpt->fTPC).Plane(plane).View();
 
     // if user sets "DrawClusters" to 2, draw the clusters differently:
-//    bool drawAsMarkers = (recoOpt->fDrawClusters == 1 ||
-//                          recoOpt->fDrawClusters == 3);
+    //    bool drawAsMarkers = (recoOpt->fDrawClusters == 1 ||
+    //                          recoOpt->fDrawClusters == 3);
     bool drawAsMarkers = recoOpt->fDrawClusters != 2;
                           
     // draw connecting lines between cluster hits?
@@ -826,87 +826,124 @@ void RecoBaseDrawer::Cluster2D(const art::Event& evt,
                 colorIdx   = clusterIdx % evd::kNCOLS;
             }
 
-        std::vector<const recob::Hit*> hits = fmh.at(ic);
+            std::vector<const recob::Hit*> hits = fmh.at(ic);
 
-        // check for correct tpc, the view check done above
-        // ensures we are in the correct plane
+            // check for correct tpc, the view check done above
+            // ensures we are in the correct plane
 //        if((*hits.begin())->WireID().TPC      != rawOpt->fTPC || 
 //           (*hits.begin())->WireID().Cryostat != rawOpt->fCryostat) continue;
 
-        if (drawAsMarkers) {
-          // draw cluster with unique marker
-          // Place this cluster's unique marker at the hit's location
-          int color  = evd::kColor[colorIdx];
-          this->Hit2D(hits, color, view, drawConnectingLines);
+            if (drawAsMarkers) {
+                // draw cluster with unique marker
+                // Place this cluster's unique marker at the hit's location
+                int color  = evd::kColor[colorIdx];
+                this->Hit2D(hits, color, view, drawConnectingLines);
           
-          if(recoOpt->fDrawClusters > 3) {
-            // BB: draw the cluster ID
-            std::string s = std::to_string(clusterIdx);
-            char const* txt = s.c_str();
-            double wire = clust[ic]->StartWire();
-            double tick = 20 + clust[ic]->StartTick();
-            TText& clID = view->AddText(wire, tick, txt);
-            clID.SetTextColor(color);
-          } // recoOpt->fDrawClusters > 3
-        }
-        else {
+                if(recoOpt->fDrawClusters > 3) {
+                    // BB: draw the cluster ID
+                    std::string s = std::to_string(clusterIdx);
+                    char const* txt = s.c_str();
+                    double wire = clust[ic]->StartWire();
+                    double tick = 20 + clust[ic]->StartTick();
+                    TText& clID = view->AddText(wire, tick, txt);
+                    clID.SetTextColor(color);
+                } // recoOpt->fDrawClusters > 3
+            }
+            else {
 
-          // default "outline" method:
-          std::vector<double> tpts, wpts;
+                // default "outline" method:
+                std::vector<double> tpts, wpts;
       
 	            this->GetClusterOutlines(hits, tpts, wpts, plane);
       
-          int lcolor = 9; // line color
-          int fcolor = 9; // fill color
-          int width  = 2; // line width
-          int style  = 1; // 1=solid line style
-          if (view != 0) {
-            TPolyLine& p1 = view->AddPolyLine(wpts.size(), 
-                                              lcolor,
-                                              width,
-                                              style);
-            TPolyLine& p2 = view->AddPolyLine(wpts.size(),
-                                              lcolor,
-                                              width,
-                                              style);
-            p1.SetOption("f");
-            p1.SetFillStyle(3003);
-            p1.SetFillColor(fcolor);
-            for (size_t i = 0; i < wpts.size(); ++i) {
-              if(rawOpt->fAxisOrientation < 1){
-                p1.SetPoint(i, wpts[i], tpts[i]);
-                p2.SetPoint(i, wpts[i], tpts[i]);
-              }
-              else{
-                p1.SetPoint(i, tpts[i], wpts[i]);
-                p2.SetPoint(i, tpts[i], wpts[i]);
-              }
-            } // loop on i points in ZX view
-          } // if we have a cluster in the ZX view
-        }// end if outline mode
+                int lcolor = 9; // line color
+                int fcolor = 9; // fill color
+                int width  = 2; // line width
+                int style  = 1; // 1=solid line style
+                if (view != 0) {
+                    TPolyLine& p1 = view->AddPolyLine(wpts.size(),
+                                                      lcolor,
+                                                      width,
+                                                      style);
+                    TPolyLine& p2 = view->AddPolyLine(wpts.size(),
+                                                      lcolor,
+                                                      width,
+                                                      style);
+                    p1.SetOption("f");
+                    p1.SetFillStyle(3003);
+                    p1.SetFillColor(fcolor);
+                    for (size_t i = 0; i < wpts.size(); ++i) {
+                        if(rawOpt->fAxisOrientation < 1){
+                            p1.SetPoint(i, wpts[i], tpts[i]);
+                            p2.SetPoint(i, wpts[i], tpts[i]);
+                        }
+                        else{
+                            p1.SetPoint(i, tpts[i], wpts[i]);
+                            p2.SetPoint(i, tpts[i], wpts[i]);
+                        }
+                    } // loop on i points in ZX view
+                } // if we have a cluster in the ZX view
+            }// end if outline mode
 
-        // draw the direction cosine of the cluster as well as it's starting point
-        // (average of the start and end angle -- by default they are the same value)
-    // thetawire is the angle measured CW from +z axis to wire
-	//double thetawire = geo->TPC(t).Plane(plane).Wire(0).ThetaZ();
-	double wirePitch = geo->WirePitch(gview);
-	double driftvelocity = detprop->DriftVelocity(); // cm/us
-	double timetick = detprop->SamplingRate()*1e-3;  // time sample in us
-	//rotate coord system CCW around x-axis by pi-thetawire
-	//   new yprime direction is perpendicular to the wire direction
-	//   in the same plane as the wires and in the direction of
-	//   increasing wire number
-	//use yprime-component of dir cos in rotated coord sys to get
-	//   dTdW (number of time ticks per unit of wire pitch)
-	//double rotang = 3.1416-thetawire;
-        this->Draw2DSlopeEndPoints(
-	       clust[ic]->StartWire(), clust[ic]->StartTick(),
-	       clust[ic]->EndWire(),   clust[ic]->EndTick(),
-	       std::tan((clust[ic]->StartAngle() + clust[ic]->EndAngle())/2.)*wirePitch/driftvelocity/timetick,
-	       evd::kColor[colorIdx], view
-				   );
+            // draw the direction cosine of the cluster as well as it's starting point
+            // (average of the start and end angle -- by default they are the same value)
+            // thetawire is the angle measured CW from +z axis to wire
+            //double thetawire = geo->TPC(t).Plane(plane).Wire(0).ThetaZ();
+            double wirePitch = geo->WirePitch(gview);
+            double driftvelocity = detprop->DriftVelocity(); // cm/us
+            double timetick = detprop->SamplingRate()*1e-3;  // time sample in us
+            //rotate coord system CCW around x-axis by pi-thetawire
+            //   new yprime direction is perpendicular to the wire direction
+            //   in the same plane as the wires and in the direction of
+            //   increasing wire number
+            //use yprime-component of dir cos in rotated coord sys to get
+            //   dTdW (number of time ticks per unit of wire pitch)
+            //double rotang = 3.1416-thetawire;
+            this->Draw2DSlopeEndPoints(
+                                       clust[ic]->StartWire(), clust[ic]->StartTick(),
+                                       clust[ic]->EndWire(),   clust[ic]->EndTick(),
+                                       std::tan((clust[ic]->StartAngle() + clust[ic]->EndAngle())/2.)*wirePitch/driftvelocity/timetick,
+                                       evd::kColor[colorIdx], view
+                                       );
 
-      } // loop on ic clusters
+        } // loop on ic clusters
+        
+        // We want to draw the hits that are associated to "free" space points (non clustered) as well
+        // Get the space points created by the PFParticle producer
+        art::PtrVector<recob::SpacePoint> spacePointVec;
+        this->GetSpacePoints(evt, which, spacePointVec);
+        
+        // No space points no continue
+        if (spacePointVec.size() < 1) continue;
+        
+        // Add the relations to recover associations cluster hits
+        art::FindManyP<recob::Hit>        spHitAssnVec(spacePointVec, evt, which);
+        
+        if (!spHitAssnVec.isValid()) continue;
+        
+        // Create a local hit vector...
+        std::vector<const recob::Hit*> freeHitVec;
+        
+        // loop through space points looking for those that are free
+        for(const auto& spacePointPtr : spacePointVec)
+        {
+            if (spacePointPtr->Chisq() < -99.)
+            {
+                // Recover associated hits
+                const std::vector<art::Ptr<recob::Hit>>& hitVec = spHitAssnVec.at(spacePointPtr.key());
+                
+                for(const auto& hit : hitVec)
+                {
+                    if(hit->View() != gview) continue;
+                    
+                    freeHitVec.push_back(hit.get());
+                }
+            }
+        }
+        
+        // Draw the free hits in gray
+        this->Hit2D(freeHitVec, kGray, view, false);
+        
     } // loop on imod folders
     
     return;

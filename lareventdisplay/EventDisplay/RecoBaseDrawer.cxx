@@ -182,6 +182,7 @@ void RecoBaseDrawer::Wire2D(const art::Event& evt,
             double tdc = tdcsum/ticksPerPoint;
             
             if(TMath::Abs(adc) < rawOpt->fMinSignal) continue;
+            if(tdc > rawOpt->fTicks) continue;
             
             int    co = 0;
             double sf = 1.;
@@ -329,6 +330,8 @@ void RecoBaseDrawer::Hit2D(const art::Event& evt,
         if(hits[c]->WireID().TPC      != rawOpt->fTPC ||
            hits[c]->WireID().Cryostat != rawOpt->fCryostat) continue;
 
+        if (hits[c]->StartTick() > rawOpt->fTicks) continue;
+        
         w = hits[c]->WireID().Wire;
 
         // Try to get the "best" charge measurement, ie. the one last in

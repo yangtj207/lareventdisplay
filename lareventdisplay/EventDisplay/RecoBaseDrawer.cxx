@@ -330,7 +330,7 @@ void RecoBaseDrawer::Hit2D(const art::Event& evt,
         if(hits[c]->WireID().TPC      != rawOpt->fTPC ||
            hits[c]->WireID().Cryostat != rawOpt->fCryostat) continue;
 
-        if (hits[c]->StartTick() > rawOpt->fTicks) continue;
+        if (hits[c]->PeakTime() > rawOpt->fTicks) continue;
         
         w = hits[c]->WireID().Wire;
 

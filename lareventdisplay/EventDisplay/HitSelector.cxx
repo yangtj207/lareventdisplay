@@ -42,7 +42,7 @@ namespace evd{
   {
  
   }
-
+ 
 
   //......................................................................
   ///
@@ -170,8 +170,8 @@ namespace evd{
   void HitSelector::SaveHits(const art::Event& evt,
 			     evdb::View2D*     /*view*/,
 			     unsigned int      plane,
-			     double x,  double y,
-			     double x1, double y1,
+			     double xin,  double yin,
+			     double x1in, double y1in,
 			     double distance,
 			     bool good_plane
 			     ) 
@@ -199,8 +199,11 @@ namespace evd{
     starthitout[plane].resize(2);
     endhitout[plane].resize(2);
 	  
-	
-   
+    //convert input variables to cm-cm space required by GeometryUtilities
+    double x=xin*gser.WireToCm();
+    double x1=x1in*gser.WireToCm();
+    double y=yin*gser.TimeToCm();
+    double y1=y1in*gser.TimeToCm();
     
     
     double lslope=0;
@@ -235,13 +238,16 @@ namespace evd{
      startHit.w=(x+x1)/2;
      startHit.t=(y+y1)/2;
      
-     double orttemp=TMath::Sqrt((y1-y)*(y1-y)*gser.TimeToCm()*gser.TimeToCm() + (x1-x)*(x1-x)*gser.WireToCm()*gser.WireToCm())/2;
+      
+//      double orttemp=TMath::Sqrt((y1-y)*(y1-y)*gser.TimeToCm()*gser.TimeToCm() + (x1-x)*(x1-x)*gser.WireToCm()*gser.WireToCm())/2;
+      double orttemp=TMath::Sqrt((y1-y)*(y1-y) + (x1-x)*(x1-x))/2;
+     
      
      gser.SelectLocalHitlistIndex(pxhitlist, pxhitlist_local_index, startHit, 
 			     orttemp, 
 			     distance, lslope);
     
-
+      
      for(unsigned int idx=0;idx<pxhitlist_local_index.size();idx++)
        {
         hits_to_save.push_back(hitlist.at(pxhitlist_local_index.at(idx)));
@@ -257,6 +263,7 @@ namespace evd{
 			   distance, 
 			   lslope);*/		
     //const_cast<recob::Hit *> (nearHit.get())
+    
      recob::Hit * hit=  const_cast<recob::Hit *> ((hits_to_save[gser.FindClosestHitIndex(pxhitlist_local,x,y)]).get());
      //gser.FindClosestHit(hits_to_save,
 	//		      x, y);
@@ -283,7 +290,6 @@ namespace evd{
 	infot->SetEndHitCoords(plane,endhitout[plane]);
       } 
     infot->SetEvtNumber(evt.id().event());
-   
   }
 
   //......................................................................
@@ -297,7 +303,7 @@ namespace evd{
   void HitSelector::ChangeHit(const art::Event& evt,
 			      evdb::View2D*     /*view*/,
 			      unsigned int      plane,
-			      double x,  double y
+			      double xin,  double yin
 			      ) 
   {
     art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
@@ -307,10 +313,12 @@ namespace evd{
     
     //get hits from info transfer, see if our selected hit is in it
     std::vector < art::Ptr<recob::Hit> > hits_saved;
-      std::vector < art::Ptr<recob::Hit> > hitlist;
-    std::vector < art::Ptr < recob::Hit> > hits_to_save; 
+    std::vector < art::Ptr<recob::Hit> > hitlist;
+   // std::vector < art::Ptr < recob::Hit> > hits_to_save; 
      hitlist.clear();
 
+     double x = xin*gser.WireToCm();
+     double y = yin*gser.TimeToCm();
 
     art::Handle< std::vector<recob::Hit> > HitListHandle;
    
@@ -329,7 +337,8 @@ namespace evd{
      std::vector <util::PxHit> pxhitlist;
      PxC.GeneratePxHit(hitlist,pxhitlist);
       
-      art::Ptr < recob::Hit > selected_hit= hits_to_save[gser.FindClosestHitIndex(pxhitlist,x,y)];
+//       art::Ptr < recob::Hit > selected_hit= hitlist[gser.FindClosestHitIndex(pxhitlist,x,y)];
+      unsigned int hitindex=gser.FindClosestHitIndex(pxhitlist,x,y);
       //FindClosestHitPtr(hitlist, x, y); 
       
       // find selected hit in evD
@@ -347,7 +356,7 @@ namespace evd{
 // 	}
 		  
     //}
-      if(selected_hit.isNull()){
+      if(hitlist[hitindex].isNull() || (hitindex<0 || hitindex > hitlist.size())){
 	WriteMsg("no luck finding hit in evd, please try again");
 	break;
       }
@@ -357,8 +366,8 @@ namespace evd{
       hits_saved=infot->GetSelectedHitList(plane);
       int found_it=0;
       for(unsigned int jj=0; jj<hits_saved.size(); ++jj){
-	if(selected_hit->PeakTime() == hits_saved[jj]->PeakTime()){
-	  if(selected_hit->Channel() == hits_saved[jj]->Channel()){
+	if(hitlist[hitindex]->PeakTime() == hits_saved[jj]->PeakTime()){
+	  if(hitlist[hitindex]->Channel() == hits_saved[jj]->Channel()){
 	    found_it=1;
 	    hits_saved.erase(hits_saved.begin()+jj);
 	  }
@@ -367,7 +376,7 @@ namespace evd{
     
       //if didn't find it, add it
       if(found_it!=1){
-	hits_saved.push_back(selected_hit);
+	hits_saved.push_back(hitlist[hitindex]);
       }
     
       //update the info transfer list

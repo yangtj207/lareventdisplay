@@ -18,6 +18,7 @@
 #include "TVector3.h"
 #include "TText.h"
 #include "TColor.h"
+#include "TRotation.h"
 
 #include "nutools/EventDisplayBase/View2D.h"
 #include "nutools/EventDisplayBase/View3D.h"
@@ -1125,7 +1126,7 @@ void RecoBaseDrawer::GetClusterOutlines(std::vector<const recob::Hit*>& hits,
     double tick1 = detprop->ConvertXToTicks((startPos+startDir).X(),plane,t,c);
     double wire1 = geo->WireCoordinate((startPos+startDir).Y(),
                                        (startPos+startDir).Z(),plane,t,c);
-
+//    std::cout<<" W:T "<<(int)wire0<<":"<<(int)tick0<<" "<<(int)wire1<<":"<<(int)tick1<<"\n";
     double cost = 0;
     double cosw = 0;
     double ds = sqrt(pow(tick0-tick1,2)+pow(wire0-wire1,2));
@@ -1227,140 +1228,221 @@ void RecoBaseDrawer::DrawTrack2D(std::vector<const recob::Hit*>& hits,
     
     
     //......................................................................
-    void RecoBaseDrawer::Prong2D(const art::Event& evt,
-                                 evdb::View2D*     view,
-                                 unsigned int      plane)
+  void RecoBaseDrawer::Prong2D(const art::Event& evt,
+                               evdb::View2D*     view,
+                               unsigned int      plane)
+  {
+    art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
+    art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
+    art::ServiceHandle<geo::Geometry>            geo;
+    auto const* detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
+    
+    if(rawOpt->fDrawRawDataOrCalibWires < 1) return;
+    
+    geo::View_t gview = geo->TPC(rawOpt->fTPC).Plane(plane).View();
+    
+    // annoying for now, but have to have multiple copies of basically the
+    // same code to draw prongs, showers and tracks so that we can use
+    // the art::Assns to get the hits and clusters.
+    
+    unsigned int cstat = rawOpt->fCryostat;
+    unsigned int tpc   = rawOpt->fTPC;
+    int          tid   = 0;
+    
+    if(recoOpt->fDrawTracks != 0)
     {
-        art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
-        art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
-        art::ServiceHandle<geo::Geometry>            geo;
-        auto const* detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
+      for(size_t imod = 0; imod < recoOpt->fTrackLabels.size(); ++imod)
+      {
+        std::string const which = recoOpt->fTrackLabels[imod];
         
-        if(rawOpt->fDrawRawDataOrCalibWires < 1) return;
+        art::View<recob::Track> track;
+        this->GetTracks(evt, which, track);
         
-        geo::View_t gview = geo->TPC(rawOpt->fTPC).Plane(plane).View();
+        if(track.vals().size() < 1) continue;
         
-        // annoying for now, but have to have multiple copies of basically the
-        // same code to draw prongs, showers and tracks so that we can use
-        // the art::Assns to get the hits and clusters.
+        art::FindMany<recob::Hit> fmh(track, evt, which);
         
-        unsigned int cstat = rawOpt->fCryostat;
-        unsigned int tpc   = rawOpt->fTPC;
-        int          tid   = 0;
+        std::string const whichTag( recoOpt->fCosmicTagLabels.size() > imod ? recoOpt->fCosmicTagLabels[imod] : "");
+        art::FindManyP<anab::CosmicTag> cosmicTrackTags( track, evt, whichTag );
         
-        if(recoOpt->fDrawTracks != 0)
+        // loop over the prongs and get the clusters and hits associated with
+        // them.  only keep those that are in this view
+        for(size_t t = 0; t < track.vals().size(); ++t)
         {
-            for(size_t imod = 0; imod < recoOpt->fTrackLabels.size(); ++imod)
-            {
-                std::string const which = recoOpt->fTrackLabels[imod];
-                
-                art::View<recob::Track> track;
-                this->GetTracks(evt, which, track);
-                
-                if(track.vals().size() < 1) continue;
-                
-                art::FindMany<recob::Hit> fmh(track, evt, which);
-                
-                std::string const whichTag( recoOpt->fCosmicTagLabels.size() > imod ? recoOpt->fCosmicTagLabels[imod] : "");
-                art::FindManyP<anab::CosmicTag> cosmicTrackTags( track, evt, whichTag );
-                
-                // loop over the prongs and get the clusters and hits associated with
-                // them.  only keep those that are in this view
-                for(size_t t = 0; t < track.vals().size(); ++t)
-                {
-                    if(recoOpt->fDrawTracks > 1)
-                    {
-                        // BB: draw the track ID at the end of the track
-                        double x = track.vals().at(t)->End()(0);
-                        double y = track.vals().at(t)->End()(1);
-                        double z = track.vals().at(t)->End()(2);
-                        double tick = 30 + detprop->ConvertXToTicks(x, plane, tpc, cstat);
-                        double wire = geo->WireCoordinate(y, z, plane, tpc, cstat);
-                        tid = track.vals().at(t)->ID()&65535; //this is a hack for PMA track id which uses the 16th bit to identify shower-like track.;
-                        std::string s = std::to_string(tid);
-                        char const* txt = s.c_str();
-                        TText& trkID = view->AddText(wire, tick, txt);
-                        trkID.SetTextColor(evd::kColor[tid%evd::kNCOLS]);
-                        trkID.SetTextSize(0.1);
-                    }
-                    
-                    std::vector<const recob::Hit*> hits = fmh.at(t);
-                    
-                    float Score = -999;
-                    if( cosmicTrackTags.isValid() ){
-                        if( cosmicTrackTags.at(t).size() > 0 ) {
-                            art::Ptr<anab::CosmicTag> currentTag = cosmicTrackTags.at(t).at(0);
-                            Score = currentTag->CosmicScore();
-                        }
-                    }
-                    
-                    // only get the hits for the current view
-                    std::vector<const recob::Hit*>::iterator itr = hits.begin();
-                    while(itr < hits.end()){
-                        if((*itr)->View() != gview) hits.erase(itr);
-                        else itr++;
-                    }
-                    
-                    //this->DrawProng2D(hits, view, plane,
-                    //                  track.vals().at(t)->Vertex(),
-                    //                  track.vals().at(t)->VertexDirection(),
-                    //                  track.vals().at(t)->ID());
-                    const recob::Track* aTrack(track.vals().at(t));
-                    int   color(evd::kColor[(aTrack->ID()&65535)%evd::kNCOLS]);
-                    int   lineWidth(1);
-                    
-                    if(Score>0.1 && recoOpt->fDrawCosmicTags)
-                    {
-                        color = kRed;
-                        if(Score<0.6) color = kMagenta;
-                        lineWidth = 3;
-                    }
-                    else if (Score<-10000){ //shower hits
-                        lineWidth = 3;
-                    }
-                    
-                    this->DrawTrack2D(hits, view, plane,
-                                      aTrack,
-                                      color, lineWidth);
-                }// end loop over prongs
-            }// end loop over labels
-        }// end draw tracks
+          if(recoOpt->fDrawTracks > 1)
+          {
+            // BB: draw the track ID at the end of the track
+            double x = track.vals().at(t)->End()(0);
+            double y = track.vals().at(t)->End()(1);
+            double z = track.vals().at(t)->End()(2);
+            double tick = 30 + detprop->ConvertXToTicks(x, plane, tpc, cstat);
+            double wire = geo->WireCoordinate(y, z, plane, tpc, cstat);
+            tid = track.vals().at(t)->ID()&65535; //this is a hack for PMA track id which uses the 16th bit to identify shower-like track.;
+            std::string s = std::to_string(tid);
+            char const* txt = s.c_str();
+            TText& trkID = view->AddText(wire, tick, txt);
+            trkID.SetTextColor(evd::kColor[tid%evd::kNCOLS]);
+            trkID.SetTextSize(0.1);
+          }
+          
+          std::vector<const recob::Hit*> hits = fmh.at(t);
+          
+          float Score = -999;
+          if( cosmicTrackTags.isValid() ){
+            if( cosmicTrackTags.at(t).size() > 0 ) {
+              art::Ptr<anab::CosmicTag> currentTag = cosmicTrackTags.at(t).at(0);
+              Score = currentTag->CosmicScore();
+            }
+          }
+          
+          // only get the hits for the current view
+          std::vector<const recob::Hit*>::iterator itr = hits.begin();
+          while(itr < hits.end()){
+            if((*itr)->View() != gview) hits.erase(itr);
+            else itr++;
+          }
+          
+          const recob::Track* aTrack(track.vals().at(t));
+          int   color(evd::kColor[(aTrack->ID()&65535)%evd::kNCOLS]);
+          int   lineWidth(1);
+          
+          if(Score>0.1 && recoOpt->fDrawCosmicTags)
+          {
+            color = kRed;
+            if(Score<0.6) color = kMagenta;
+            lineWidth = 3;
+          }
+          else if (Score<-10000){ //shower hits
+            lineWidth = 3;
+          }
+          
+          this->DrawTrack2D(hits, view, plane,
+                            aTrack,
+                            color, lineWidth);
+        }// end loop over prongs
+      }// end loop over labels
+    }// end draw tracks
+    
+    if(recoOpt->fDrawShowers != 0){
+      for(size_t imod = 0; imod < recoOpt->fShowerLabels.size(); ++imod){
+        std::string const which = recoOpt->fShowerLabels[imod];
         
-        if(recoOpt->fDrawShowers != 0){
-            for(size_t imod = 0; imod < recoOpt->fShowerLabels.size(); ++imod){
-                std::string const which = recoOpt->fShowerLabels[imod];
-                
-                art::View<recob::Shower> shower;
-                this->GetShowers(evt, which, shower);
-                
-                if(shower.vals().size() < 1) continue;
-                
-                art::FindMany<recob::Hit>     fmh(shower, evt, which);
-                
-                // loop over the prongs and get the clusters and hits associated with
-                // them.  only keep those that are in this view
-                for(size_t s = 0; s < shower.vals().size(); ++s){
-
-		  std::vector<const recob::Hit*> hits = fmh.at(s);
-		  // only get the hits for the current view
-		  std::vector<const recob::Hit*>::iterator itr = hits.begin();
-		  while(itr < hits.end()){
-                    if((*itr)->View() != gview) hits.erase(itr);
-                    else itr++;
-		  }
-
-		  this->DrawProng2D(hits, view, plane,
-				    //startPos,
-				    shower.vals().at(s)->ShowerStart(),
-				    shower.vals().at(s)->Direction(),
-				    shower.vals().at(s)->ID(), 
-				    -10001); //use -10001 to increase shower hit size
-                }// end loop over prongs
-            }// end loop over labels
-        }// end draw showers
+        art::View<recob::Shower> shower;
+        this->GetShowers(evt, which, shower);
+        if(shower.vals().size() < 1) continue;
         
+        art::FindMany<recob::Hit>     fmh(shower, evt, which);
+/*
+        TVector3 startPos = {100, 100, 600};
+        TVector3 shDir = {0.2, 0.4, 1};
+        shDir.SetMag(1);
+        TRotation r;
+        r.RotateZ(shDir.Z());
+        r.RotateY(shDir.Y());
+        r.RotateX(shDir.X());
+        double openAngle = 20 * M_PI / 180;
+        double shLength = 50;
+        double swire = geo->WireCoordinate(startPos.Y(),startPos.Z(), plane, tpc, cstat);
+        double stick = detprop->ConvertXToTicks(startPos.X(), plane, tpc, cstat);
+        TVector3 coneAxis = {0, 0, 1};
+        coneAxis.SetTheta(0);
+        coneAxis.SetPhi(0);
+        coneAxis.SetMag(shLength);
+        coneAxis.Transform(r);
+        coneAxis += startPos;
+        double ewire = geo->WireCoordinate(coneAxis.Y(),coneAxis.Z(), plane, tpc, cstat);
+        double etick = detprop->ConvertXToTicks(coneAxis.X(), plane, tpc, cstat);
+        TLine& coneLine = view->AddLine(swire, stick, ewire, etick);
+        coneLine.SetLineColor(evd::kColor[1]);
+        
+        unsigned short nRimPts = 12;
+        TPolyLine& pline = view->AddPolyLine(nRimPts + 1, evd::kColor[1], 2, 0);
+        for(unsigned short iang = 0; iang < nRimPts; ++iang) {
+          double rimAngle = iang * 2 * M_PI / (float)nRimPts;
+          TVector3 coneRim = {0, 0, 1};
+          coneRim.SetTheta(openAngle);
+          coneRim.SetPhi(rimAngle);
+          coneRim.SetMag(shLength);
+          std::cout<<"iang "<<coneRim[0]<<" "<<coneRim[1]<<" "<<coneRim[2]<<" ";
+          coneRim.Transform(r);
+          coneRim += startPos;
+          double ewire = geo->WireCoordinate(coneRim.Y(),coneRim.Z(), plane, tpc, cstat);
+          double etick = detprop->ConvertXToTicks(coneRim.X(), plane, tpc, cstat);
+          std::cout<<(int)swire<<":"<<(int)stick<<" "<<(int)ewire<<":"<<(int)etick<<" mag "<<coneRim.Mag()<<"\n";
+          pline.SetPoint(iang, ewire, etick);
+          if(iang == 0) pline.SetPoint(nRimPts, ewire, etick);
+        } // iang
+
         return;
-    }
+*/
+        // loop over the prongs and get the clusters and hits associated with
+        // them.  only keep those that are in this view
+        for(size_t s = 0; s < shower.vals().size(); ++s){
+          
+          std::vector<const recob::Hit*> hits = fmh.at(s);
+          // only get the hits for the current view
+          std::vector<const recob::Hit*>::iterator itr = hits.begin();
+          while(itr < hits.end()){
+            if((*itr)->View() != gview) hits.erase(itr);
+            else itr++;
+          }
+          // BB draw a line between the start and end points and a "circle" that represents
+          // the shower cone angle at the end point
+          if(!shower.vals().at(s)->has_length()) continue;
+          if(!shower.vals().at(s)->has_open_angle()) continue;
+          TVector3 startPos = shower.vals().at(s)->ShowerStart();
+          TVector3 dir = shower.vals().at(s)->Direction();
+          double shLength = shower.vals().at(s)->Length();
+          double openAngle = shower.vals().at(s)->OpenAngle();
+          double swire = geo->WireCoordinate(startPos.Y(),startPos.Z(), plane, tpc, cstat);
+          double stick = detprop->ConvertXToTicks(startPos.X(), plane, tpc, cstat);
+          // Make the rotation matrix to transform into the shower coordinate system
+          TRotation r;
+          r.RotateX(dir.X());
+          r.RotateY(dir.Y());
+          r.RotateZ(dir.Z());
+          TVector3 coneAxis = {0, 0, 1};
+          coneAxis.SetTheta(0);
+          coneAxis.SetPhi(0);
+          double cth = cos(openAngle);
+          double sth = sin(openAngle);
+          coneAxis.SetMag(shLength * cth);
+          coneAxis.Transform(r);
+          coneAxis += startPos;
+          double ewire = geo->WireCoordinate(coneAxis.Y(),coneAxis.Z(), plane, tpc, cstat);
+          double etick = detprop->ConvertXToTicks(coneAxis.X(), plane, tpc, cstat);
+          TLine& coneLine = view->AddLine(swire, stick, ewire, etick);
+          int color = evd::kColor[shower.vals().at(s)->ID()%evd::kNCOLS];
+          coneLine.SetLineColor(color);
+          // Fake a circle around the rim of the cone using a polyline
+          unsigned short nRimPts = 12;
+          TPolyLine& pline = view->AddPolyLine(nRimPts + 1, color, 2, 0);
+          for(unsigned short iang = 0; iang < nRimPts; ++iang) {
+            double rimAngle = iang * 2 * M_PI / (float)nRimPts;
+            TVector3 coneRim = {0, 0, 1};
+            coneRim.SetX(shLength * sth * cos(rimAngle));
+            coneRim.SetY(shLength * sth * sin(rimAngle));
+            coneRim.SetZ(shLength * cth);
+            coneRim.Transform(r);
+            coneRim += startPos;
+            double ewire = geo->WireCoordinate(coneRim.Y(),coneRim.Z(), plane, tpc, cstat);
+            double etick = detprop->ConvertXToTicks(coneRim.X(), plane, tpc, cstat);
+            pline.SetPoint(iang, ewire, etick);
+            if(iang == 0) pline.SetPoint(nRimPts, ewire, etick);
+          } // iang
+          this->DrawProng2D(hits, view, plane,
+                            //startPos,
+                            shower.vals().at(s)->ShowerStart(),
+                            shower.vals().at(s)->Direction(),
+                            shower.vals().at(s)->ID(), 
+                            -10001); //use -10001 to increase shower hit size
+
+        }// end loop over prongs
+      }// end loop over labels
+    }// end draw showers
+    
+    return;
+  }
 
 //......................................................................
 void RecoBaseDrawer::DrawTrackVertexAssns2D(const art::Event& evt,

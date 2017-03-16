@@ -111,15 +111,13 @@ namespace evd {
     fEvt=evt.id().event();
     fRun=evt.id().run();
     fSubRun=evt.id().subRun();
-    
     evt.getByLabel(fHitModuleLabel, hHandle);
     
     if(hHandle.failedToGet()){
-      mf::LogWarning("InfoTransfer") << "failed to get handle to std::vector<recob::Hit> from "  
-				     << fHitModuleLabel;
+//      mf::LogWarning("InfoTransfer") << "failed to get handle to std::vector<recob::Hit> from "<< fHitModuleLabel;
       return;
     }
-    
+
     // Clear out anything remaining from previous calls to Rebuild
     
     fRefinedHitlist.resize(nplanes);

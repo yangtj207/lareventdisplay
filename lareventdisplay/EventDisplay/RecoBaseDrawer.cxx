@@ -1332,49 +1332,7 @@ void RecoBaseDrawer::DrawTrack2D(std::vector<const recob::Hit*>& hits,
         if(shower.vals().size() < 1) continue;
         
         art::FindMany<recob::Hit>     fmh(shower, evt, which);
-/*
-        TVector3 startPos = {100, 100, 600};
-        TVector3 shDir = {0.2, 0.4, 1};
-        shDir.SetMag(1);
-        TRotation r;
-        r.RotateZ(shDir.Z());
-        r.RotateY(shDir.Y());
-        r.RotateX(shDir.X());
-        double openAngle = 20 * M_PI / 180;
-        double shLength = 50;
-        double swire = geo->WireCoordinate(startPos.Y(),startPos.Z(), plane, tpc, cstat);
-        double stick = detprop->ConvertXToTicks(startPos.X(), plane, tpc, cstat);
-        TVector3 coneAxis = {0, 0, 1};
-        coneAxis.SetTheta(0);
-        coneAxis.SetPhi(0);
-        coneAxis.SetMag(shLength);
-        coneAxis.Transform(r);
-        coneAxis += startPos;
-        double ewire = geo->WireCoordinate(coneAxis.Y(),coneAxis.Z(), plane, tpc, cstat);
-        double etick = detprop->ConvertXToTicks(coneAxis.X(), plane, tpc, cstat);
-        TLine& coneLine = view->AddLine(swire, stick, ewire, etick);
-        coneLine.SetLineColor(evd::kColor[1]);
-        
-        unsigned short nRimPts = 12;
-        TPolyLine& pline = view->AddPolyLine(nRimPts + 1, evd::kColor[1], 2, 0);
-        for(unsigned short iang = 0; iang < nRimPts; ++iang) {
-          double rimAngle = iang * 2 * M_PI / (float)nRimPts;
-          TVector3 coneRim = {0, 0, 1};
-          coneRim.SetTheta(openAngle);
-          coneRim.SetPhi(rimAngle);
-          coneRim.SetMag(shLength);
-          std::cout<<"iang "<<coneRim[0]<<" "<<coneRim[1]<<" "<<coneRim[2]<<" ";
-          coneRim.Transform(r);
-          coneRim += startPos;
-          double ewire = geo->WireCoordinate(coneRim.Y(),coneRim.Z(), plane, tpc, cstat);
-          double etick = detprop->ConvertXToTicks(coneRim.X(), plane, tpc, cstat);
-          std::cout<<(int)swire<<":"<<(int)stick<<" "<<(int)ewire<<":"<<(int)etick<<" mag "<<coneRim.Mag()<<"\n";
-          pline.SetPoint(iang, ewire, etick);
-          if(iang == 0) pline.SetPoint(nRimPts, ewire, etick);
-        } // iang
 
-        return;
-*/
         // loop over the prongs and get the clusters and hits associated with
         // them.  only keep those that are in this view
         for(size_t s = 0; s < shower.vals().size(); ++s){
@@ -1412,10 +1370,17 @@ void RecoBaseDrawer::DrawTrack2D(std::vector<const recob::Hit*>& hits,
           double ewire = geo->WireCoordinate(coneAxis.Y(),coneAxis.Z(), plane, tpc, cstat);
           double etick = detprop->ConvertXToTicks(coneAxis.X(), plane, tpc, cstat);
           TLine& coneLine = view->AddLine(swire, stick, ewire, etick);
-          int color = evd::kColor[shower.vals().at(s)->ID()%evd::kNCOLS];
+          // color coding by dE/dx
+          // Use blue for ~1 MIP
+          float dEdx = shower.vals().at(s)->dEdx()[plane];
+          int color = kBlue;
+          // use green for ~2 MIP
+          if(dEdx > 3 && dEdx < 5) color = kGreen;
+          // use red for higher
+          if(dEdx > 5) color = kRed;
           coneLine.SetLineColor(color);
           // Fake a circle around the rim of the cone using a polyline
-          unsigned short nRimPts = 12;
+          unsigned short nRimPts = 16;
           TPolyLine& pline = view->AddPolyLine(nRimPts + 1, color, 2, 0);
           for(unsigned short iang = 0; iang < nRimPts; ++iang) {
             double rimAngle = iang * 2 * M_PI / (float)nRimPts;

@@ -2327,35 +2327,42 @@ void RecoBaseDrawer::DrawTrack3D(const recob::Track& track,
 void RecoBaseDrawer::DrawShower3D(const recob::Shower& shower,
 				    int                 color, 
 				    evdb::View3D*       view)
-{
+  {
     // Use brute force to find the module label and index of this
     // shower, so that we can find associated space points and draw
     // them.
-
+    
     const art::Event *evt = evdb::EventHolder::Instance()->GetEvent();
     std::vector<art::Handle<std::vector<recob::Shower> > > handles;
     evt->getManyByType(handles);
     for(auto ih : handles) {
-        const art::Handle<std::vector<recob::Shower> > handle = ih;
-
-        if(handle.isValid()) {
-
-            const std::string& which = handle.provenance()->moduleLabel();
-            art::FindMany<recob::SpacePoint> fmsp(handle, *evt, which);
-
-            int n = handle->size();
-            for(int i=0; i<n; ++i) {
-                art::Ptr<recob::Shower> p(handle, i);
-                if(&*p == &shower) {
-                    std::vector<const recob::SpacePoint*> spts = fmsp.at(i);
-                    DrawSpacePoint3D(spts, view, color);
-                }
-            }
-        }
-    }
+      const art::Handle<std::vector<recob::Shower> > handle = ih;
+      
+      if(handle.isValid()) {
         
+        const std::string& which = handle.provenance()->moduleLabel();
+        art::FindMany<recob::SpacePoint> fmsp(handle, *evt, which);
+        
+        int n = handle->size();
+        for(int i=0; i<n; ++i) {
+          art::Ptr<recob::Shower> p(handle, i);
+          if(&*p == &shower) {
+            // BB catch
+            std::vector<const recob::SpacePoint*> spts;
+            try {
+              spts = fmsp.at(i);
+              DrawSpacePoint3D(spts, view, color);
+            }
+            catch (...) {
+              continue;
+            } // catch
+          } // shower
+        } // i
+      } // ih
+    }
+    
     return;
-}
+  }
 
 //......................................................................
 void RecoBaseDrawer::Vertex3D(const art::Event& evt,

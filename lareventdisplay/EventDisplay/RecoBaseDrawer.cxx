@@ -1324,6 +1324,17 @@ void RecoBaseDrawer::DrawTrack2D(std::vector<const recob::Hit*>& hits,
     }// end draw tracks
     
     if(recoOpt->fDrawShowers != 0){
+      static bool first = true;
+      
+      if(first) {
+        std::cout<<"DrawShower options: \n";
+        std::cout<<" 1 = Hits in shower color-coded by the shower ID\n";
+        std::cout<<" 2 = Same as 1 + shower axis and circle representing the shower cone\n";
+        std::cout<<"     Blue cone = shower start dE/dx < 3 MeV/cm (~1 MIP)\n";
+        std::cout<<"     Green cone = shower start 3 MeV/cm < dE/dx < 5 MeV/cm (~2 MIP)\n";
+        std::cout<<"     Red cone = shower start 5 MeV/cm < dE/dx (>2 MIP)\n";
+        first = false;
+      }
       for(size_t imod = 0; imod < recoOpt->fShowerLabels.size(); ++imod){
         std::string const which = recoOpt->fShowerLabels[imod];
         
@@ -1344,57 +1355,59 @@ void RecoBaseDrawer::DrawTrack2D(std::vector<const recob::Hit*>& hits,
             if((*itr)->View() != gview) hits.erase(itr);
             else itr++;
           }
-          // BB draw a line between the start and end points and a "circle" that represents
-          // the shower cone angle at the end point
-          if(!shower.vals().at(s)->has_length()) continue;
-          if(!shower.vals().at(s)->has_open_angle()) continue;
-          TVector3 startPos = shower.vals().at(s)->ShowerStart();
-          TVector3 dir = shower.vals().at(s)->Direction();
-          double shLength = shower.vals().at(s)->Length();
-          double openAngle = shower.vals().at(s)->OpenAngle();
-          double swire = geo->WireCoordinate(startPos.Y(),startPos.Z(), plane, tpc, cstat);
-          double stick = detprop->ConvertXToTicks(startPos.X(), plane, tpc, cstat);
-          // Make the rotation matrix to transform into the shower coordinate system
-          TRotation r;
-          r.RotateX(dir.X());
-          r.RotateY(dir.Y());
-          r.RotateZ(dir.Z());
-          TVector3 coneAxis = {0, 0, 1};
-          coneAxis.SetTheta(0);
-          coneAxis.SetPhi(0);
-          double cth = cos(openAngle);
-          double sth = sin(openAngle);
-          coneAxis.SetMag(shLength * cth);
-          coneAxis.Transform(r);
-          coneAxis += startPos;
-          double ewire = geo->WireCoordinate(coneAxis.Y(),coneAxis.Z(), plane, tpc, cstat);
-          double etick = detprop->ConvertXToTicks(coneAxis.X(), plane, tpc, cstat);
-          TLine& coneLine = view->AddLine(swire, stick, ewire, etick);
-          // color coding by dE/dx
-          // Use blue for ~1 MIP
-          float dEdx = shower.vals().at(s)->dEdx()[plane];
-          int color = kBlue;
-          // use green for ~2 MIP
-          if(dEdx > 3 && dEdx < 5) color = kGreen;
-          // use red for higher
-          if(dEdx > 5) color = kRed;
-          coneLine.SetLineColor(color);
-          // Fake a circle around the rim of the cone using a polyline
-          unsigned short nRimPts = 16;
-          TPolyLine& pline = view->AddPolyLine(nRimPts + 1, color, 2, 0);
-          for(unsigned short iang = 0; iang < nRimPts; ++iang) {
-            double rimAngle = iang * 2 * M_PI / (float)nRimPts;
-            TVector3 coneRim = {0, 0, 1};
-            coneRim.SetX(shLength * sth * cos(rimAngle));
-            coneRim.SetY(shLength * sth * sin(rimAngle));
-            coneRim.SetZ(shLength * cth);
-            coneRim.Transform(r);
-            coneRim += startPos;
-            double ewire = geo->WireCoordinate(coneRim.Y(),coneRim.Z(), plane, tpc, cstat);
-            double etick = detprop->ConvertXToTicks(coneRim.X(), plane, tpc, cstat);
-            pline.SetPoint(iang, ewire, etick);
-            if(iang == 0) pline.SetPoint(nRimPts, ewire, etick);
-          } // iang
+          if(recoOpt->fDrawShowers > 1) {
+            // BB draw a line between the start and end points and a "circle" that represents
+            // the shower cone angle at the end point
+            if(!shower.vals().at(s)->has_length()) continue;
+            if(!shower.vals().at(s)->has_open_angle()) continue;
+            TVector3 startPos = shower.vals().at(s)->ShowerStart();
+            TVector3 dir = shower.vals().at(s)->Direction();
+            double shLength = shower.vals().at(s)->Length();
+            double openAngle = shower.vals().at(s)->OpenAngle();
+            double swire = geo->WireCoordinate(startPos.Y(),startPos.Z(), plane, tpc, cstat);
+            double stick = detprop->ConvertXToTicks(startPos.X(), plane, tpc, cstat);
+            // Make the rotation matrix to transform into the shower coordinate system
+            TRotation r;
+            r.RotateX(dir.X());
+            r.RotateY(dir.Y());
+            r.RotateZ(dir.Z());
+            TVector3 coneAxis = {0, 0, 1};
+            coneAxis.SetTheta(0);
+            coneAxis.SetPhi(0);
+            double cth = cos(openAngle);
+            double sth = sin(openAngle);
+            coneAxis.SetMag(shLength * cth);
+            coneAxis.Transform(r);
+            coneAxis += startPos;
+            double ewire = geo->WireCoordinate(coneAxis.Y(),coneAxis.Z(), plane, tpc, cstat);
+            double etick = detprop->ConvertXToTicks(coneAxis.X(), plane, tpc, cstat);
+            TLine& coneLine = view->AddLine(swire, stick, ewire, etick);
+            // color coding by dE/dx
+            // Use blue for ~1 MIP
+            float dEdx = shower.vals().at(s)->dEdx()[plane];
+            int color = kBlue;
+            // use green for ~2 MIP
+            if(dEdx > 3 && dEdx < 5) color = kGreen;
+            // use red for higher
+            if(dEdx > 5) color = kRed;
+            coneLine.SetLineColor(color);
+            // Fake a circle around the rim of the cone using a polyline
+            unsigned short nRimPts = 16;
+            TPolyLine& pline = view->AddPolyLine(nRimPts + 1, color, 2, 0);
+            for(unsigned short iang = 0; iang < nRimPts; ++iang) {
+              double rimAngle = iang * 2 * M_PI / (float)nRimPts;
+              TVector3 coneRim = {0, 0, 1};
+              coneRim.SetX(shLength * sth * cos(rimAngle));
+              coneRim.SetY(shLength * sth * sin(rimAngle));
+              coneRim.SetZ(shLength * cth);
+              coneRim.Transform(r);
+              coneRim += startPos;
+              double ewire = geo->WireCoordinate(coneRim.Y(),coneRim.Z(), plane, tpc, cstat);
+              double etick = detprop->ConvertXToTicks(coneRim.X(), plane, tpc, cstat);
+              pline.SetPoint(iang, ewire, etick);
+              if(iang == 0) pline.SetPoint(nRimPts, ewire, etick);
+            } // iang
+          }
           this->DrawProng2D(hits, view, plane,
                             //startPos,
                             shower.vals().at(s)->ShowerStart(),

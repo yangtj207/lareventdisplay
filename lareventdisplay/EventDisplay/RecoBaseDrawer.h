@@ -315,7 +315,8 @@ public:
 		          const std::string&            which,
 		          art::PtrVector<recob::Event>& event);
 
-        
+  std::vector<std::array<double, 3>> Circle3D(const TVector3& pos, const TVector3& axisDir, const double& radius);
+
   private:
 
     std::vector<int>          fWireMin;         ///< lowest wire in interesting region for each plane

@@ -1360,27 +1360,19 @@ void RecoBaseDrawer::DrawTrack2D(std::vector<const recob::Hit*>& hits,
             // the shower cone angle at the end point
             if(!shower.vals().at(s)->has_length()) continue;
             if(!shower.vals().at(s)->has_open_angle()) continue;
+            
             TVector3 startPos = shower.vals().at(s)->ShowerStart();
             TVector3 dir = shower.vals().at(s)->Direction();
-            double shLength = shower.vals().at(s)->Length();
+            double length = shower.vals().at(s)->Length();
             double openAngle = shower.vals().at(s)->OpenAngle();
+            
+            // Find the center of the cone base
+            TVector3 endPos = startPos + length * dir;
+
             double swire = geo->WireCoordinate(startPos.Y(),startPos.Z(), plane, tpc, cstat);
             double stick = detprop->ConvertXToTicks(startPos.X(), plane, tpc, cstat);
-            // Make the rotation matrix to transform into the shower coordinate system
-            TRotation r;
-            r.RotateX(dir.X());
-            r.RotateY(dir.Y());
-            r.RotateZ(dir.Z());
-            TVector3 coneAxis = {0, 0, 1};
-            coneAxis.SetTheta(0);
-            coneAxis.SetPhi(0);
-            double cth = cos(openAngle);
-            double sth = sin(openAngle);
-            coneAxis.SetMag(shLength * cth);
-            coneAxis.Transform(r);
-            coneAxis += startPos;
-            double ewire = geo->WireCoordinate(coneAxis.Y(),coneAxis.Z(), plane, tpc, cstat);
-            double etick = detprop->ConvertXToTicks(coneAxis.X(), plane, tpc, cstat);
+            double ewire = geo->WireCoordinate(endPos.Y(),endPos.Z(), plane, tpc, cstat);
+            double etick = detprop->ConvertXToTicks(endPos.X(), plane, tpc, cstat);
             TLine& coneLine = view->AddLine(swire, stick, ewire, etick);
             // color coding by dE/dx
             // Use blue for ~1 MIP
@@ -1391,22 +1383,17 @@ void RecoBaseDrawer::DrawTrack2D(std::vector<const recob::Hit*>& hits,
             // use red for higher
             if(dEdx > 5) color = kRed;
             coneLine.SetLineColor(color);
-            // Fake a circle around the rim of the cone using a polyline
-            unsigned short nRimPts = 16;
-            TPolyLine& pline = view->AddPolyLine(nRimPts + 1, color, 2, 0);
-            for(unsigned short iang = 0; iang < nRimPts; ++iang) {
-              double rimAngle = iang * 2 * M_PI / (float)nRimPts;
-              TVector3 coneRim = {0, 0, 1};
-              coneRim.SetX(shLength * sth * cos(rimAngle));
-              coneRim.SetY(shLength * sth * sin(rimAngle));
-              coneRim.SetZ(shLength * cth);
-              coneRim.Transform(r);
-              coneRim += startPos;
-              double ewire = geo->WireCoordinate(coneRim.Y(),coneRim.Z(), plane, tpc, cstat);
-              double etick = detprop->ConvertXToTicks(coneRim.X(), plane, tpc, cstat);
-              pline.SetPoint(iang, ewire, etick);
-              if(iang == 0) pline.SetPoint(nRimPts, ewire, etick);
-            } // iang
+
+            // Now find the 3D circle that represents the base of the cone
+            double radius = length * openAngle;
+            auto coneRim = Circle3D(endPos, dir, radius);
+            TPolyLine& pline = view->AddPolyLine(coneRim.size(), color, 2, 0);
+            // project these points into the plane
+            for(unsigned short ipt = 0; ipt < coneRim.size(); ++ipt) {
+              double wire = geo->WireCoordinate(coneRim[ipt][1], coneRim[ipt][2], plane, tpc, cstat);
+              double tick = detprop->ConvertXToTicks(coneRim[ipt][0], plane, tpc, cstat);
+              pline.SetPoint(ipt, wire, tick);
+            } // ipt
           }
           this->DrawProng2D(hits, view, plane,
                             //startPos,
@@ -2331,10 +2318,14 @@ void RecoBaseDrawer::DrawShower3D(const recob::Shower& shower,
     // Use brute force to find the module label and index of this
     // shower, so that we can find associated space points and draw
     // them.
+    // B. Baller: Catch an exception if there are no space points and draw a cone instead.
     
     const art::Event *evt = evdb::EventHolder::Instance()->GetEvent();
     std::vector<art::Handle<std::vector<recob::Shower> > > handles;
     evt->getManyByType(handles);
+    
+    bool noSpts = false;
+    
     for(auto ih : handles) {
       const art::Handle<std::vector<recob::Shower> > handle = ih;
       
@@ -2347,13 +2338,14 @@ void RecoBaseDrawer::DrawShower3D(const recob::Shower& shower,
         for(int i=0; i<n; ++i) {
           art::Ptr<recob::Shower> p(handle, i);
           if(&*p == &shower) {
-            // BB catch
+            // BB catch if no space points
             std::vector<const recob::SpacePoint*> spts;
             try {
               spts = fmsp.at(i);
               DrawSpacePoint3D(spts, view, color);
             }
             catch (...) {
+              noSpts = true;
               continue;
             } // catch
           } // shower
@@ -2361,8 +2353,66 @@ void RecoBaseDrawer::DrawShower3D(const recob::Shower& shower,
       } // ih
     }
     
+    if(noSpts && shower.has_length() && shower.has_open_angle()) {
+      std::cout<<"No space points associated with the shower. Drawing a cone instead\n";
+      color = kRed;
+      auto& dedx = shower.dEdx();
+      if(!dedx.empty()) {
+        double dedxAve = 0;
+        for(auto& dedxInPln : dedx) dedxAve += dedxInPln;
+        dedxAve /= (double)dedx.size();
+        // Use blue for ~1 MIP
+        color = kBlue;
+        // use green for ~2 MIP
+        if(dedxAve > 3 && dedxAve < 5) color = kGreen;
+      }
+      double radius = shower.Length() * shower.OpenAngle();
+      TVector3 startPos = shower.ShowerStart();
+      TVector3 endPos = startPos + shower.Length() * shower.Direction();
+      auto coneRim = Circle3D(endPos, shower.Direction(), radius);
+      TPolyLine3D& pl = view->AddPolyLine3D(coneRim.size(), color, 2, 0);
+      for(unsigned short ipt = 0; ipt < coneRim.size(); ++ipt) {
+        auto& pt = coneRim[ipt];
+        pl.SetPoint(ipt, pt[0], pt[1], pt[2]);
+      }
+      // Draw a line from the start position to each point on the rim
+      for(unsigned short ipt = 0; ipt < coneRim.size(); ++ipt) {
+        TPolyLine3D& panel = view->AddPolyLine3D(2, color, 2, 0);
+        panel.SetPoint(0, startPos.X(), startPos.Y(), startPos.Z());
+        panel.SetPoint(1, coneRim[ipt][0], coneRim[ipt][1], coneRim[ipt][2]);
+      } //  ipt
+
+    } // no space points
+    
     return;
   }
+
+  //......................................................................
+  std::vector<std::array<double, 3>> RecoBaseDrawer::Circle3D(const TVector3& centerPos, const TVector3& axisDir, const double& radius)
+  {
+    // B. Baller Create a polyline circle in 3D 
+    
+    // Make the rotation matrix to transform into the circle coordinate system
+    TRotation r;
+    r.RotateX(axisDir.X());
+    r.RotateY(axisDir.Y());
+    r.RotateZ(axisDir.Z());
+    constexpr unsigned short nRimPts = 16;
+    std::vector<std::array<double, 3>> rimPts(nRimPts + 1);
+    for(unsigned short iang = 0; iang < nRimPts; ++iang) {
+      double rimAngle = iang * 2 * M_PI / (float)nRimPts;
+      TVector3 rim = {0, 0, 1};
+      rim.SetX(radius * cos(rimAngle));
+      rim.SetY(radius * sin(rimAngle));
+      rim.SetZ(0);
+      rim.Transform(r);
+      rim += centerPos;
+      for(unsigned short ixyz = 0; ixyz < 3; ++ixyz) rimPts[iang][ixyz] = rim[ixyz];
+     } // iang
+    // close the circle
+    rimPts[nRimPts] = rimPts[0];
+    return rimPts;
+  } // PolyLineCircle
 
 //......................................................................
 void RecoBaseDrawer::Vertex3D(const art::Event& evt,

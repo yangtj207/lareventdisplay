@@ -1158,8 +1158,8 @@ void RecoBaseDrawer::DrawTrack2D(std::vector<const recob::Hit*>& hits,
     // first draw the hits
     this->Hit2D(hits, color, view, true, lineWidth);
     
-    const TVector3& startPos = track->Vertex();
-    const TVector3& startDir = track->VertexDirection();
+    const auto& startPos = track->Vertex();
+    const auto& startDir = track->VertexDirection();
     
     // prepare to draw prongs
     double local[3] = {0.};
@@ -1198,11 +1198,12 @@ void RecoBaseDrawer::DrawTrack2D(std::vector<const recob::Hit*>& hits,
     
     // Draw a line to the hit positions, starting from the vertex
     size_t     nTrackHits = track->NumberTrajectoryPoints();
-    TPolyLine& pl         = view->AddPolyLine(nTrackHits,1,1,0); //kColor[id%evd::kNCOLS],1,0);
+    TPolyLine& pl         = view->AddPolyLine(track->CountValidPoints(),1,1,0); //kColor[id%evd::kNCOLS],1,0);
     
     for(size_t idx = 0; idx < nTrackHits; idx++)
     {
-        const TVector3& hitPos = track->LocationAtPoint(idx);
+        if (track->HasValidPoint(idx)==0) continue;
+        const auto& hitPos = track->LocationAtPoint(idx);
         
         // Use "world" from above
         world[1] = hitPos.Y();
@@ -2206,15 +2207,16 @@ void RecoBaseDrawer::DrawTrack3D(const recob::Track& track,
         // Make and fill a special polymarker for the head of the track
         TPolyMarker3D& pmStart = view->AddPolyMarker3D(1, color, 4, 3);
       
-        const TVector3& firstPos = track.LocationAtPoint(0);
+        const auto& firstPos = track.LocationAtPoint(0);
         pmStart.SetPoint(0, firstPos.X(), firstPos.Y(), firstPos.Z());
       
         // Make and fill a polymarker.
-        TPolyMarker3D& pm = view->AddPolyMarker3D(np, color, 1, 3);
+        TPolyMarker3D& pm = view->AddPolyMarker3D(track.CountValidPoints(), color, 1, 3);
       
         for(int p = 0; p < np; ++p)
         {
-            const TVector3& pos = track.LocationAtPoint(p);
+	    if (track.HasValidPoint(p)==0) continue;
+            const auto& pos = track.LocationAtPoint(p);
             pm.SetPoint(p, pos.X(), pos.Y(), pos.Z());
         }
       
@@ -2223,22 +2225,24 @@ void RecoBaseDrawer::DrawTrack3D(const recob::Track& track,
       
         for(int p = 0; p < np; ++p)
         {
-            const TVector3 pos = track.LocationAtPoint(p);
+	    if (track.HasValidPoint(p)==0) continue;
+            const auto pos = track.LocationAtPoint(p);
           
             pl.SetPoint(p, pos.X(), pos.Y(), pos.Z());
         }
       
         // Can we add the track direction at each point?
         // This won't work for the last point... but let's try
-        TVector3 startPos(track.LocationAtPoint(0));
-        TVector3 startDir(track.DirectionAtPoint(0));
+        auto startPos = track.LocationAtPoint(0);
+        auto startDir = track.DirectionAtPoint(0);
       
         for(int p = 1; p < np; ++p)
         {
+	    if (track.HasValidPoint(p)==0) continue;
             TPolyLine3D& pl = view->AddPolyLine3D(2, (color+1)%evd::kNCOLS, size, 7); //1, 3);
           
-            TVector3 nextPos(track.LocationAtPoint(p));
-            TVector3 deltaPos = nextPos - startPos;
+            auto nextPos = track.LocationAtPoint(p);
+            auto deltaPos = nextPos - startPos;
             double   arcLen   = deltaPos.Dot(startDir); // arc len to plane containing next point perpendicular to current point dir
           
             //std::cout << "-- position:  " << startPos.X() << ", " << startPos.Y() << ", " << startPos.Z() << ", arclen: " << arcLen << std::endl;
@@ -2246,7 +2250,7 @@ void RecoBaseDrawer::DrawTrack3D(const recob::Track& track,
 
             if (arcLen < 0.) arcLen = 3.;
           
-            TVector3 endPoint = startPos + arcLen * startDir;
+            auto endPoint = startPos + arcLen * startDir;
           
             pl.SetPoint(0, startPos.X(), startPos.Y(), startPos.Z());
             pl.SetPoint(1, endPoint.X(), endPoint.Y(), endPoint.Z());
@@ -3035,13 +3039,15 @@ void RecoBaseDrawer::DrawPFParticleOrtho(const art::Ptr<recob::PFParticle>&     
       // Draw trajectory points.
 
       int np = track.NumberTrajectoryPoints();
+      int vp = track.CountValidPoints();
 
       // Make and fill a polymarker.
 
-      TPolyMarker& pm = view->AddPolyMarker(np, evd::kColor[color%evd::kNCOLS], kFullCircle, msize);
-      TPolyLine& pl = view->AddPolyLine(np, evd::kColor[color%evd::kNCOLS], 2, 0);
+      TPolyMarker& pm = view->AddPolyMarker(vp, evd::kColor[color%evd::kNCOLS], kFullCircle, msize);
+      TPolyLine& pl = view->AddPolyLine(vp, evd::kColor[color%evd::kNCOLS], 2, 0);
       for(int p = 0; p < np; ++p){
-	const TVector3& pos = track.LocationAtPoint(p);
+        if (track.HasValidPoint(p)==0) continue;
+	const auto& pos = track.LocationAtPoint(p);
 	switch (proj) {
 	  case evd::kXY:
 	    pm.SetPoint(p, pos.X(), pos.Y());

@@ -24,12 +24,13 @@ art_make_library(
 			    nutools_EventDisplayBase
                             ${ART_FRAMEWORK_CORE}
 			    ${ART_FRAMEWORK_PRINCIPAL}
-			    art_Persistency_Common canvas_Persistency_Common
-			    art_Utilities canvas_Utilities
+			    art_Persistency_Common
+			    art_Utilities
+			    canvas
 			    ${MF_MESSAGELOGGER}
 			    ${MF_UTILITIES}
 	                    ${FHICLCPP}
-			    ${CETLIB}
+			    cetlib cetlib_except
                             ${ROOT_EVE_LIB_LIST}
 			    ${ROOT_X3d}
                 )
@@ -42,11 +43,12 @@ simple_plugin ( GraphCluster module
 			${ART_FRAMEWORK_SERVICES_REGISTRY}
 			${ART_FRAMEWORK_SERVICES_BASIC}
 			${ART_FRAMEWORK_SERVICES_OPTIONAL}
-			art_Utilities canvas_Utilities
+			art_Utilities
+			canvas
 			${MF_MESSAGELOGGER}
 			${MF_UTILITIES}
 	                ${FHICLCPP}
-			${CETLIB}
+			cetlib cetlib_except
                 
      )
 
@@ -58,11 +60,12 @@ simple_plugin ( EVD module
 			${ART_FRAMEWORK_SERVICES_REGISTRY}
 			${ART_FRAMEWORK_SERVICES_BASIC}
 			${ART_FRAMEWORK_SERVICES_OPTIONAL}
-			art_Utilities canvas_Utilities
+			art_Utilities
+			canvas
 			${MF_MESSAGELOGGER}
 			${MF_UTILITIES}
 	                ${FHICLCPP}
-			${CETLIB}
+			cetlib cetlib_except
                 
      )
 
@@ -77,13 +80,14 @@ simple_plugin ( AnalysisDrawingOptions service
 			${ART_FRAMEWORK_SERVICES_BASIC}
 			${ART_FRAMEWORK_SERVICES_OPTIONAL}
 			${ART_FRAMEWORK_SERVICES_OPTIONAL_TFILESERVICE_SERVICE}
-			art_Persistency_Common canvas_Persistency_Common
-			art_Persistency_Provenance canvas_Persistency_Provenance
-			art_Utilities canvas_Utilities
+			art_Persistency_Common
+			art_Persistency_Provenance
+			art_Utilities
+			canvas
 			${MF_MESSAGELOGGER}
 			${MF_UTILITIES}
 	                ${FHICLCPP}
-			${CETLIB}
+			cetlib cetlib_except
                         ${ROOT_BASIC_LIB_LIST}
                 
      )
@@ -99,13 +103,14 @@ simple_plugin ( ColorDrawingOptions service
 			${ART_FRAMEWORK_SERVICES_BASIC}
 			${ART_FRAMEWORK_SERVICES_OPTIONAL}
 			${ART_FRAMEWORK_SERVICES_OPTIONAL_TFILESERVICE_SERVICE}
-			art_Persistency_Common canvas_Persistency_Common
-			art_Persistency_Provenance canvas_Persistency_Provenance
-			art_Utilities canvas_Utilities
+			art_Persistency_Common
+			art_Persistency_Provenance
+			art_Utilities
+			canvas
 			${MF_MESSAGELOGGER}
 			${MF_UTILITIES}
 	                ${FHICLCPP}
-			${CETLIB}
+			cetlib cetlib_except
                         ${ROOT_BASIC_LIB_LIST}
                 
      )
@@ -121,13 +126,14 @@ simple_plugin ( EvdLayoutOptions service
 			${ART_FRAMEWORK_SERVICES_BASIC}
 			${ART_FRAMEWORK_SERVICES_OPTIONAL}
 			${ART_FRAMEWORK_SERVICES_OPTIONAL_TFILESERVICE_SERVICE}
-			art_Persistency_Common canvas_Persistency_Common
-			art_Persistency_Provenance canvas_Persistency_Provenance
-			art_Utilities canvas_Utilities
+			art_Persistency_Common
+			art_Persistency_Provenance
+			art_Utilities
+			canvas
 			${MF_MESSAGELOGGER}
 			${MF_UTILITIES}
 	                ${FHICLCPP}
-			${CETLIB}
+			cetlib cetlib_except
                         ${ROOT_BASIC_LIB_LIST}
                 
      )
@@ -143,13 +149,14 @@ simple_plugin ( InfoTransfer service
 			${ART_FRAMEWORK_SERVICES_BASIC}
 			${ART_FRAMEWORK_SERVICES_OPTIONAL}
 			${ART_FRAMEWORK_SERVICES_OPTIONAL_TFILESERVICE_SERVICE}
-			art_Persistency_Common canvas_Persistency_Common
-			art_Persistency_Provenance canvas_Persistency_Provenance
-			art_Utilities canvas_Utilities
+			art_Persistency_Common
+			art_Persistency_Provenance
+			art_Utilities
+			canvas
 			${MF_MESSAGELOGGER}
 			${MF_UTILITIES}
 	                ${FHICLCPP}
-			${CETLIB}
+			cetlib cetlib_except
                         ${ROOT_BASIC_LIB_LIST}
                 
      )
@@ -165,13 +172,14 @@ simple_plugin ( RawDrawingOptions service
 			${ART_FRAMEWORK_SERVICES_BASIC}
 			${ART_FRAMEWORK_SERVICES_OPTIONAL}
 			${ART_FRAMEWORK_SERVICES_OPTIONAL_TFILESERVICE_SERVICE}
-			art_Persistency_Common canvas_Persistency_Common
-			art_Persistency_Provenance canvas_Persistency_Provenance
-			art_Utilities canvas_Utilities
+			art_Persistency_Common
+			art_Persistency_Provenance
+			art_Utilities
+			canvas
 			${MF_MESSAGELOGGER}
 			${MF_UTILITIES}
 	                ${FHICLCPP}
-			${CETLIB}
+			cetlib cetlib_except
                         ${ROOT_BASIC_LIB_LIST}
                 
      )
@@ -187,14 +195,15 @@ simple_plugin ( RecoDrawingOptions service
 			${ART_FRAMEWORK_SERVICES_BASIC}
 			${ART_FRAMEWORK_SERVICES_OPTIONAL}
 			${ART_FRAMEWORK_SERVICES_OPTIONAL_TFILESERVICE_SERVICE}
-			art_Persistency_Common canvas_Persistency_Common
-			art_Persistency_Provenance canvas_Persistency_Provenance
-			art_Utilities canvas_Utilities
+			art_Persistency_Common
+			art_Persistency_Provenance
+			art_Utilities
+			canvas
 			${MF_MESSAGELOGGER}
 			${MF_UTILITIES}
 			${MF_UTILITIES}
 	                ${FHICLCPP}
-			${CETLIB}
+			cetlib cetlib_except
                         ${ROOT_BASIC_LIB_LIST}
                 
      )
@@ -210,13 +219,14 @@ simple_plugin ( SimulationDrawingOptions service
 			${ART_FRAMEWORK_SERVICES_BASIC}
 			${ART_FRAMEWORK_SERVICES_OPTIONAL}
 			${ART_FRAMEWORK_SERVICES_OPTIONAL_TFILESERVICE_SERVICE}
-			art_Persistency_Common canvas_Persistency_Common
-			art_Persistency_Provenance canvas_Persistency_Provenance
-			art_Utilities canvas_Utilities
+			art_Persistency_Common
+			art_Persistency_Provenance
+			art_Utilities
+			canvas
 			${MF_MESSAGELOGGER}
 			${MF_UTILITIES}
 	                ${FHICLCPP}
-			${CETLIB}
+			cetlib cetlib_except
                         ${ROOT_BASIC_LIB_LIST}
                 
      )

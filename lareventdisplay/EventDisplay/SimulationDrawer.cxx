@@ -35,6 +35,9 @@
 #include "lardata/DetectorInfo/DetectorProperties.h"
 #include "lardata/DetectorInfoServices/DetectorClocksService.h"
 
+//#include "larevt/SpaceChargeServices/SpaceChargeService.h"
+//#include "larevt/SpaceCharge/SpaceChargeStandard.h"
+
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Principal/View.h"
 #include "art/Framework/Principal/Event.h"
@@ -287,8 +290,11 @@ void SimulationDrawer::MCTruth3D(const art::Event& evt,
     art::ServiceHandle<evd::SimulationDrawingOptions> drawopt;
     // If the option is turned off, there's nothing to do
     if (!drawopt->fShowMCTruthTrajectories) return;
+    
+    // Space charge service...
+//    const spacecharge::SpaceCharge* spaceCharge = lar::providerFrom<spacecharge::SpaceChargeService>();
 
-  //  geo::GeometryCore const* geom = lar::providerFrom<geo::Geometry>();
+    //  geo::GeometryCore const* geom = lar::providerFrom<geo::Geometry>();
     detinfo::DetectorProperties const* theDetector = lar::providerFrom<detinfo::DetectorPropertiesService>();
     detinfo::DetectorClocks     const* detClocks   = lar::providerFrom<detinfo::DetectorClocksService>();
 
@@ -334,7 +340,7 @@ void SimulationDrawer::MCTruth3D(const art::Event& evt,
     {
         trackToMcParticleMap[plist[p]->TrackId()] = plist[p];
         
-        // Quick loop through to drawn trajectories...
+        // Quick loop through to draw trajectories...
         if (drawopt->fShowMCTruthTrajectories)
         {
             // Is there an associated McTrajectory?
@@ -353,7 +359,8 @@ void SimulationDrawer::MCTruth3D(const art::Event& evt,
             {
                 // The following is meant to get the correct offset for drawing the particle trajectory
                 // In particular, the cosmic rays will not be correctly placed without this
-                double g4Ticks(detClocks->TPCG4Time2Tick(mcPart->T())+theDetector->GetXTicksOffset(0,0,0)-theDetector->TriggerOffset());
+                //double g4Ticks(detClocks->TPCG4Time2Tick(mcPart->T())+theDetector->GetXTicksOffset(0,0,0)-theDetector->TriggerOffset());
+                double g4Ticks(detClocks->TPCG4Time2Tick(mcPart->T()));
                 double xOffset(theDetector->ConvertTicksToX(g4Ticks, 0, 0, 0));
 		
                 // collect the points from this particle
@@ -377,6 +384,15 @@ void SimulationDrawer::MCTruth3D(const art::Event& evt,
                     // Check fiducial limits
                     if (xPos > xMinFromTicks && xPos < xMaxFromTicks)
                     {
+                        // Check for space charge offsets
+//                        if (spaceCharge->EnableSimEfieldSCE())
+//                        {
+//                            std::vector<double> offsetVec = spaceCharge->GetPosOffsets(xPos,yPos,zPos);
+//                            xPos += offsetVec[0] - 0.7;
+//                            yPos -= offsetVec[1];
+//                            zPos -= offsetVec[2];
+//                        }
+                        
                         hitPositions[3*hitCount    ] = xPos;
                         hitPositions[3*hitCount + 1] = yPos;
                         hitPositions[3*hitCount + 2] = zPos;

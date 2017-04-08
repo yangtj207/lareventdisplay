@@ -2169,7 +2169,7 @@ void RecoBaseDrawer::Prong3D(const art::Event& evt,
 
     // Tracks.
 
-    if(recoOpt->fDrawTracks > 0){
+    if(recoOpt->fDrawTracks > 2){
         for(size_t imod = 0; imod < recoOpt->fTrackLabels.size(); ++imod) {
             std::string which = recoOpt->fTrackLabels[imod];
             art::View<recob::Track> trackView;
@@ -2330,13 +2330,15 @@ void RecoBaseDrawer::DrawTrack3D(const recob::Track& track,
                 if (fmsp.isValid() && fmsp.size() > 0)
                 {
                     int n = handle->size();
+                    float spSize = 0.5 * size;
+                    
                     for(int i=0; i<n; ++i)
                     {
                         art::Ptr<recob::Track> p(handle, i);
                         if(&*p == &track)
                         {
                             std::vector<const recob::SpacePoint*> spts = fmsp.at(i);
-                            DrawSpacePoint3D(spts, view, color, marker, size);
+                            DrawSpacePoint3D(spts, view, color, marker, spSize);
                         }
 	                }
                 }
@@ -2365,48 +2367,51 @@ void RecoBaseDrawer::DrawTrack3D(const recob::Track& track,
       
         for(int p = 0; p < np; ++p)
         {
-	    	if (track.HasValidPoint(p)==0) continue;
+	    	if (!track.HasValidPoint(p)) continue;
+            
             const auto& pos = track.LocationAtPoint(p);
             pm.SetPoint(p, pos.X(), pos.Y(), pos.Z());
         }
       
         // As we are a track, should we not be drawing a line here?
-        TPolyLine3D& pl = view->AddPolyLine3D(np, color, lineSize, 7);
+        TPolyLine3D& pl = view->AddPolyLine3D(track.CountValidPoints(), color, lineSize, 7);
       
         for(int p = 0; p < np; ++p)
         {
-	        if (track.HasValidPoint(p)==0) continue;
+	        if (!track.HasValidPoint(p)) continue;
+            
             const auto pos = track.LocationAtPoint(p);
           
             pl.SetPoint(p, pos.X(), pos.Y(), pos.Z());
         }
       
-        // Can we add the track direction at each point?
-        // This won't work for the last point... but let's try
-        auto startPos = track.LocationAtPoint(0);
-        auto startDir = track.DirectionAtPoint(0);
-      
-        for(int p = 1; p < np; ++p)
+        if(recoOpt->fDrawTrackTrajectoryPoints > 4)
         {
-	    if (track.HasValidPoint(p)==0) continue;
-            TPolyLine3D& pl = view->AddPolyLine3D(2, (color+1)%evd::kNCOLS, size, 7); //1, 3);
+            // Can we add the track direction at each point?
+            // This won't work for the last point... but let's try
+            auto startPos = track.LocationAtPoint(0);
+            auto startDir = track.DirectionAtPoint(0);
+      
+            for(int p = 1; p < np; ++p)
+            {
+                if (!track.HasValidPoint(p)) continue;
+            
+                TPolyLine3D& pl = view->AddPolyLine3D(2, (color+1)%evd::kNCOLS, size, 7); //1, 3);
           
-            auto nextPos = track.LocationAtPoint(p);
-            auto deltaPos = nextPos - startPos;
-            double   arcLen   = deltaPos.Dot(startDir); // arc len to plane containing next point perpendicular to current point dir
-          
-            //std::cout << "-- position:  " << startPos.X() << ", " << startPos.Y() << ", " << startPos.Z() << ", arclen: " << arcLen << std::endl;
-            //std::cout << "++ direction: " << startDir.X() << ", " << startDir.Y() << ", " << startDir.Z() << std::endl;
+                auto nextPos = track.LocationAtPoint(p);
+                auto deltaPos = nextPos - startPos;
+                double   arcLen   = deltaPos.Dot(startDir); // arc len to plane containing next point perpendicular to current point dir
 
-            if (arcLen < 0.) arcLen = 3.;
+                if (arcLen < 0.) arcLen = 3.;
           
-            auto endPoint = startPos + arcLen * startDir;
+                auto endPoint = startPos + arcLen * startDir;
           
-            pl.SetPoint(0, startPos.X(), startPos.Y(), startPos.Z());
-            pl.SetPoint(1, endPoint.X(), endPoint.Y(), endPoint.Z());
+                pl.SetPoint(0, startPos.X(), startPos.Y(), startPos.Z());
+                pl.SetPoint(1, endPoint.X(), endPoint.Y(), endPoint.Z());
           
-            startPos = nextPos;
-            startDir = track.DirectionAtPoint(p);
+                startPos = nextPos;
+                startDir = track.DirectionAtPoint(p);
+            }
         }
     }
 

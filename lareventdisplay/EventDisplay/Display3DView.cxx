@@ -23,7 +23,7 @@ namespace evd{
     
     this->Connect("CloseWindow()","evd::Display3DView",this,"CloseWindow()");
     
-    fDisplay3DPad->Draw();
+//    fDisplay3DPad->Draw();
     
     evdb::Canvas::fCanvas->Update();
   }

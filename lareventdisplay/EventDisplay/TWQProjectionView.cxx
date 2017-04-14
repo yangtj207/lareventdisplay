@@ -524,8 +524,8 @@ namespace evd{
       if(evdlayoutopt-> fChangeWire==1) wqpp->ChangeWire(plane);		
     case kButton1Down: shift_lock=0;
     case kButton1Motion:	
-      if(evdlayoutopt->fMakeClusters == 1 && !evdlayoutopt->fMakeSeeds == 1){ wqpp->SetClusters(plane);}
-      else if(evdlayoutopt->fMakeClusters == 0 && evdlayoutopt->fMakeSeeds == 1){ wqpp->SetSeeds(plane);}
+      if((evdlayoutopt->fMakeClusters == 1) && !(evdlayoutopt->fMakeSeeds == 1)){ wqpp->SetClusters(plane);}
+      else if((evdlayoutopt->fMakeClusters == 0) && (evdlayoutopt->fMakeSeeds == 1)){ wqpp->SetSeeds(plane);}
       else { wqpp->SetMouseZoomRegion(plane);}
       break;
       //  default:		

@@ -1344,6 +1344,7 @@ void RecoBaseDrawer::DrawTrack2D(std::vector<const recob::Hit*>& hits,
         std::cout<<"DrawShower options: \n";
         std::cout<<" 1 = Hits in shower color-coded by the shower ID\n";
         std::cout<<" 2 = Same as 1 + shower axis and circle representing the shower cone\n";
+        std::cout<<"     Black cone = shower start dE/dx < 1 MeV/cm (< 1/2 MIP)\n";
         std::cout<<"     Blue cone = shower start dE/dx < 3 MeV/cm (~1 MIP)\n";
         std::cout<<"     Green cone = shower start 3 MeV/cm < dE/dx < 5 MeV/cm (~2 MIP)\n";
         std::cout<<"     Red cone = shower start 5 MeV/cm < dE/dx (>2 MIP)\n";
@@ -1389,13 +1390,19 @@ void RecoBaseDrawer::DrawTrack2D(std::vector<const recob::Hit*>& hits,
             double etick = detprop->ConvertXToTicks(endPos.X(), plane, tpc, cstat);
             TLine& coneLine = view->AddLine(swire, stick, ewire, etick);
             // color coding by dE/dx
-            // Use blue for ~1 MIP
             float dEdx = shower.vals().at(s)->dEdx()[plane];
-            int color = kBlue;
-            // use green for ~2 MIP
-            if(dEdx > 3 && dEdx < 5) color = kGreen;
-            // use red for higher
-            if(dEdx > 5) color = kRed;
+            // use black for too-low dE/dx
+            int color = kBlack;
+            if(dEdx > 1 && dEdx < 3) {
+              // use blue for ~1 MIP
+              color = kBlue;
+            } else if(dEdx < 5) {
+              // use green for ~2 MIP
+              color = kGreen;
+            } else {
+              // use red for >~ 2 MIP
+              color = kRed;
+            }
             coneLine.SetLineColor(color);
 
             // Now find the 3D circle that represents the base of the cone

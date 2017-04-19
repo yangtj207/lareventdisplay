@@ -2,7 +2,6 @@
 /// \file    TQPad.h
 /// \brief   Drawing pad for time or charge histograms
 /// \author  messier@indiana.edu
-/// \version $Id: TQPad.h,v 1.1.1.1 2010/11/10 19:44:54 p-novaart Exp $
 ///
 #ifndef EVD_TQPAD_H
 #define EVD_TQPAD_H

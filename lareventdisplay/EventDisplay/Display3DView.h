@@ -2,7 +2,6 @@
 /// \file    Display3DView.h
 /// \brief   A view showing a 3D rendering of the detector
 /// \author  messier@indiana.edu
-/// \version $Id: Display3DView.h,v 1.1.1.1 2010/11/10 19:44:54 p-novaart Exp $
 ///
 #ifndef EVD_DISPLAY3DVIEW_H
 #define EVD_DISPLAY3DVIEW_H

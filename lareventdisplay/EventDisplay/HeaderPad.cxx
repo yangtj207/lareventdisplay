@@ -2,7 +2,6 @@
 /// \file    HeaderPad.cxx
 /// \brief   Drawing pad for time or charge histograms
 /// \author  messier@indiana.edu
-/// \version $Id: HeaderPad.cxx,v 1.2 2010/11/11 18:11:22 p-novaart Exp $
 ///
 #include "lareventdisplay/EventDisplay/HeaderPad.h"
 #include "nutools/EventDisplayBase/View2D.h"

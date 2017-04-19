@@ -1,7 +1,6 @@
 /// \file    RecoBaseDrawer.h
 /// \brief   Class to aid in the rendering of RecoBase objects
 /// \author  messier@indiana.edu
-/// \version $Id: RecoBaseDrawer.h,v 1.3 2010/11/11 22:47:20 p-novaart Exp $
 #ifndef EVD_RECOBASEDRAWER_H
 #define EVD_RECOBASEDRAWER_H
 

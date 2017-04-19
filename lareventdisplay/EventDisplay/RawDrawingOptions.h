@@ -1,5 +1,4 @@
 ////////////////////////////////////////////////////////////////////////
-// $Id: RawDrawingOption.h,v 1.15 2010/08/30 21:33:24 spitz7 Exp $
 //
 // Display parameters for the raw data
 //

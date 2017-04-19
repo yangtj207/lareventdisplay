@@ -2,7 +2,6 @@
 /// \file    MCBriefPad.cxx
 /// \brief   Drawing pad for time or charge histograms
 /// \author  messier@indiana.edu
-/// \version $Id: MCBriefPad.cxx,v 1.2 2010/11/10 22:49:25 p-novaart Exp $
 ///
 #include "TBox.h"
 #include "TH1F.h"

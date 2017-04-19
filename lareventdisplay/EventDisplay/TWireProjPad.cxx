@@ -3,7 +3,6 @@
 /// \file    TWireProjPad.cxx
 /// \brief   Drawing pad for X-Z or Y-Z projections of events
 /// \author  messier@indiana.edu
-/// \version $Id: TZProjPad.cxx,v 1.2 2010/11/11 18:11:22 p-novaart Exp $
 ///
 ////////////////////////////////////////////////////////////////////////
 #include <algorithm>

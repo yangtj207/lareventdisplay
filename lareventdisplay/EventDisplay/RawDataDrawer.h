@@ -1,7 +1,6 @@
 /// \file    RawDataDrawer.h
 /// \brief   Class to aid in the rendering of RawData objects
 /// \author  messier@indiana.edu
-/// \version $Id: RawDataDrawer.h,v 1.2 2010/11/10 22:38:34 p-novaart Exp $
 #ifndef EVD_RAWDATADRAWER_H
 #define EVD_RAWDATADRAWER_H
 

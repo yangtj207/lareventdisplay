@@ -2,7 +2,6 @@
 /// \file    HeaderPad.h
 /// \brief   Drawing pad for time or charge histograms
 /// \author  messier@indiana.edu
-/// \version $Id: HeaderPad.h,v 1.1.1.1 2010/11/10 19:44:54 p-novaart Exp $
 ///
 #ifndef EVD_HEADER_H
 #define EVD_HEADER_H

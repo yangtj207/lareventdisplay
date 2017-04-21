@@ -69,7 +69,7 @@ evd::Ortho3DPad::Ortho3DPad(const char* name, const char* title,
 
   // Set up pad.
 
-  Pad()->SetBit(kCannotPick);
+//  Pad()->SetBit(kCannotPick); // workaround for issue #16169
   Pad()->SetBit(TPad::kCannotMove);
   Pad()->Draw();
   Pad()->cd();

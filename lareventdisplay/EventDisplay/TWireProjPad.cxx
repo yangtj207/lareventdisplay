@@ -119,7 +119,7 @@ namespace evd{
     
     art::ServiceHandle<geo::Geometry> geo;
     
-    this->Pad()->SetBit(kCannotPick);
+    // this->Pad()->SetBit(kCannotPick); // workaround for issue #16169
     // this->Pad()->SetBit(TPad::kCannotMove);
     this->Pad()->cd();
     

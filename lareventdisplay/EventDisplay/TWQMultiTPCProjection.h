@@ -3,7 +3,6 @@
 /// \file    TWQProjectionView.h
 /// \brief   A view showing the time vs wire, charge and charge vs time information for an event
 /// \author  brebel@fnal.gov
-/// \version $Id: TQPad.cxx,v 1.2 2010/11/11 18:11:22 p-novaart Exp $
 // clustering code written by ellen.klein@yale.edu
 ////////////////////////////////////////////////////////////////////////
 

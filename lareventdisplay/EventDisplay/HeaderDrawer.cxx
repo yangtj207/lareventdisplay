@@ -2,7 +2,6 @@
 /// \file    HeaderDrawer.cxx
 /// \brief   Render the objects from the Simulation package
 /// \author  messier@indiana.edu
-/// \version $Id: HeaderDrawer.cxx,v 1.2 2010/11/11 18:11:22 p-novaart Exp $
 ///
 #include "lareventdisplay/EventDisplay/HeaderDrawer.h"
 #include "nutools/EventDisplayBase/View2D.h"

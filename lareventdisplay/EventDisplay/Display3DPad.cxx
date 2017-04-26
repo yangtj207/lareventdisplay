@@ -2,7 +2,6 @@
 /// \file    Display3DPad.cxx
 /// \brief   Drawing pad showing a 3D rendering of the detector
 /// \author  messier@indiana.edu
-/// \version $Id: Display3DPad.cxx,v 1.5 2011/04/12 22:07:16 bckhouse Exp $
 ///
 #include <iostream>
 #include "TPad.h"

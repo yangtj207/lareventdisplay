@@ -2,7 +2,6 @@
 /// \file    TQPad.cxx
 /// \brief   Drawing pad for time or charge histograms
 /// \author  messier@indiana.edu
-/// \version $Id: TQPad.cxx,v 1.2 2010/11/11 18:11:22 p-novaart Exp $
 ///
 #include "lareventdisplay/EventDisplay/TQPad.h"
 

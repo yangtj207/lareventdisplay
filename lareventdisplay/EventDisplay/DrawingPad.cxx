@@ -2,7 +2,6 @@
 /// \file    DrawingPad.cxx
 /// \brief   Base class for all event display drawing pads
 /// \author  messier@indiana.edu
-/// \version $Id: DrawingPad.cxx,v 1.2 2010/11/11 18:11:22 p-novaart Exp $:
 ///
 #include "lareventdisplay/EventDisplay/DrawingPad.h"
 #include <iostream>

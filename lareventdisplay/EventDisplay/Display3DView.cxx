@@ -2,7 +2,6 @@
 /// \file    Display3DView.cxx
 /// \brief   The "main" event display view that most people will want to use
 /// \author  messier@indiana.edu
-/// \version $Id: Display3DView.cxx,v 1.2 2011/01/19 16:40:59 p-novaart Exp $
 ///
 #include "TCanvas.h"
 #include "TVirtualViewer3D.h"

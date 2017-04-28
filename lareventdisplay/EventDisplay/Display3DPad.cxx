@@ -13,7 +13,8 @@
 #include "nutools/EventDisplayBase/View3D.h"
 #include "nutools/EventDisplayBase/EventHolder.h"
 #include "larcore/Geometry/Geometry.h"
-#include "lareventdisplay/EventDisplay/GeometryDrawer.h"
+//#include "lareventdisplay/EventDisplay/GeometryDrawer.h"
+#include "lareventdisplay/EventDisplay/ExptDrawers/IExperimentDrawer.h"
 #include "lareventdisplay/EventDisplay/RawDataDrawer.h"
 #include "lareventdisplay/EventDisplay/SimulationDrawer.h"
 #include "lareventdisplay/EventDisplay/RecoBaseDrawer.h"
@@ -66,7 +67,7 @@ namespace evd{
     const art::Event *evt = evdb::EventHolder::Instance()->GetEvent();
 
     if(evt){
-      this->GeometryDraw()->  DetOutline3D(fView);
+      this->GeometryDraw()->DetOutline3D(fView);
       this->SimulationDraw()->MCTruth3D   (*evt, fView);
       this->RecoBaseDraw()->  PFParticle3D(*evt, fView);
       this->RecoBaseDraw()->  SpacePoint3D(*evt, fView);

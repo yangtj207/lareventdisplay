@@ -1,16 +1,19 @@
-/// \file    GeometryDrawer.cxx
-/// \brief   Class to aid in the rendering of Geometry objects
-/// \author  messier@indiana.edu
-#include "TPolyLine.h"
-#include "TPolyLine3D.h"
-#include "TLine.h"
-#include "TBox.h"
-#include "TText.h"
+////////////////////////////////////////////////////////////////////////
+/// \file   MicroBooNEDrawer.cc
+/// \author T. Usher
+////////////////////////////////////////////////////////////////////////
 
+#include <cmath>
+#include "lareventdisplay/EventDisplay/ExptDrawers/IExperimentDrawer.h"
+
+#include "art/Utilities/ToolMacros.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
+#include "cetlib/exception.h"
+
+#include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 #include "larcore/Geometry/Geometry.h"
 #include "nutools/EventDisplayBase/View2D.h"
 #include "nutools/EventDisplayBase/View3D.h"
-#include "lareventdisplay/EventDisplay/GeometryDrawer.h"
 
 #include "lareventdisplay/EventDisplay/EvdLayoutOptions.h"
 #include "lareventdisplay/EventDisplay/RawDrawingOptions.h"
@@ -19,50 +22,89 @@
 #include "larevt/CalibrationDBI/Interface/ChannelStatusService.h"
 #include "larevt/CalibrationDBI/Interface/ChannelStatusProvider.h"
 
-namespace evd{
+#include "TPolyLine.h"
+#include "TPolyLine3D.h"
+#include "TLine.h"
+#include "TBox.h"
+#include "TText.h"
 
-//......................................................................
-GeometryDrawer::GeometryDrawer()
+#include <fstream>
+
+namespace evd_tool
 {
-}
 
-//......................................................................
-GeometryDrawer::~GeometryDrawer()
+class MicroBooNEDrawer : IExperimentDrawer
 {
+public:
+    explicit MicroBooNEDrawer(const fhicl::ParameterSet& pset);
+    
+    void DetOutline3D(evdb::View3D* view) override;
+    
+    ~MicroBooNEDrawer() {}
+    
+private:
+    void configure(const fhicl::ParameterSet& pset);
+    void DrawRectangularBox(evdb::View3D* view, double* coordsLo, double* coordsHi, int color=kGray, int width = 1, int style = 1);
+    void DrawGrids(evdb::View3D* view, double* coordsLo, double* coordsHi, int color=kGray, int width = 1, int style = 1);
+    void DrawAxes(evdb::View3D* view, double* coordsLo, double* coordsHi, int color=kGray, int width = 1, int style = 1);
+    void DrawBadChannels(evdb::View3D* view, double* coords, int color, int width, int style);
+    
+    // Member variables from the fhicl file
+    bool fThreeWindow;                 ///< true to draw rectangular box representing 3 windows
+    bool fDrawGrid;                    ///< true to draw backing grid
+    bool fDrawAxes;                    ///< true to draw coordinate axes
+    bool fDrawBadChannels;             ///< true to draw bad channels
+};
+    
+//----------------------------------------------------------------------
+// Constructor.
+MicroBooNEDrawer::MicroBooNEDrawer(const fhicl::ParameterSet& pset)
+{
+    configure(pset);
 }
-
+    
+void MicroBooNEDrawer::configure(const fhicl::ParameterSet& pset)
+{
+    // Start by recovering the parameters
+    fThreeWindow     = pset.get< bool >("DrawThreeWindow", true);
+    fDrawGrid        = pset.get< bool >("DrawGrid",        true);
+    fDrawAxes        = pset.get< bool >("DrawAxes",        true);
+    fDrawBadChannels = pset.get< bool >("DrawBadChannels", true);
+    
+    return;
+}
+    
 //......................................................................
-void GeometryDrawer::DetOutline3D(evdb::View3D* view)
+void MicroBooNEDrawer::DetOutline3D(evdb::View3D* view)
 {
     art::ServiceHandle<geo::Geometry>         geo;
-    art::ServiceHandle<evd::EvdLayoutOptions> evdlayoutoptions;
-
+    
     // If requested, draw the outer three window volume first
-    if (evdlayoutoptions->fThreeWindow)
+    if (fThreeWindow)
     {
         double threeWinCoordsLo[] = {-2.*geo->DetHalfWidth(), -geo->DetHalfHeight(),               0.};
         double threeWinCoordsHi[] = { 4.*geo->DetHalfWidth(),  geo->DetHalfHeight(), geo->DetLength()};
         
         DrawRectangularBox(view, threeWinCoordsLo, threeWinCoordsHi, kGray);
     }
-
+    
     // Now draw the standard volume
     double coordsLo[] = {                    0., -geo->DetHalfHeight(),               0.};
     double coordsHi[] = {2.*geo->DetHalfWidth(),  geo->DetHalfHeight(), geo->DetLength()};
     
     DrawRectangularBox(view, coordsLo, coordsHi, kRed, 2, 1);
-
+    
     // It could be that we don't want to see the grids
-    if (evdlayoutoptions->fDrawGrid)        DrawGrids(view, coordsLo, coordsHi, kGray+2, 1, 1);
+    if (fDrawGrid)        DrawGrids(view, coordsLo, coordsHi, kGray+2, 1, 1);
     
-    if (evdlayoutoptions->fDrawAxes)        DrawAxes(view, coordsLo, coordsHi, kBlue, 1, 1);
+    if (fDrawAxes)        DrawAxes(view, coordsLo, coordsHi, kBlue, 1, 1);
     
-    if (evdlayoutoptions->fDrawBadChannels) DrawBadChannels(view, coordsHi, kGray, 1, 1);
-
+    if (fDrawBadChannels) DrawBadChannels(view, coordsHi, kGray, 1, 1);
+    
     return;
 }
 
-void GeometryDrawer::DrawRectangularBox(evdb::View3D* view, double* coordsLo, double* coordsHi, int color, int width, int style)
+void MicroBooNEDrawer::DrawRectangularBox(evdb::View3D* view, double* coordsLo, double* coordsHi, int color, int width, int style)
 {
     TPolyLine3D& top = view->AddPolyLine3D(5, color, width, style);
     top.SetPoint(0, coordsLo[0], coordsHi[1], coordsLo[2]);
@@ -94,8 +136,8 @@ void GeometryDrawer::DrawRectangularBox(evdb::View3D* view, double* coordsLo, do
     
     return;
 }
-    
-void GeometryDrawer::DrawGrids(evdb::View3D* view, double* coordsLo, double* coordsHi, int color, int width, int style)
+
+void MicroBooNEDrawer::DrawGrids(evdb::View3D* view, double* coordsLo, double* coordsHi, int color, int width, int style)
 {
     double z = coordsLo[2];
     // Grid running along x and y at constant z
@@ -142,8 +184,8 @@ void GeometryDrawer::DrawGrids(evdb::View3D* view, double* coordsLo, double* coo
     
     return;
 }
-    
-void GeometryDrawer::DrawAxes(evdb::View3D* view, double* coordsLo, double* coordsHi, int color, int width, int style)
+
+void MicroBooNEDrawer::DrawAxes(evdb::View3D* view, double* coordsLo, double* coordsHi, int color, int width, int style)
 {
     
     // Indicate coordinate system
@@ -204,14 +246,14 @@ void GeometryDrawer::DrawAxes(evdb::View3D* view, double* coordsLo, double* coor
     
     return;
 }
-    
-void GeometryDrawer::DrawBadChannels(evdb::View3D* view, double* coords, int color, int width, int style)
+
+void MicroBooNEDrawer::DrawBadChannels(evdb::View3D* view, double* coords, int color, int width, int style)
 {
     art::ServiceHandle<geo::Geometry>          geo;
     art::ServiceHandle<evd::RawDrawingOptions> rawOpt;
     
     lariov::ChannelStatusProvider const& channelStatus
-        = art::ServiceHandle<lariov::ChannelStatusService>()->GetProvider();
+    = art::ServiceHandle<lariov::ChannelStatusService>()->GetProvider();
     
     // We want to translate the wire position to the opposite side of the TPC...
     for(size_t viewNo = 0; viewNo < geo->Nviews(); viewNo++)
@@ -238,10 +280,10 @@ void GeometryDrawer::DrawBadChannels(evdb::View3D* view, double* coords, int col
             }
         }
     }
-
+    
     return;
 }
     
-
-}// namespace
-////////////////////////////////////////////////////////////////////////
+    
+DEFINE_ART_CLASS_TOOL(MicroBooNEDrawer)
+}

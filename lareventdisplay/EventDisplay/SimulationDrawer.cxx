@@ -453,7 +453,9 @@ void SimulationDrawer::MCTruth3D(const art::Event& evt,
         
         // The following is meant to get the correct offset for drawing the particle trajectory
         // In particular, the cosmic rays will not be correctly placed without this
-        double g4Ticks(detClocks->TPCG4Time2Tick(mcPart->T())+theDetector->GetXTicksOffset(0,0,0)-theDetector->TriggerOffset());
+//        double g4Ticks(detClocks->TPCG4Time2Tick(mcPart->T())+theDetector->GetXTicksOffset(0,0,0)-theDetector->TriggerOffset());
+//        double xOffset(theDetector->ConvertTicksToX(g4Ticks, 0, 0, 0));
+        double g4Ticks(detClocks->TPCG4Time2Tick(mcPart->T()));
         double xOffset(theDetector->ConvertTicksToX(g4Ticks, 0, 0, 0));
         
         int colorIdx(evd::Style::ColorFromPDG(mcPart->PdgCode()));

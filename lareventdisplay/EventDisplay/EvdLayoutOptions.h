@@ -25,6 +25,8 @@ public:
 
     void reconfigure(fhicl::ParameterSet const& pset);
     
+    const fhicl::ParameterSet& fParameterSet;
+    
     int      fShowSideBar;		           ///< 1 to show, 0 don't show
     int    	 fAutoZoomInterest;            ///< Set the automatic zoom to the interest region		  
     int    	 fPrintTotalCharge;            ///< Print out the total charge in an event

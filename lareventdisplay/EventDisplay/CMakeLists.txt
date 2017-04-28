@@ -6,6 +6,8 @@ FILE( GLOB src_files *.cxx )
 
 cet_rootcint( ${PACKAGE} )
 
+add_subdirectory(ExptDrawers)
+
 art_make_library( 
         	  SOURCE ${src_files} ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE}Cint.cc
                   LIBRARIES lareventdisplay_EventDisplay_ColorDrawingOptions_service

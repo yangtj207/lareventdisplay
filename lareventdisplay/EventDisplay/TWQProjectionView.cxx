@@ -2,7 +2,6 @@
 /// \file    TWQProjectionView.cxx
 /// \brief   The "main" event display view that most people will want to use
 /// \author  brebel@fnal.gov
-/// \version $Id: XZYZProjectionsView.cxx,v 1.2 2010/11/11 18:11:22 p-novaart Exp $
 ///
 #include "TCanvas.h"
 #include "TFrame.h"

@@ -1,5 +1,4 @@
 ////////////////////////////////////////////////////////////////////////
-// $Id: InfoTransfer.cxx,v 1.16 2010/08/30 21:33:24 andrzejs Exp $
 //
 // Transfer hitlist and run info into a producer module.
 // Do not copy this code without contacting Andrzej Szelc and Brian Rebel first.

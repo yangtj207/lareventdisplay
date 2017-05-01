@@ -2,7 +2,6 @@
 /// \file    Display3DPad.h
 /// \brief   Drawing pad showing a 3D rendering of the detector
 /// \author  messier@indiana.edu
-/// \version $Id: Display3DPad.h,v 1.1.1.1 2010/11/10 19:44:54 p-novaart Exp $
 ///
 #ifndef EVD_DISPLAY3DPAD_H
 #define EVD_DISPLAY3DPAD_H

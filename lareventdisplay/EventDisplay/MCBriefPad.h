@@ -2,7 +2,6 @@
 /// \file    MCBriefPad.h
 /// \brief   Drawing pad for short summary of an MC event
 /// \author  messier@indiana.edu
-/// \version $Id: MCBriefPad.h,v 1.1.1.1 2010/11/10 19:44:54 p-novaart Exp $
 ///
 #ifndef EVD_MCBRIEF_H
 #define EVD_MCBRIEF_H

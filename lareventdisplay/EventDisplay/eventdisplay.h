@@ -1,7 +1,6 @@
 /// \file    eventdisplay.h
 /// \brief   Place to keep constants for event display
 /// \author  brebel@fnal.gov
-/// \version $Id: raw.h,v 1.2 2010/04/15 18:10:18 brebel Exp $
 #ifndef EVENTDISPLAY_EVD_H
 #define EVENTDISPLAY_EVD_H
 

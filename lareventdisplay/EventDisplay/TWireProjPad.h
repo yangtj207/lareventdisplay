@@ -3,7 +3,6 @@
 /// \file    TWireProjPad.h
 /// \brief   Drawing pad showing a single X-Z or Y-Z projection of an event
 /// \author  messier@indiana.edu
-/// \version $Id: TWireProjPad.h,v 1.1.1.1 2010/11/10 19:44:54 p-novaart Exp $
 ///
 /////////////////////////////////////////////////////////////////////////////
 

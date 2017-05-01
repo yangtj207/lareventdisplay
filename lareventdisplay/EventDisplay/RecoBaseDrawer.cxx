@@ -1,7 +1,6 @@
 /// \file    RecoBaseDrawer.cxx
 /// \brief   Class to aid in the rendering of RecoBase objects
 /// \author  brebel@fnal.gov
-/// \version $Id: RecoBaseDrawer.cxx,v 1.3 2010/11/11 22:47:19 p-novaart Exp $
 #include <cmath>
 #include <map>
 #include <stdint.h>

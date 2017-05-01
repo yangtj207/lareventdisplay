@@ -1,7 +1,6 @@
 /// \file    GeometryDrawer.cxx
 /// \brief   Class to aid in the rendering of Geometry objects
 /// \author  messier@indiana.edu
-/// \version $Id: GeometryDrawer.cxx,v 1.2 2010/11/11 18:11:22 p-novaart Exp $
 #include "TPolyLine.h"
 #include "TPolyLine3D.h"
 #include "TLine.h"

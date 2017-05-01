@@ -1,7 +1,6 @@
 /// \file  ColorDrawingOptions.h
 /// \brief The color scales used by the event display
 /// \author messier@indiana.edu
-/// \version $Id: ColorScaleTable.h,v 1.1.1.1 2010/11/10 19:44:54 p-novaart Exp $
 #ifndef EVD_COLORDRAWINGOPTIONS_H
 #define EVD_COLORDRAWINGOPTIONS_H
 #ifndef __CINT__

@@ -2,7 +2,6 @@
 /// \file    SimulationDrawer.h
 /// \brief   Render the objects from the Simulation package
 /// \author  messier@indiana.edu
-/// \version $Id: SimulationDrawer.h,v 1.2 2010/11/10 22:38:34 p-novaart Exp $
 ///
 #ifndef EVD_SIMULATIONDRAWER_H
 #define EVD_SIMULATIONDRAWER_H

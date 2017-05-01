@@ -79,6 +79,12 @@ void ICARUSDrawer::DetOutline3D(evdb::View3D* view)
     
     bool axesNotDrawn(true);
     
+    double xl,xu,yl,yu,zl,zu;
+    
+    geo->WorldBox(&xl,&xu,&yl,&yu,&zl,&zu);
+    
+    std::cout << "--- building ICARUS 3D display, low coord: " << xl << ", " << yl << ", " << zl << ", hi coord: " << xu << ", " << yu << ", " << zu << std::endl;
+    
     // Loop over the number of cryostats
     for(geo::cryostat_iterator cryoItr = geo->begin_cryostat(); cryoItr != geo->end_cryostat(); cryoItr++)
     {
@@ -86,6 +92,8 @@ void ICARUSDrawer::DetOutline3D(evdb::View3D* view)
         
         double cryoCoordsLo[] = {cryoGeo.MinX(), cryoGeo.MinY(), cryoGeo.MinZ()};
         double cryoCoordsHi[] = {cryoGeo.MaxX(), cryoGeo.MaxY(), cryoGeo.MaxZ()};
+        
+        std::cout << "    - cryostat: " << cryoGeo.ID() << ", low coord: " << cryoCoordsLo[0] << ", " << cryoCoordsLo[1] << ", " << cryoCoordsLo[2] << ", hi coord: " << cryoCoordsHi[0] << ", " << cryoCoordsHi[1] << ", " << cryoCoordsHi[2] << std::endl;
         
         DrawRectangularBox(view, cryoCoordsLo, cryoCoordsHi, kWhite, 2, 1);
         
@@ -106,6 +114,8 @@ void ICARUSDrawer::DetOutline3D(evdb::View3D* view)
             // Now draw the standard volume
             double coordsLo[] = {tpcCenter.X() - tpcGeo.HalfWidth(), tpcCenter.Y() - tpcGeo.HalfHeight(), tpcCenter.Z() - 0.5 * tpcGeo.Length()};
             double coordsHi[] = {tpcCenter.X() + tpcGeo.HalfWidth(), tpcCenter.Y() + tpcGeo.HalfHeight(), tpcCenter.Z() + 0.5 * tpcGeo.Length()};
+            
+            std::cout << "     - TPC: " << tpcGeo.ID() << ", low coord: " << coordsLo[0] << ", " << coordsLo[1] << ", " << coordsLo[2] << ", hi coord: " << coordsHi[0] << ", " << coordsHi[1] << ", " << coordsHi[2] << std::endl;
             
             DrawRectangularBox(view, coordsLo, coordsHi, kRed, 2, 1);
             
@@ -174,7 +184,7 @@ void ICARUSDrawer::DrawGrids(evdb::View3D* view, double* coordsLo, double* coord
     }
     
     // Grid running along z at constant x
-    double x = 0.0;
+    double x = coordsLo[0];
     while(1)
     {
         TPolyLine3D& gridt = view->AddPolyLine3D(2, color, style, width);
@@ -187,7 +197,7 @@ void ICARUSDrawer::DrawGrids(evdb::View3D* view, double* coordsLo, double* coord
     // Grid running along z at constant y
     if (verticalGrid)
     {
-        double y = 0.0;
+        double y = coordsLo[1];
         while(1)
         {
             TPolyLine3D& grids = view->AddPolyLine3D(2, color, style, width);
@@ -195,16 +205,6 @@ void ICARUSDrawer::DrawGrids(evdb::View3D* view, double* coordsLo, double* coord
             grids.SetPoint(1, coordsHi[0], y, coordsHi[2]);
             y += 10.0;
             if (y>coordsHi[1]) break;
-        }
-    
-        y = -10.0;
-        while(1)
-        {
-            TPolyLine3D& grids = view->AddPolyLine3D(2, color, style, width);
-            grids.SetPoint(0, coordsHi[0], y, coordsLo[2]);
-            grids.SetPoint(1, coordsHi[0], y, coordsHi[2]);
-            y -= 10.0;
-            if (y<coordsLo[1]) break;
         }
     }
     

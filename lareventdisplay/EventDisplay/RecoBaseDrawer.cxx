@@ -1987,15 +1987,21 @@ void RecoBaseDrawer::DrawPFParticle3D(const art::Ptr<recob::PFParticle>&       p
         
             for (const auto& edge : edgeVec)
             {
-                if (indexMap.find(edge->getSecondPointID()) != indexMap.end()) continue;
+                if (indexMap.find(edge->SecondPointID()) != indexMap.end()) continue;
             
-                indexMap[edge->getFirstPointID()] = edge->getSecondPointID();
+                indexMap[edge->FirstPointID()] = edge->SecondPointID();
             }
         
             for(const auto& indexPair : indexMap)
             {
                 art::Ptr<recob::SpacePoint> firstSP  = spacePointVec.at(indexPair.first);
                 art::Ptr<recob::SpacePoint> secondSP = spacePointVec.at(indexPair.second);
+                
+                if (firstSP->ID() != indexPair.first || secondSP->ID() != indexPair.second)
+                {
+                    std::cout << "Space point index mismatch, first: " << firstSP->ID() << ", " << indexPair.first << ", second: " << secondSP->ID() << ", " << indexPair.second << std::endl;
+                    continue;
+                }
             
                 if (indexPair.second == 0) continue;
             
@@ -2004,6 +2010,12 @@ void RecoBaseDrawer::DrawPFParticle3D(const art::Ptr<recob::PFParticle>&       p
                 TVector3 endPoint(startPoint + lineVec);
             
                 double length = lineVec.Mag();
+                
+                if (length == 0.)
+                {
+                    std::cout << "Edge length is zero, index 1: " << indexPair.first << ", index 2: " << indexPair.second << std::endl;
+                    continue;
+                }
             
                 // Is there a bug in the associations code?
                 if (length > 5.)

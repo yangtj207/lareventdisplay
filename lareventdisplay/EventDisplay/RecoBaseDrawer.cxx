@@ -1389,18 +1389,21 @@ void RecoBaseDrawer::DrawTrack2D(std::vector<const recob::Hit*>& hits,
             double etick = detprop->ConvertXToTicks(endPos.X(), plane, tpc, cstat);
             TLine& coneLine = view->AddLine(swire, stick, ewire, etick);
             // color coding by dE/dx
-            float dEdx = shower.vals().at(s)->dEdx()[plane];
+            std::vector<double> dedxVec = shower.vals().at(s)->dEdx();
+//            float dEdx = shower.vals().at(s)->dEdx()[plane];
             // use black for too-low dE/dx
             int color = kBlack;
-            if(dEdx > 1 && dEdx < 3) {
-              // use blue for ~1 MIP
-              color = kBlue;
-            } else if(dEdx < 5) {
-              // use green for ~2 MIP
-              color = kGreen;
-            } else {
-              // use red for >~ 2 MIP
-              color = kRed;
+            if(plane < dedxVec.size()) {
+              if(dedxVec[plane] > 1 && dedxVec[plane] < 3) {
+                // use blue for ~1 MIP
+                color = kBlue;
+              } else if(dedxVec[plane] < 5) {
+                // use green for ~2 MIP
+                color = kGreen;
+              } else {
+                // use red for >~ 2 MIP
+                color = kRed;
+              }
             }
             coneLine.SetLineColor(color);
 

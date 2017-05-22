@@ -250,6 +250,18 @@ public:
 		            unsigned int      plane,
 		            TH1F*             histo);
 
+    void FillTQHistoDP(const art::Event&    evt, 
+		       unsigned int         plane,
+                       unsigned int         wire,
+		       TH1F*                histo,
+		       std::vector<double>& htau1,
+                       std::vector<double>& htau2,
+                       std::vector<double>& hitamplitudes,
+                       std::vector<double>& hpeaktimes,
+                       std::vector<int>& hstartT,
+                       std::vector<int>& hendT,
+		       std::vector<int>& hNMultiHit);
+
     int GetRegionOfInterest(int  plane,
 			                int& minw,
                             int& maxw,
@@ -314,6 +326,11 @@ public:
 		          const std::string&            which,
 		          art::PtrVector<recob::Event>& event);
 
+    int CountHits(const art::Event&               evt,
+			      	  const std::string&              which,
+			      	  unsigned int                    cryostat,
+			      	  unsigned int                    tpc,
+			      	  unsigned int                    plane);
         
   private:
 

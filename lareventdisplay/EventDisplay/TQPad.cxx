@@ -132,15 +132,14 @@ namespace evd{
                                           fPlane,
                                           fWire, 
                                           fRawHisto);
+          
+         RecoBaseDrawer::HitParamsVec hitParamsVec;
 
          this->RecoBaseDraw()->FillTQHisto(*evt,
                                            fPlane,
                                            fWire, 
                                            fRecoHisto,
-                                           hstart,
-                                           hend,
-                                           hamplitudes,
-                                           hpeaktimes);
+                                           hitParamsVec);
          
          // draw with histogram style, only (square) lines, no errors
          static const std::string defaultDrawOptions = "HIST";
@@ -161,29 +160,57 @@ namespace evd{
          } // switch
 
          // this loop draws Gaussian shapes for identified hits in the reco histo
-         for (size_t i = 0; i < hstart.size() && drawopt->fDrawRawDataOrCalibWires != kRAW; ++i) {
-            //hend and hstart are 1-sigma away from peak
-            double width = (hend[i]-hstart[i])/2;
-
-            //create a function corresponding to the Gaussian shape
-            TF1 *f1 = new TF1("hitshape","gaus(0)",hstart[i]-1.5*width,hend[i]+1.5*width);//5-sigma wide window
-            f1->SetParameters(hamplitudes[i],hpeaktimes[i],width);
-
-            //create TPolyLine that actually gets drawn
-            TPolyLine& p1 = fView->AddPolyLine(1001, 
-                                               kOrange+7,
-                                               3,
-                                               1);
-
-            //set coordinates of TPolyLine based on Gaussian function
-            for(int j = 0; j<1001; ++j){ 
-               double x = hstart[i]-1.5*width+j*5*width/1000;
-               double y = f1->Eval(x); 
-               p1.SetPoint(j, x, y);
-            }
-            p1.Draw("same");
-            if(f1) delete f1;
-         }
+          if (drawopt->fDrawRawDataOrCalibWires != kRAW)
+          {
+              for(const auto& roiHitParamsVec : hitParamsVec)
+              {
+                  double roiStart = roiHitParamsVec.front().hitStart - 3. * roiHitParamsVec.front().hitSigma;
+                  double roiStop  = roiHitParamsVec.back().hitEnd    + 3. * roiHitParamsVec.back().hitSigma;
+                  double width    = roiStop - roiStart;
+                  
+                  std::string funcString = "gaus(0)";
+                  
+                  for(size_t idx = 1; idx < roiHitParamsVec.size(); idx++) funcString += "+gaus(" + std::to_string(3*idx) + ")";
+                  
+                  TF1 f1("hitshape",funcString.c_str(),roiStart,roiStop);
+                  
+                  size_t idx(0);
+                  for(const auto& hitParams : roiHitParamsVec)
+                  {
+                      f1.SetParameter(idx + 0, hitParams.hitHeight);
+                      f1.SetParameter(idx + 1, hitParams.hitCenter);
+                      f1.SetParameter(idx + 2, hitParams.hitSigma);
+                      
+                      TPolyLine& hitHeight = fView->AddPolyLine(2, kBlack, 1, 1);
+                      
+                      hitHeight.SetPoint(0, hitParams.hitCenter, 0.);
+                      hitHeight.SetPoint(1, hitParams.hitCenter, hitParams.hitHeight);
+                      
+                      hitHeight.Draw("same");
+                      
+                      TPolyLine& hitSigma = fView->AddPolyLine(2, kGray, 1, 1);
+                      
+                      hitSigma.SetPoint(0, hitParams.hitCenter - hitParams.hitSigma, 0.6 * hitParams.hitHeight);
+                      hitSigma.SetPoint(1, hitParams.hitCenter + hitParams.hitSigma, 0.6 * hitParams.hitHeight);
+                      
+                      hitSigma.Draw("same");
+                      
+                      idx += 3;
+                  }
+                 
+                  //create TPolyLine that actually gets drawn
+                  TPolyLine& p1 = fView->AddPolyLine(1001, kOrange+7, 3, 1);
+                  
+                  //set coordinates of TPolyLine based on Gaussian function
+                  for(int j = 0; j<1001; ++j)
+                  {
+                      double x = roiStart + j*width/1000;
+                      double y = f1.Eval(x);
+                      p1.SetPoint(j, x, y);
+                  }
+                  p1.Draw("same");
+              }
+          }
          
 /* This code needs additional work to draw the text on the pad
         // BB: draw plane and wire number on the histogram

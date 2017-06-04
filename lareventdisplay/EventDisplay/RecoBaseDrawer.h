@@ -241,15 +241,24 @@ public:
     void SeedOrtho(const art::Event& evt,
 		           evd::OrthoProj_t  proj,
 		           evdb::View2D*     view);
+    
+    using HitParams_t = struct HitParams_t
+    {
+        float hitCenter;
+        float hitSigma;
+        float hitHeight;
+        float hitStart;
+        float hitEnd;
+    };
+    
+    using ROIHitParamsVec = std::vector<HitParams_t>;
+    using HitParamsVec    = std::vector<ROIHitParamsVec>;
 
-    void FillTQHisto(const art::Event&    evt, 
+    void FillTQHisto(const art::Event&    evt,
 		             unsigned int         plane,
                      unsigned int         wire,
 		             TH1F*                histo,
-		             std::vector<double>& hstart,
-                     std::vector<double>& hend,
-                     std::vector<double>& hitamplitudes,
-                     std::vector<double>& hpeaktimes);
+                     HitParamsVec&        hitParamsVec);
 
     void FillQHisto(const art::Event& evt,
 		            unsigned int      plane,
@@ -271,34 +280,34 @@ public:
 			                std::vector<double>&      	    wpts,
 			                unsigned int              	    plane);
     int GetWires(const art::Event&            evt,
-                 const std::string&           which,
+                 const art::InputTag&         which,
 		         art::PtrVector<recob::Wire>& wires);
     int GetHits(const art::Event&               evt,
-                const std::string&              which,
+                const art::InputTag&            which,
 		        std::vector<const recob::Hit*>& hits,
 		        unsigned int                    plane);
     int GetClusters(const art::Event&               evt,
-		            const std::string&              which,
+		            const art::InputTag&            which,
 		            art::PtrVector<recob::Cluster>& clust);
     int GetPFParticles(const art::Event&                  evt,
-		               const std::string&                 which,
+		               const art::InputTag&               which,
 		               art::PtrVector<recob::PFParticle>& pfpart);
     int GetEndPoint2D(const art::Event&                  evt, 
-		              const std::string&                 which,
+		              const art::InputTag&               which,
 		              art::PtrVector<recob::EndPoint2D>& ep2d);
-    int GetSpacePoints(const art::Event&               evt,
-		               const std::string&              which,
+    int GetSpacePoints(const art::Event&                  evt,
+		               const art::InputTag&               which,
                        art::PtrVector<recob::SpacePoint>& spts);
     int GetEdges(const art::Event&            evt,
-                  const std::string&           which,
-                  art::PtrVector<recob::Edge>& edges);
+                 const art::InputTag&         which,
+                 art::PtrVector<recob::Edge>& edges);
 
     int GetTracks(const art::Event&        evt,
-		          const std::string&       which,
+		          const art::InputTag&     which,
 		          art::View<recob::Track>& track);
 
-    int GetShowers(const art::Event&        evt,
-		           const std::string&        which,
+    int GetShowers(const art::Event&         evt,
+		           const art::InputTag&      which,
 		           art::View<recob::Shower>& shower);
 
     int GetVertices(const art::Event&              evt,
@@ -306,20 +315,20 @@ public:
 		            art::PtrVector<recob::Vertex>& vertex);
 
     int GetSeeds(const art::Event&            evt,
-                 const std::string&           which,
+                 const art::InputTag&         which,
 		         art::PtrVector<recob::Seed>& seed);
 
     int GetBezierTracks(const art::Event&             evt,
-			            const std::string&            which,
+			            const art::InputTag&          which,
 			            art::PtrVector<recob::Track>& btbs);
 
 
     int GetOpFlashes(const art::Event&               evt,
-                     const std::string&              which,
+                     const art::InputTag&            which,
 		             art::PtrVector<recob::OpFlash>& opflash);
 
     int GetEvents(const art::Event&             evt,
-		          const std::string&            which,
+		          const art::InputTag&          which,
 		          art::PtrVector<recob::Event>& event);
 
         

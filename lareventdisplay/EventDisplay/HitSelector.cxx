@@ -69,7 +69,7 @@ namespace evd{
 
 
     for (size_t imod = 0; imod < recoOpt->fHitLabels.size(); ++imod) {
-      std::string const which = recoOpt->fHitLabels[imod];
+        art::InputTag const which = recoOpt->fHitLabels[imod];
 
       evt.getByLabel(which,HitListHandle);
 
@@ -212,7 +212,7 @@ namespace evd{
       lslope=(y-y1)/(x-x1);
     
      for (size_t imod = 0; imod < recoOpt->fHitLabels.size(); ++imod) {
-      std::string const which = recoOpt->fHitLabels[imod];
+         art::InputTag const which = recoOpt->fHitLabels[imod];
     
      std::vector<art::Ptr<recob::Hit>> hitlist; 
      hitlist.clear();
@@ -324,7 +324,7 @@ namespace evd{
    
     //preprocess event - load up all the hits with std::vector, as in BackTracker
     for (size_t imod = 0; imod < recoOpt->fHitLabels.size(); ++imod) {
-      std::string const which = recoOpt->fHitLabels[imod];
+        art::InputTag const which = recoOpt->fHitLabels[imod];
       evt.getByLabel(which,HitListHandle);
     
      for(unsigned int ii = 0; ii < HitListHandle->size(); ++ii){

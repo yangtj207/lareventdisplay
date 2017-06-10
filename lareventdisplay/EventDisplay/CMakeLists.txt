@@ -9,7 +9,12 @@ cet_rootcint( ${PACKAGE} )
 art_make_library( 
         	  SOURCE ${src_files} ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE}Cint.cc
                   LIBRARIES lareventdisplay_EventDisplay_ColorDrawingOptions_service
+                            lareventdisplay_EventDisplay_RecoDrawingOptions_service
 	                    lareventdisplay_EventDisplay_InfoTransfer_service
+	                    lareventdisplay_EventDisplay_AnalysisDrawingOptions_service
+	                    lareventdisplay_EventDisplay_EvdLayoutOptions_service
+	                    lareventdisplay_EventDisplay_RawDrawingOptions_service
+	                    lareventdisplay_EventDisplay_SimulationDrawingOptions_service
 	                    larevt_Filters
  			    larsim_Simulation nutools_ParticleNavigation lardataobj_Simulation
 			    lardataobj_RawData

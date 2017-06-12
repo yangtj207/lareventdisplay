@@ -3472,7 +3472,7 @@ int RecoBaseDrawer::GetPFParticles(const art::Event&                  evt,
   {
     std::vector<const recob::Hit*> temp;
     int NumberOfHitsBeforeThisPlane=0;
-      evt.getView(which, temp);   //temp.size() = total number of hits for this event (Sum of hits in all Cryostats, TPC's, planes and wires)
+      evt.getView(which, temp);   //temp.size() = total number of hits for this event (number of all hits in all Cryostats, TPC's, planes and wires)
       for(size_t t = 0; t < temp.size(); ++t){
 	if( temp[t]->WireID().Cryostat == cryostat&& temp[t]->WireID().TPC == tpc && temp[t]->WireID().Plane == plane ) break;
 	NumberOfHitsBeforeThisPlane++;
@@ -3649,7 +3649,7 @@ int RecoBaseDrawer::GetPFParticles(const art::Event&                  evt,
       int FitParamsOffset = CountHits(evt, which, rawOpt->fCryostat, rawOpt->fTPC, plane);
 
       for (size_t i = 0; i < hits.size(); ++i){
-	// check for correct wire, plane, cryostat and tpc were checked in GetHits
+	// check for correct wire. Plane, cryostat and tpc were checked in GetHits
 	if(hits[i]->WireID().Wire != wire) continue;
 
 	hpeaktimes.push_back(fitParams[FitParamsOffset+i][0]);

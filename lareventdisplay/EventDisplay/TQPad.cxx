@@ -121,7 +121,7 @@ namespace evd{
       //check if raw (dual phase) or deconvoluted (single phase) waveform was fitted
       auto hitResults = anab::FVectorReader<recob::Hit, 3>::create(*evt, "dprawhit");
 
-      if (hitResults) //raw waveform (dual phase)
+      if(hitResults) //raw waveform (dual phase)
       {
 
       fPad->Clear();
@@ -177,10 +177,8 @@ namespace evd{
              break;
          } // switch
 
-
          // this loop draws the double-exponential shapes for identified hits in the reco histo
        for (size_t i = 0; i < hamplitudes.size() && drawopt->fDrawRawDataOrCalibWires != kRAW; ++i) {
-
 		if( (i==0 && hNMultiHit[i]>1) || (i>0 && hNMultiHit[i]>1 && hstartT[i]!= hstartT[i-1]) )
 		{
 		std::string eqn = "( [0] * exp(0.4*(x-[1])/[2]) / ( 1 + exp(0.4*(x-[1])/[3]) ) )";  // string for equation for Exponentials fit

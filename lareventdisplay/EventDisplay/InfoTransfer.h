@@ -17,6 +17,7 @@
 #include "art/Framework/Services/Registry/ActivityRegistry.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Services/Registry/ServiceMacros.h"
+#include "nutools/EventDisplayBase/Reconfigurable.h"
 
 #include "lardataobj/RecoBase/Hit.h"
 #include "lardataobj/RecoBase/Cluster.h"
@@ -29,10 +30,10 @@
 
 
 namespace evd {
-  class InfoTransfer
+  class InfoTransfer : public evdb::Reconfigurable
   {
   public:
-    InfoTransfer(fhicl::ParameterSet const& pset, art::ActivityRegistry& reg);
+    explicit InfoTransfer(fhicl::ParameterSet const& pset, art::ActivityRegistry& reg);
     ~InfoTransfer();
 
 
@@ -45,7 +46,7 @@ namespace evd {
     void Rebuild(const art::Event& evt);
 
 
-    void reconfigure(fhicl::ParameterSet const& pset);
+    void reconfigure(fhicl::ParameterSet const& pset) override;
     void SetTestFlag(int value){ testflag = value;  };
     int GetTestFlag(){return testflag; };
     void SetRunNumber(int value){ fRun = value; };

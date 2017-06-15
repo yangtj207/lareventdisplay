@@ -8,15 +8,16 @@
 #include "art/Framework/Services/Registry/ActivityRegistry.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Services/Registry/ServiceMacros.h"
+#include "nutools/EventDisplayBase/Reconfigurable.h"
 
 namespace evd {
-  class AnalysisDrawingOptions 
+  class AnalysisDrawingOptions : public evdb::Reconfigurable
   {
   public:
-    AnalysisDrawingOptions(fhicl::ParameterSet const& pset, art::ActivityRegistry& reg);
+    explicit AnalysisDrawingOptions(fhicl::ParameterSet const& pset, art::ActivityRegistry& reg);
     ~AnalysisDrawingOptions();
     
-    void reconfigure(fhicl::ParameterSet const& pset);
+    void reconfigure(fhicl::ParameterSet const& pset) override;
 
     int fDrawCalorimetry;
     int fDrawParticleID;

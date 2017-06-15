@@ -14,16 +14,17 @@
 #include "art/Framework/Services/Registry/ActivityRegistry.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Services/Registry/ServiceMacros.h"
+#include "nutools/EventDisplayBase/Reconfigurable.h"
 
 namespace evd {
   
-class RecoDrawingOptions
+  class RecoDrawingOptions : public evdb::Reconfigurable
 {
 public:
-    RecoDrawingOptions(fhicl::ParameterSet const& pset, art::ActivityRegistry& reg);
+    explicit RecoDrawingOptions(fhicl::ParameterSet const& pset, art::ActivityRegistry& reg);
     ~RecoDrawingOptions();
     
-    void reconfigure(fhicl::ParameterSet const& pset);
+    void reconfigure(fhicl::ParameterSet const& pset) override;
 
     int  fDrawHits;
     int  fDrawClusters;

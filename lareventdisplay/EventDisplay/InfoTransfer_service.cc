@@ -28,6 +28,7 @@ namespace evd {
   //......................................................................
   InfoTransfer::InfoTransfer(fhicl::ParameterSet const& pset, 
 			     art::ActivityRegistry& reg) 
+  : evdb::Reconfigurable{pset}
   {
     this->reconfigure(pset);
     testflag=-1;

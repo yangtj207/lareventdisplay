@@ -15,6 +15,7 @@ namespace evd {
   //......................................................................
   EvdLayoutOptions::EvdLayoutOptions(fhicl::ParameterSet const& pset, 
 				       art::ActivityRegistry& /* reg */) 
+  : evdb::Reconfigurable{pset}
   {
     this->reconfigure(pset);
   }

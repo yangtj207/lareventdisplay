@@ -14,15 +14,16 @@
 #include "art/Framework/Services/Registry/ActivityRegistry.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Services/Registry/ServiceMacros.h"
+#include "nutools/EventDisplayBase/Reconfigurable.h"
 
 namespace evd {
-  class EvdLayoutOptions 
+  class EvdLayoutOptions : public evdb::Reconfigurable
   {
   public:
-    EvdLayoutOptions(fhicl::ParameterSet const& pset, art::ActivityRegistry& reg);
+    explicit EvdLayoutOptions(fhicl::ParameterSet const& pset, art::ActivityRegistry& reg);
     ~EvdLayoutOptions();
 
-    void reconfigure(fhicl::ParameterSet const& pset);
+    void reconfigure(fhicl::ParameterSet const& pset) override;
     
     int          fShowSideBar;		       ///< 1 to show, 0 don't show
     int    	 fAutoZoomInterest;            ///< Set the automatic zoom to the interest region		  

@@ -17,6 +17,7 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Services/Registry/ServiceMacros.h"
 #include "canvas/Utilities/InputTag.h"
+#include "nutools/EventDisplayBase/Reconfigurable.h"
 
 namespace evd {
   /**
@@ -36,13 +37,13 @@ namespace evd {
    *   planes
    * 
    */
-  class RawDrawingOptions 
+  class RawDrawingOptions : public evdb::Reconfigurable
   {
   public:
-    RawDrawingOptions(fhicl::ParameterSet const& pset, art::ActivityRegistry& reg);
+    explicit RawDrawingOptions(fhicl::ParameterSet const& pset, art::ActivityRegistry& reg);
     ~RawDrawingOptions();
 
-    void reconfigure(fhicl::ParameterSet const& pset);
+    void reconfigure(fhicl::ParameterSet const& pset) override;
     
     int          fDrawRawDataOrCalibWires;                 ///< 0 for raw							  
     int    	     fTicksPerPoint;                           ///< number of ticks to include in one point

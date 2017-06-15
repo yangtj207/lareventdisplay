@@ -17,7 +17,8 @@ namespace evd{
   
   //......................................................................
   ColorDrawingOptions::ColorDrawingOptions(fhicl::ParameterSet const& pset, art::ActivityRegistry& /* reg */)
-    : fColorOrGray(pset.get< int                 >("ColorOrGrayScale"))
+    : evdb::Reconfigurable{pset}
+    , fColorOrGray(pset.get< int                 >("ColorOrGrayScale"))
     , fRawDiv     (pset.get< std::vector<int>    >("RawDiv")          )
     , fRecoDiv    (pset.get< std::vector<int>    >("RecoDiv")         )
     , fRawQLow    (pset.get< std::vector<double> >("RawQLow")         )	

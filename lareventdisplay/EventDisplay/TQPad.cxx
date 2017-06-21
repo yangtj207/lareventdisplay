@@ -177,11 +177,13 @@ namespace evd{
              break;
          } // switch
 
-         // this loop draws the double-exponential shapes for identified hits in the reco histo
+       // this loop draws the double-exponential shapes for identified hits in the reco histo
        for (size_t i = 0; i < hamplitudes.size() && drawopt->fDrawRawDataOrCalibWires != kRAW; ++i) {
+		// If there is more than one peak in this fit, draw the sum of all peaks
 		if( (i==0 && hNMultiHit[i]>1) || (i>0 && hNMultiHit[i]>1 && hstartT[i]!= hstartT[i-1]) )
 		{
-		std::string eqn = "( [0] * exp(0.4*(x-[1])/[2]) / ( 1 + exp(0.4*(x-[1])/[3]) ) )";  // string for equation for Exponentials fit
+		// string for equation for double-exponential fit with multiple peaks
+		std::string eqn = "( [0] * exp(0.4*(x-[1])/[2]) / ( 1 + exp(0.4*(x-[1])/[3]) ) )";  
     		std::stringstream numConv;
 
     			for(int k = 4; k < 4 + (hNMultiHit[i]-1)*2; k+=2)
@@ -237,18 +239,17 @@ namespace evd{
             	if(f2) delete f2;
 		}
 
-            //create a function corresponding to the double-exponential shape
-	const char *eqn2 = {"( [0] * exp(0.4*(x-[1])/[2]) / ( 1 + exp(0.4*(x-[1])/[3]) ) )"};
+            // Always draw the single peaks in addition to the sum of all peaks
+	    const char *eqn2 = {"( [0] * exp(0.4*(x-[1])/[2]) / ( 1 + exp(0.4*(x-[1])/[3]) ) )"};
             TF1 *f1 = new TF1("hitshape",eqn2,hstartT[i],hendT[i]);
-           // TF1 *f1 = new TF1("hitshape","( [0] * exp(0.4*(x-[1])/[2]) / ( 1 + exp(0.4*(x-[1])/[3]) ) )",hstartT[0],hendT[0]);
             f1->SetParameters(hamplitudes[i],hpeaktimes[i],htau1[i],htau2[i]);
 
-            //create TPolyLine that actually gets drawn
+            // create TPolyLine that actually gets drawn
             TPolyLine& p1 = fView->AddPolyLine(1001, 
                                                kOrange+7,
                                                3,
                                                1);
-            //set coordinates of TPolyLine based on Gaussian function
+            // set coordinates of TPolyLine based on Gaussian function
             for(int j = 0; j<1001; ++j){ 
                double x = hstartT[i]+j*(hendT[i]-hstartT[i])/1000;
                double y = f1->Eval(x); 

@@ -20,6 +20,7 @@ art_make_library(
 			    lardataobj_RawData
 			    lardataobj_RecoBase
 			    lardata_RecoObjects larreco_Deprecated
+			    lardata_ArtDataHelper
 			    lardata_Utilities
 			    lardataobj_AnalysisBase
 			    larreco_Calorimetry

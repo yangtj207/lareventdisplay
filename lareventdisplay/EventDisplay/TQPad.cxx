@@ -24,6 +24,8 @@
 #include "larcore/Geometry/CryostatGeo.h"
 #include "larcore/Geometry/TPCGeo.h"
 #include "larcore/Geometry/PlaneGeo.h"
+#include "lardataobj/RecoBase/Hit.h"
+#include "lardata/ArtDataHelper/MVAReader.h"
 
 // C/C++ standard libraries
 #include <algorithm> // std::min(), std::max()
@@ -115,6 +117,167 @@ namespace evd{
       //grab the singleton with the event
       const art::Event* evt = evdb::EventHolder::Instance()->GetEvent();
       if(!evt) return;
+
+      //check if raw (dual phase) or deconvoluted (single phase) waveform was fitted
+      auto hitResults = anab::FVectorReader<recob::Hit, 3>::create(*evt, "dprawhit");
+
+      if(hitResults) //raw waveform (dual phase)
+      {
+
+      fPad->Clear();
+      fPad->cd();
+
+      std::vector<double> htau1;
+      std::vector<double> htau2;
+      std::vector<double> hamplitudes;
+      std::vector<double> hpeaktimes;
+      std::vector<int> hstartT;
+      std::vector<int> hendT;
+      std::vector<int> hNMultiHit;
+
+	if(fTQ == kTQ)
+	{
+
+        fRawHisto->Reset("ICEM");
+        fRecoHisto->Reset("ICEM");
+
+         this->RawDataDraw()->FillTQHisto(*evt,
+                                          fPlane,
+                                          fWire, 
+                                          fRawHisto);
+
+         this->RecoBaseDraw()->FillTQHistoDP(*evt,
+                                           fPlane,
+                                           fWire, 
+                                           fRecoHisto,
+                                           htau1,
+                                           htau2,
+                                           hamplitudes,
+                                           hpeaktimes,
+					   hstartT,
+					   hendT,
+					   hNMultiHit);
+
+
+         // draw with histogram style, only (square) lines, no errors
+         static const std::string defaultDrawOptions = "HIST";
+
+         switch (drawopt->fDrawRawDataOrCalibWires) {
+           case kRAW:
+             fRawHisto->Draw(defaultDrawOptions.c_str());
+             break;
+           case kCALIB:
+             fRecoHisto->Draw(defaultDrawOptions.c_str());
+             break;
+           case kRAWCALIB:
+             fRawHisto->SetMaximum(1.2*std::max(fRawHisto->GetMaximum(), fRecoHisto->GetMaximum()));
+             fRawHisto->SetMinimum(1.2*std::min(fRawHisto->GetMinimum(), fRecoHisto->GetMinimum()));
+             fRawHisto->Draw(defaultDrawOptions.c_str());
+             fRecoHisto->Draw((defaultDrawOptions + " same").c_str());
+             break;
+         } // switch
+
+       // this loop draws the double-exponential shapes for identified hits in the reco histo
+       for (size_t i = 0; i < hamplitudes.size() && drawopt->fDrawRawDataOrCalibWires != kRAW; ++i) {
+		// If there is more than one peak in this fit, draw the sum of all peaks
+		if( (i==0 && hNMultiHit[i]>1) || (i>0 && hNMultiHit[i]>1 && hstartT[i]!= hstartT[i-1]) )
+		{
+		// string for equation for double-exponential fit with multiple peaks
+		std::string eqn = "( [0] * exp(0.4*(x-[1])/[2]) / ( 1 + exp(0.4*(x-[1])/[3]) ) )";  
+    		std::stringstream numConv;
+
+    			for(int k = 4; k < 4 + (hNMultiHit[i]-1)*2; k+=2)
+    			{
+      	 		eqn.append("+( [");
+      	  		numConv.str("");
+      	  		numConv << k;
+        		eqn.append(numConv.str());
+        		eqn.append("] * exp(0.4*(x-[");
+        		numConv.str("");
+        		numConv << k+1;
+        		eqn.append(numConv.str());
+        		eqn.append("])/[");
+        		numConv.str("");
+        		numConv << 2;
+        		eqn.append(numConv.str());
+        		eqn.append("]) / ( 1 + exp(0.4*(x-[");
+        		numConv.str("");
+        		numConv << k+1;
+        		eqn.append(numConv.str()); 
+        		eqn.append("])/[");       
+        		numConv.str("");
+        		numConv << 3;
+        		eqn.append(numConv.str()); 
+    			eqn.append("]) ) )");
+    			}
+
+	  	TF1 *f2 = new TF1("hitshape",eqn.c_str(),hstartT[i],hendT[i]);
+    		f2->SetParameter(0,hamplitudes[i]);
+    		f2->SetParameter(1,hpeaktimes[i]);
+    		f2->SetParameter(2,htau1[i]);
+    		f2->SetParameter(3,htau2[i]);
+
+			for(int k = 4, j = i+1; k < 4 + (hNMultiHit[i]-1)*2; k+=2, j++)
+    			{
+			f2->SetParameter(k,hamplitudes[j]);
+			f2->SetParameter(k+1,hpeaktimes[j]);
+			}
+
+           	TPolyLine& p2 = fView->AddPolyLine(1001, 
+                                               kRed,
+                                               3,
+                                               1);
+
+            		for(int j = 0; j<1001; ++j)
+			{ 
+               		double x = hstartT[i]+j*(hendT[i]-hstartT[i])/1000;
+               		double y = f2->Eval(x); 
+              	 	p2.SetPoint(j, x, y);
+            		}
+
+            	p2.Draw("same");
+            	if(f2) delete f2;
+		}
+
+            // Always draw the single peaks in addition to the sum of all peaks
+	    const char *eqn2 = {"( [0] * exp(0.4*(x-[1])/[2]) / ( 1 + exp(0.4*(x-[1])/[3]) ) )"};
+            TF1 *f1 = new TF1("hitshape",eqn2,hstartT[i],hendT[i]);
+            f1->SetParameters(hamplitudes[i],hpeaktimes[i],htau1[i],htau2[i]);
+
+            // create TPolyLine that actually gets drawn
+            TPolyLine& p1 = fView->AddPolyLine(1001, 
+                                               kOrange+7,
+                                               3,
+                                               1);
+            // set coordinates of TPolyLine based on Gaussian function
+            for(int j = 0; j<1001; ++j){ 
+               double x = hstartT[i]+j*(hendT[i]-hstartT[i])/1000;
+               double y = f1->Eval(x); 
+               p1.SetPoint(j, x, y);
+            }
+            p1.Draw("same");
+            if(f1) delete f1;
+         }
+
+         
+
+         if     (drawopt->fDrawRawDataOrCalibWires == kCALIB) fRecoHisto->Draw((defaultDrawOptions + " same").c_str());
+         else if(drawopt->fDrawRawDataOrCalibWires == kRAWCALIB){
+            fRawHisto->Draw((defaultDrawOptions + " same").c_str());
+            fRecoHisto->Draw((defaultDrawOptions + " same").c_str());
+         }
+
+         fRawHisto->SetTitleOffset(0.2, "Y");
+         //fRecoHisto->SetLabelSize(0.2, "Y");
+
+      } // end if fTQ == kTQ
+
+
+      } //end raw waveform (dual phase)
+
+
+      else //deconvoluted waveform (single phase)
+      {
 
       fPad->Clear();
       fPad->cd();
@@ -270,6 +433,8 @@ namespace evd{
 	
       } // end if fTQ == kQ
 
+
+     } //if-else dual single phase
       return;
    }
 

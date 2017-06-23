@@ -52,6 +52,7 @@
 #include "larcore/Geometry/WireGeo.h"
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 #include "lardata/Utilities/AssociationUtil.h"
+#include "lardata/ArtDataHelper/MVAReader.h"
 
 #include "cetlib/exception.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
@@ -3613,6 +3614,23 @@ int RecoBaseDrawer::GetPFParticles(const art::Event&                  evt,
   }
 
   //......................................................................
+  int RecoBaseDrawer::CountHits(const art::Event&               evt,
+			      const std::string&              which,
+			      unsigned int                    cryostat,
+			      unsigned int                    tpc,
+			      unsigned int                    plane) 
+  {
+    std::vector<const recob::Hit*> temp;
+    int NumberOfHitsBeforeThisPlane=0;
+      evt.getView(which, temp);   //temp.size() = total number of hits for this event (number of all hits in all Cryostats, TPC's, planes and wires)
+      for(size_t t = 0; t < temp.size(); ++t){
+	if( temp[t]->WireID().Cryostat == cryostat&& temp[t]->WireID().TPC == tpc && temp[t]->WireID().Plane == plane ) break;
+	NumberOfHitsBeforeThisPlane++;
+      }
+    return NumberOfHitsBeforeThisPlane;
+  }
+
+  //......................................................................
   void RecoBaseDrawer::FillTQHisto(const art::Event&    evt,
 				   unsigned int         plane,
 				   unsigned int         wire,
@@ -3717,6 +3735,82 @@ int RecoBaseDrawer::GetPFParticles(const art::Event&                  evt,
 
       }//end loop over raw hits
     }//end loop over Wire modules
+
+    return;
+  }
+
+  //......................................................................
+  void RecoBaseDrawer::FillTQHistoDP(const art::Event&    evt,
+				   unsigned int         plane,
+				   unsigned int         wire,
+				   TH1F*                histo,
+				   std::vector<double>& htau1,
+				   std::vector<double>& htau2,
+				   std::vector<double>& hitamplitudes,
+				   std::vector<double>& hpeaktimes,
+				   std::vector<int>& hstartT,
+				   std::vector<int>& hendT,
+				   std::vector<int>& hNMultiHit)
+  {
+    art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
+    art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
+    art::ServiceHandle<geo::Geometry>            geo;
+
+    // Check if we're supposed to draw raw hits at all
+    if(rawOpt->fDrawRawDataOrCalibWires==0) return;
+
+    for (size_t imod = 0; imod < recoOpt->fWireLabels.size(); ++imod) {
+      std::string const which = recoOpt->fWireLabels[imod];
+
+      art::PtrVector<recob::Wire> wires;
+      this->GetWires(evt, which, wires);
+
+      for (size_t i = 0; i < wires.size(); ++i) {
+
+	std::vector<geo::WireID> wireids = geo->ChannelToWire(wires[i]->Channel());
+	
+	bool goodWID = false;
+	for( auto const& wid : wireids ){
+	if(wid.Plane    == plane        &&
+	     wid.Wire     == wire         &&
+	     wid.TPC      == rawOpt->fTPC && 
+	     wid.Cryostat == rawOpt->fCryostat) goodWID = true;
+	}
+
+	if(!goodWID) continue;
+
+        std::vector<float> wirSig = wires[i]->Signal();
+        for(unsigned int ii = 0; ii < wirSig.size(); ++ii) 
+          histo->Fill(1.*ii, wirSig[ii]);
+	break;
+      }//end loop over wires
+    }//end loop over wire modules
+
+
+    for (size_t imod = 0; imod < recoOpt->fHitLabels.size(); ++imod) {
+      std::string const which = recoOpt->fHitLabels[imod];
+
+      std::vector<const recob::Hit*> hits;
+      this->GetHits(evt, which, hits, plane);
+
+      auto hitResults = anab::FVectorReader<recob::Hit, 3>::create(evt, "dprawhit");
+      const auto & fitParams = hitResults->vectors();
+
+      int FitParamsOffset = CountHits(evt, which, rawOpt->fCryostat, rawOpt->fTPC, plane);
+
+      for (size_t i = 0; i < hits.size(); ++i){
+	// check for correct wire. Plane, cryostat and tpc were checked in GetHits
+	if(hits[i]->WireID().Wire != wire) continue;
+
+	hpeaktimes.push_back(fitParams[FitParamsOffset+i][0]);
+	htau1.push_back(fitParams[FitParamsOffset+i][1]);
+	htau2.push_back(fitParams[FitParamsOffset+i][2]);
+	hitamplitudes.push_back(hits[i]->PeakAmplitude());
+	hstartT.push_back(hits[i]->StartTick());	
+	hendT.push_back(hits[i]->EndTick());	
+	hNMultiHit.push_back(hits[i]->Multiplicity());	
+      }//end loop over reco hits
+    }//end loop over HitFinding modules
 
     return;
   }

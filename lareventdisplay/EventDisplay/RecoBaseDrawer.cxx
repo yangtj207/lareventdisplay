@@ -3665,5 +3665,34 @@ int RecoBaseDrawer::GetPFParticles(const art::Event&                  evt,
     return;
   }
 
+//......................................................................
+double RecoBaseDrawer::EvalExpoFit(double x,
+				   double tau1,
+				   double tau2,
+				   double amplitude,
+				   double peaktime)
+{
+return (amplitude * exp(0.4*(x-peaktime)/tau1) / ( 1 + exp(0.4*(x-peaktime)/tau2) ) );
+}
+
+//......................................................................
+double RecoBaseDrawer::EvalMultiExpoFit(double x,
+					int HitNumber,
+					int NHits,
+				   	std::vector<double> tau1,
+				   	std::vector<double> tau2,
+				   	std::vector<double> amplitude,
+				   	std::vector<double> peaktime)
+{
+double x_sum = 0.;
+
+    for(int i = HitNumber; i < HitNumber+NHits; i++)
+    {
+    x_sum += (amplitude[i] * exp(0.4*(x-peaktime[i])/tau1[i]) / ( 1 + exp(0.4*(x-peaktime[i])/tau2[i]) ) );
+    }
+
+return x_sum;
+}
+
 }// namespace
 ////////////////////////////////////////////////////////////////////////

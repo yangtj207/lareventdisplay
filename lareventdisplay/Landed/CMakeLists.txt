@@ -7,7 +7,7 @@ art_make(
 	    lareventdisplay_Landed_LandedSocket_service
             ${ART_FRAMEWORK_SERVICES_OPTIONAL_TFILESERVICE_SERVICE}
             ${ART_FRAMEWORK_SERVICES_OPTIONAL_RANDOMNUMBERGENERATOR_SERVICE}
-            larcore_Geometry
+            larcorealg_Geometry
             larsim_Simulation nutools_ParticleNavigation lardataobj_Simulation
             lardata_Utilities
             larevt_Filters

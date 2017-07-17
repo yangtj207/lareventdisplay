@@ -40,8 +40,8 @@
 
 #include "lardataobj/RecoBase/Seed.h"
 #include "larcore/Geometry/Geometry.h"
-#include "larcore/Geometry/GeometryCore.h"
-#include "larcore/Geometry/PlaneGeo.h"
+#include "larcorealg/Geometry/GeometryCore.h"
+#include "larcorealg/Geometry/PlaneGeo.h"
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"

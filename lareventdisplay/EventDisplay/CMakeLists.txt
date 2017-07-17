@@ -22,6 +22,7 @@ art_make_library(
 			    lardataobj_RawData
 			    lardataobj_RecoBase
 			    lardata_RecoObjects larreco_Deprecated
+			    lardata_ArtDataHelper
 			    lardata_Utilities
 			    lardataobj_AnalysisBase
 			    larreco_Calorimetry
@@ -78,7 +79,7 @@ simple_plugin ( EVD module
 
 simple_plugin ( AnalysisDrawingOptions service
 			larcore_Geometry_Geometry_service
-			larcore_Geometry
+			larcorealg_Geometry
 			lardataobj_RecoBase
 			nutools_EventDisplayBase
                         ${ART_FRAMEWORK_CORE}
@@ -101,7 +102,7 @@ simple_plugin ( AnalysisDrawingOptions service
 
 simple_plugin ( ColorDrawingOptions service
 			larcore_Geometry_Geometry_service
-			larcore_Geometry
+			larcorealg_Geometry
 			lardataobj_RecoBase
 			nutools_EventDisplayBase
                         ${ART_FRAMEWORK_CORE}
@@ -124,7 +125,7 @@ simple_plugin ( ColorDrawingOptions service
 
 simple_plugin ( EvdLayoutOptions service
 			larcore_Geometry_Geometry_service
-			larcore_Geometry
+			larcorealg_Geometry
 			lardataobj_RecoBase
 			nutools_EventDisplayBase
                         ${ART_FRAMEWORK_CORE}
@@ -147,7 +148,7 @@ simple_plugin ( EvdLayoutOptions service
 
 simple_plugin ( InfoTransfer service
 			larcore_Geometry_Geometry_service
-			larcore_Geometry
+			larcorealg_Geometry
 			lardataobj_RecoBase
 			nutools_EventDisplayBase
                         ${ART_FRAMEWORK_CORE}
@@ -170,7 +171,7 @@ simple_plugin ( InfoTransfer service
 
 simple_plugin ( RawDrawingOptions service
 			larcore_Geometry_Geometry_service
-			larcore_Geometry
+			larcorealg_Geometry
 			lardataobj_RecoBase
 			nutools_EventDisplayBase
                         ${ART_FRAMEWORK_CORE}
@@ -193,7 +194,7 @@ simple_plugin ( RawDrawingOptions service
 
 simple_plugin ( RecoDrawingOptions service
 			larcore_Geometry_Geometry_service
-			larcore_Geometry
+			larcorealg_Geometry
 			lardataobj_RecoBase
 			nutools_EventDisplayBase
                         ${ART_FRAMEWORK_CORE}
@@ -217,7 +218,7 @@ simple_plugin ( RecoDrawingOptions service
 
 simple_plugin ( SimulationDrawingOptions service
 			larcore_Geometry_Geometry_service
-			larcore_Geometry
+			larcorealg_Geometry
 			lardataobj_RecoBase
 			nutools_EventDisplayBase
                         ${ART_FRAMEWORK_CORE}

@@ -23,7 +23,7 @@
 #include "nutools/EventDisplayBase/View2D.h"
 #include "nutools/EventDisplayBase/EventHolder.h"
 #include "larcore/Geometry/Geometry.h"
-#include "larcore/Geometry/TPCGeo.h"
+#include "larcorealg/Geometry/TPCGeo.h"
 
 /// Define static data members.
 

@@ -79,9 +79,9 @@
 #include "lardataobj/RawData/RawDigit.h"
 #include "larevt/CalibrationDBI/Interface/ChannelStatusService.h"
 #include "larevt/CalibrationDBI/Interface/ChannelStatusProvider.h"
-#include "larcore/Geometry/CryostatGeo.h"
-#include "larcore/Geometry/TPCGeo.h"
-#include "larcore/Geometry/PlaneGeo.h"
+#include "larcorealg/Geometry/CryostatGeo.h"
+#include "larcorealg/Geometry/TPCGeo.h"
+#include "larcorealg/Geometry/PlaneGeo.h"
 #include "lardata/Utilities/StatCollector.h" // lar::util::MinMaxCollector<>
 #include "larcore/Geometry/Geometry.h"
 #include "lardata/DetectorInfoServices/LArPropertiesService.h"

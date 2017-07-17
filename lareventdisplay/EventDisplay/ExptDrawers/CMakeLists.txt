@@ -1,7 +1,7 @@
 cet_enable_asserts()
 
 art_make( TOOL_LIBRARIES
-			larcore_Geometry
+			larcorealg_Geometry
             lareventdisplay_EventDisplay_RawDrawingOptions_service
 			larevt_CalibrationDBI_IOVData
 			larevt_CalibrationDBI_Providers

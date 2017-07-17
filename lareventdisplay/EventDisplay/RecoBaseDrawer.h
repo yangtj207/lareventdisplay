@@ -357,13 +357,13 @@ public:
 		          const art::InputTag&          which,
 		          art::PtrVector<recob::Event>& event);
 
-  std::vector<std::array<double, 3>> Circle3D(const TVector3& pos, const TVector3& axisDir, const double& radius);
+    std::vector<std::array<double, 3>> Circle3D(const TVector3& pos, const TVector3& axisDir, const double& radius);
 
-    int CountHits(const art::Event&               evt,
-			      	  const std::string&              which,
-			      	  unsigned int                    cryostat,
-			      	  unsigned int                    tpc,
-			      	  unsigned int                    plane);
+    int CountHits(const art::Event&    evt,
+                  const art::InputTag& which,
+			      unsigned int         cryostat,
+			      unsigned int         tpc,
+			      unsigned int         plane);
 
         
   private:

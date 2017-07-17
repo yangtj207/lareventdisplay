@@ -23,7 +23,6 @@
 #include "nutools/EventDisplayBase/EventHolder.h"
 #include "larcore/Geometry/Geometry.h"
 #include "larcorealg/Geometry/PlaneGeo.h"
-#include "lareventdisplay/EventDisplay/GeometryDrawer.h"
 #include "lareventdisplay/EventDisplay/SimulationDrawer.h"
 #include "lareventdisplay/EventDisplay/RawDataDrawer.h"
 #include "lareventdisplay/EventDisplay/RecoBaseDrawer.h"

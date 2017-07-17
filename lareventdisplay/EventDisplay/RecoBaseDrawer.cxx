@@ -430,45 +430,45 @@ void RecoBaseDrawer::EndPoint2D(const art::Event& evt,
     art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
     art::ServiceHandle<geo::Geometry>            geo;
-
+    
     if (rawOpt->fDrawRawDataOrCalibWires < 1) return;
     if (recoOpt->fDraw2DEndPoints == 0)       return;
-
+    
     geo::View_t gview = geo->TPC(rawOpt->fTPC).Plane(plane).View();
-
+    
     for(size_t imod = 0; imod < recoOpt->fEndPoint2DLabels.size(); ++imod) {
-      std::string const which = recoOpt->fEndPoint2DLabels[imod];
-      
-      art::PtrVector<recob::EndPoint2D> ep2d;
-      this->GetEndPoint2D(evt, which, ep2d);
-      
-      for (size_t iep = 0; iep < ep2d.size(); ++iep) {
-        // only worry about end points with the correct view
-        if(ep2d[iep]->View() != gview) continue;
+        art::InputTag const which = recoOpt->fEndPoint2DLabels[imod];
         
-        ///\todo - have to verify that we are in the right TPC, but to do that we
-        // need to be sure that all EndPoint2D objects have filled the required information
+        art::PtrVector<recob::EndPoint2D> ep2d;
+        this->GetEndPoint2D(evt, which, ep2d);
         
-        // draw cluster with unique marker
-        // Place this cluster's unique marker at the hit's location
-        int color  = evd::kColor[ep2d[iep]->ID()%evd::kNCOLS];
-        
-        double x = ep2d[iep]->WireID().Wire;
-        double y = ep2d[iep]->DriftTime();
-        
-        if(rawOpt->fAxisOrientation > 0){
-          x = ep2d[iep]->DriftTime();
-          y = ep2d[iep]->WireID().Wire;
-        }
-        
-        TMarker& strt = view->AddMarker(x, y, color, 30, 2.0);
-        strt.SetMarkerColor(color);
-        
-      } // loop on iep end points
+        for (size_t iep = 0; iep < ep2d.size(); ++iep) {
+            // only worry about end points with the correct view
+            if(ep2d[iep]->View() != gview) continue;
+            
+            ///\todo - have to verify that we are in the right TPC, but to do that we
+            // need to be sure that all EndPoint2D objects have filled the required information
+            
+            // draw cluster with unique marker
+            // Place this cluster's unique marker at the hit's location
+            int color  = evd::kColor[ep2d[iep]->ID()%evd::kNCOLS];
+            
+            double x = ep2d[iep]->WireID().Wire;
+            double y = ep2d[iep]->DriftTime();
+            
+            if(rawOpt->fAxisOrientation > 0){
+                x = ep2d[iep]->DriftTime();
+                y = ep2d[iep]->WireID().Wire;
+            }
+            
+            TMarker& strt = view->AddMarker(x, y, color, 30, 2.0);
+            strt.SetMarkerColor(color);
+            
+        } // loop on iep end points
     } // loop on imod folders
     
     return;
-  }
+}
 
 //......................................................................
 void RecoBaseDrawer::OpFlash2D(const art::Event& evt,
@@ -961,121 +961,6 @@ void RecoBaseDrawer::BezierTrack3D(const art::Event& evt,
         // Draw the free hits in gray
         this->Hit2D(freeHitVec, kGray, view, false);
         
-=======
-      std::string const which = recoOpt->fClusterLabels[imod];
-      
-      art::PtrVector<recob::Cluster> clust;
-      this->GetClusters(evt, which, clust);
-      
-      if(clust.size() < 1) continue;
-      
-      art::FindMany<recob::Hit> fmh(clust, evt, which);
-      // Don't require a one-to-one PFParticle - Cluster association
-      art::FindMany<recob::PFParticle> fmc(clust, evt, which);
-      
-      for (size_t ic = 0; ic < clust.size(); ++ic)
-      {
-        // only worry about clusters with the correct view
-        if(clust[ic]->View() != gview) continue;
-        
-        // see if we can set the color index in a sensible fashion
-        int clusterIdx(clust[ic]->ID());
-        int colorIdx(clusterIdx%evd::kNCOLS);
-        bool pfpAssociation = false;
-        
-        if (fmc.isValid())
-        {
-          std::vector<const recob::PFParticle*> pfplist = fmc.at(ic);
-          // Use the first one
-          if(!pfplist.empty()) {
-            clusterIdx = pfplist[0]->Self();
-            colorIdx   = clusterIdx % evd::kNCOLS;
-            pfpAssociation = true;
-          } // pfplist is not empty
-        } // association is valied
-        
-        std::vector<const recob::Hit*> hits = fmh.at(ic);
-        
-        if (drawAsMarkers) {
-          // draw cluster with unique marker
-          // Place this cluster's unique marker at the hit's location
-          int color  = evd::kColor[colorIdx];
-          this->Hit2D(hits, color, view, drawConnectingLines);
-          
-          if(recoOpt->fDrawClusters > 3) {
-            // BB: draw the cluster ID
-            std::string s = std::to_string(clusterIdx);
-            char const* txt = s.c_str();
-            double wire = clust[ic]->StartWire();
-            double tick = 20 + clust[ic]->StartTick();
-            TText& clID = view->AddText(wire, tick, txt);
-            if(pfpAssociation) {
-              clID.SetTextColor(color);
-            } else {
-              clID.SetTextColor(kBlack);
-            }
-            clID.SetTextSize(0.07);
-          } // recoOpt->fDrawClusters > 3
-        }
-        else {
-          
-          // default "outline" method:
-          std::vector<double> tpts, wpts;
-          
-          this->GetClusterOutlines(hits, tpts, wpts, plane);
-          
-          int lcolor = 9; // line color
-          int fcolor = 9; // fill color
-          int width  = 2; // line width
-          int style  = 1; // 1=solid line style
-          if (view != 0) {
-            TPolyLine& p1 = view->AddPolyLine(wpts.size(), 
-                                              lcolor,
-                                              width,
-                                              style);
-            TPolyLine& p2 = view->AddPolyLine(wpts.size(),
-                                              lcolor,
-                                              width,
-                                              style);
-            p1.SetOption("f");
-            p1.SetFillStyle(3003);
-            p1.SetFillColor(fcolor);
-            for (size_t i = 0; i < wpts.size(); ++i) {
-              if(rawOpt->fAxisOrientation < 1){
-                p1.SetPoint(i, wpts[i], tpts[i]);
-                p2.SetPoint(i, wpts[i], tpts[i]);
-              }
-              else{
-                p1.SetPoint(i, tpts[i], wpts[i]);
-                p2.SetPoint(i, tpts[i], wpts[i]);
-              }
-            } // loop on i points in ZX view
-          } // if we have a cluster in the ZX view
-        }// end if outline mode
-        
-        // draw the direction cosine of the cluster as well as it's starting point
-        // (average of the start and end angle -- by default they are the same value)
-        // thetawire is the angle measured CW from +z axis to wire
-        //double thetawire = geo->TPC(t).Plane(plane).Wire(0).ThetaZ();
-        double wirePitch = geo->WirePitch(gview);
-        double driftvelocity = detprop->DriftVelocity(); // cm/us
-        double timetick = detprop->SamplingRate()*1e-3;  // time sample in us
-        //rotate coord system CCW around x-axis by pi-thetawire
-        //   new yprime direction is perpendicular to the wire direction
-        //   in the same plane as the wires and in the direction of
-        //   increasing wire number
-        //use yprime-component of dir cos in rotated coord sys to get
-        //   dTdW (number of time ticks per unit of wire pitch)
-        //double rotang = 3.1416-thetawire;
-        this->Draw2DSlopeEndPoints(
-                                   clust[ic]->StartWire(), clust[ic]->StartTick(),
-                                   clust[ic]->EndWire(),   clust[ic]->EndTick(),
-                                   std::tan((clust[ic]->StartAngle() + clust[ic]->EndAngle())/2.)*wirePitch/driftvelocity/timetick,
-                                   evd::kColor[colorIdx], view
-                                   );
-        
-      } // loop on ic clusters
->>>>>>> develop
     } // loop on imod folders
     
     return;
@@ -1530,7 +1415,7 @@ void RecoBaseDrawer::Prong2D(const art::Event& evt,
             first = false;
         }
         for(size_t imod = 0; imod < recoOpt->fShowerLabels.size(); ++imod){
-            std::string const which = recoOpt->fShowerLabels[imod];
+            art::InputTag const which = recoOpt->fShowerLabels[imod];
 
             art::View<recob::Shower> shower;
             this->GetShowers(evt, which, shower);
@@ -3927,11 +3812,11 @@ int RecoBaseDrawer::GetEvents(const art::Event&             evt,
 }
 
 //......................................................................
-int RecoBaseDrawer::CountHits(const art::Event&  evt,
-                              const std::string& which,
-                              unsigned int       cryostat,
-                              unsigned int       tpc,
-                              unsigned int       plane)
+int RecoBaseDrawer::CountHits(const art::Event&    evt,
+                              const art::InputTag& which,
+                              unsigned int         cryostat,
+                              unsigned int         tpc,
+                              unsigned int         plane)
 {
     std::vector<const recob::Hit*> temp;
     int NumberOfHitsBeforeThisPlane=0;
@@ -3943,35 +3828,32 @@ int RecoBaseDrawer::CountHits(const art::Event&  evt,
     return NumberOfHitsBeforeThisPlane;
 }
 
-  //......................................................................
-  void RecoBaseDrawer::FillTQHisto(const art::Event&    evt,
-				   unsigned int         plane,
-				   unsigned int         wire,
-				   TH1F*                histo,
-				   std::vector<double>& hstart,
-				   std::vector<double>& hend,
-				   std::vector<double>& hitamplitudes,
-				   std::vector<double>& hpeaktimes)
-  {
+//......................................................................
+void RecoBaseDrawer::FillTQHisto(const art::Event& evt,
+                                 unsigned int      plane,
+                                 unsigned int      wire,
+                                 TH1F*             histo,
+                                 HitParamsVec&     hitParamsVec)
+{
     art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
     art::ServiceHandle<geo::Geometry>            geo;
-
+    
     // Check if we're supposed to draw raw hits at all
     if(rawOpt->fDrawRawDataOrCalibWires==0) return;
-
+    
     for (size_t imod = 0; imod < recoOpt->fWireLabels.size(); ++imod)
     {
         art::InputTag const which = recoOpt->fWireLabels[imod];
-
+        
         art::PtrVector<recob::Wire> wires;
         this->GetWires(evt, which, wires);
-
+        
         for (size_t i = 0; i < wires.size(); ++i)
         {
-
+            
             std::vector<geo::WireID> wireids = geo->ChannelToWire(wires[i]->Channel());
-
+            
             bool goodWID = false;
             for( auto const& wid : wireids )
             {
@@ -3982,24 +3864,24 @@ int RecoBaseDrawer::CountHits(const art::Event&  evt,
                    wid.Cryostat == rawOpt->fCryostat) goodWID = true;
             }
             if(!goodWID) continue;
-
+            
             std::vector<float> wirSig = wires[i]->Signal();
             for(unsigned int ii = 0; ii < wirSig.size(); ++ii)
                 histo->Fill(1.*ii, wirSig[ii]);
         }//end loop over wires
     }//end loop over wire modules
-
+    
     for (size_t imod = 0; imod < recoOpt->fHitLabels.size(); ++imod)
     {
         art::InputTag const which = recoOpt->fHitLabels[imod];
-
+        
         std::vector<const recob::Hit*> hits;
         this->GetHits(evt, which, hits, plane);
         
         // Get an initial container for common hits on ROI
         ROIHitParamsVec roiHitParamsVec;
         raw::TDCtick_t  lastEndTick(6400);
-
+        
         for (size_t i = 0; i < hits.size(); ++i)
         {
             // check for correct wire, plane, cryostat and tpc were checked in GetHits
@@ -4013,7 +3895,7 @@ int RecoBaseDrawer::CountHits(const art::Event&  evt,
             }
             
             HitParams_t hitParams;
-
+            
             hitParams.hitCenter = hits[i]->PeakTime();
             hitParams.hitSigma  = hits[i]->RMS();
             hitParams.hitHeight = hits[i]->PeakAmplitude();
@@ -4029,7 +3911,7 @@ int RecoBaseDrawer::CountHits(const art::Event&  evt,
         if (!roiHitParamsVec.empty()) hitParamsVec.push_back(roiHitParamsVec);
         
     }//end loop over HitFinding modules
-
+    
     return;
 }
 
@@ -4098,7 +3980,7 @@ void RecoBaseDrawer::FillQHisto(const art::Event& evt,
     if(rawOpt->fDrawRawDataOrCalibWires==0) return;
 
     for (size_t imod = 0; imod < recoOpt->fWireLabels.size(); ++imod) {
-      std::string const which = recoOpt->fWireLabels[imod];
+        art::InputTag const which = recoOpt->fWireLabels[imod];
 
       art::PtrVector<recob::Wire> wires;
       this->GetWires(evt, which, wires);
@@ -4126,7 +4008,7 @@ void RecoBaseDrawer::FillQHisto(const art::Event& evt,
 
 
     for (size_t imod = 0; imod < recoOpt->fHitLabels.size(); ++imod) {
-      std::string const which = recoOpt->fHitLabels[imod];
+        art::InputTag const which = recoOpt->fHitLabels[imod];
 
       std::vector<const recob::Hit*> hits;
       this->GetHits(evt, which, hits, plane);

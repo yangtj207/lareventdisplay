@@ -15,6 +15,7 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Services/Registry/ServiceMacros.h"
 #include "nutools/EventDisplayBase/Reconfigurable.h"
+#include "canvas/Utilities/InputTag.h"
 
 namespace evd {
   
@@ -35,6 +36,7 @@ public:
     int  fDrawTracks;
     int  fDrawOpFlashes;
     int  fDrawTrackTrajectoryPoints;
+    int  fDrawTrackSegments;
     int  fDrawTrackSpacePoints;
     int  fDrawShowers;
     int  fDrawVertices;
@@ -49,30 +51,28 @@ public:
     bool fBestPCAAxisOnly;
     bool fDrawTrackVertexAssns;
     
-    std::vector<std::string> fWireLabels;           ///< module labels that produced wires
-    std::vector<std::string> fHitLabels;     		///< module labels that produced hits  		       
-    std::vector<std::string> fEndPoint2DLabels; 	///< module labels that produced end point 2d objects  
-    std::vector<std::string> fClusterLabels;    	///< module labels that produced clusters
-    std::vector<std::string> fPFParticleLabels;     ///< module labels that produced PFParticles
-    std::vector<std::string> fSpacePointLabels; 	///< module labels that produced space points
-    std::vector<std::string> fProngLabels;   		///< module labels that produced prongs   	       
-    std::vector<std::string> fTrackLabels;   		///< module labels that produced tracks   	       
-    std::vector<std::string> fShowerLabels;  		///< module labels that produced showers  	       
-    std::vector<std::string> fVertexLabels;  		///< module labels that produced vertices 	       
-    std::vector<std::string> fEventLabels;   		///< module labels that produced events		       
-    std::vector<std::string> fOpFlashLabels;        ///< module labels that produced events
-    std::vector<std::string> fSeedLabels;       	///< module labels that produced events                
-    std::vector<std::string> fBezierTrackLabels;    ///< module labels that produced events
-    std::vector<std::string> fCosmicTagLabels;	    ///< module labels that produced cosmic tags
-    std::vector<std::string> fTrkVtxTrackLabels;    ///< module labels that produced tracks (Track/Vertex module)
-    std::vector<std::string> fTrkVtxCosmicLabels;   ///< module labels that tagged track as CR (Track/Vertex module)
-    std::vector<std::string> fTrkVtxFilterLabels;   ///< module labels that filtered event (Track/Vertex module)
-
+    std::vector<art::InputTag> fWireLabels;         ///< module labels that produced wires
+    std::vector<art::InputTag> fHitLabels;     		///< module labels that produced hits
+    std::vector<art::InputTag> fEndPoint2DLabels; 	///< module labels that produced end point 2d objects
+    std::vector<art::InputTag> fClusterLabels;    	///< module labels that produced clusters
+    std::vector<art::InputTag> fPFParticleLabels;   ///< module labels that produced PFParticles
+    std::vector<art::InputTag> fSpacePointLabels; 	///< module labels that produced space points
+    std::vector<art::InputTag> fProngLabels;   		///< module labels that produced prongs
+    std::vector<art::InputTag> fTrackLabels;   		///< module labels that produced tracks
+    std::vector<art::InputTag> fShowerLabels;  		///< module labels that produced showers
+    std::vector<art::InputTag> fVertexLabels;  		///< module labels that produced vertices
+    std::vector<art::InputTag> fEventLabels;   		///< module labels that produced events
+    std::vector<art::InputTag> fOpFlashLabels;      ///< module labels that produced events
+    std::vector<art::InputTag> fSeedLabels;       	///< module labels that produced events
+    std::vector<art::InputTag> fBezierTrackLabels;  ///< module labels that produced events
+    std::vector<art::InputTag> fCosmicTagLabels;	///< module labels that produced cosmic tags
+    std::vector<art::InputTag> fTrkVtxTrackLabels;  ///< module labels that produced tracks (Track/Vertex module)
+    std::vector<art::InputTag> fTrkVtxCosmicLabels; ///< module labels that tagged track as CR (Track/Vertex module)
+    std::vector<art::InputTag> fTrkVtxFilterLabels; ///< module labels that filtered event (Track/Vertex module)
 
     ///\todo Why are calorimetry related drawing options in RecoDrawingOptions instead of a separate service?
     fhicl::ParameterSet      fCaloPSet;                 /// < parameterset for calorimetry algorithm 
     fhicl::ParameterSet      fSeedPSet;                 /// < parameterset for seed algorithm        
-
 
     int                      fColorProngsByLabel;       ///< Generate prong colors by label or id?
     int                      fColorSpacePointsByChisq;  ///< Generate space point colors by chisquare?

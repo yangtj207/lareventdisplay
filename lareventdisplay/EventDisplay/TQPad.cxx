@@ -164,8 +164,8 @@ namespace evd{
           {
               for(const auto& roiHitParamsVec : hitParamsVec)
               {
-                  double roiStart = roiHitParamsVec.front().hitStart - 3. * roiHitParamsVec.front().hitSigma;
-                  double roiStop  = roiHitParamsVec.back().hitEnd    + 3. * roiHitParamsVec.back().hitSigma;
+                  double roiStart = roiHitParamsVec.front().hitStart; //roiHitParamsVec.front().hitStart - 3. * roiHitParamsVec.front().hitSigma;
+                  double roiStop  = roiHitParamsVec.back().hitEnd;    //roiHitParamsVec.back().hitEnd    + 3. * roiHitParamsVec.back().hitSigma;
                   double width    = roiStop - roiStart;
                   
                   std::string funcString = "gaus(0)";

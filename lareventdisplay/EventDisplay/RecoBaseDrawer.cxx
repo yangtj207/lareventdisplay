@@ -297,21 +297,21 @@ void RecoBaseDrawer::Hit2D(const art::Event& evt,
     return;
 }
 
-  //......................................................................
-  ///
-  /// Render Hit objects on a 2D viewing canvas
-  ///
-  /// @param hits   : vector of hits for the veiw
-  /// @param color  : color of associated cluster/prong
-  /// @param view   : Pointer to view to draw on
-  ///
-  /// assumes the hits are all from the correct plane for the given view
-  void RecoBaseDrawer::Hit2D(std::vector<const recob::Hit*> hits,
-			                 int                            color,
-			                 evdb::View2D*                  view,
-                             bool                           drawConnectingLines,
-                             int                            lineWidth)
-  {
+//......................................................................
+///
+/// Render Hit objects on a 2D viewing canvas
+///
+/// @param hits   : vector of hits for the veiw
+/// @param color  : color of associated cluster/prong
+/// @param view   : Pointer to view to draw on
+///
+/// assumes the hits are all from the correct plane for the given view
+void RecoBaseDrawer::Hit2D(std::vector<const recob::Hit*> hits,
+                           int                            color,
+                           evdb::View2D*                  view,
+                           bool                           drawConnectingLines,
+                           int                            lineWidth)
+{
     art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
     art::ServiceHandle<geo::Geometry>            geo;
@@ -323,11 +323,17 @@ void RecoBaseDrawer::Hit2D(const art::Event& evt,
     if(color==-1)
         color=recoOpt->fSelectedHitColor;
   
-    for(unsigned int c = 0; c < hits.size(); ++c){
+    for(unsigned int c = 0; c < hits.size(); ++c)
+    {
         // check that we are in the correct TPC
         // the view should tell use we are in the correct plane
         if(hits[c]->WireID().TPC      != rawOpt->fTPC ||
            hits[c]->WireID().Cryostat != rawOpt->fCryostat) continue;
+        
+        if (std::isnan(hits[c]->PeakTime()) || std::isnan(hits[c]->Integral()))
+        {
+            std::cout << "====>> Found hit with a NAN, channel: " << hits[c]->Channel() << ", start/end: " << hits[c]->StartTick() << "/" << hits[c]->EndTick() << ", chisquare: " << hits[c]->GoodnessOfFit() << std::endl;
+        }
 
         if (hits[c]->PeakTime() > rawOpt->fTicks) continue;
         
@@ -349,7 +355,8 @@ void RecoBaseDrawer::Hit2D(const art::Event& evt,
             b1.SetLineColor(color);
             b1.SetLineWidth(lineWidth);
         }
-        else{
+        else
+        {
             TBox& b1 = view->AddBox(time-0.5, w-0.5, time+0.5, w+0.5);
             if(drawConnectingLines && c > 0) {
                 TLine& l = view->AddLine(time, w, timeold, wold);
@@ -3713,29 +3720,31 @@ void RecoBaseDrawer::FillTQHisto(const art::Event& evt,
         
         // Get an initial container for common hits on ROI
         ROIHitParamsVec roiHitParamsVec;
+        raw::TDCtick_t  lastEndTick(6400);
 
         for (size_t i = 0; i < hits.size(); ++i)
         {
             // check for correct wire, plane, cryostat and tpc were checked in GetHits
             if(hits[i]->WireID().Wire != wire) continue;
             
+            // check roi end condition
+            if (hits[i]->EndTick() > lastEndTick)
+            {
+                if (!roiHitParamsVec.empty()) hitParamsVec.push_back(roiHitParamsVec);
+                roiHitParamsVec.clear();
+            }
+            
             HitParams_t hitParams;
 
             hitParams.hitCenter = hits[i]->PeakTime();
             hitParams.hitSigma  = hits[i]->RMS();
             hitParams.hitHeight = hits[i]->PeakAmplitude();
-            hitParams.hitStart  = hits[i]->PeakTimeMinusRMS();
-            hitParams.hitEnd    = hits[i]->PeakTimePlusRMS();
+            hitParams.hitStart  = hits[i]->StartTick();
+            hitParams.hitEnd    = hits[i]->EndTick();
             
             roiHitParamsVec.emplace_back(hitParams);
             
-            // check roi end condition
-            if (hits[i]->Multiplicity() - hits[i]->LocalIndex() < 2)
-            {
-                hitParamsVec.push_back(roiHitParamsVec);
-                roiHitParamsVec.clear();
-            }
-	
+            lastEndTick = hits[i]->EndTick();
         }//end loop over reco hits
         
         // Just in case (probably never called...)

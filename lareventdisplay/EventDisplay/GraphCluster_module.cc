@@ -80,7 +80,7 @@ extern "C" {
 #include "lardataobj/RecoBase/Cluster.h"
 #include "lardataobj/RecoBase/Hit.h"
 #include "lardata/Utilities/AssociationUtil.h"
-#include "larcore/Geometry/PlaneGeo.h"
+#include "larcorealg/Geometry/PlaneGeo.h"
 #include "lardata/Utilities/GeometryUtilities.h"
 #include "lareventdisplay/EventDisplay/GraphClusterAlg.h"
 

@@ -66,24 +66,32 @@ SimulationDrawer::SimulationDrawer()
     minz = 1e9;
     maxz = -1e9;
     
-    for (size_t i = 0; i<geom->NTPC(); ++i)
+    for(size_t cryoIdx = 0; cryoIdx < geom->Ncryostats(); cryoIdx++)
     {
-        double local[3] = {0.,0.,0.};
-        double world[3] = {0.,0.,0.};
-        const geo::TPCGeo &tpc = geom->TPC(i);
-        tpc.LocalToWorld(local,world);
-        if (minx>world[0]-geom->DetHalfWidth(i))
-            minx = world[0]-geom->DetHalfWidth(i);
-        if (maxx<world[0]+geom->DetHalfWidth(i))
-            maxx = world[0]+geom->DetHalfWidth(i);
-        if (miny>world[1]-geom->DetHalfHeight(i))
-            miny = world[1]-geom->DetHalfHeight(i);
-        if (maxy<world[1]+geom->DetHalfHeight(i))
-            maxy = world[1]+geom->DetHalfHeight(i);
-        if (minz>world[2]-geom->DetLength(i)/2.)
-            minz = world[2]-geom->DetLength(i)/2.;
-        if (maxz<world[2]+geom->DetLength(i)/2.)
-            maxz = world[2]+geom->DetLength(i)/2.;
+        for (size_t i = 0; i<geom->NTPC(cryoIdx); ++i)
+        {
+            double local[3] = {0.,0.,0.};
+            double world[3] = {0.,0.,0.};
+            const geo::TPCGeo &tpc = geom->TPC(i);
+            tpc.LocalToWorld(local,world);
+        
+            std::cout << "Cryo/TPC idx: " << cryoIdx << "/" << i << ", local: " << local[0] << ", " << local[1] << ", " << local[2] << ", world: " << world[0] << ", " << world[1] << ", " << world[2] << std::endl;
+        
+            if (minx>world[0]-geom->DetHalfWidth(i))
+                minx = world[0]-geom->DetHalfWidth(i);
+            if (maxx<world[0]+geom->DetHalfWidth(i))
+                maxx = world[0]+geom->DetHalfWidth(i);
+            if (miny>world[1]-geom->DetHalfHeight(i))
+                miny = world[1]-geom->DetHalfHeight(i);
+            if (maxy<world[1]+geom->DetHalfHeight(i))
+                maxy = world[1]+geom->DetHalfHeight(i);
+            if (minz>world[2]-geom->DetLength(i)/2.)
+                minz = world[2]-geom->DetLength(i)/2.;
+            if (maxz<world[2]+geom->DetLength(i)/2.)
+                maxz = world[2]+geom->DetLength(i)/2.;
+        
+            std::cout << "        minx/maxx: " << minx << "/" << maxx << ", miny/maxy: " << miny << "/" << maxy << ", minz/miny: " << minz << "/" << maxz << std::endl;
+        }
     }
 }
 

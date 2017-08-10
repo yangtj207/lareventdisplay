@@ -350,6 +350,56 @@ void RecoBaseDrawer::Hit2D(const art::Event& evt,
 }
 
 //........................................................................
+  void RecoBaseDrawer::Hit2D(std::vector<const recob::Hit*> hits,
+                             evdb::View2D*                  view,
+                             float                          cosmicscore)
+  {
+    art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
+    art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
+    art::ServiceHandle<geo::Geometry>            geo;
+
+    unsigned int w  = 0;
+    unsigned int wold = 0;
+    float timeold = 0.;
+    
+    for(unsigned int c = 0; c < hits.size(); ++c){
+      // check that we are in the correct TPC
+      // the view should tell use we are in the correct plane
+      if(hits[c]->WireID().TPC      != rawOpt->fTPC ||
+         hits[c]->WireID().Cryostat != rawOpt->fCryostat) continue;
+      
+      w = hits[c]->WireID().Wire;
+
+      // Try to get the "best" charge measurement, ie. the one last in
+      // the calibration chain
+      float time = hits[c]->PeakTime();
+
+      if(rawOpt->fAxisOrientation < 1){
+        if( c > 0) {
+          TLine& l = view->AddLine(w, time+100, wold, timeold+100);
+          l.SetLineWidth(3);
+          l.SetLineColor(1);
+          if (cosmicscore>0.5) l.SetLineColor(kMagenta);
+          l.SetBit(kCannotPick);
+        }
+      }
+      else{
+        if(c > 0) {
+          TLine& l = view->AddLine(time+20, w, timeold+20, wold);
+          l.SetLineColor(1);
+          if (cosmicscore>0.5) l.SetLineStyle(2);
+          l.SetBit(kCannotPick);
+        }
+      }
+      
+      wold = w;
+      timeold = time;
+    } // loop on hits
+    
+    return;
+}
+
+//........................................................................
 int RecoBaseDrawer::GetRegionOfInterest(int plane,
                                         int& minw,
                                         int& maxw,
@@ -800,7 +850,7 @@ void RecoBaseDrawer::BezierTrack3D(const art::Event& evt,
       
       art::FindMany<recob::Hit> fmh(clust, evt, which);
       // Don't require a one-to-one PFParticle - Cluster association
-      art::FindMany<recob::PFParticle> fmc(clust, evt, which);
+      art::FindManyP<recob::PFParticle> fmc(clust, evt, which);
       
       for (size_t ic = 0; ic < clust.size(); ++ic)
       {
@@ -811,15 +861,27 @@ void RecoBaseDrawer::BezierTrack3D(const art::Event& evt,
         int clusterIdx(clust[ic]->ID());
         int colorIdx(clusterIdx%evd::kNCOLS);
         bool pfpAssociation = false;
-        
+        float cosmicscore = FLT_MIN;
+
         if (fmc.isValid())
         {
-          std::vector<const recob::PFParticle*> pfplist = fmc.at(ic);
+          std::vector<art::Ptr<recob::PFParticle>> pfplist = fmc.at(ic);
           // Use the first one
           if(!pfplist.empty()) {
             clusterIdx = pfplist[0]->Self();
             colorIdx   = clusterIdx % evd::kNCOLS;
             pfpAssociation = true;
+            //Get cosmic score
+            if (recoOpt->fDrawCosmicTags){
+              art::FindManyP<anab::CosmicTag> fmct(pfplist, evt, which);
+              if (fmct.isValid()){
+                std::vector<art::Ptr<anab::CosmicTag>> ctlist = fmct.at(0);
+                if (!ctlist.empty()){
+                  //std::cout<<"cosmic tag "<<ctlist[0]->CosmicScore()<<std::endl;
+                  cosmicscore = ctlist[0]->CosmicScore();
+                }
+              }
+            }
           } // pfplist is not empty
         } // association is valied
         
@@ -830,7 +892,9 @@ void RecoBaseDrawer::BezierTrack3D(const art::Event& evt,
           // Place this cluster's unique marker at the hit's location
           int color  = evd::kColor[colorIdx];
           this->Hit2D(hits, color, view, drawConnectingLines);
-          
+          if (recoOpt->fDrawCosmicTags&&cosmicscore!=FLT_MIN){
+            this->Hit2D(hits, view, cosmicscore);
+          }
           if(recoOpt->fDrawClusters > 3) {
             // BB: draw the cluster ID
             std::string s = std::to_string(clusterIdx);

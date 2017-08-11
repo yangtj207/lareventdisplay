@@ -86,6 +86,10 @@ public:
 	           evdb::View2D*                  view,
                bool                           drawConnectingLines = false,
                int                            lineWidth = 1);
+    void Hit2D(std::vector<const recob::Hit*> hits,
+               evdb::View2D*                  view,
+               float                          cosmicscore);
+
     void EndPoint2D(const art::Event& evt,
 		            evdb::View2D*     view,
                     unsigned int      plane);

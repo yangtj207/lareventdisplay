@@ -62,6 +62,7 @@
 #include "art/Framework/Principal/Handle.h" 
 #include "canvas/Persistency/Common/FindMany.h" 
 #include "messagefacility/MessageLogger/MessageLogger.h"
+#include "TVector3.h"
 
 namespace {
   // Utility function to make uniform error messages.
@@ -505,10 +506,14 @@ void RecoBaseDrawer::OpFlash2D(const art::Event& evt,
 {
     art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
-    art::ServiceHandle<geo::Geometry>            geo;
 
     if (rawOpt->fDrawRawDataOrCalibWires < 1) return;
     if (recoOpt->fDrawOpFlashes == 0)         return;
+
+    art::ServiceHandle<geo::Geometry>            geo;
+    detinfo::DetectorProperties const* det = lar::providerFrom<detinfo::DetectorPropertiesService>();
+    geo::PlaneID pid(rawOpt->fCryostat, rawOpt->fTPC, plane);
+
 
     for(size_t imod = 0; imod < recoOpt->fOpFlashLabels.size(); ++imod) {
         std::string const which = recoOpt->fOpFlashLabels[imod];
@@ -519,18 +524,16 @@ void RecoBaseDrawer::OpFlash2D(const art::Event& evt,
         if(opflashes.size() < 1) continue;
 
         int NFlashes = opflashes.size();
-        double TopCoord = 1000;
+        //double TopCoord = 1000;
 
 	LOG_VERBATIM("RecoBaseDrawer") <<"Total "<<NFlashes<<" flashes.";
 
         // project each seed into this view
         for (size_t iof = 0; iof < opflashes.size(); ++iof) {
-            std::vector<double> WireCenters = opflashes[iof]->WireCenters();
-            std::vector<double> WireWidths = opflashes[iof]->WireWidths();
 	    if (opflashes[iof]->TotalPE() < recoOpt->fFlashMinPE) continue;
 	    if (opflashes[iof]->Time() < recoOpt->fFlashTMin) continue;
 	    if (opflashes[iof]->Time() > recoOpt->fFlashTMax) continue;
-
+            int Color = evd::kColor[(iof)%evd::kNCOLS];
             LOG_VERBATIM("RecoBaseDrawer") << "Flash t: "
                         << opflashes[iof]->Time()
                         << "\t y,z : "
@@ -539,72 +542,40 @@ void RecoBaseDrawer::OpFlash2D(const art::Event& evt,
                         << opflashes[iof]->ZCenter()
                         << " \t PE :"
                         << opflashes[iof]->TotalPE();
-            double LineTop = TopCoord * float(iof) / NFlashes;
 
-            double x1 =  WireCenters.at(plane)+WireWidths.at(plane);
-            double x2 =  WireCenters.at(plane)-WireWidths.at(plane);
-            double y1 =  LineTop;
-            double y2 =  LineTop;
-
-            double s1x1 = x1;
-            double s1x2 = x1;
-            double s2x1 = x2;
-            double s2x2 = x2;
-            double s1y1 = 0;
-            double s1y2 = LineTop;
-            double s2y1 = 0;
-            double s2y2 = LineTop;
-
-            if(opflashes[iof]->OnBeamTime()==1)
-            {
-                s1y2 = TopCoord*1.1;
-                s2y2 = TopCoord*1.1;
-                y2   = TopCoord*1.1;
-                y1   = TopCoord*1.1;
+            //std::cout<<opflashes[iof]->Time()<<" "<<det->SamplingRate()<<" "<<det->GetXTicksOffset(pid)<<std::endl;
+            float flashtick = opflashes[iof]->Time()/det->SamplingRate()*1e3 + det->GetXTicksOffset(pid);
+            float wire0 = FLT_MAX;
+            float wire1 = FLT_MIN;
+            //Find the 4 corners and convert them to wire numbers
+            std::vector<TVector3> points;
+            points.push_back(TVector3(0, opflashes[iof]->YCenter()-opflashes[iof]->YWidth(), opflashes[iof]->ZCenter()-opflashes[iof]->ZWidth()));
+            points.push_back(TVector3(0, opflashes[iof]->YCenter()-opflashes[iof]->YWidth(), opflashes[iof]->ZCenter()+opflashes[iof]->ZWidth()));
+            points.push_back(TVector3(0, opflashes[iof]->YCenter()+opflashes[iof]->YWidth(), opflashes[iof]->ZCenter()-opflashes[iof]->ZWidth()));
+            points.push_back(TVector3(0, opflashes[iof]->YCenter()+opflashes[iof]->YWidth(), opflashes[iof]->ZCenter()+opflashes[iof]->ZWidth()));
+            for (size_t i = 0; i<points.size(); ++i){
+              geo::WireID wireID;
+              try{
+                wireID = geo->NearestWireID(points[i], pid);
+              }
+              catch(geo::InvalidWireError const& e) {
+                wireID = e.suggestedWireID(); // pick the closest valid wire
+              }
+              if (wireID.Wire < wire0) wire0 = wireID.Wire;
+              if (wireID.Wire > wire1) wire1 = wireID.Wire;
             }
-
-            if(rawOpt->fAxisOrientation > 0)
-            {
-                y1 = WireCenters.at(plane)+WireWidths.at(plane);
-                y2 = WireCenters.at(plane)-WireWidths.at(plane);
-                x1 = LineTop;
-                x2 = LineTop;
-
-                s1y1 = x1;
-                s1y2 = x1;
-                s2y1 = x2;
-                s2y2 = x2;
-                s1x1 = 0;
-                s1x2 = LineTop;
-                s2x1 = 0;
-                s2x2 = LineTop;
-                if(opflashes[iof]->OnBeamTime()==1)
-                {
-                    s1x2 = TopCoord*1.1;
-                    s2x2 = TopCoord*1.1;
-                    x2 = TopCoord*1.1;
-                    x1 = TopCoord*1.1;
-                }
+            if(rawOpt->fAxisOrientation > 0){
+              TLine& line = view->AddLine(flashtick, wire0, flashtick, wire1);
+              line.SetLineWidth(2);
+              line.SetLineStyle(2);
+              line.SetLineColor(Color);
             }
-	
-            TLine&   line = view->AddLine(x1, y1, x2, y2);
-
-            if(opflashes[iof]->OnBeamTime()==1)
-            {
-                line.SetLineColor(kRed);
-                TLine&   s1 = view->AddLine(s1x1, s1y1, s1x2, s1y2);
-                TLine&   s2 = view->AddLine(s2x1, s2y1, s2x2, s2y2);
-                s1.SetLineColor(kRed);
-                s2.SetLineColor(kRed);
-                s1.SetLineStyle(kDashed);
-                s2.SetLineStyle(kDashed);
+            else{
+              TLine& line = view->AddLine(wire0, flashtick, wire1, flashtick);
+              line.SetLineWidth(2);
+              line.SetLineStyle(2);
+              line.SetLineColor(Color);
             }
-            else
-            {
-                //      line.SetLineColor(kGray);
-            }
-            line.SetLineStyle(kSolid);
-            line.SetLineWidth(2.0);
         } // loop on opflashes
     } // loop on imod folders
   

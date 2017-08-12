@@ -2601,10 +2601,13 @@ void RecoBaseDrawer::OpFlashOrtho(const art::Event& evt,
   art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
   art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
   art::ServiceHandle<geo::Geometry>            geo;
-  
+
   if (rawOpt->fDrawRawDataOrCalibWires < 1) return;
   if (recoOpt->fDrawOpFlashes == 0)         return;
-  
+
+  detinfo::DetectorProperties const* det = lar::providerFrom<detinfo::DetectorPropertiesService>();
+  geo::PlaneID pid(rawOpt->fCryostat, rawOpt->fTPC, 0);
+ 
   double minx = 1e9;
   double maxx = -1e9;
   for (size_t i = 0; i<geo->NTPC(); ++i){
@@ -2650,11 +2653,16 @@ void RecoBaseDrawer::OpFlashOrtho(const art::Event& evt,
 	//line.SetLineColor(Colour);
       }
       else if(proj == evd::kXZ){
-	TBox& b1      = view->AddBox(ZCentre-ZHalfWidth, minx, ZCentre+ZHalfWidth, maxx);
-	b1.SetFillStyle(3004+(iof%3));
-	b1.SetFillColor(Colour);
+//	TBox& b1      = view->AddBox(ZCentre-ZHalfWidth, minx, ZCentre+ZHalfWidth, maxx);
+//	b1.SetFillStyle(3004+(iof%3));
+//	b1.SetFillColor(Colour);
 	//TLine&   line = view->AddLine(ZCentre, minx, ZCentre, maxx);
 	//line.SetLineColor(Colour);
+        float xflash = det->ConvertTicksToX(opflashes[iof]->Time()/det->SamplingRate()*1e3 + det->GetXTicksOffset(pid),pid);
+        TLine& line = view->AddLine(ZCentre-ZHalfWidth, xflash, ZCentre+ZHalfWidth, xflash);
+        line.SetLineWidth(2);
+        line.SetLineStyle(2);
+        line.SetLineColor(Colour);        
       }
       else if(proj == evd::kYZ){
 	TBox& b1      = view->AddBox(ZCentre-ZHalfWidth, YCentre-YHalfWidth, ZCentre+ZHalfWidth, YCentre+YHalfWidth);

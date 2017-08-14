@@ -1155,15 +1155,15 @@ void RecoBaseDrawer::GetClusterOutlines(std::vector<const recob::Hit*>& hits,
     return;
 }
   
-  //......................................................................
-  void RecoBaseDrawer::DrawProng2D(std::vector<const recob::Hit*>&     hits,
-                                   evdb::View2D*                       view,
-                                   unsigned int                        plane,
-                                   TVector3                     const& startPos,
-                                   TVector3                     const& startDir,
-                                   int                                 id,
-                                   float                               cscore)
-  {
+//......................................................................
+void RecoBaseDrawer::DrawProng2D(std::vector<const recob::Hit*>&     hits,
+                                 evdb::View2D*                       view,
+                                 unsigned int                        plane,
+                                 TVector3                     const& startPos,
+                                 TVector3                     const& startDir,
+                                 int                                 id,
+                                 float                               cscore)
+{
     art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
     art::ServiceHandle<geo::Geometry>            geo;
@@ -3422,48 +3422,48 @@ void RecoBaseDrawer::DrawShowerOrtho(const recob::Shower& shower,
 				       double              msize,
 				       evdb::View2D*       view)
 {
-  // Use brute force to find the module label and index of this
-  // shower, so that we can find associated space points and draw
-  // them.
+    // Use brute force to find the module label and index of this
+    // shower, so that we can find associated space points and draw
+    // them.
 
-  const art::Event *evt = evdb::EventHolder::Instance()->GetEvent();
-  std::vector<art::Handle<std::vector<recob::Shower> > > handles;
-  evt->getManyByType(handles);
-  for(auto ih : handles) {
-    const art::Handle<std::vector<recob::Shower> > handle = ih;
-    if(handle.isValid()) {
-	const std::string& which = handle.provenance()->moduleLabel();
-	art::FindMany<recob::SpacePoint> fmsp(handle, *evt, which);
-	if (!fmsp.isValid()) continue;
-	int n = handle->size();
-	for(int i=0; i<n; ++i) {
-	  art::Ptr<recob::Shower> p(handle, i);
-	  if(&*p == &shower) {
-	    switch (proj) {
-	    case evd::kXY:
-	      view->AddMarker(p->ShowerStart().X(), p->ShowerStart().Y(), evd::kColor2[color%evd::kNCOLS], 5, 2.0);
-	      break;
-	    case evd::kXZ:
-	      view->AddMarker(p->ShowerStart().Z(), p->ShowerStart().X(), evd::kColor2[color%evd::kNCOLS], 5, 2.0);
-	      break;
-	    case evd::kYZ:
-	      view->AddMarker(p->ShowerStart().Z(), p->ShowerStart().Y(), evd::kColor2[color%evd::kNCOLS], 5, 2.0);
-	      break;
-	    default:
-	      throw cet::exception("RecoBaseDrawer") << __func__
-						     << ": unknown projection #" << ((int) proj) << "\n";
-	    } // switch
+    const art::Event *evt = evdb::EventHolder::Instance()->GetEvent();
+    std::vector<art::Handle<std::vector<recob::Shower> > > handles;
+    evt->getManyByType(handles);
+    for(auto ih : handles) {
+        const art::Handle<std::vector<recob::Shower> > handle = ih;
+        if(handle.isValid()) {
+            const std::string& which = handle.provenance()->moduleLabel();
+            art::FindMany<recob::SpacePoint> fmsp(handle, *evt, which);
+            if (!fmsp.isValid()) continue;
+            int n = handle->size();
+            for(int i=0; i<n; ++i) {
+                art::Ptr<recob::Shower> p(handle, i);
+                if(&*p == &shower) {
+                    switch (proj) {
+                        case evd::kXY:
+                            view->AddMarker(p->ShowerStart().X(), p->ShowerStart().Y(), evd::kColor2[color%evd::kNCOLS], 5, 2.0);
+                            break;
+                        case evd::kXZ:
+                            view->AddMarker(p->ShowerStart().Z(), p->ShowerStart().X(), evd::kColor2[color%evd::kNCOLS], 5, 2.0);
+                            break;
+                        case evd::kYZ:
+                            view->AddMarker(p->ShowerStart().Z(), p->ShowerStart().Y(), evd::kColor2[color%evd::kNCOLS], 5, 2.0);
+                            break;
+                        default:
+                            throw cet::exception("RecoBaseDrawer") << __func__
+                                << ": unknown projection #" << ((int) proj) << "\n";
+                        } // switch
 
-	    if (fmsp.isValid()){
-	      std::vector<const recob::SpacePoint*> spts = fmsp.at(i);
-	      DrawSpacePointOrtho(spts, color, proj, msize, view, 1);
-	    }
-	  }
-	}
+                    if (fmsp.isValid()){
+                        std::vector<const recob::SpacePoint*> spts = fmsp.at(i);
+                        DrawSpacePointOrtho(spts, color, proj, msize, view, 1);
+                    }
+                }
+            }
+        }
     }
-  }
     
-  return;
+    return;
 }
 
 //......................................................................
@@ -3471,25 +3471,25 @@ int RecoBaseDrawer::GetWires(const art::Event&            evt,
                              const art::InputTag&         which,
                              art::PtrVector<recob::Wire>& wires) 
 {
-  wires.clear();
+    wires.clear();
 
-  art::Handle< std::vector<recob::Wire> > wcol;
-  art::PtrVector<recob::Wire> temp;
+    art::Handle< std::vector<recob::Wire> > wcol;
+    art::PtrVector<recob::Wire> temp;
 
-  try{
-    evt.getByLabel(which, wcol);
+    try{
+        evt.getByLabel(which, wcol);
     
-    for(unsigned int i = 0; i < wcol->size(); ++i){
-	art::Ptr<recob::Wire> w(wcol, i);
-	temp.push_back(w);
+        for(unsigned int i = 0; i < wcol->size(); ++i){
+            art::Ptr<recob::Wire> w(wcol, i);
+            temp.push_back(w);
+        }
+        temp.swap(wires);
     }
-    temp.swap(wires);
-  }
-  catch(cet::exception& e){
-    writeErrMsg("GetWires", e);
-  }
+    catch(cet::exception& e){
+        writeErrMsg("GetWires", e);
+    }
 
-  return wires.size();
+    return wires.size();
 }
 
 //......................................................................
@@ -3498,26 +3498,26 @@ int RecoBaseDrawer::GetHits(const art::Event&               evt,
                             std::vector<const recob::Hit*>& hits,
                             unsigned int                    plane) 
 {
-  art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
+    art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
 
-  hits.clear();
+    hits.clear();
 
-  std::vector<const recob::Hit*> temp;
+    std::vector<const recob::Hit*> temp;
 
-  try{
-    evt.getView(which, temp);
-    for(size_t t = 0; t < temp.size(); ++t){
+    try{
+        evt.getView(which, temp);
+        for(size_t t = 0; t < temp.size(); ++t){
 
-	if( temp[t]->WireID().Plane    == plane        && 
-	    temp[t]->WireID().TPC      == rawOpt->fTPC && 
-	    temp[t]->WireID().Cryostat == rawOpt->fCryostat) hits.push_back(temp[t]);
+            if( temp[t]->WireID().Plane    == plane        &&
+                temp[t]->WireID().TPC      == rawOpt->fTPC &&
+                temp[t]->WireID().Cryostat == rawOpt->fCryostat) hits.push_back(temp[t]);
+        }
     }
-  }
-  catch(cet::exception& e){
-    writeErrMsg("GetHits", e);
-  }
+    catch(cet::exception& e){
+        writeErrMsg("GetHits", e);
+    }
 
-  return hits.size();
+    return hits.size();
 }
 
 //......................................................................
@@ -3525,25 +3525,25 @@ int RecoBaseDrawer::GetClusters(const art::Event&               evt,
                                 const art::InputTag&            which,
                                 art::PtrVector<recob::Cluster>& clust)
 {
-  clust.clear();
-  art::PtrVector<recob::Cluster> temp;
+    clust.clear();
+    art::PtrVector<recob::Cluster> temp;
 
-  art::Handle< std::vector<recob::Cluster> > clcol;
+    art::Handle< std::vector<recob::Cluster> > clcol;
 
-  try{
-    evt.getByLabel(which, clcol);
-    temp.reserve(clcol->size());
-    for(unsigned int i = 0; i < clcol->size(); ++i){
-	art::Ptr<recob::Cluster> cl(clcol, i);
-	temp.push_back(cl);
+    try{
+        evt.getByLabel(which, clcol);
+        temp.reserve(clcol->size());
+        for(unsigned int i = 0; i < clcol->size(); ++i){
+            art::Ptr<recob::Cluster> cl(clcol, i);
+            temp.push_back(cl);
+        }
+        temp.swap(clust);
     }
-    temp.swap(clust);
-  }
-  catch(cet::exception& e){
-    writeErrMsg("GetClusters", e);
-  }
+    catch(cet::exception& e){
+        writeErrMsg("GetClusters", e);
+    }
 
-  return clust.size();
+    return clust.size();
 }
 
 //......................................................................
@@ -3578,24 +3578,24 @@ int RecoBaseDrawer::GetEndPoint2D(const art::Event&                  evt,
                                   const art::InputTag&               which,
                                   art::PtrVector<recob::EndPoint2D>& ep2d)
 {
-  ep2d.clear();
-  art::PtrVector<recob::EndPoint2D> temp;
+    ep2d.clear();
+    art::PtrVector<recob::EndPoint2D> temp;
  
-  art::Handle< std::vector<recob::EndPoint2D> > epcol;
+    art::Handle< std::vector<recob::EndPoint2D> > epcol;
   
-  try{
-    evt.getByLabel(which, epcol);
-    for(unsigned int i = 0; i < epcol->size(); ++i){
-      art::Ptr<recob::EndPoint2D> ep(epcol, i);
-      temp.push_back(ep);
+    try{
+        evt.getByLabel(which, epcol);
+        for(unsigned int i = 0; i < epcol->size(); ++i){
+            art::Ptr<recob::EndPoint2D> ep(epcol, i);
+            temp.push_back(ep);
+        }
+        temp.swap(ep2d);
     }
-    temp.swap(ep2d);
-  }
-  catch(cet::exception& e){
-    writeErrMsg("GetEndPoint2D", e);
-  }
+    catch(cet::exception& e){
+        writeErrMsg("GetEndPoint2D", e);
+    }
   
-  return ep2d.size();
+    return ep2d.size();
 }
 
 //......................................................................
@@ -3604,24 +3604,24 @@ int RecoBaseDrawer::GetOpFlashes(const art::Event&               evt,
                                  const art::InputTag&            which,
                                  art::PtrVector<recob::OpFlash>& opflashes)
 {
-  opflashes.clear();
-  art::PtrVector<recob::OpFlash> temp;
+    opflashes.clear();
+    art::PtrVector<recob::OpFlash> temp;
 
-  art::Handle< std::vector<recob::OpFlash> > opflashcol;
+    art::Handle< std::vector<recob::OpFlash> > opflashcol;
 
-  try{
-    evt.getByLabel(which, opflashcol);
-    for(unsigned int i = 0; i < opflashcol->size(); ++i){
-	art::Ptr<recob::OpFlash> opf(opflashcol, i);
-	temp.push_back(opf);
+    try{
+        evt.getByLabel(which, opflashcol);
+        for(unsigned int i = 0; i < opflashcol->size(); ++i){
+            art::Ptr<recob::OpFlash> opf(opflashcol, i);
+            temp.push_back(opf);
+        }
+        temp.swap(opflashes);
     }
-    temp.swap(opflashes);
-  }
-  catch(cet::exception& e){
-    writeErrMsg("GetOpFlashes", e);
-  }
+    catch(cet::exception& e){
+        writeErrMsg("GetOpFlashes", e);
+    }
 
-  return opflashes.size();
+    return opflashes.size();
 }
 
 //......................................................................
@@ -3630,24 +3630,24 @@ int RecoBaseDrawer::GetSeeds(const art::Event&            evt,
                              const art::InputTag&         which,
                              art::PtrVector<recob::Seed>& seeds)
 {
-  seeds.clear();
-  art::PtrVector<recob::Seed> temp;
+    seeds.clear();
+    art::PtrVector<recob::Seed> temp;
 
-  art::Handle< std::vector<recob::Seed> > seedcol;
+    art::Handle< std::vector<recob::Seed> > seedcol;
 
-  try{
-    evt.getByLabel(which, seedcol);
-    for(unsigned int i = 0; i < seedcol->size(); ++i){
-	art::Ptr<recob::Seed> sd(seedcol, i);
-	temp.push_back(sd);
+    try{
+        evt.getByLabel(which, seedcol);
+        for(unsigned int i = 0; i < seedcol->size(); ++i){
+            art::Ptr<recob::Seed> sd(seedcol, i);
+            temp.push_back(sd);
+        }
+        temp.swap(seeds);
     }
-    temp.swap(seeds);
-  }
-  catch(cet::exception& e){
-    writeErrMsg("GetSeeds", e);
-  }
+    catch(cet::exception& e){
+        writeErrMsg("GetSeeds", e);
+    }
 
-  return seeds.size();
+    return seeds.size();
 }
 
 
@@ -3656,24 +3656,24 @@ int RecoBaseDrawer::GetBezierTracks(const art::Event&              evt,
                                     const art::InputTag&           which,
                                     art::PtrVector<recob::Track>&  btbs)
 {
-  btbs.clear();
-  art::PtrVector<recob::Track> temp;
+    btbs.clear();
+    art::PtrVector<recob::Track> temp;
 
-  art::Handle< std::vector<recob::Track> > btbcol;
+    art::Handle< std::vector<recob::Track> > btbcol;
   
-  try{
-    evt.getByLabel(which.encode(), "bezierformat", btbcol);
-    for(unsigned int i = 0; i < btbcol->size(); ++i){
-	art::Ptr<recob::Track> btb(btbcol, i);
-      temp.push_back(btb);
+    try{
+        evt.getByLabel(which.encode(), "bezierformat", btbcol);
+        for(unsigned int i = 0; i < btbcol->size(); ++i){
+            art::Ptr<recob::Track> btb(btbcol, i);
+            temp.push_back(btb);
+        }
+        temp.swap(btbs);
     }
-    temp.swap(btbs);
-  }
-  catch(cet::exception& e){
-    writeErrMsg("GetBezierTracks", e);
-  }
+    catch(cet::exception& e){
+        writeErrMsg("GetBezierTracks", e);
+    }
   
-  return btbs.size();
+    return btbs.size();
 }
     
 //......................................................................
@@ -3736,14 +3736,14 @@ int RecoBaseDrawer::GetTracks(const art::Event&        evt,
                               const art::InputTag&     which,
                               art::View<recob::Track>& track)
 {
-  try{
-    evt.getView(which,track);
-  }
-  catch(cet::exception& e){
-    writeErrMsg("GetTracks", e);
-  }
+    try{
+        evt.getView(which,track);
+    }
+    catch(cet::exception& e){
+        writeErrMsg("GetTracks", e);
+    }
 
-  return track.vals().size();
+    return track.vals().size();
 }
 
 //......................................................................
@@ -3751,14 +3751,14 @@ int RecoBaseDrawer::GetShowers(const art::Event&         evt,
                                const art::InputTag&      which,
                                art::View<recob::Shower>& shower)
 {
-  try{
-    evt.getView(which,shower);
-  }
-  catch(cet::exception& e){
-    writeErrMsg("GetShowers", e);
-  }
+    try{
+        evt.getView(which,shower);
+    }
+    catch(cet::exception& e){
+        writeErrMsg("GetShowers", e);
+    }
 
-  return shower.vals().size();
+    return shower.vals().size();
 }
 
 //......................................................................
@@ -3766,22 +3766,22 @@ int RecoBaseDrawer::GetVertices(const art::Event&              evt,
                                 const art::InputTag&           which,
                                 art::PtrVector<recob::Vertex>& vertex)
 {
-  vertex.clear();
-  art::PtrVector<recob::Vertex> temp;
+    vertex.clear();
+    art::PtrVector<recob::Vertex> temp;
 
-  art::Handle< std::vector<recob::Vertex> > vcol;
+    art::Handle< std::vector<recob::Vertex> > vcol;
 
-  try{
-    evt.getByLabel(which, vcol);
-    for(size_t i = 0; i < vcol->size(); ++i){
-	art::Ptr<recob::Vertex> v(vcol, i);
-	temp.push_back(v);
+    try{
+        evt.getByLabel(which, vcol);
+        for(size_t i = 0; i < vcol->size(); ++i){
+            art::Ptr<recob::Vertex> v(vcol, i);
+            temp.push_back(v);
+        }
+        temp.swap(vertex);
     }
-    temp.swap(vertex);
-  }
-  catch(cet::exception& e){
-    writeErrMsg("GetVertices", e);
-  }
+    catch(cet::exception& e){
+        writeErrMsg("GetVertices", e);
+    }
 
   return vertex.size();
 }
@@ -3791,22 +3791,22 @@ int RecoBaseDrawer::GetEvents(const art::Event&             evt,
                               const art::InputTag&          which,
                               art::PtrVector<recob::Event>& event)
 {
-  event.clear();
-  art::PtrVector<recob::Event> temp;
+    event.clear();
+    art::PtrVector<recob::Event> temp;
 
-  art::Handle< std::vector<recob::Event> > ecol;
+    art::Handle< std::vector<recob::Event> > ecol;
 
-  try{
-    evt.getByLabel(which, ecol);
-    for(size_t i = 0; i < ecol->size(); ++i){
-	art::Ptr<recob::Event> e(ecol, i);
-	temp.push_back(e);
+    try{
+        evt.getByLabel(which, ecol);
+        for(size_t i = 0; i < ecol->size(); ++i){
+            art::Ptr<recob::Event> e(ecol, i);
+            temp.push_back(e);
+        }
+        temp.swap(event);
     }
-    temp.swap(event);
-  }
-  catch(cet::exception& e){
-    writeErrMsg("GetEvents", e);
-  }
+    catch(cet::exception& e){
+        writeErrMsg("GetEvents", e);
+    }
 
   return event.size();
 }
@@ -3920,58 +3920,6 @@ void RecoBaseDrawer::FillQHisto(const art::Event& evt,
 				  unsigned int      plane,
 				  TH1F*             histo)
 {
-  art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
-  art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
-  art::ServiceHandle<geo::Geometry>            geo;
-
-  // Check if we're supposed to draw raw hits at all
-  if(rawOpt->fDrawRawDataOrCalibWires==0) return;
-
-  for (size_t imod = 0; imod < recoOpt->fWireLabels.size(); ++imod) {
-      art::InputTag const which = recoOpt->fWireLabels[imod];
-
-    art::PtrVector<recob::Wire> wires;
-    this->GetWires(evt, which, wires);
-
-    for (unsigned int i=0; i<wires.size(); ++i) {
-
-	std::vector<geo::WireID> wireids = geo->ChannelToWire(wires[i]->Channel());
-
-	bool goodWID = false;
-	for( auto const& wid : wireids ){
-	  // check for correct plane, wire and tpc
-	  if(wid.Plane    == plane        &&
-	     wid.TPC      == rawOpt->fTPC && 
-	     wid.Cryostat == rawOpt->fCryostat) goodWID = true;
-	}
-	if(!goodWID) continue;
-	std::vector<float> wirSig = wires[i]->Signal();
-      for(unsigned int ii = 0; ii < wirSig.size(); ++ii) 
-        histo->Fill(wirSig[ii]);
-/*
-	for(size_t s = 0; s < wires[i]->NSignal(); ++s)
-	  histo->Fill(wires[i]->Signal()[s]);
-*/
-
-    }//end loop over raw hits
-  }//end loop over Wire modules
-
-  return;
-}
-
-  //......................................................................
-  void RecoBaseDrawer::FillTQHistoDP(const art::Event&    evt,
-				   unsigned int         plane,
-				   unsigned int         wire,
-				   TH1F*                histo,
-				   std::vector<double>& htau1,
-				   std::vector<double>& htau2,
-				   std::vector<double>& hitamplitudes,
-				   std::vector<double>& hpeaktimes,
-				   std::vector<int>& hstartT,
-				   std::vector<int>& hendT,
-				   std::vector<int>& hNMultiHit)
-  {
     art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
     art::ServiceHandle<geo::Geometry>            geo;
@@ -3982,58 +3930,110 @@ void RecoBaseDrawer::FillQHisto(const art::Event& evt,
     for (size_t imod = 0; imod < recoOpt->fWireLabels.size(); ++imod) {
         art::InputTag const which = recoOpt->fWireLabels[imod];
 
-      art::PtrVector<recob::Wire> wires;
-      this->GetWires(evt, which, wires);
+        art::PtrVector<recob::Wire> wires;
+        this->GetWires(evt, which, wires);
 
-      for (size_t i = 0; i < wires.size(); ++i) {
+        for (unsigned int i=0; i<wires.size(); ++i) {
 
-	std::vector<geo::WireID> wireids = geo->ChannelToWire(wires[i]->Channel());
+            std::vector<geo::WireID> wireids = geo->ChannelToWire(wires[i]->Channel());
+
+            bool goodWID = false;
+            for( auto const& wid : wireids ){
+                // check for correct plane, wire and tpc
+                if(wid.Plane    == plane        &&
+                   wid.TPC      == rawOpt->fTPC &&
+                   wid.Cryostat == rawOpt->fCryostat) goodWID = true;
+            }
+            if(!goodWID) continue;
+            std::vector<float> wirSig = wires[i]->Signal();
+            for(unsigned int ii = 0; ii < wirSig.size(); ++ii)
+                histo->Fill(wirSig[ii]);
+/*
+	for(size_t s = 0; s < wires[i]->NSignal(); ++s)
+	  histo->Fill(wires[i]->Signal()[s]);
+*/
+
+        }//end loop over raw hits
+    }//end loop over Wire modules
+
+    return;
+}
+
+//......................................................................
+void RecoBaseDrawer::FillTQHistoDP(const art::Event&    evt,
+                                   unsigned int         plane,
+                                   unsigned int         wire,
+                                   TH1F*                histo,
+                                   std::vector<double>& htau1,
+                                   std::vector<double>& htau2,
+                                   std::vector<double>& hitamplitudes,
+                                   std::vector<double>& hpeaktimes,
+                                   std::vector<int>&    hstartT,
+                                   std::vector<int>&    hendT,
+                                   std::vector<int>&    hNMultiHit)
+{
+    art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
+    art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
+    art::ServiceHandle<geo::Geometry>            geo;
+
+    // Check if we're supposed to draw raw hits at all
+    if(rawOpt->fDrawRawDataOrCalibWires==0) return;
+
+    for (size_t imod = 0; imod < recoOpt->fWireLabels.size(); ++imod) {
+        art::InputTag const which = recoOpt->fWireLabels[imod];
+
+        art::PtrVector<recob::Wire> wires;
+        this->GetWires(evt, which, wires);
+
+        for (size_t i = 0; i < wires.size(); ++i) {
+
+            std::vector<geo::WireID> wireids = geo->ChannelToWire(wires[i]->Channel());
 	
-	bool goodWID = false;
-	for( auto const& wid : wireids ){
-	if(wid.Plane    == plane        &&
-	     wid.Wire     == wire         &&
-	     wid.TPC      == rawOpt->fTPC && 
-	     wid.Cryostat == rawOpt->fCryostat) goodWID = true;
-	}
+            bool goodWID = false;
+            for( auto const& wid : wireids ){
+                if(wid.Plane    == plane        &&
+                   wid.Wire     == wire         &&
+                   wid.TPC      == rawOpt->fTPC &&
+                   wid.Cryostat == rawOpt->fCryostat) goodWID = true;
+            }
 
-	if(!goodWID) continue;
+            if(!goodWID) continue;
 
-        std::vector<float> wirSig = wires[i]->Signal();
-        for(unsigned int ii = 0; ii < wirSig.size(); ++ii) 
-          histo->Fill(1.*ii, wirSig[ii]);
-	break;
-      }//end loop over wires
+            std::vector<float> wirSig = wires[i]->Signal();
+            for(unsigned int ii = 0; ii < wirSig.size(); ++ii)
+                histo->Fill(1.*ii, wirSig[ii]);
+            break;
+        }//end loop over wires
     }//end loop over wire modules
 
 
     for (size_t imod = 0; imod < recoOpt->fHitLabels.size(); ++imod) {
         art::InputTag const which = recoOpt->fHitLabels[imod];
 
-      std::vector<const recob::Hit*> hits;
-      this->GetHits(evt, which, hits, plane);
+        std::vector<const recob::Hit*> hits;
+        this->GetHits(evt, which, hits, plane);
 
-      auto hitResults = anab::FVectorReader<recob::Hit, 3>::create(evt, "dprawhit");
-      const auto & fitParams = hitResults->vectors();
+        auto hitResults = anab::FVectorReader<recob::Hit, 3>::create(evt, "dprawhit");
+        const auto & fitParams = hitResults->vectors();
 
-      int FitParamsOffset = CountHits(evt, which, rawOpt->fCryostat, rawOpt->fTPC, plane);
+        int FitParamsOffset = CountHits(evt, which, rawOpt->fCryostat, rawOpt->fTPC, plane);
 
-      for (size_t i = 0; i < hits.size(); ++i){
-	// check for correct wire. Plane, cryostat and tpc were checked in GetHits
-	if(hits[i]->WireID().Wire != wire) continue;
+        for (size_t i = 0; i < hits.size(); ++i){
+            // check for correct wire. Plane, cryostat and tpc were checked in GetHits
+            if(hits[i]->WireID().Wire != wire) continue;
 
-	hpeaktimes.push_back(fitParams[FitParamsOffset+i][0]);
-	htau1.push_back(fitParams[FitParamsOffset+i][1]);
-	htau2.push_back(fitParams[FitParamsOffset+i][2]);
-	hitamplitudes.push_back(hits[i]->PeakAmplitude());
-	hstartT.push_back(hits[i]->StartTick());	
-	hendT.push_back(hits[i]->EndTick());	
-	hNMultiHit.push_back(hits[i]->Multiplicity());	
-      }//end loop over reco hits
+            hpeaktimes.push_back(fitParams[FitParamsOffset+i][0]);
+            htau1.push_back(fitParams[FitParamsOffset+i][1]);
+            htau2.push_back(fitParams[FitParamsOffset+i][2]);
+            hitamplitudes.push_back(hits[i]->PeakAmplitude());
+            hstartT.push_back(hits[i]->StartTick());
+            hendT.push_back(hits[i]->EndTick());
+            hNMultiHit.push_back(hits[i]->Multiplicity());
+        }//end loop over reco hits
     }//end loop over HitFinding modules
 
     return;
-  }
+}
 
 //......................................................................
 double RecoBaseDrawer::EvalExpoFit(double x,
@@ -4054,7 +4054,7 @@ double RecoBaseDrawer::EvalMultiExpoFit(double x,
 				   	std::vector<double> amplitude,
 				   	std::vector<double> peaktime)
 {
-double x_sum = 0.;
+    double x_sum = 0.;
 
     for(int i = HitNumber; i < HitNumber+NHits; i++)
     {

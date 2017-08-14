@@ -124,222 +124,218 @@ namespace evd{
       if(hitResults) //raw waveform (dual phase)
       {
 
-      fPad->Clear();
-      fPad->cd();
+          fPad->Clear();
+          fPad->cd();
 
-      std::vector<double> htau1;
-      std::vector<double> htau2;
-      std::vector<double> hamplitudes;
-      std::vector<double> hpeaktimes;
-      std::vector<int> hstartT;
-      std::vector<int> hendT;
-      std::vector<int> hNMultiHit;
+          std::vector<double> htau1;
+          std::vector<double> htau2;
+          std::vector<double> hamplitudes;
+          std::vector<double> hpeaktimes;
+          std::vector<int>    hstartT;
+          std::vector<int>    hendT;
+          std::vector<int>    hNMultiHit;
 
-	if(fTQ == kTQ)
-	{
+          if(fTQ == kTQ)
+          {
+              fRawHisto->Reset("ICEM");
+              fRecoHisto->Reset("ICEM");
 
-        fRawHisto->Reset("ICEM");
-        fRecoHisto->Reset("ICEM");
+              this->RawDataDraw()->FillTQHisto(*evt,
+                                               fPlane,
+                                               fWire,
+                                               fRawHisto);
 
-         this->RawDataDraw()->FillTQHisto(*evt,
-                                          fPlane,
-                                          fWire, 
-                                          fRawHisto);
-
-         this->RecoBaseDraw()->FillTQHistoDP(*evt,
-                                           fPlane,
-                                           fWire, 
-                                           fRecoHisto,
-                                           htau1,
-                                           htau2,
-                                           hamplitudes,
-                                           hpeaktimes,
-					   hstartT,
-					   hendT,
-					   hNMultiHit);
+              this->RecoBaseDraw()->FillTQHistoDP(*evt,
+                                                  fPlane,
+                                                  fWire,
+                                                  fRecoHisto,
+                                                  htau1,
+                                                  htau2,
+                                                  hamplitudes,
+                                                  hpeaktimes,
+                                                  hstartT,
+                                                  hendT,
+                                                  hNMultiHit);
 
 
-         // draw with histogram style, only (square) lines, no errors
-         static const std::string defaultDrawOptions = "HIST";
+              // draw with histogram style, only (square) lines, no errors
+              static const std::string defaultDrawOptions = "HIST";
 
-         switch (drawopt->fDrawRawDataOrCalibWires) {
-           case kRAW:
-             fRawHisto->Draw(defaultDrawOptions.c_str());
-             break;
-           case kCALIB:
-             fRecoHisto->Draw(defaultDrawOptions.c_str());
-             break;
-           case kRAWCALIB:
-             fRawHisto->SetMaximum(1.2*std::max(fRawHisto->GetMaximum(), fRecoHisto->GetMaximum()));
-             fRawHisto->SetMinimum(1.2*std::min(fRawHisto->GetMinimum(), fRecoHisto->GetMinimum()));
-             fRawHisto->Draw(defaultDrawOptions.c_str());
-             fRecoHisto->Draw((defaultDrawOptions + " same").c_str());
-             break;
-         } // switch
+              switch (drawopt->fDrawRawDataOrCalibWires) {
+                  case kRAW:
+                      fRawHisto->Draw(defaultDrawOptions.c_str());
+                      break;
+                  case kCALIB:
+                      fRecoHisto->Draw(defaultDrawOptions.c_str());
+                      break;
+                  case kRAWCALIB:
+                      fRawHisto->SetMaximum(1.2*std::max(fRawHisto->GetMaximum(), fRecoHisto->GetMaximum()));
+                      fRawHisto->SetMinimum(1.2*std::min(fRawHisto->GetMinimum(), fRecoHisto->GetMinimum()));
+                      fRawHisto->Draw(defaultDrawOptions.c_str());
+                      fRecoHisto->Draw((defaultDrawOptions + " same").c_str());
+                      break;
+              } // switch
 
-       // this loop draws the double-exponential shapes for identified hits in the reco histo
-       for (size_t i = 0; i < hamplitudes.size() && drawopt->fDrawRawDataOrCalibWires != kRAW; ++i) {
-		// If there is more than one peak in this fit, draw the sum of all peaks
-		if( (i==0 && hNMultiHit[i]>1) || (i>0 && hNMultiHit[i]>1 && hstartT[i] != hstartT[i-1]) )
-		{
-           	// create TPolyLine that actually gets drawn
-           	TPolyLine& p2 = fView->AddPolyLine(1001,kRed,3,1);
+              // this loop draws the double-exponential shapes for identified hits in the reco histo
+              for (size_t i = 0; i < hamplitudes.size() && drawopt->fDrawRawDataOrCalibWires != kRAW; ++i) {
+                  // If there is more than one peak in this fit, draw the sum of all peaks
+                  if( (i==0 && hNMultiHit[i]>1) || (i>0 && hNMultiHit[i]>1 && hstartT[i] != hstartT[i-1]) )
+                  {
+                      // create TPolyLine that actually gets drawn
+                      TPolyLine& p2 = fView->AddPolyLine(1001,kRed,3,1);
 
-            		// set coordinates of TPolyLine based fitted function
-            		for(int j = 0; j<1001; ++j)
-			{ 
-               		double x = hstartT[i]+j*(hendT[i]-hstartT[i])/1000;
-               		double y = RecoBaseDraw()->EvalMultiExpoFit(x,i,hNMultiHit[i],htau1,htau2,hamplitudes,hpeaktimes); 
-              	 	p2.SetPoint(j, x, y);
-            		}
+                      // set coordinates of TPolyLine based fitted function
+                      for(int j = 0; j<1001; ++j)
+                      {
+                          double x = hstartT[i]+j*(hendT[i]-hstartT[i])/1000;
+                          double y = RecoBaseDraw()->EvalMultiExpoFit(x,i,hNMultiHit[i],htau1,htau2,hamplitudes,hpeaktimes);
+                          p2.SetPoint(j, x, y);
+                      }
 
-            	p2.Draw("same");
-		}
+                      p2.Draw("same");
+                  }
 
-            // Always draw the single peaks in addition to the sum of all peaks
-            // create TPolyLine that actually gets drawn
-            TPolyLine& p1 = fView->AddPolyLine(1001,kOrange+7,3,1);
+                  // Always draw the single peaks in addition to the sum of all peaks
+                  // create TPolyLine that actually gets drawn
+                  TPolyLine& p1 = fView->AddPolyLine(1001,kOrange+7,3,1);
 
-            // set coordinates of TPolyLine based fitted function
-            for(int j = 0; j<1001; ++j){ 
-               double x = hstartT[i]+j*(hendT[i]-hstartT[i])/1000;
-	       double y = RecoBaseDraw()->EvalExpoFit(x,htau1[i],htau2[i],hamplitudes[i],hpeaktimes[i]);
-               p1.SetPoint(j, x, y);
-            }
+                  // set coordinates of TPolyLine based fitted function
+                  for(int j = 0; j<1001; ++j){
+                      double x = hstartT[i]+j*(hendT[i]-hstartT[i])/1000;
+                      double y = RecoBaseDraw()->EvalExpoFit(x,htau1[i],htau2[i],hamplitudes[i],hpeaktimes[i]);
+                      p1.SetPoint(j, x, y);
+                  }
           
-	    p1.Draw("same");
-         }
+                  p1.Draw("same");
+              }
 
-         if     (drawopt->fDrawRawDataOrCalibWires == kCALIB) fRecoHisto->Draw((defaultDrawOptions + " same").c_str());
-         else if(drawopt->fDrawRawDataOrCalibWires == kRAWCALIB){
-            fRawHisto->Draw((defaultDrawOptions + " same").c_str());
-            fRecoHisto->Draw((defaultDrawOptions + " same").c_str());
-         }
+              if     (drawopt->fDrawRawDataOrCalibWires == kCALIB) fRecoHisto->Draw((defaultDrawOptions + " same").c_str());
+              else if(drawopt->fDrawRawDataOrCalibWires == kRAWCALIB){
+                  fRawHisto->Draw((defaultDrawOptions + " same").c_str());
+                  fRecoHisto->Draw((defaultDrawOptions + " same").c_str());
+              }
 
-     	 fRawHisto->SetLabelSize  (0.15,"X");
-     	 fRawHisto->SetLabelOffset(0.01,"X");
-     	 fRawHisto->SetTitleSize  (0.15,"X");
-     	 fRawHisto->SetTitleOffset(0.60,"X");
+              fRawHisto->SetLabelSize  (0.15,"X");
+              fRawHisto->SetLabelOffset(0.01,"X");
+              fRawHisto->SetTitleSize  (0.15,"X");
+              fRawHisto->SetTitleOffset(0.60,"X");
      
-     	 fRawHisto->SetLabelSize  (0.15,"Y");
-     	 fRawHisto->SetLabelOffset(0.002,"Y");
-     	 fRawHisto->SetTitleSize  (0.15,"Y");
-     	 fRawHisto->SetTitleOffset(0.16,"Y");
+              fRawHisto->SetLabelSize  (0.15,"Y");
+              fRawHisto->SetLabelOffset(0.002,"Y");
+              fRawHisto->SetTitleSize  (0.15,"Y");
+              fRawHisto->SetTitleOffset(0.16,"Y");
      
-     	 fRecoHisto->SetLabelSize  (0.15,"X");
-     	 fRecoHisto->SetLabelOffset(0.01,"X");
-     	 fRecoHisto->SetTitleSize  (0.15,"X");
-     	 fRecoHisto->SetTitleOffset(0.60,"X");
+              fRecoHisto->SetLabelSize  (0.15,"X");
+              fRecoHisto->SetLabelOffset(0.01,"X");
+              fRecoHisto->SetTitleSize  (0.15,"X");
+              fRecoHisto->SetTitleOffset(0.60,"X");
      
-     	 fRecoHisto->SetLabelSize  (0.15,"Y");
-     	 fRecoHisto->SetLabelOffset(0.002,"Y");
-      	 fRecoHisto->SetTitleSize  (0.15,"Y");
-     	 fRecoHisto->SetTitleOffset(0.16,"Y");
+              fRecoHisto->SetLabelSize  (0.15,"Y");
+              fRecoHisto->SetLabelOffset(0.002,"Y");
+              fRecoHisto->SetTitleSize  (0.15,"Y");
+              fRecoHisto->SetTitleOffset(0.16,"Y");
 
-      } // end if fTQ == kTQ
+          } // end if fTQ == kTQ
 
 
       } //end raw waveform (dual phase)
-
-
       else //deconvoluted waveform (single phase)
       {
+          fPad->Clear();
+          fPad->cd();
 
-      fPad->Clear();
-      fPad->cd();
+          std::vector<double> hstart;
+          std::vector<double> hend;
+          std::vector<double> hamplitudes;
+          std::vector<double> hpeaktimes;
 
-      std::vector<double> hstart;
-      std::vector<double> hend;
-      std::vector<double> hamplitudes;
-      std::vector<double> hpeaktimes;
+          if(fTQ == kTQ){
+              fRawHisto->Reset("ICEM");
+              fRecoHisto->Reset("ICEM");
 
-      if(fTQ == kTQ){
-         fRawHisto->Reset("ICEM");
-         fRecoHisto->Reset("ICEM");
-
-         this->RawDataDraw()->FillTQHisto(*evt,
-                                          fPlane,
-                                          fWire, 
-                                          fRawHisto);
+              this->RawDataDraw()->FillTQHisto(*evt,
+                                               fPlane,
+                                               fWire,
+                                               fRawHisto);
           
-         RecoBaseDrawer::HitParamsVec hitParamsVec;
+              RecoBaseDrawer::HitParamsVec hitParamsVec;
 
-         this->RecoBaseDraw()->FillTQHisto(*evt,
-                                           fPlane,
-                                           fWire, 
-                                           fRecoHisto,
-                                           hitParamsVec);
+              this->RecoBaseDraw()->FillTQHisto(*evt,
+                                                fPlane,
+                                                fWire,
+                                                fRecoHisto,
+                                                hitParamsVec);
          
-         // draw with histogram style, only (square) lines, no errors
-         static const std::string defaultDrawOptions = "HIST";
+              // draw with histogram style, only (square) lines, no errors
+              static const std::string defaultDrawOptions = "HIST";
          
-         switch (drawopt->fDrawRawDataOrCalibWires) {
-           case kRAW:
-             fRawHisto->Draw(defaultDrawOptions.c_str());
-             break;
-           case kCALIB:
-             fRecoHisto->Draw(defaultDrawOptions.c_str());
-             break;
-           case kRAWCALIB:
-             fRawHisto->SetMaximum(1.1*std::max(fRawHisto->GetMaximum(), fRecoHisto->GetMaximum()));
-             fRawHisto->SetMinimum(1.1*std::min(fRawHisto->GetMinimum(), fRecoHisto->GetMinimum()));
-             fRawHisto->Draw(defaultDrawOptions.c_str());
-             fRecoHisto->Draw((defaultDrawOptions + " same").c_str());
-             break;
-         } // switch
+              switch (drawopt->fDrawRawDataOrCalibWires) {
+                  case kRAW:
+                      fRawHisto->Draw(defaultDrawOptions.c_str());
+                      break;
+                  case kCALIB:
+                      fRecoHisto->Draw(defaultDrawOptions.c_str());
+                      break;
+                  case kRAWCALIB:
+                      fRawHisto->SetMaximum(1.1*std::max(fRawHisto->GetMaximum(), fRecoHisto->GetMaximum()));
+                      fRawHisto->SetMinimum(1.1*std::min(fRawHisto->GetMinimum(), fRecoHisto->GetMinimum()));
+                      fRawHisto->Draw(defaultDrawOptions.c_str());
+                      fRecoHisto->Draw((defaultDrawOptions + " same").c_str());
+                      break;
+              } // switch
 
-         // this loop draws Gaussian shapes for identified hits in the reco histo
-          if (drawopt->fDrawRawDataOrCalibWires != kRAW)
-          {
-              for(const auto& roiHitParamsVec : hitParamsVec)
+              // this loop draws Gaussian shapes for identified hits in the reco histo
+              if (drawopt->fDrawRawDataOrCalibWires != kRAW)
               {
-                  double roiStart = roiHitParamsVec.front().hitStart; //roiHitParamsVec.front().hitStart - 3. * roiHitParamsVec.front().hitSigma;
-                  double roiStop  = roiHitParamsVec.back().hitEnd;    //roiHitParamsVec.back().hitEnd    + 3. * roiHitParamsVec.back().hitSigma;
-                  double width    = roiStop - roiStart;
-                  
-                  std::string funcString = "gaus(0)";
-                  
-                  for(size_t idx = 1; idx < roiHitParamsVec.size(); idx++) funcString += "+gaus(" + std::to_string(3*idx) + ")";
-                  
-                  TF1 f1("hitshape",funcString.c_str(),roiStart,roiStop);
-                  
-                  size_t idx(0);
-                  for(const auto& hitParams : roiHitParamsVec)
+                  for(const auto& roiHitParamsVec : hitParamsVec)
                   {
-                      f1.SetParameter(idx + 0, hitParams.hitHeight);
-                      f1.SetParameter(idx + 1, hitParams.hitCenter);
-                      f1.SetParameter(idx + 2, hitParams.hitSigma);
+                      double roiStart = roiHitParamsVec.front().hitStart; //roiHitParamsVec.front().hitStart - 3. * roiHitParamsVec.front().hitSigma;
+                      double roiStop  = roiHitParamsVec.back().hitEnd;    //roiHitParamsVec.back().hitEnd    + 3. * roiHitParamsVec.back().hitSigma;
+                      double width    = roiStop - roiStart;
+                  
+                      std::string funcString = "gaus(0)";
+                  
+                      for(size_t idx = 1; idx < roiHitParamsVec.size(); idx++) funcString += "+gaus(" + std::to_string(3*idx) + ")";
+                  
+                      TF1 f1("hitshape",funcString.c_str(),roiStart,roiStop);
+                  
+                      size_t idx(0);
+                      for(const auto& hitParams : roiHitParamsVec)
+                      {
+                          f1.SetParameter(idx + 0, hitParams.hitHeight);
+                          f1.SetParameter(idx + 1, hitParams.hitCenter);
+                          f1.SetParameter(idx + 2, hitParams.hitSigma);
                       
-                      TPolyLine& hitHeight = fView->AddPolyLine(2, kBlack, 1, 1);
+                          TPolyLine& hitHeight = fView->AddPolyLine(2, kBlack, 1, 1);
                       
-                      hitHeight.SetPoint(0, hitParams.hitCenter, 0.);
-                      hitHeight.SetPoint(1, hitParams.hitCenter, hitParams.hitHeight);
+                          hitHeight.SetPoint(0, hitParams.hitCenter, 0.);
+                          hitHeight.SetPoint(1, hitParams.hitCenter, hitParams.hitHeight);
                       
-                      hitHeight.Draw("same");
+                          hitHeight.Draw("same");
                       
-                      TPolyLine& hitSigma = fView->AddPolyLine(2, kGray, 1, 1);
+                          TPolyLine& hitSigma = fView->AddPolyLine(2, kGray, 1, 1);
                       
-                      hitSigma.SetPoint(0, hitParams.hitCenter - hitParams.hitSigma, 0.6 * hitParams.hitHeight);
-                      hitSigma.SetPoint(1, hitParams.hitCenter + hitParams.hitSigma, 0.6 * hitParams.hitHeight);
+                          hitSigma.SetPoint(0, hitParams.hitCenter - hitParams.hitSigma, 0.6 * hitParams.hitHeight);
+                          hitSigma.SetPoint(1, hitParams.hitCenter + hitParams.hitSigma, 0.6 * hitParams.hitHeight);
+                          
+                          hitSigma.Draw("same");
                       
-                      hitSigma.Draw("same");
-                      
-                      idx += 3;
-                  }
+                          idx += 3;
+                      }
                  
-                  //create TPolyLine that actually gets drawn
-                  TPolyLine& p1 = fView->AddPolyLine(1001, kOrange+7, 3, 1);
+                      //create TPolyLine that actually gets drawn
+                      TPolyLine& p1 = fView->AddPolyLine(1001, kOrange+7, 3, 1);
                   
-                  //set coordinates of TPolyLine based on Gaussian function
-                  for(int j = 0; j<1001; ++j)
-                  {
-                      double x = roiStart + j*width/1000;
-                      double y = f1.Eval(x);
-                      p1.SetPoint(j, x, y);
+                      //set coordinates of TPolyLine based on Gaussian function
+                      for(int j = 0; j<1001; ++j)
+                      {
+                          double x = roiStart + j*width/1000;
+                          double y = f1.Eval(x);
+                          p1.SetPoint(j, x, y);
+                      }
+                      p1.Draw("same");
                   }
-                  p1.Draw("same");
               }
-          }
          
 /* This code needs additional work to draw the text on the pad
         // BB: draw plane and wire number on the histogram
@@ -353,82 +349,80 @@ namespace evd{
         plnwir.SetTextColor(kBlack);
         plnwir.Draw("same");
 */
-         if     (drawopt->fDrawRawDataOrCalibWires == kCALIB) fRecoHisto->Draw((defaultDrawOptions + " same").c_str());
-         else if(drawopt->fDrawRawDataOrCalibWires == kRAWCALIB){
-            fRawHisto->Draw((defaultDrawOptions + " same").c_str());
-            fRecoHisto->Draw((defaultDrawOptions + " same").c_str());
-         }
+              if     (drawopt->fDrawRawDataOrCalibWires == kCALIB) fRecoHisto->Draw((defaultDrawOptions + " same").c_str());
+              else if(drawopt->fDrawRawDataOrCalibWires == kRAWCALIB){
+                  fRawHisto->Draw((defaultDrawOptions + " same").c_str());
+                  fRecoHisto->Draw((defaultDrawOptions + " same").c_str());
+              }
 
-         fRawHisto->SetTitleOffset(0.2, "Y");
-         fRecoHisto->SetLabelSize(0.2, "Y");
+              fRawHisto->SetTitleOffset(0.2, "Y");
+              fRecoHisto->SetLabelSize(0.2, "Y");
 
-      } // end if fTQ == kTQ
+          } // end if fTQ == kTQ
     
-      if(fTQ == kQ){
+          if(fTQ == kQ){
 
-	// figure out the signal type for this plane, assume that
-	// plane n in each TPC/cryostat has the same type
-	geo::PlaneID planeid(drawopt->CurrentTPC(), fPlane);
-	art::ServiceHandle<geo::Geometry> geo;
-	geo::SigType_t sigType = geo->SignalType(planeid);
+              // figure out the signal type for this plane, assume that
+              // plane n in each TPC/cryostat has the same type
+              geo::PlaneID planeid(drawopt->CurrentTPC(), fPlane);
+              art::ServiceHandle<geo::Geometry> geo;
+              geo::SigType_t sigType = geo->SignalType(planeid);
 
-	art::ServiceHandle<evd::ColorDrawingOptions> cst;
+              art::ServiceHandle<evd::ColorDrawingOptions> cst;
 	
-	TH1F *hist;
+              TH1F *hist;
 	
-	int ndiv = 0;
-	if(drawopt->fDrawRawDataOrCalibWires != kCALIB){
-	  hist = fRawHisto;
-	  hist->SetMinimum(cst->fRawQLow [(size_t)sigType]);
-	  hist->SetMaximum(cst->fRawQHigh[(size_t)sigType]);
-	  ndiv = cst->fRawDiv[(size_t)sigType];
-	}
-	if(drawopt->fDrawRawDataOrCalibWires == kCALIB){
-	  hist = fRecoHisto;
-	  hist->SetMinimum(cst->fRecoQLow [(size_t)sigType]);
-	  hist->SetMaximum(cst->fRecoQHigh[(size_t)sigType]);
-	  ndiv = cst->fRecoDiv[(size_t)sigType];
-	}
+              int ndiv = 0;
+              if(drawopt->fDrawRawDataOrCalibWires != kCALIB){
+                  hist = fRawHisto;
+                  hist->SetMinimum(cst->fRawQLow [(size_t)sigType]);
+                  hist->SetMaximum(cst->fRawQHigh[(size_t)sigType]);
+                  ndiv = cst->fRawDiv[(size_t)sigType];
+              }
+              if(drawopt->fDrawRawDataOrCalibWires == kCALIB){
+                  hist = fRecoHisto;
+                  hist->SetMinimum(cst->fRecoQLow [(size_t)sigType]);
+                  hist->SetMaximum(cst->fRecoQHigh[(size_t)sigType]);
+                  ndiv = cst->fRecoDiv[(size_t)sigType];
+              }
 	
-	hist->SetLabelSize(0, "X");
-	hist->SetLabelSize(0, "Y");
-	hist->SetTickLength(0, "X");
-	hist->SetTickLength(0, "Y");
-	hist->Draw("pY+");
+              hist->SetLabelSize(0, "X");
+              hist->SetLabelSize(0, "Y");
+              hist->SetTickLength(0, "X");
+              hist->SetTickLength(0, "Y");
+              hist->Draw("pY+");
 	
-	//
-	// Use this to fill the histogram with colors from the color scale
-	//
-	double x1, x2, y1, y2;
-	x1 = 0.;
-	x2 = 1.;
+              //
+              // Use this to fill the histogram with colors from the color scale
+              //
+              double x1, x2, y1, y2;
+              x1 = 0.;
+              x2 = 1.;
 	
-	for(int i = 0; i < ndiv; ++i){
-	  y1 = hist->GetMinimum() + i*(hist->GetMaximum()-hist->GetMinimum())/(1.*ndiv);
-	  y2 = hist->GetMinimum() + (i + 1)*(hist->GetMaximum()-hist->GetMinimum())/(1.*ndiv);
+              for(int i = 0; i < ndiv; ++i){
+                  y1 = hist->GetMinimum() + i*(hist->GetMaximum()-hist->GetMinimum())/(1.*ndiv);
+                  y2 = hist->GetMinimum() + (i + 1)*(hist->GetMaximum()-hist->GetMinimum())/(1.*ndiv);
 	  
-	  int c = 1;
-	  if (drawopt->fDrawRawDataOrCalibWires==kRAW) {
-	    c = cst->RawQ(sigType).GetColor(0.5*(y1+y2));
-	  }
-	  if (drawopt->fDrawRawDataOrCalibWires!=kRAW) {
-	    c= cst->CalQ(sigType).GetColor(0.5*(y1+y2));
-	  }
+                  int c = 1;
+                  if (drawopt->fDrawRawDataOrCalibWires==kRAW) {
+                      c = cst->RawQ(sigType).GetColor(0.5*(y1+y2));
+                  }
+                  if (drawopt->fDrawRawDataOrCalibWires!=kRAW) {
+                      c= cst->CalQ(sigType).GetColor(0.5*(y1+y2));
+                  }
 	  
-	  TBox& b = fView->AddBox(x1,y1,x2,y2);
-	  b.SetFillStyle(1001);
-	  b.SetFillColor(c);      
-	  b.Draw();
-	} // end loop over Q histogram bins
+                  TBox& b = fView->AddBox(x1,y1,x2,y2);
+                  b.SetFillStyle(1001);
+                  b.SetFillColor(c);
+                  b.Draw();
+              } // end loop over Q histogram bins
         
 
-	hist->Draw("same");
+              hist->Draw("same");
 	
-      } // end if fTQ == kQ
-
-
-     } //if-else dual single phase
-      return;
+          } // end if fTQ == kQ
+       } //if-else dual single phase
+       return;
    }
 
 

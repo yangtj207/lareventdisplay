@@ -378,6 +378,56 @@ void RecoBaseDrawer::Hit2D(std::vector<const recob::Hit*> hits,
 }
 
 //........................................................................
+  void RecoBaseDrawer::Hit2D(std::vector<const recob::Hit*> hits,
+                             evdb::View2D*                  view,
+                             float                          cosmicscore)
+  {
+    art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
+    art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
+    art::ServiceHandle<geo::Geometry>            geo;
+
+    unsigned int w  = 0;
+    unsigned int wold = 0;
+    float timeold = 0.;
+    
+    for(unsigned int c = 0; c < hits.size(); ++c){
+      // check that we are in the correct TPC
+      // the view should tell use we are in the correct plane
+      if(hits[c]->WireID().TPC      != rawOpt->fTPC ||
+         hits[c]->WireID().Cryostat != rawOpt->fCryostat) continue;
+      
+      w = hits[c]->WireID().Wire;
+
+      // Try to get the "best" charge measurement, ie. the one last in
+      // the calibration chain
+      float time = hits[c]->PeakTime();
+
+      if(rawOpt->fAxisOrientation < 1){
+        if( c > 0) {
+          TLine& l = view->AddLine(w, time+100, wold, timeold+100);
+          l.SetLineWidth(3);
+          l.SetLineColor(1);
+          if (cosmicscore>0.5) l.SetLineColor(kMagenta);
+          l.SetBit(kCannotPick);
+        }
+      }
+      else{
+        if(c > 0) {
+          TLine& l = view->AddLine(time+20, w, timeold+20, wold);
+          l.SetLineColor(1);
+          if (cosmicscore>0.5) l.SetLineStyle(2);
+          l.SetBit(kCannotPick);
+        }
+      }
+      
+      wold = w;
+      timeold = time;
+    } // loop on hits
+    
+    return;
+}
+
+//........................................................................
 int RecoBaseDrawer::GetRegionOfInterest(int plane,
                                         int& minw,
                                         int& maxw,
@@ -477,13 +527,17 @@ void RecoBaseDrawer::OpFlash2D(const art::Event& evt,
 {
     art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
-    art::ServiceHandle<geo::Geometry>            geo;
 
     if (rawOpt->fDrawRawDataOrCalibWires < 1) return;
     if (recoOpt->fDrawOpFlashes == 0)         return;
 
+    art::ServiceHandle<geo::Geometry>            geo;
+    detinfo::DetectorProperties const* det = lar::providerFrom<detinfo::DetectorPropertiesService>();
+    geo::PlaneID pid(rawOpt->fCryostat, rawOpt->fTPC, plane);
+
+
     for(size_t imod = 0; imod < recoOpt->fOpFlashLabels.size(); ++imod) {
-        art::InputTag const which = recoOpt->fOpFlashLabels[imod];
+        const art::InputTag which = recoOpt->fOpFlashLabels[imod];
 
         art::PtrVector<recob::OpFlash> opflashes;
         this->GetOpFlashes(evt, which, opflashes);
@@ -491,18 +545,16 @@ void RecoBaseDrawer::OpFlash2D(const art::Event& evt,
         if(opflashes.size() < 1) continue;
 
         int NFlashes = opflashes.size();
-        double TopCoord = 1000;
+        //double TopCoord = 1000;
 
 	LOG_VERBATIM("RecoBaseDrawer") <<"Total "<<NFlashes<<" flashes.";
 
         // project each seed into this view
         for (size_t iof = 0; iof < opflashes.size(); ++iof) {
-            std::vector<double> WireCenters = opflashes[iof]->WireCenters();
-            std::vector<double> WireWidths = opflashes[iof]->WireWidths();
 	    if (opflashes[iof]->TotalPE() < recoOpt->fFlashMinPE) continue;
 	    if (opflashes[iof]->Time() < recoOpt->fFlashTMin) continue;
 	    if (opflashes[iof]->Time() > recoOpt->fFlashTMax) continue;
-
+            int Color = evd::kColor[(iof)%evd::kNCOLS];
             LOG_VERBATIM("RecoBaseDrawer") << "Flash t: "
                         << opflashes[iof]->Time()
                         << "\t y,z : "
@@ -511,72 +563,40 @@ void RecoBaseDrawer::OpFlash2D(const art::Event& evt,
                         << opflashes[iof]->ZCenter()
                         << " \t PE :"
                         << opflashes[iof]->TotalPE();
-            double LineTop = TopCoord * float(iof) / NFlashes;
 
-            double x1 =  WireCenters.at(plane)+WireWidths.at(plane);
-            double x2 =  WireCenters.at(plane)-WireWidths.at(plane);
-            double y1 =  LineTop;
-            double y2 =  LineTop;
-
-            double s1x1 = x1;
-            double s1x2 = x1;
-            double s2x1 = x2;
-            double s2x2 = x2;
-            double s1y1 = 0;
-            double s1y2 = LineTop;
-            double s2y1 = 0;
-            double s2y2 = LineTop;
-
-            if(opflashes[iof]->OnBeamTime()==1)
-            {
-                s1y2 = TopCoord*1.1;
-                s2y2 = TopCoord*1.1;
-                y2   = TopCoord*1.1;
-                y1   = TopCoord*1.1;
+            //std::cout<<opflashes[iof]->Time()<<" "<<det->SamplingRate()<<" "<<det->GetXTicksOffset(pid)<<std::endl;
+            float flashtick = opflashes[iof]->Time()/det->SamplingRate()*1e3 + det->GetXTicksOffset(pid);
+            float wire0 = FLT_MAX;
+            float wire1 = FLT_MIN;
+            //Find the 4 corners and convert them to wire numbers
+            std::vector<TVector3> points;
+            points.push_back(TVector3(0, opflashes[iof]->YCenter()-opflashes[iof]->YWidth(), opflashes[iof]->ZCenter()-opflashes[iof]->ZWidth()));
+            points.push_back(TVector3(0, opflashes[iof]->YCenter()-opflashes[iof]->YWidth(), opflashes[iof]->ZCenter()+opflashes[iof]->ZWidth()));
+            points.push_back(TVector3(0, opflashes[iof]->YCenter()+opflashes[iof]->YWidth(), opflashes[iof]->ZCenter()-opflashes[iof]->ZWidth()));
+            points.push_back(TVector3(0, opflashes[iof]->YCenter()+opflashes[iof]->YWidth(), opflashes[iof]->ZCenter()+opflashes[iof]->ZWidth()));
+            for (size_t i = 0; i<points.size(); ++i){
+              geo::WireID wireID;
+              try{
+                wireID = geo->NearestWireID(points[i], pid);
+              }
+              catch(geo::InvalidWireError const& e) {
+                wireID = e.suggestedWireID(); // pick the closest valid wire
+              }
+              if (wireID.Wire < wire0) wire0 = wireID.Wire;
+              if (wireID.Wire > wire1) wire1 = wireID.Wire;
             }
-
-            if(rawOpt->fAxisOrientation > 0)
-            {
-                y1 = WireCenters.at(plane)+WireWidths.at(plane);
-                y2 = WireCenters.at(plane)-WireWidths.at(plane);
-                x1 = LineTop;
-                x2 = LineTop;
-
-                s1y1 = x1;
-                s1y2 = x1;
-                s2y1 = x2;
-                s2y2 = x2;
-                s1x1 = 0;
-                s1x2 = LineTop;
-                s2x1 = 0;
-                s2x2 = LineTop;
-                if(opflashes[iof]->OnBeamTime()==1)
-                {
-                    s1x2 = TopCoord*1.1;
-                    s2x2 = TopCoord*1.1;
-                    x2 = TopCoord*1.1;
-                    x1 = TopCoord*1.1;
-                }
+            if(rawOpt->fAxisOrientation > 0){
+              TLine& line = view->AddLine(flashtick, wire0, flashtick, wire1);
+              line.SetLineWidth(2);
+              line.SetLineStyle(2);
+              line.SetLineColor(Color);
             }
-	
-            TLine&   line = view->AddLine(x1, y1, x2, y2);
-
-            if(opflashes[iof]->OnBeamTime()==1)
-            {
-                line.SetLineColor(kRed);
-                TLine&   s1 = view->AddLine(s1x1, s1y1, s1x2, s1y2);
-                TLine&   s2 = view->AddLine(s2x1, s2y1, s2x2, s2y2);
-                s1.SetLineColor(kRed);
-                s2.SetLineColor(kRed);
-                s1.SetLineStyle(kDashed);
-                s2.SetLineStyle(kDashed);
+            else{
+              TLine& line = view->AddLine(wire0, flashtick, wire1, flashtick);
+              line.SetLineWidth(2);
+              line.SetLineStyle(2);
+              line.SetLineColor(Color);
             }
-            else
-            {
-                //      line.SetLineColor(kGray);
-            }
-            line.SetLineStyle(kSolid);
-            line.SetLineWidth(2.0);
         } // loop on opflashes
     } // loop on imod folders
   
@@ -825,7 +845,7 @@ void RecoBaseDrawer::BezierTrack3D(const art::Event& evt,
         if(clust.size() < 1) continue;
 
         art::FindMany<recob::Hit> fmh(clust, evt, which);
-        art::FindOne<recob::PFParticle> fmc(clust, evt, which);
+        art::FindManyP<recob::PFParticle> fmc(clust, evt, which);
 
         for (size_t ic = 0; ic < clust.size(); ++ic)
         {
@@ -835,12 +855,29 @@ void RecoBaseDrawer::BezierTrack3D(const art::Event& evt,
             // see if we can set the color index in a sensible fashion
             int clusterIdx(clust[ic]->ID());
             int colorIdx(clusterIdx%evd::kNCOLS);
+            bool pfpAssociation = false;
+            float cosmicscore = FLT_MIN;
             
-            if (fmc.isValid() && fmc.at(ic).isValid())
+            if (fmc.isValid())
             {
-                const recob::PFParticle& pfParticle(fmc.at(ic).ref());
-                clusterIdx = pfParticle.Self();
+              std::vector<art::Ptr<recob::PFParticle>> pfplist = fmc.at(ic);
+              // Use the first one
+              if(!pfplist.empty()) {
+                clusterIdx = pfplist[0]->Self();
                 colorIdx   = clusterIdx % evd::kNCOLS;
+                pfpAssociation = true;
+                //Get cosmic score
+                if (recoOpt->fDrawCosmicTags){
+                  art::FindManyP<anab::CosmicTag> fmct(pfplist, evt, which);
+                  if (fmct.isValid()){
+                    std::vector<art::Ptr<anab::CosmicTag>> ctlist = fmct.at(0);
+                    if (!ctlist.empty()){
+                      //std::cout<<"cosmic tag "<<ctlist[0]->CosmicScore()<<std::endl;
+                      cosmicscore = ctlist[0]->CosmicScore();
+                    }
+                  }
+                }
+              } // pfplist is not empty
             }
 
             std::vector<const recob::Hit*> hits = fmh.at(ic);
@@ -855,7 +892,9 @@ void RecoBaseDrawer::BezierTrack3D(const art::Event& evt,
                 // Place this cluster's unique marker at the hit's location
                 int color  = evd::kColor[colorIdx];
                 this->Hit2D(hits, color, view, drawConnectingLines);
-          
+                if (recoOpt->fDrawCosmicTags&&cosmicscore!=FLT_MIN){
+                  this->Hit2D(hits, view, cosmicscore);
+                }
                 if(recoOpt->fDrawClusters > 3) {
                     // BB: draw the cluster ID
                     std::string s = std::to_string(clusterIdx);
@@ -863,7 +902,11 @@ void RecoBaseDrawer::BezierTrack3D(const art::Event& evt,
                     double wire = clust[ic]->StartWire();
                     double tick = 20 + clust[ic]->StartTick();
                     TText& clID = view->AddText(wire, tick, txt);
-                    clID.SetTextColor(color);
+                    if(pfpAssociation) {
+                      clID.SetTextColor(color);
+                    } else {
+                      clID.SetTextColor(kBlack);
+                    }
                 } // recoOpt->fDrawClusters > 3
             }
             else {
@@ -871,7 +914,7 @@ void RecoBaseDrawer::BezierTrack3D(const art::Event& evt,
                 // default "outline" method:
                 std::vector<double> tpts, wpts;
       
-	            this->GetClusterOutlines(hits, tpts, wpts, plane);
+                this->GetClusterOutlines(hits, tpts, wpts, plane);
       
                 int lcolor = 9; // line color
                 int fcolor = 9; // fill color
@@ -2732,10 +2775,13 @@ void RecoBaseDrawer::OpFlashOrtho(const art::Event& evt,
   art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
   art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
   art::ServiceHandle<geo::Geometry>            geo;
-  
+
   if (rawOpt->fDrawRawDataOrCalibWires < 1) return;
   if (recoOpt->fDrawOpFlashes == 0)         return;
-  
+
+  detinfo::DetectorProperties const* det = lar::providerFrom<detinfo::DetectorPropertiesService>();
+  geo::PlaneID pid(rawOpt->fCryostat, rawOpt->fTPC, 0);
+ 
   double minx = 1e9;
   double maxx = -1e9;
   for (size_t i = 0; i<geo->NTPC(); ++i){
@@ -2750,7 +2796,7 @@ void RecoBaseDrawer::OpFlashOrtho(const art::Event& evt,
   }
   
   for(size_t imod = 0; imod < recoOpt->fOpFlashLabels.size(); ++imod) {
-    art::InputTag const which = recoOpt->fOpFlashLabels[imod];
+    const art::InputTag which = recoOpt->fOpFlashLabels[imod];
     
     art::PtrVector<recob::OpFlash> opflashes;
     this->GetOpFlashes(evt, which, opflashes);
@@ -2781,11 +2827,16 @@ void RecoBaseDrawer::OpFlashOrtho(const art::Event& evt,
 	//line.SetLineColor(Colour);
       }
       else if(proj == evd::kXZ){
-	TBox& b1      = view->AddBox(ZCentre-ZHalfWidth, minx, ZCentre+ZHalfWidth, maxx);
-	b1.SetFillStyle(3004+(iof%3));
-	b1.SetFillColor(Colour);
+//	TBox& b1      = view->AddBox(ZCentre-ZHalfWidth, minx, ZCentre+ZHalfWidth, maxx);
+//	b1.SetFillStyle(3004+(iof%3));
+//	b1.SetFillColor(Colour);
 	//TLine&   line = view->AddLine(ZCentre, minx, ZCentre, maxx);
 	//line.SetLineColor(Colour);
+        float xflash = det->ConvertTicksToX(opflashes[iof]->Time()/det->SamplingRate()*1e3 + det->GetXTicksOffset(pid),pid);
+        TLine& line = view->AddLine(ZCentre-ZHalfWidth, xflash, ZCentre+ZHalfWidth, xflash);
+        line.SetLineWidth(2);
+        line.SetLineStyle(2);
+        line.SetLineColor(Colour);        
       }
       else if(proj == evd::kYZ){
 	TBox& b1      = view->AddBox(ZCentre-ZHalfWidth, YCentre-YHalfWidth, ZCentre+ZHalfWidth, YCentre+YHalfWidth);

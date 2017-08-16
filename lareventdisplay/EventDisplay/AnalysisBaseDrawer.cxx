@@ -72,7 +72,7 @@ namespace evd{
       for(size_t imod = 0; imod < recoOpt->fTrackLabels.size(); ++imod) {
        
          //Get Track collection
-         std::string which = recoOpt->fTrackLabels[imod];
+          art::InputTag which = recoOpt->fTrackLabels[imod];
          art::Handle<std::vector<recob::Track> > trackListHandle;
          evt.getByLabel(which,trackListHandle);
          std::vector<art::Ptr<recob::Track> > tracklist;
@@ -220,7 +220,7 @@ namespace evd{
       //now get the actual data
       for(size_t imod = 0; imod < recoOpt->fTrackLabels.size(); ++imod) {
          //Get Track collection
-         std::string which = recoOpt->fTrackLabels[imod];
+          art::InputTag which = recoOpt->fTrackLabels[imod];
          art::Handle<std::vector<recob::Track> > trackListHandle;
          evt.getByLabel(which,trackListHandle);
          std::vector<art::Ptr<recob::Track> > tracklist;
@@ -287,7 +287,7 @@ namespace evd{
       for(size_t imod = 0; imod < recoOpt->fShowerLabels.size(); ++imod) {
        
          //Get Track collection
-         std::string which = recoOpt->fShowerLabels[imod];
+          art::InputTag which = recoOpt->fShowerLabels[imod];
          art::Handle<std::vector<anab::Calorimetry> > caloListHandle;
          evt.getByLabel(which,caloListHandle);
          std::vector<art::Ptr<anab::Calorimetry> > calolist;

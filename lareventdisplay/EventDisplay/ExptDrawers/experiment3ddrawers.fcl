@@ -1,0 +1,30 @@
+BEGIN_PROLOG
+
+standard_drawer:
+{
+  tool_type:           StandardDrawer
+
+  DisplayBackingGrid:  true
+  DisplayAxes:         true
+}
+
+MicroBooNE_drawer:
+{
+tool_type:             MicroBooNEDrawer
+
+ThreeWindowReadout:    true
+DisplayBackingGrid:    true
+DisplayAxes:           true
+DrawBadChannels:       true
+}
+
+icarus_drawer:
+{
+tool_type:             ICARUSDrawer
+
+DisplayBackingGrid:    true
+DisplayAxes:           true
+DrawBadChannels:       true
+}
+
+END_PROLOG

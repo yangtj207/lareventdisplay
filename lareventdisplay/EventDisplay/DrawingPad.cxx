@@ -9,15 +9,17 @@
 #include "TPad.h"
 #include "nutools/EventDisplayBase/evdb.h"
 #include "lareventdisplay/EventDisplay/HeaderDrawer.h"
-#include "lareventdisplay/EventDisplay/GeometryDrawer.h"
+#include "lareventdisplay/EventDisplay/ExptDrawers/IExperimentDrawer.h"
 #include "lareventdisplay/EventDisplay/SimulationDrawer.h"
 #include "lareventdisplay/EventDisplay/RecoBaseDrawer.h"
 #include "lareventdisplay/EventDisplay/RawDataDrawer.h"
 #include "lareventdisplay/EventDisplay/AnalysisBaseDrawer.h"
 #include "lareventdisplay/EventDisplay/HitSelector.h"
+#include "lareventdisplay/EventDisplay/EvdLayoutOptions.h"
 
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Principal/Event.h"
+#include "art/Utilities/make_tool.h"
 
 namespace evd{
 
@@ -40,7 +42,6 @@ namespace evd{
 			 double x2, double y2)
     : fPad(0)
     , fHeaderDraw(0) //Every pointer checked for a 0 value in the destructor should be set to 0 here.  aoliv23@lsu.edu
-    , fGeometryDraw(0)
     , fSimulationDraw(0)
     , fRawDataDraw(0)
     , fRecoBaseDraw(0)
@@ -56,7 +57,6 @@ namespace evd{
   DrawingPad::~DrawingPad() 
   {
     if (fHeaderDraw)       { delete fHeaderDraw;       fHeaderDraw       = 0; }
-    if (fGeometryDraw)     { delete fGeometryDraw;     fGeometryDraw     = 0; }
     if (fSimulationDraw)   { delete fSimulationDraw;   fSimulationDraw   = 0; }
     if (fRawDataDraw)      { delete fRawDataDraw;      fRawDataDraw      = 0; }
     if (fRecoBaseDraw)     { delete fRecoBaseDraw;     fRecoBaseDraw     = 0; }
@@ -81,10 +81,16 @@ namespace evd{
   ///
   /// Provide access to the drawer for the detector geometry
   ///
-  GeometryDrawer* DrawingPad::GeometryDraw() 
+  evd_tool::IExperimentDrawer* DrawingPad::GeometryDraw()
   {
-    if (fGeometryDraw==0) fGeometryDraw = new GeometryDrawer();
-    return fGeometryDraw;
+    if (fGeometryDraw==0)
+    {
+        art::ServiceHandle<evd::EvdLayoutOptions> layoutOptions;
+        const fhicl::ParameterSet&                pset = layoutOptions->fParameterSet;
+        
+        fGeometryDraw = art::make_tool<evd_tool::IExperimentDrawer>(pset.get<fhicl::ParameterSet>("Experiment3DDrawer"));
+    }
+    return fGeometryDraw.get();
   }
 
   ///

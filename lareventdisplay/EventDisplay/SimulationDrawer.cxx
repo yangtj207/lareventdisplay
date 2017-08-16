@@ -34,6 +34,9 @@
 #include "lardata/DetectorInfo/DetectorProperties.h"
 #include "lardata/DetectorInfoServices/DetectorClocksService.h"
 
+//#include "larevt/SpaceChargeServices/SpaceChargeService.h"
+//#include "larevt/SpaceCharge/SpaceChargeStandard.h"
+
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Principal/View.h"
 #include "art/Framework/Principal/Event.h"
@@ -52,9 +55,9 @@ namespace {
 
 namespace evd{
 
-  SimulationDrawer::SimulationDrawer() 
-  {
-  // For now only draw cryostat=0.
+SimulationDrawer::SimulationDrawer()
+{
+    // For now only draw cryostat=0.
     art::ServiceHandle<geo::Geometry>          geom;
     minx = 1e9;
     maxx = -1e9;
@@ -62,25 +65,35 @@ namespace evd{
     maxy = -1e9;
     minz = 1e9;
     maxz = -1e9;
-    for (size_t i = 0; i<geom->NTPC(); ++i){
-      double local[3] = {0.,0.,0.};
-      double world[3] = {0.,0.,0.};
-      const geo::TPCGeo &tpc = geom->TPC(i);
-      tpc.LocalToWorld(local,world);
-      if (minx>world[0]-geom->DetHalfWidth(i))
-	minx = world[0]-geom->DetHalfWidth(i);
-      if (maxx<world[0]+geom->DetHalfWidth(i))
-	maxx = world[0]+geom->DetHalfWidth(i);
-      if (miny>world[1]-geom->DetHalfHeight(i))
-	miny = world[1]-geom->DetHalfHeight(i);
-      if (maxy<world[1]+geom->DetHalfHeight(i))
-	maxy = world[1]+geom->DetHalfHeight(i);
-      if (minz>world[2]-geom->DetLength(i)/2.)
-	minz = world[2]-geom->DetLength(i)/2.;
-      if (maxz<world[2]+geom->DetLength(i)/2.)
-	maxz = world[2]+geom->DetLength(i)/2.;
+    
+    for(size_t cryoIdx = 0; cryoIdx < geom->Ncryostats(); cryoIdx++)
+    {
+        for (size_t i = 0; i<geom->NTPC(cryoIdx); ++i)
+        {
+            double local[3] = {0.,0.,0.};
+            double world[3] = {0.,0.,0.};
+            const geo::TPCGeo &tpc = geom->TPC(i);
+            tpc.LocalToWorld(local,world);
+        
+            std::cout << "Cryo/TPC idx: " << cryoIdx << "/" << i << ", local: " << local[0] << ", " << local[1] << ", " << local[2] << ", world: " << world[0] << ", " << world[1] << ", " << world[2] << std::endl;
+        
+            if (minx>world[0]-geom->DetHalfWidth(i))
+                minx = world[0]-geom->DetHalfWidth(i);
+            if (maxx<world[0]+geom->DetHalfWidth(i))
+                maxx = world[0]+geom->DetHalfWidth(i);
+            if (miny>world[1]-geom->DetHalfHeight(i))
+                miny = world[1]-geom->DetHalfHeight(i);
+            if (maxy<world[1]+geom->DetHalfHeight(i))
+                maxy = world[1]+geom->DetHalfHeight(i);
+            if (minz>world[2]-geom->DetLength(i)/2.)
+                minz = world[2]-geom->DetLength(i)/2.;
+            if (maxz<world[2]+geom->DetLength(i)/2.)
+                maxz = world[2]+geom->DetLength(i)/2.;
+        
+            std::cout << "        minx/maxx: " << minx << "/" << maxx << ", miny/maxy: " << miny << "/" << maxy << ", minz/miny: " << minz << "/" << maxz << std::endl;
+        }
     }
-  }
+}
 
   //......................................................................
 
@@ -276,18 +289,21 @@ namespace evd{
 
   //......................................................................
   //this method draws the true particle trajectories in 3D
-  void SimulationDrawer::MCTruth3D(const art::Event& evt,
-				   evdb::View3D*     view)
-  {
+void SimulationDrawer::MCTruth3D(const art::Event& evt,
+                                 evdb::View3D*     view)
+{
     if( evt.isRealData() ) return;
 
     art::ServiceHandle<evd::SimulationDrawingOptions> drawopt;
     // If the option is turned off, there's nothing to do
     if (!drawopt->fShowMCTruthTrajectories) return;
+    
+    // Space charge service...
+//    const spacecharge::SpaceCharge* spaceCharge = lar::providerFrom<spacecharge::SpaceChargeService>();
 
-  //  geo::GeometryCore const* geom = lar::providerFrom<geo::Geometry>();
+    //  geo::GeometryCore const* geom = lar::providerFrom<geo::Geometry>();
     detinfo::DetectorProperties const* theDetector = lar::providerFrom<detinfo::DetectorPropertiesService>();
-    detinfo::DetectorClocks const* detClocks = lar::providerFrom<detinfo::DetectorClocksService>();
+    detinfo::DetectorClocks     const* detClocks   = lar::providerFrom<detinfo::DetectorClocksService>();
 
     // get the particles from the Geant4 step
     std::vector<const simb::MCParticle*> plist;
@@ -296,7 +312,12 @@ namespace evd{
     // Useful variables
     double xMinimum(-1.*(maxx-minx));
     double xMaximum( 2.*(maxx-minx));
-      
+    
+    double xMinFromTicks = theDetector->ConvertTicksToX(0,0,0,0);
+    double xMaxFromTicks = theDetector->ConvertTicksToX(theDetector->NumberTimeSamples(),0,0,0);
+    
+    std::cout << "# samples: " << theDetector->NumberTimeSamples() << ", min/max X: " << xMinFromTicks << "/" << xMaxFromTicks << ", xMinimum/xMaximum: " << xMinimum << "/" << xMaximum << std::endl;
+    
     // Define a couple of colors for neutrals and if we gray it out...
     int neutralColor(12);
     int grayedColor(15);
@@ -326,7 +347,7 @@ namespace evd{
     {
         trackToMcParticleMap[plist[p]->TrackId()] = plist[p];
         
-        // Quick loop through to drawn trajectories...
+        // Quick loop through to draw trajectories...
         if (drawopt->fShowMCTruthTrajectories)
         {
             // Is there an associated McTrajectory?
@@ -345,13 +366,15 @@ namespace evd{
             {
                 // The following is meant to get the correct offset for drawing the particle trajectory
                 // In particular, the cosmic rays will not be correctly placed without this
-	        double g4Ticks(detClocks->TPCG4Time2Tick(mcPart->T())+theDetector->GetXTicksOffset(0,0,0)-theDetector->TriggerOffset());
-	        double xOffset(theDetector->ConvertTicksToX(g4Ticks, 0, 0, 0));
+                //double g4Ticks(detClocks->TPCG4Time2Tick(mcPart->T())+theDetector->GetXTicksOffset(0,0,0)-theDetector->TriggerOffset());
+                double g4Ticks(detClocks->TPCG4Time2Tick(mcPart->T())+theDetector->GetXTicksOffset(0,0,0));
+                //double g4Ticks(detClocks->TPCG4Time2Tick(mcPart->T()));
+                double xOffset(theDetector->ConvertTicksToX(g4Ticks, 0, 0, 0));
 		
-  	        // collect the points from this particle
-	        int numTrajPoints = mcTraj.size();
+                // collect the points from this particle
+                int numTrajPoints = mcTraj.size();
 		
-	        std::unique_ptr<double[]> hitPositions(new double[3*numTrajPoints]);
+                std::unique_ptr<double[]> hitPositions(new double[3*numTrajPoints]);
                 int                       hitCount(0);
             
                 for(int hitIdx = 0; hitIdx < numTrajPoints; hitIdx++)
@@ -367,8 +390,17 @@ namespace evd{
                     xPos += xOffset;
                 
                     // Check fiducial limits
-                    if (xPos > xMinimum && xPos < xMaximum)
+                    if (xPos > xMinFromTicks && xPos < xMaxFromTicks)
                     {
+                        // Check for space charge offsets
+//                        if (spaceCharge->EnableSimEfieldSCE())
+//                        {
+//                            std::vector<double> offsetVec = spaceCharge->GetPosOffsets(xPos,yPos,zPos);
+//                            xPos += offsetVec[0] - 0.7;
+//                            yPos -= offsetVec[1];
+//                            zPos -= offsetVec[2];
+//                        }
+                        
                         hitPositions[3*hitCount    ] = xPos;
                         hitPositions[3*hitCount + 1] = yPos;
                         hitPositions[3*hitCount + 2] = zPos;
@@ -430,7 +462,9 @@ namespace evd{
         
         // The following is meant to get the correct offset for drawing the particle trajectory
         // In particular, the cosmic rays will not be correctly placed without this
-        double g4Ticks(detClocks->TPCG4Time2Tick(mcPart->T())+theDetector->GetXTicksOffset(0,0,0)-theDetector->TriggerOffset());
+        //double g4Ticks(detClocks->TPCG4Time2Tick(mcPart->T())+theDetector->GetXTicksOffset(0,0,0)-theDetector->TriggerOffset());
+        double g4Ticks(detClocks->TPCG4Time2Tick(mcPart->T())+theDetector->GetXTicksOffset(0,0,0));
+//        double g4Ticks(detClocks->TPCG4Time2Tick(mcPart->T()));
         double xOffset(theDetector->ConvertTicksToX(g4Ticks, 0, 0, 0));
         
         int colorIdx(evd::Style::ColorFromPDG(mcPart->PdgCode()));
@@ -444,7 +478,8 @@ namespace evd{
             markerSize = 1;
         }
         
-        TPolyMarker3D& pm = view->AddPolyMarker3D(partToPosMapItr->second.size(), colorIdx, markerIdx, markerSize); 
+        std::unique_ptr<double[]> hitPositions(new double[3*partToPosMapItr->second.size()]);
+        int                       hitCount(0);
         
         // Now loop over points and add to trajectory
         for(size_t posIdx = 0; posIdx < partToPosMapItr->second.size(); posIdx++)
@@ -453,9 +488,17 @@ namespace evd{
             
             double xCoord = posVec[0] + xOffset;
             
-            if (xCoord > xMinimum && xCoord < xMaximum)
-                pm.SetPoint(posIdx, xCoord, posVec[1], posVec[2]);
+            if (xCoord > xMinFromTicks && xCoord < xMaxFromTicks)
+            {
+                hitPositions[3*hitCount    ] = xCoord;
+                hitPositions[3*hitCount + 1] = posVec[1];
+                hitPositions[3*hitCount + 2] = posVec[2];
+                hitCount++;
+            }
         }
+        
+        TPolyMarker3D& pm = view->AddPolyMarker3D(1, colorIdx, markerIdx, markerSize);
+        pm.SetPolyMarker(hitCount, hitPositions.get(), markerIdx);
     }
       
     // Finally, let's see if we can draw the incoming particle from the MCTruth information
@@ -504,7 +547,7 @@ namespace evd{
     }
       
     return;
-  }
+}
 
   //......................................................................
   //this method draws the true particle trajectories in 3D Ortho view.

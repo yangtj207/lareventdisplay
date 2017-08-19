@@ -160,7 +160,7 @@ public:
 		              evdb::View3D*     view);
     void DrawPFParticle3D(const art::Ptr<recob::PFParticle>&       pfPart,
                           const art::PtrVector<recob::PFParticle>& pfParticleVec,
-                          const art::PtrVector<recob::SpacePoint>& spacePointVec,
+                          const std::vector<art::Ptr<recob::SpacePoint>>& spacePointVec,
                           const art::FindManyP<recob::Edge>&       edgeAssnsVec,
                           const art::FindManyP<recob::SpacePoint>& spacePointAssnsVec,
                           const art::FindManyP<recob::Hit>&        spHitAssnVec,
@@ -171,7 +171,7 @@ public:
                           evdb::View3D*                            view);
     void Prong3D(const art::Event& evt,
 		         evdb::View3D*     view);
-    void DrawSpacePoint3D(const std::vector<const recob::SpacePoint*>& spts,
+    void DrawSpacePoint3D(std::vector<art::Ptr<recob::SpacePoint>>& spts,
                           evdb::View3D*                                view,
                           int                                          color,
                           int                                          marker = 3,
@@ -221,10 +221,10 @@ public:
 		            evd::OrthoProj_t  proj,
 		            double            msize,
 		            evdb::View2D*     view);
-    void DrawSpacePointOrtho(const std::vector<const recob::SpacePoint*>& spts,
-			                 int                 color,
+    void DrawSpacePointOrtho(std::vector<art::Ptr<recob::SpacePoint>>& spts,
+                             int                 color,
                              evd::OrthoProj_t    proj,
-			                 double              msize,
+                             double              msize,
                              evdb::View2D*       view,
 			     int mode = 0); ///< 0: track, 1: shower
     void DrawProngOrtho(const recob::Prong& prong,
@@ -326,8 +326,8 @@ public:
 		              const art::InputTag&               which,
 		              art::PtrVector<recob::EndPoint2D>& ep2d);
     int GetSpacePoints(const art::Event&                  evt,
-		               const art::InputTag&               which,
-                       art::PtrVector<recob::SpacePoint>& spts);
+                       const art::InputTag&               which,
+                       std::vector<art::Ptr<recob::SpacePoint>>& spts);
     int GetEdges(const art::Event&            evt,
                  const art::InputTag&         which,
                  art::PtrVector<recob::Edge>& edges);

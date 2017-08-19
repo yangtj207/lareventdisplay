@@ -970,7 +970,7 @@ void RecoBaseDrawer::BezierTrack3D(const art::Event& evt,
         
         // We want to draw the hits that are associated to "free" space points (non clustered) as well
         // Get the space points created by the PFParticle producer
-        art::PtrVector<recob::SpacePoint> spacePointVec;
+        std::vector<art::Ptr<recob::SpacePoint>> spacePointVec;
         this->GetSpacePoints(evt, which, spacePointVec);
         
         // No space points no continue
@@ -1900,16 +1900,19 @@ void RecoBaseDrawer::SpacePoint3D(const art::Event& evt,
     {
         art::InputTag const which = labels[imod];
     
-        art::PtrVector<recob::SpacePoint> spts;
+        std::vector<art::Ptr<recob::SpacePoint>> spts;
         this->GetSpacePoints(evt, which, spts);
         int color = 10*imod + 11;
         
-        std::vector<const recob::SpacePoint*> sptsVec;
-        
-        sptsVec.resize(spts.size());
-        for(const auto& spt : spts) sptsVec.push_back(&*spt);
-        
-        this->DrawSpacePoint3D(sptsVec, view, color, kFullDotMedium, 1);
+//        std::vector<const recob::SpacePoint*> sptsVec;
+//        
+//        sptsVec.resize(spts.size());
+//        for(const auto& spt : spts){
+//          std::cout<<spt<<" "<<*spt<<" "<<&*spt<<std::endl;
+//          sptsVec.push_back(&*spt);
+//          std::cout<<sptsVec.back()<<std::endl;
+//        }
+        this->DrawSpacePoint3D(spts, view, color, kFullDotMedium, 1);
     }
 
     return;
@@ -1940,7 +1943,7 @@ void RecoBaseDrawer::PFParticle3D(const art::Event& evt,
         if (pfParticleVec.size() < 1) continue;
         
         // Get the space points created by the PFParticle producer
-        art::PtrVector<recob::SpacePoint> spacePointVec;
+        std::vector<art::Ptr<recob::SpacePoint>> spacePointVec;
         this->GetSpacePoints(evt, which, spacePointVec);
         
         // Recover the edges
@@ -1993,7 +1996,7 @@ void RecoBaseDrawer::PFParticle3D(const art::Event& evt,
     
 void RecoBaseDrawer::DrawPFParticle3D(const art::Ptr<recob::PFParticle>&       pfPart,
                                       const art::PtrVector<recob::PFParticle>& pfParticleVec,
-                                      const art::PtrVector<recob::SpacePoint>& spacePointVec,
+                                      const std::vector<art::Ptr<recob::SpacePoint>>& spacePointVec,
                                       const art::FindManyP<recob::Edge>&       edgeAssnsVec,
                                       const art::FindManyP<recob::SpacePoint>& spacePointAssnVec,
                                       const art::FindManyP<recob::Hit>&        spHitAssnVec,
@@ -2370,7 +2373,7 @@ void RecoBaseDrawer::Prong3D(const art::Event& evt,
 }
 
 //......................................................................
-void RecoBaseDrawer::DrawSpacePoint3D(const std::vector<const recob::SpacePoint*>& spts,
+void RecoBaseDrawer::DrawSpacePoint3D(std::vector<art::Ptr<recob::SpacePoint>>& spts,
 					                  evdb::View3D*                                view,
                                       int                                          color,
                                       int                                          marker,
@@ -2389,9 +2392,9 @@ void RecoBaseDrawer::DrawSpacePoint3D(const std::vector<const recob::SpacePoint*
     std::map<int, std::vector<const recob::SpacePoint*> > spmap;   // Indexed by color.
     int spcolor = color;
 
-    for(auto i : spts) {
-        const recob::SpacePoint* pspt = i;
-        if(pspt == 0) throw cet::exception("RecoBaseDrawer:DrawSpacePoint3D") << "space point is null\n";
+    for(auto &pspt : spts) {
+      //std::cout<<pspt<<std::endl;
+      //if(pspt == 0) throw cet::exception("RecoBaseDrawer:DrawSpacePoint3D") << "space point is null\n";
 
         // For rainbow effect, choose root colors in range [51,100].
         // We are using 100=best (red), 51=worst (blue).
@@ -2459,7 +2462,7 @@ void RecoBaseDrawer::DrawTrack3D(const recob::Track& track,
 	        if(handle.isValid())
             {
 	            const std::string& which = handle.provenance()->moduleLabel();
-	            art::FindMany<recob::SpacePoint> fmsp(handle, *evt, which);
+	            art::FindManyP<recob::SpacePoint> fmsp(handle, *evt, which);
                 
                 if (fmsp.isValid() && fmsp.size() > 0)
                 {
@@ -2471,8 +2474,8 @@ void RecoBaseDrawer::DrawTrack3D(const recob::Track& track,
                         art::Ptr<recob::Track> p(handle, i);
                         if(&*p == &track)
                         {
-                            std::vector<const recob::SpacePoint*> spts = fmsp.at(i);
-                            DrawSpacePoint3D(spts, view, color, marker, spSize);
+                          std::vector<art::Ptr<recob::SpacePoint>> spts = fmsp.at(i);
+                          DrawSpacePoint3D(spts, view, color, marker, spSize);
                         }
 	                }
                 }
@@ -2574,14 +2577,14 @@ void RecoBaseDrawer::DrawShower3D(const recob::Shower& shower,
       if(handle.isValid()) {
         
         const std::string& which = handle.provenance()->moduleLabel();
-        art::FindMany<recob::SpacePoint> fmsp(handle, *evt, which);
+        art::FindManyP<recob::SpacePoint> fmsp(handle, *evt, which);
         
         int n = handle->size();
         for(int i=0; i<n; ++i) {
           art::Ptr<recob::Shower> p(handle, i);
           if(&*p == &shower) {
             // BB catch if no space points
-            std::vector<const recob::SpacePoint*> spts;
+            std::vector<art::Ptr<recob::SpacePoint>> spts;
             try {
               spts = fmsp.at(i);
               DrawSpacePoint3D(spts, view, color);
@@ -2917,18 +2920,13 @@ void RecoBaseDrawer::SpacePointOrtho(const art::Event& evt,
   }
 
   for(size_t imod = 0; imod < labels.size(); ++imod) {
-      art::InputTag const which = labels[imod];
-    
-    art::PtrVector<recob::SpacePoint> spts;
-	this->GetSpacePoints(evt, which, spts);
-	int color = imod;
+    art::InputTag const which = labels[imod];
       
-    std::vector<const recob::SpacePoint*> sptsVec;
+    std::vector<art::Ptr<recob::SpacePoint>> spts;
+    this->GetSpacePoints(evt, which, spts);
+    int color = imod;
       
-    sptsVec.resize(spts.size());
-    for(const auto& spt : spts) sptsVec.push_back(&*spt);
-      
-	this->DrawSpacePointOrtho(sptsVec, color, proj, msize, view);
+    this->DrawSpacePointOrtho(spts, color, proj, msize, view);
   }
     
   return;
@@ -3292,7 +3290,7 @@ void RecoBaseDrawer::ProngOrtho(const art::Event& evt,
 }
 
 //......................................................................
-void RecoBaseDrawer::DrawSpacePointOrtho(const std::vector<const recob::SpacePoint*>& spts,
+ void RecoBaseDrawer::DrawSpacePointOrtho(std::vector<art::Ptr<recob::SpacePoint>>& spts,
 					   int                 color, 
 					   evd::OrthoProj_t    proj,
 					   double              msize,
@@ -3309,11 +3307,9 @@ void RecoBaseDrawer::DrawSpacePointOrtho(const std::vector<const recob::SpacePoi
   // having a single collection with color inherited from the prong
   // (specified by the argument color).
 
-  std::map<int, std::vector<const recob::SpacePoint*> > spmap;   // Indexed by color.
+  std::map<int, std::vector<art::Ptr<recob::SpacePoint>> > spmap;   // Indexed by color.
 
-  for(auto i : spts){
-    const recob::SpacePoint* pspt = i;
-    if(pspt == 0) throw cet::exception("RecoBaseDrawer:DrawSpacePointOrtho") << "spacepoint is null\n";
+  for(auto& pspt : spts){
 
     // By default use event display palette.
 
@@ -3340,7 +3336,7 @@ void RecoBaseDrawer::DrawSpacePointOrtho(const std::vector<const recob::SpacePoi
 
   for(auto icolor : spmap) {
     int spcolor = icolor.first;
-    const std::vector<const recob::SpacePoint*>& psps = icolor.second;
+    std::vector<art::Ptr<recob::SpacePoint>>& psps = icolor.second;
 
     // Make and fill a polymarker.
 
@@ -3393,13 +3389,13 @@ void RecoBaseDrawer::DrawTrackOrtho(const recob::Track& track,
 	const art::Handle<std::vector<recob::Track> > handle = ih;
 	if(handle.isValid()) {
 	  const std::string& which = handle.provenance()->moduleLabel();
-	  art::FindMany<recob::SpacePoint> fmsp(handle, *evt, which);
+	  art::FindManyP<recob::SpacePoint> fmsp(handle, *evt, which);
 
 	  int n = handle->size();
 	  for(int i=0; i<n; ++i) {
 	    art::Ptr<recob::Track> p(handle, i);
 	    if(&*p == &track) {
-	      std::vector<const recob::SpacePoint*> spts = fmsp.at(i);
+	      std::vector<art::Ptr<recob::SpacePoint>> spts = fmsp.at(i);
 	      DrawSpacePointOrtho(spts, color, proj, msize, view);
 	    }
 	  }
@@ -3484,7 +3480,7 @@ void RecoBaseDrawer::DrawShowerOrtho(const recob::Shower& shower,
         const art::Handle<std::vector<recob::Shower> > handle = ih;
         if(handle.isValid()) {
             const std::string& which = handle.provenance()->moduleLabel();
-            art::FindMany<recob::SpacePoint> fmsp(handle, *evt, which);
+            art::FindManyP<recob::SpacePoint> fmsp(handle, *evt, which);
             if (!fmsp.isValid()) continue;
             int n = handle->size();
             for(int i=0; i<n; ++i) {
@@ -3506,7 +3502,7 @@ void RecoBaseDrawer::DrawShowerOrtho(const recob::Shower& shower,
                         } // switch
 
                     if (fmsp.isValid()){
-                        std::vector<const recob::SpacePoint*> spts = fmsp.at(i);
+                        std::vector<art::Ptr<recob::SpacePoint>> spts = fmsp.at(i);
                         DrawSpacePointOrtho(spts, color, proj, msize, view, 1);
                     }
                 }
@@ -3730,25 +3726,12 @@ int RecoBaseDrawer::GetBezierTracks(const art::Event&              evt,
 //......................................................................
 int RecoBaseDrawer::GetSpacePoints(const art::Event&                  evt,
                                    const art::InputTag&               which,
-                                   art::PtrVector<recob::SpacePoint>& spts)
+                                   std::vector<art::Ptr<recob::SpacePoint>>& spts)
 {
     spts.clear();
-    art::PtrVector<recob::SpacePoint> temp;
-    
     art::Handle< std::vector<recob::SpacePoint> > spcol;
-    
-    try{
-        evt.getByLabel(which, spcol);
-        temp.reserve(spcol->size());
-        for(unsigned int i = 0; i < spcol->size(); ++i){
-            art::Ptr<recob::SpacePoint> spt(spcol, i);
-            temp.push_back(spt);
-        }
-        temp.swap(spts);
-    }
-    catch(cet::exception& e){
-        writeErrMsg("GetSpacePoints", e);
-    }
+    if (evt.getByLabel(which,spcol))
+      art::fill_ptr_vector(spts, spcol);
     
     return spts.size();
 }

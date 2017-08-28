@@ -322,7 +322,7 @@ namespace evd {
     cvec.reserve(fNPlanes);
     
     for(unsigned int ip=0;ip<fNPlanes;ip++)  {
-      art::ProductID aid = this->getProductID< std::vector < recob::Cluster > >(evt);
+      art::ProductID aid = this->getProductID< std::vector < recob::Cluster > >();
       art::Ptr< recob::Cluster > aptr(aid, ip, evt.productGetter(aid));
       cvec.push_back(aptr);
     }

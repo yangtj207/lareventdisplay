@@ -1904,6 +1904,8 @@ void RecoBaseDrawer::SpacePoint3D(const art::Event& evt,
         this->GetSpacePoints(evt, which, spts);
         int color = 10*imod + 11;
         
+        color = 0;
+        
 //        std::vector<const recob::SpacePoint*> sptsVec;
 //        
 //        sptsVec.resize(spts.size());
@@ -1994,17 +1996,17 @@ void RecoBaseDrawer::PFParticle3D(const art::Event& evt,
     return;
 }
     
-void RecoBaseDrawer::DrawPFParticle3D(const art::Ptr<recob::PFParticle>&       pfPart,
-                                      const art::PtrVector<recob::PFParticle>& pfParticleVec,
+void RecoBaseDrawer::DrawPFParticle3D(const art::Ptr<recob::PFParticle>&              pfPart,
+                                      const art::PtrVector<recob::PFParticle>&        pfParticleVec,
                                       const std::vector<art::Ptr<recob::SpacePoint>>& spacePointVec,
-                                      const art::FindManyP<recob::Edge>&       edgeAssnsVec,
-                                      const art::FindManyP<recob::SpacePoint>& spacePointAssnVec,
-                                      const art::FindManyP<recob::Hit>&        spHitAssnVec,
-                                      const art::FindMany<recob::Track>&       trackAssnVec,
-                                      const art::FindMany<recob::PCAxis>&      pcAxisAssnVec,
-                                      const art::FindMany<anab::CosmicTag>&    cosmicTagAssnVec,
-                                      int                                      depth,
-                                      evdb::View3D*                            view)
+                                      const art::FindManyP<recob::Edge>&              edgeAssnsVec,
+                                      const art::FindManyP<recob::SpacePoint>&        spacePointAssnVec,
+                                      const art::FindManyP<recob::Hit>&               spHitAssnVec,
+                                      const art::FindMany<recob::Track>&              trackAssnVec,
+                                      const art::FindMany<recob::PCAxis>&             pcAxisAssnVec,
+                                      const art::FindMany<anab::CosmicTag>&           cosmicTagAssnVec,
+                                      int                                             depth,
+                                      evdb::View3D*                                   view)
 {
     art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
     art::ServiceHandle<evd::ColorDrawingOptions> cst;
@@ -2049,7 +2051,7 @@ void RecoBaseDrawer::DrawPFParticle3D(const art::Ptr<recob::PFParticle>&       p
             int    chargeColorIdx(0);
             double pulseHeights[] = {0.,0.,0.};
             double spacePointChiSq(spacePoint->Chisq());
-            double overlapFraction = std::fabs(spacePointChiSq - int(spacePointChiSq));
+            double overlapFraction = 1.; //std::fabs(spacePointChiSq - int(spacePointChiSq));
             
             for(const auto& hit : hitVec)
             {
@@ -2374,10 +2376,10 @@ void RecoBaseDrawer::Prong3D(const art::Event& evt,
 
 //......................................................................
 void RecoBaseDrawer::DrawSpacePoint3D(std::vector<art::Ptr<recob::SpacePoint>>& spts,
-					                  evdb::View3D*                                view,
-                                      int                                          color,
-                                      int                                          marker,
-                                      float                                        size)
+					                  evdb::View3D*                             view,
+                                      int                                       color,
+                                      int                                       marker,
+                                      float                                     size)
 {
     // Get services.
 
@@ -2398,6 +2400,12 @@ void RecoBaseDrawer::DrawSpacePoint3D(std::vector<art::Ptr<recob::SpacePoint>>& 
 
         // For rainbow effect, choose root colors in range [51,100].
         // We are using 100=best (red), 51=worst (blue).
+        
+        if (pspt->Chisq() > -100.) continue;
+        
+        spcolor = 20;
+        
+        if (pspt->Chisq() < -100.) spcolor = 10;
 
         if(recoOpt->fColorSpacePointsByChisq)
         {
@@ -2410,6 +2418,8 @@ void RecoBaseDrawer::DrawSpacePoint3D(std::vector<art::Ptr<recob::SpacePoint>>& 
         
         spmap[spcolor].push_back(&*pspt);
     }
+    
+    std::cout << "Drawing space points, have " << spts.size() << " space points, " << spmap.size() << " colors, " << spmap[spcolor].size() << " hits" << std::endl;
 
     // Loop over colors.
     // Note that larger (=better) space points are plotted on

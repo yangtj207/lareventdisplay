@@ -850,10 +850,10 @@ void RecoBaseDrawer::BezierTrack3D(const art::Event& evt,
         for (size_t ic = 0; ic < clust.size(); ++ic)
         {
             // only worry about clusters with the correct view
-	        if(clust[ic]->View() != gview) continue;
+            if(clust[ic]->View() != gview) continue;
             
             // see if we can set the color index in a sensible fashion
-            int clusterIdx(clust[ic]->ID());
+            int clusterIdx(std::abs(clust[ic]->ID()));
             int colorIdx(clusterIdx%evd::kNCOLS);
             bool pfpAssociation = false;
             float cosmicscore = FLT_MIN;

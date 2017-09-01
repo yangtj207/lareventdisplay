@@ -110,7 +110,6 @@ namespace evd{
   {
     if (fRawDataDraw==0) fRawDataDraw = new RawDataDrawer();
     return fRawDataDraw;
-    std::cout<<"This just got called"<<std::endl;
   }
 
   //......................................................................

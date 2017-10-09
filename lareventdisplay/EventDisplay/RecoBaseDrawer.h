@@ -78,15 +78,15 @@ public:
     void Wire2D(const art::Event& evt,
                 evdb::View2D*     view,
 		        unsigned int      plane);
-    void Hit2D(const art::Event& evt,
+    int  Hit2D(const art::Event& evt,
 	           evdb::View2D*     view,
 	           unsigned int      plane);
-    void Hit2D(std::vector<const recob::Hit*> hits,
+    int  Hit2D(std::vector<const recob::Hit*> hits,
 	           int                            color,
 	           evdb::View2D*                  view,
                bool                           drawConnectingLines = false,
                int                            lineWidth = 1);
-    void Hit2D(std::vector<const recob::Hit*> hits,
+    int  Hit2D(std::vector<const recob::Hit*> hits,
                evdb::View2D*                  view,
                float                          cosmicscore);
 

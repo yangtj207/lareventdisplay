@@ -258,17 +258,19 @@ void RecoBaseDrawer::Wire2D(const art::Event& evt,
 /// @param view   : Pointer to view to draw on
 /// @param plane  : plane number of view
 ///
-void RecoBaseDrawer::Hit2D(const art::Event& evt,
-                           evdb::View2D*     view,
-                           unsigned int      plane)
+int RecoBaseDrawer::Hit2D(const art::Event& evt,
+                          evdb::View2D*     view,
+                          unsigned int      plane)
 {
     art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
     art::ServiceHandle<geo::Geometry>            geo;
     detinfo::DetectorProperties const* detp = lar::providerFrom<detinfo::DetectorPropertiesService>();
+    
+    int nHitsDrawn(0);
   
-    if (recoOpt->fDrawHits == 0)                return;
-    if (rawOpt->fDrawRawDataOrCalibWires < 1)   return;
+    if (recoOpt->fDrawHits == 0)                return nHitsDrawn;
+    if (rawOpt->fDrawRawDataOrCalibWires < 1)   return nHitsDrawn;
   
     fRawCharge[plane]       = 0;
     fConvertedCharge[plane] = 0;
@@ -292,11 +294,11 @@ void RecoBaseDrawer::Hit2D(const art::Event& evt,
         fConvertedCharge[itr->WireID().Plane] += detp->BirksCorrection(dQdX);
       } // loop on hits
 
-      this->Hit2D(hits, kBlack, view);
+      nHitsDrawn = this->Hit2D(hits, kBlack, view);
 
     } // loop on imod folders
     
-    return;
+    return nHitsDrawn;
 }
 
 //......................................................................
@@ -308,11 +310,11 @@ void RecoBaseDrawer::Hit2D(const art::Event& evt,
 /// @param view   : Pointer to view to draw on
 ///
 /// assumes the hits are all from the correct plane for the given view
-void RecoBaseDrawer::Hit2D(std::vector<const recob::Hit*> hits,
-                           int                            color,
-                           evdb::View2D*                  view,
-                           bool                           drawConnectingLines,
-                           int                            lineWidth)
+int RecoBaseDrawer::Hit2D(std::vector<const recob::Hit*> hits,
+                          int                            color,
+                          evdb::View2D*                  view,
+                          bool                           drawConnectingLines,
+                          int                            lineWidth)
 {
     art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
@@ -324,6 +326,8 @@ void RecoBaseDrawer::Hit2D(std::vector<const recob::Hit*> hits,
   
     if(color==-1)
         color=recoOpt->fSelectedHitColor;
+    
+    int nHitsDrawn(0);
   
     for(unsigned int c = 0; c < hits.size(); ++c)
     {
@@ -372,59 +376,67 @@ void RecoBaseDrawer::Hit2D(std::vector<const recob::Hit*> hits,
         }
         wold = w;
         timeold = time;
+        nHitsDrawn++;
     } // loop on hits
   
-    return;
+    return nHitsDrawn;
 }
 
 //........................................................................
-  void RecoBaseDrawer::Hit2D(std::vector<const recob::Hit*> hits,
-                             evdb::View2D*                  view,
-                             float                          cosmicscore)
-  {
+int RecoBaseDrawer::Hit2D(std::vector<const recob::Hit*> hits,
+                          evdb::View2D*                  view,
+                          float                          cosmicscore)
+{
     art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
     art::ServiceHandle<geo::Geometry>            geo;
 
-    unsigned int w  = 0;
-    unsigned int wold = 0;
-    float timeold = 0.;
+    unsigned int w(0);
+    unsigned int wold(0);
+    float        timeold(0.);
+    int          nHitsDrawn(0);
     
-    for(unsigned int c = 0; c < hits.size(); ++c){
-      // check that we are in the correct TPC
-      // the view should tell use we are in the correct plane
-      if(hits[c]->WireID().TPC      != rawOpt->fTPC ||
-         hits[c]->WireID().Cryostat != rawOpt->fCryostat) continue;
+    for(unsigned int c = 0; c < hits.size(); ++c)
+    {
+        // check that we are in the correct TPC
+        // the view should tell use we are in the correct plane
+        if(hits[c]->WireID().TPC      != rawOpt->fTPC ||
+           hits[c]->WireID().Cryostat != rawOpt->fCryostat) continue;
       
-      w = hits[c]->WireID().Wire;
+        w = hits[c]->WireID().Wire;
 
-      // Try to get the "best" charge measurement, ie. the one last in
-      // the calibration chain
-      float time = hits[c]->PeakTime();
+        // Try to get the "best" charge measurement, ie. the one last in
+        // the calibration chain
+        float time = hits[c]->PeakTime();
 
-      if(rawOpt->fAxisOrientation < 1){
-        if( c > 0) {
-          TLine& l = view->AddLine(w, time+100, wold, timeold+100);
-          l.SetLineWidth(3);
-          l.SetLineColor(1);
-          if (cosmicscore>0.5) l.SetLineColor(kMagenta);
-          l.SetBit(kCannotPick);
+        if(rawOpt->fAxisOrientation < 1)
+        {
+            if( c > 0)
+            {
+                TLine& l = view->AddLine(w, time+100, wold, timeold+100);
+                l.SetLineWidth(3);
+                l.SetLineColor(1);
+                if (cosmicscore>0.5) l.SetLineColor(kMagenta);
+                l.SetBit(kCannotPick);
+            }
         }
-      }
-      else{
-        if(c > 0) {
-          TLine& l = view->AddLine(time+20, w, timeold+20, wold);
-          l.SetLineColor(1);
-          if (cosmicscore>0.5) l.SetLineStyle(2);
-          l.SetBit(kCannotPick);
+        else
+        {
+            if(c > 0)
+            {
+                TLine& l = view->AddLine(time+20, w, timeold+20, wold);
+                l.SetLineColor(1);
+                if (cosmicscore>0.5) l.SetLineStyle(2);
+                l.SetBit(kCannotPick);
+            }
         }
-      }
       
-      wold = w;
-      timeold = time;
+        wold = w;
+        timeold = time;
+        nHitsDrawn++;
     } // loop on hits
     
-    return;
+    return nHitsDrawn;
 }
 
 //........................................................................
@@ -805,10 +817,10 @@ void RecoBaseDrawer::BezierTrack3D(const art::Event& evt,
 }
 
 //......................................................................
-  void RecoBaseDrawer::Cluster2D(const art::Event& evt,
-                                 evdb::View2D*     view,
-                                 unsigned int      plane)
-  {
+void RecoBaseDrawer::Cluster2D(const art::Event& evt,
+                               evdb::View2D*     view,
+                               unsigned int      plane)
+{
     art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
     art::ServiceHandle<geo::Geometry>            geo;
@@ -850,7 +862,8 @@ void RecoBaseDrawer::BezierTrack3D(const art::Event& evt,
         for (size_t ic = 0; ic < clust.size(); ++ic)
         {
             // only worry about clusters with the correct view
-            if(clust[ic]->View() != gview) continue;
+//            if(clust[ic]->View() != gview) continue;
+            if (clust[ic]->Plane().Plane != plane) continue;
             
             // see if we can set the color index in a sensible fashion
             int clusterIdx(std::abs(clust[ic]->ID()));
@@ -860,41 +873,45 @@ void RecoBaseDrawer::BezierTrack3D(const art::Event& evt,
             
             if (fmc.isValid())
             {
-              std::vector<art::Ptr<recob::PFParticle>> pfplist = fmc.at(ic);
-              // Use the first one
-              if(!pfplist.empty()) {
-                clusterIdx = pfplist[0]->Self();
-                colorIdx   = clusterIdx % evd::kNCOLS;
-                pfpAssociation = true;
-                //Get cosmic score
-                if (recoOpt->fDrawCosmicTags){
-                  art::FindManyP<anab::CosmicTag> fmct(pfplist, evt, which);
-                  if (fmct.isValid()){
-                    std::vector<art::Ptr<anab::CosmicTag>> ctlist = fmct.at(0);
-                    if (!ctlist.empty()){
-                      //std::cout<<"cosmic tag "<<ctlist[0]->CosmicScore()<<std::endl;
-                      cosmicscore = ctlist[0]->CosmicScore();
+                std::vector<art::Ptr<recob::PFParticle>> pfplist = fmc.at(ic);
+                // Use the first one
+                if(!pfplist.empty())
+                {
+                    clusterIdx = pfplist[0]->Self();
+                    colorIdx   = clusterIdx % evd::kNCOLS;
+                    pfpAssociation = true;
+                    //Get cosmic score
+                    if (recoOpt->fDrawCosmicTags)
+                    {
+                        art::FindManyP<anab::CosmicTag> fmct(pfplist, evt, which);
+                        if (fmct.isValid())
+                        {
+                            std::vector<art::Ptr<anab::CosmicTag>> ctlist = fmct.at(0);
+                            if (!ctlist.empty())
+                            {
+                                //std::cout<<"cosmic tag "<<ctlist[0]->CosmicScore()<<std::endl;
+                                cosmicscore = ctlist[0]->CosmicScore();
+                            }
+                        }
                     }
-                  }
-                }
-              } // pfplist is not empty
+                } // pfplist is not empty
             }
 
             std::vector<const recob::Hit*> hits = fmh.at(ic);
 
-            // check for correct tpc, the view check done above
-            // ensures we are in the correct plane
-//        if((*hits.begin())->WireID().TPC      != rawOpt->fTPC || 
-//           (*hits.begin())->WireID().Cryostat != rawOpt->fCryostat) continue;
-
-            if (drawAsMarkers) {
+            if (drawAsMarkers)
+            {
                 // draw cluster with unique marker
                 // Place this cluster's unique marker at the hit's location
-                int color  = evd::kColor[colorIdx];
-                this->Hit2D(hits, color, view, drawConnectingLines);
-                if (recoOpt->fDrawCosmicTags&&cosmicscore!=FLT_MIN){
-                  this->Hit2D(hits, view, cosmicscore);
-                }
+                int color = evd::kColor[colorIdx];
+                
+                // If there are no hits in this cryostat/TPC then we skip the rest
+                // That no hits were drawn is the sign for this
+                if (this->Hit2D(hits, color, view, drawConnectingLines) < 1) continue;
+                
+                if (recoOpt->fDrawCosmicTags&&cosmicscore!=FLT_MIN)
+                    this->Hit2D(hits, view, cosmicscore);
+
                 if(recoOpt->fDrawClusters > 3) {
                     // BB: draw the cluster ID
                     std::string s = std::to_string(clusterIdx);
@@ -994,7 +1011,7 @@ void RecoBaseDrawer::BezierTrack3D(const art::Event& evt,
                 
                 for(const auto& hit : hitVec)
                 {
-                    if(hit->View() != gview) continue;
+                    if(hit->WireID().Plane != plane) continue;
                     
                     freeHitVec.push_back(hit.get());
                 }
@@ -2056,7 +2073,7 @@ void RecoBaseDrawer::DrawPFParticle3D(const art::Ptr<recob::PFParticle>&        
             for(const auto& hit : hitVec)
             {
                 if (!hit) continue;
-                pulseHeights[hit->View()] = overlapFraction * hit->Integral(); //PeakAmplitude();
+                pulseHeights[hit->WireID().Plane] = overlapFraction * hit->Integral(); //PeakAmplitude();
             }
             
             if (pulseHeights[2] >= 0.) chargeColorIdx = cst->CalQ(geo::kCollection).GetColor(pulseHeights[2]);
@@ -2096,12 +2113,17 @@ void RecoBaseDrawer::DrawPFParticle3D(const art::Ptr<recob::PFParticle>&        
             if (storeHit) colorToHitMap[chargeColorIdx].push_back(HitPosition()={pos[0],pos[1],pos[2]});
         }
         
+        size_t nHitsDrawn(0);
+        
         for(auto& hitPair : colorToHitMap)
         {
             //TPolyMarker3D& pm = view->AddPolyMarker3D(hitPair.second.size(), hitPair.first, kFullDotMedium, 3);
             TPolyMarker3D& pm = view->AddPolyMarker3D(hitPair.second.size(), hitPair.first, kFullDotLarge, 0.3);
             for (const auto& hit : hitPair.second) pm.SetNextPoint(hit[0],hit[1],hit[2]);
+            nHitsDrawn += hitPair.second.size();
         }
+        
+        std::cout << "** number hits input: " << hitsVec.size() << ", number drawn: " << nHitsDrawn << std::endl;
     }
     
     // Now try to draw any associated edges

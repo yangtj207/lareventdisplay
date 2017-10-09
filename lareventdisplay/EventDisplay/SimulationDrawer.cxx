@@ -58,7 +58,7 @@ namespace evd{
 SimulationDrawer::SimulationDrawer()
 {
     // For now only draw cryostat=0.
-    art::ServiceHandle<geo::Geometry>          geom;
+    art::ServiceHandle<geo::Geometry> geom;
     minx = 1e9;
     maxx = -1e9;
     miny = 1e9;
@@ -68,27 +68,27 @@ SimulationDrawer::SimulationDrawer()
     
     for(size_t cryoIdx = 0; cryoIdx < geom->Ncryostats(); cryoIdx++)
     {
-        for (size_t i = 0; i<geom->NTPC(cryoIdx); ++i)
+        const geo::CryostatGeo& cryoGeo = geom->Cryostat(cryoIdx);
+        
+        for (size_t tpcIdx = 0; tpcIdx < cryoGeo.NTPC(); tpcIdx++)
         {
-            double local[3] = {0.,0.,0.};
-            double world[3] = {0.,0.,0.};
-            const geo::TPCGeo &tpc = geom->TPC(i);
-            tpc.LocalToWorld(local,world);
+            const geo::TPCGeo& tpc = cryoGeo.TPC(tpcIdx);
         
-            std::cout << "Cryo/TPC idx: " << cryoIdx << "/" << i << ", local: " << local[0] << ", " << local[1] << ", " << local[2] << ", world: " << world[0] << ", " << world[1] << ", " << world[2] << std::endl;
-        
-            if (minx>world[0]-geom->DetHalfWidth(i))
-                minx = world[0]-geom->DetHalfWidth(i);
-            if (maxx<world[0]+geom->DetHalfWidth(i))
-                maxx = world[0]+geom->DetHalfWidth(i);
-            if (miny>world[1]-geom->DetHalfHeight(i))
-                miny = world[1]-geom->DetHalfHeight(i);
-            if (maxy<world[1]+geom->DetHalfHeight(i))
-                maxy = world[1]+geom->DetHalfHeight(i);
-            if (minz>world[2]-geom->DetLength(i)/2.)
-                minz = world[2]-geom->DetLength(i)/2.;
-            if (maxz<world[2]+geom->DetLength(i)/2.)
-                maxz = world[2]+geom->DetLength(i)/2.;
+            std::cout << "Cryo/TPC idx: " << cryoIdx << "/" << tpcIdx << ", TPC center: " << tpc.GetCenter()[0] << ", " << tpc.GetCenter()[1] << ", " << tpc.GetCenter()[2] << std::endl;
+            std::cout << "         TPC Active center: " << tpc.GetActiveVolumeCenter()[0] << ", " << tpc.GetActiveVolumeCenter()[1] << ", " << tpc.GetActiveVolumeCenter()[2] << ", H/W/L: " << tpc.ActiveHalfHeight() << "/" << tpc.ActiveHalfWidth() << "/" << tpc.ActiveLength() << std::endl;
+
+            if (minx>tpc.GetCenter()[0]-tpc.HalfWidth())
+                minx = tpc.GetCenter()[0]-tpc.HalfWidth();
+            if (maxx<tpc.GetCenter()[0]+tpc.HalfWidth())
+                maxx = tpc.GetCenter()[0]+tpc.HalfWidth();
+            if (miny>tpc.GetCenter()[1]-tpc.HalfHeight())
+                miny = tpc.GetCenter()[1]-tpc.HalfHeight();
+            if (maxy<tpc.GetCenter()[1]+tpc.HalfHeight())
+                maxy = tpc.GetCenter()[1]+tpc.HalfHeight();
+            if (minz>tpc.GetCenter()[2]-tpc.Length()/2.)
+                minz = tpc.GetCenter()[2]-tpc.Length()/2.;
+            if (maxz<tpc.GetCenter()[2]+tpc.Length()/2.)
+                maxz = tpc.GetCenter()[2]+tpc.Length()/2.;
         
             std::cout << "        minx/maxx: " << minx << "/" << maxx << ", miny/maxy: " << miny << "/" << maxy << ", minz/miny: " << minz << "/" << maxz << std::endl;
         }
@@ -304,6 +304,7 @@ void SimulationDrawer::MCTruth3D(const art::Event& evt,
     //  geo::GeometryCore const* geom = lar::providerFrom<geo::Geometry>();
     detinfo::DetectorProperties const* theDetector = lar::providerFrom<detinfo::DetectorPropertiesService>();
     detinfo::DetectorClocks     const* detClocks   = lar::providerFrom<detinfo::DetectorClocksService>();
+    art::ServiceHandle<geo::Geometry>  geom;
 
     // get the particles from the Geant4 step
     std::vector<const simb::MCParticle*> plist;
@@ -367,9 +368,11 @@ void SimulationDrawer::MCTruth3D(const art::Event& evt,
                 // The following is meant to get the correct offset for drawing the particle trajectory
                 // In particular, the cosmic rays will not be correctly placed without this
                 //double g4Ticks(detClocks->TPCG4Time2Tick(mcPart->T())+theDetector->GetXTicksOffset(0,0,0)-theDetector->TriggerOffset());
-                double g4Ticks(detClocks->TPCG4Time2Tick(mcPart->T())+theDetector->GetXTicksOffset(0,0,0));
+                //double g4Ticks(detClocks->TPCG4Time2Tick(mcPart->T())+theDetector->GetXTicksOffset(0,0,0));
+                double g4Ticks(detClocks->TPCG4Time2Tick(mcPart->T()));
                 //double g4Ticks(detClocks->TPCG4Time2Tick(mcPart->T()));
-                double xOffset(theDetector->ConvertTicksToX(g4Ticks, 0, 0, 0));
+                double xOffset(0.); //(theDetector->ConvertTicksToX(g4Ticks, 0, 0, 0));
+                bool   xOffsetNotSet(true);
 		
                 // collect the points from this particle
                 int numTrajPoints = mcTraj.size();
@@ -385,6 +388,28 @@ void SimulationDrawer::MCTruth3D(const art::Event& evt,
                 
                     // If the original simulated hit did not occur in the TPC volume then don't draw it
                     if (xPos < minx || xPos > maxx || yPos < miny || yPos > maxy|| zPos < minz || zPos > maxz) continue;
+                    
+                    // Check xOffset state and set if necessary
+                    if (xOffsetNotSet)
+                    {
+                        double hitLocation[] = {xPos,yPos,zPos};
+                        
+                        try
+                        {
+                            const geo::CryostatGeo& cryoGeo = geom->PositionToCryostat(hitLocation);
+                            int                     tpcIdx  = cryoGeo.FindTPCAtPosition(hitLocation, 1.);
+                                
+                            xMinFromTicks = theDetector->ConvertTicksToX(0,0,tpcIdx,cryoGeo.ID().Cryostat);
+                            xMaxFromTicks = theDetector->ConvertTicksToX(theDetector->NumberTimeSamples(),0,tpcIdx,cryoGeo.ID().Cryostat);
+                            
+                            if (xMaxFromTicks < xMinFromTicks) std::swap(xMinFromTicks,xMaxFromTicks);
+
+                            xOffset       = xMinFromTicks - theDetector->ConvertTicksToX(g4Ticks, 0, tpcIdx, cryoGeo.ID().Cryostat);
+                            xOffsetNotSet = false;
+                            xOffset = 0.;
+                        }
+                        catch(...) {continue;}
+                    }
                 
                     // Now move the hit position to correspond to the timing
                     xPos += xOffset;
@@ -463,9 +488,11 @@ void SimulationDrawer::MCTruth3D(const art::Event& evt,
         // The following is meant to get the correct offset for drawing the particle trajectory
         // In particular, the cosmic rays will not be correctly placed without this
         //double g4Ticks(detClocks->TPCG4Time2Tick(mcPart->T())+theDetector->GetXTicksOffset(0,0,0)-theDetector->TriggerOffset());
-        double g4Ticks(detClocks->TPCG4Time2Tick(mcPart->T())+theDetector->GetXTicksOffset(0,0,0));
+        //double g4Ticks(detClocks->TPCG4Time2Tick(mcPart->T())+theDetector->GetXTicksOffset(0,0,0));
+        double g4Ticks(detClocks->TPCG4Time2Tick(mcPart->T()));
 //        double g4Ticks(detClocks->TPCG4Time2Tick(mcPart->T()));
-        double xOffset(theDetector->ConvertTicksToX(g4Ticks, 0, 0, 0));
+        double xOffset(0.); //theDetector->ConvertTicksToX(g4Ticks, 0, 0, 0));
+        bool   xOffsetNotSet(true);
         
         int colorIdx(evd::Style::ColorFromPDG(mcPart->PdgCode()));
         int markerIdx(kFullDotSmall);
@@ -486,6 +513,28 @@ void SimulationDrawer::MCTruth3D(const art::Event& evt,
         {
             const std::vector<double>& posVec = partToPosMapItr->second[posIdx];
             
+            // Check xOffset state and set if necessary
+            if (xOffsetNotSet)
+            {
+                double hitLocation[] = {posVec[0],posVec[1],posVec[2]};
+                
+                try
+                {
+                    const geo::CryostatGeo& cryoGeo = geom->PositionToCryostat(hitLocation);
+                    int                     tpcIdx  = cryoGeo.FindTPCAtPosition(hitLocation, 1.);
+                        
+                    xMinFromTicks = theDetector->ConvertTicksToX(0,0,tpcIdx,cryoGeo.ID().Cryostat);
+                    xMaxFromTicks = theDetector->ConvertTicksToX(theDetector->NumberTimeSamples(),0,tpcIdx,cryoGeo.ID().Cryostat);
+                    
+                    if (xMaxFromTicks < xMinFromTicks) std::swap(xMinFromTicks,xMaxFromTicks);
+
+                    xOffset       = xMinFromTicks - theDetector->ConvertTicksToX(g4Ticks, 0, tpcIdx, cryoGeo.ID().Cryostat);
+                    xOffsetNotSet = false;
+                    xOffset = 0.;
+                }
+                catch(...) {continue;}
+            }
+
             double xCoord = posVec[0] + xOffset;
             
             if (xCoord > xMinFromTicks && xCoord < xMaxFromTicks)

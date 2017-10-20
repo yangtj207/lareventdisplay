@@ -914,7 +914,9 @@ void RecoBaseDrawer::Cluster2D(const art::Event& evt,
 
                 if(recoOpt->fDrawClusters > 3) {
                     // BB: draw the cluster ID
-                    std::string s = std::to_string(clusterIdx);
+                    //std::string s = std::to_string(clusterIdx);
+                    // TY: change to draw cluster id instead of index
+                    std::string s = std::to_string(clust[ic]->ID());
                     char const* txt = s.c_str();
                     double wire = clust[ic]->StartWire();
                     double tick = 20 + clust[ic]->StartTick();

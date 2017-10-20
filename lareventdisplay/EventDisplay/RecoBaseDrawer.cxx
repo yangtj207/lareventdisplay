@@ -3479,15 +3479,15 @@ void RecoBaseDrawer::DrawTrackOrtho(const recob::Track& track,
       double z = track.End()(2);
       if(proj == evd::kXY) {
 	  TText& trkID = view->AddText(x, y, txt);
-        trkID.SetTextColor(evd::kColor[tid]);
+        trkID.SetTextColor(evd::kColor[tid%evd::kNCOLS]);
         trkID.SetTextSize(0.03);
       } else if(proj == evd::kXZ) {
 	  TText& trkID = view->AddText(z, x, txt);
-        trkID.SetTextColor(evd::kColor[tid]);
+        trkID.SetTextColor(evd::kColor[tid%evd::kNCOLS]);
         trkID.SetTextSize(0.03);
       } else if(proj == evd::kYZ) {
 	  TText& trkID = view->AddText(z, y, txt);
-        trkID.SetTextColor(evd::kColor[tid]);
+        trkID.SetTextColor(evd::kColor[tid%evd::kNCOLS]);
         trkID.SetTextSize(0.03);
       } // proj
     } // recoOpt->fDrawTracks > 1

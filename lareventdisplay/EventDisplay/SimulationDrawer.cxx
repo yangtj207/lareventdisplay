@@ -227,6 +227,7 @@ SimulationDrawer::SimulationDrawer()
     this->GetMCTruth(evt, mctruth);
     
     for (size_t i = 0; i < mctruth.size(); ++i) {
+      if (mctruth[i]->Origin() == simb::kCosmicRay) continue;
       for (int j = 0; j < mctruth[i]->NParticles(); ++j) {
 	const simb::MCParticle& p = mctruth[i]->GetParticle(j);
 	
@@ -244,34 +245,12 @@ SimulationDrawer::SimulationDrawer()
 	xyz2[0] = xyz[0] + r * p.Px()/p.P();
 	xyz2[1] = xyz[1] + r * p.Py()/p.P();
 	xyz2[2] = xyz[2] + r * p.Pz()/p.P();
+		
+	double w1 = geo->WireCoordinate(xyz[1], xyz[2], (int)plane, rawopt->fTPC, rawopt->fCryostat);
+	double w2 = geo->WireCoordinate(xyz2[1], xyz2[2], (int)plane, rawopt->fTPC, rawopt->fCryostat);
 	
-	if(xyz2[2] < minz) xyz2[2] = minz;
-	if(xyz2[2] > maxz) xyz2[2] = maxz;
-	if(xyz2[1] < miny) xyz2[1] = miny;
-	if(xyz2[1] > maxy) xyz2[1] = maxy;
-	
-	unsigned int w1 = 0;
-	unsigned int w2 = 0;
-	
-	// adding a try/catch clause to catch chamber corner events
-        try{
-	  w1 = geo->NearestWire(xyz, plane, rawopt->fTPC, rawopt->fCryostat); 
-	}
-	catch(cet::exception& e){
-//	  writeErrMsg("SimulationDrawer", e);
-//	  w1 = atoi(e.explain_self().substr(e.explain_self().find("#")+1,5).c_str());
-        }
-      
-	try{
-	  w2 = geo->NearestWire(xyz2, plane, rawopt->fTPC, rawopt->fCryostat); 
-    	}
-        catch(cet::exception& e){
-//	  writeErrMsg("SimulationDrawer", e);
-//	  w2 = atoi(e.explain_self().substr(e.explain_self().find("#")+1,5).c_str());
-	}
-
-        double time = detprop->ConvertXToTicks(xyz[0], (int)plane, 0, 0);
-        double time2 = detprop->ConvertXToTicks(xyz2[0], (int)plane, 0, 0);
+        double time = detprop->ConvertXToTicks(xyz[0]+p.T()*detprop->DriftVelocity()*1e-3, (int)plane, rawopt->fTPC, rawopt->fCryostat);
+        double time2 = detprop->ConvertXToTicks(xyz2[0]+p.T()*detprop->DriftVelocity()*1e-3, (int)plane, rawopt->fTPC, rawopt->fCryostat);
 
 	if(rawopt->fAxisOrientation < 1){
 	  TLine& l = view->AddLine(w1, time, w2, time2);

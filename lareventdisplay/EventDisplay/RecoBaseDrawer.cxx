@@ -348,9 +348,10 @@ int RecoBaseDrawer::Hit2D(std::vector<const recob::Hit*> hits,
         // Try to get the "best" charge measurement, ie. the one last in
         // the calibration chain
         float time = hits[c]->PeakTime();
+        float rms  = 0.5 * hits[c]->RMS();
 
         if(rawOpt->fAxisOrientation < 1){
-            TBox& b1 = view->AddBox(w-0.5, time-0.5, w+0.5, time+0.5);
+            TBox& b1 = view->AddBox(w-0.5, time-rms, w+0.5, time+rms);
             if(drawConnectingLines && c > 0) {
                 TLine& l = view->AddLine(w, time, wold, timeold);
                 l.SetLineColor(color);
@@ -363,7 +364,7 @@ int RecoBaseDrawer::Hit2D(std::vector<const recob::Hit*> hits,
         }
         else
         {
-            TBox& b1 = view->AddBox(time-0.5, w-0.5, time+0.5, w+0.5);
+            TBox& b1 = view->AddBox(time-rms, w-0.5, time+rms, w+0.5);
             if(drawConnectingLines && c > 0) {
                 TLine& l = view->AddLine(time, w, timeold, wold);
                 l.SetLineColor(color);
@@ -855,7 +856,47 @@ void RecoBaseDrawer::Cluster2D(const art::Event& evt,
         this->GetClusters(evt, which, clust);
 
         if(clust.size() < 1) continue;
-
+        
+        // We want to draw the hits that are associated to "free" space points (non clustered)
+        // This is done here, before drawing the hits on clusters so they will be "under" the cluster
+        // hits (since spacepoints could be made from a used 2D hit but then not used themselves)
+        // Get the space points created by the PFParticle producer
+        std::vector<art::Ptr<recob::SpacePoint>> spacePointVec;
+        this->GetSpacePoints(evt, which, spacePointVec);
+        
+        // No space points no continue
+        if (spacePointVec.size() < 1) continue;
+        
+        // Add the relations to recover associations cluster hits
+        art::FindManyP<recob::Hit> spHitAssnVec(spacePointVec, evt, which);
+        
+        if (spHitAssnVec.isValid())
+        {
+            // Create a local hit vector...
+            std::vector<const recob::Hit*> freeHitVec;
+        
+            // loop through space points looking for those that are free
+            for(const auto& spacePointPtr : spacePointVec)
+            {
+                if (spacePointPtr->Chisq() < -99.)
+                {
+                    // Recover associated hits
+                    const std::vector<art::Ptr<recob::Hit>>& hitVec = spHitAssnVec.at(spacePointPtr.key());
+                
+                    for(const auto& hit : hitVec)
+                    {
+                        if(hit->WireID().Plane != plane) continue;
+                    
+                        freeHitVec.push_back(hit.get());
+                    }
+                }
+            }
+        
+            // Draw the free hits in gray
+            this->Hit2D(freeHitVec, kGray, view, false);
+        }
+        
+        // Ok, now proceed with our normal processing of hits on clusters
         art::FindMany<recob::Hit> fmh(clust, evt, which);
         art::FindManyP<recob::PFParticle> fmc(clust, evt, which);
 
@@ -916,7 +957,7 @@ void RecoBaseDrawer::Cluster2D(const art::Event& evt,
                     // BB: draw the cluster ID
                     //std::string s = std::to_string(clusterIdx);
                     // TY: change to draw cluster id instead of index
-                    std::string s = std::to_string(clust[ic]->ID());
+                    std::string s = std::to_string(clusterIdx) + "," + std::to_string(clust[ic]->ID());
                     char const* txt = s.c_str();
                     double wire = clust[ic]->StartWire();
                     double tick = 20 + clust[ic]->StartTick();
@@ -986,43 +1027,6 @@ void RecoBaseDrawer::Cluster2D(const art::Event& evt,
                                        );
 
         } // loop on ic clusters
-        
-        // We want to draw the hits that are associated to "free" space points (non clustered) as well
-        // Get the space points created by the PFParticle producer
-        std::vector<art::Ptr<recob::SpacePoint>> spacePointVec;
-        this->GetSpacePoints(evt, which, spacePointVec);
-        
-        // No space points no continue
-        if (spacePointVec.size() < 1) continue;
-        
-        // Add the relations to recover associations cluster hits
-        art::FindManyP<recob::Hit>        spHitAssnVec(spacePointVec, evt, which);
-        
-        if (!spHitAssnVec.isValid()) continue;
-        
-        // Create a local hit vector...
-        std::vector<const recob::Hit*> freeHitVec;
-        
-        // loop through space points looking for those that are free
-        for(const auto& spacePointPtr : spacePointVec)
-        {
-            if (spacePointPtr->Chisq() < -99.)
-            {
-                // Recover associated hits
-                const std::vector<art::Ptr<recob::Hit>>& hitVec = spHitAssnVec.at(spacePointPtr.key());
-                
-                for(const auto& hit : hitVec)
-                {
-                    if(hit->WireID().Plane != plane) continue;
-                    
-                    freeHitVec.push_back(hit.get());
-                }
-            }
-        }
-        
-        // Draw the free hits in gray
-        this->Hit2D(freeHitVec, kGray, view, false);
-        
     } // loop on imod folders
     
     return;
@@ -2068,49 +2072,56 @@ void RecoBaseDrawer::DrawPFParticle3D(const art::Ptr<recob::PFParticle>&        
             
             bool   storeHit(false);
             int    chargeColorIdx(0);
-            double pulseHeights[] = {0.,0.,0.};
             double spacePointChiSq(spacePoint->Chisq());
-            double overlapFraction = 1.; //std::fabs(spacePointChiSq - int(spacePointChiSq));
             
-            for(const auto& hit : hitVec)
+            if (recoOpt->fDraw3DSpacePointHeatMap)
             {
-                if (!hit) continue;
-                pulseHeights[hit->WireID().Plane] = overlapFraction * hit->Integral(); //PeakAmplitude();
-            }
+                double pulseHeights[] = {0.,0.,0.};
             
-            if (pulseHeights[2] >= 0.) chargeColorIdx = cst->CalQ(geo::kCollection).GetColor(pulseHeights[2]);
+                for(const auto& hit : hitVec)
+                {
+                    if (!hit) continue;
+                    pulseHeights[hit->WireID().Plane] = hit->PeakAmplitude();
+                }
+                
+                storeHit = true;
             
-            if (spacePointChiSq > 0. && !recoOpt->fSkeletonOnly)         // All cluster hits which are unmarked
-            {
-                storeHit = true;
+                if (pulseHeights[2] >= 0.) chargeColorIdx = cst->CalQ(geo::kCollection).GetColor(pulseHeights[2]);
             }
-            else if (spacePointChiSq > -2.)                              // Skeleton hits
+            else
             {
-                chargeColorIdx = 5;
-                storeHit = true;
-            }
-            else if (spacePointChiSq > -3.)                              // Pure edge hits
-            {
-                if (chargeColorIdx < 0) chargeColorIdx = !isCosmic ? 3 : colorIdx + 3;
-                storeHit = true;
-            }
-            else if (spacePointChiSq > -4.)                              // Skeleton hits which are also edge hits
-            {
-                if (chargeColorIdx < 0) chargeColorIdx = !isCosmic ? 0 : colorIdx + 3;
-                storeHit = true;
-            }
-            else if (spacePoint->Chisq() > -5.)                             // Hits which form seeds for tracks
-            {
-                if (chargeColorIdx < 0) chargeColorIdx = !isCosmic ? 5 : colorIdx + 3;
-                storeHit = true;
-            }
-            else if (!recoOpt->fSkeletonOnly)                                // hits made from pairs
-            {
-                chargeColorIdx = 15;
-                storeHit       = true;
-            }
+                if (spacePointChiSq > 0. && !recoOpt->fSkeletonOnly)         // All cluster hits which are unmarked
+                {
+                    storeHit = true;
+                }
+                else if (spacePointChiSq > -2.)                              // Skeleton hits
+                {
+                    chargeColorIdx = 5;
+                    storeHit = true;
+                }
+                else if (spacePointChiSq > -3.)                              // Pure edge hits
+                {
+                    if (chargeColorIdx < 0) chargeColorIdx = !isCosmic ? 3 : colorIdx + 3;
+                    storeHit = true;
+                }
+                else if (spacePointChiSq > -4.)                              // Skeleton hits which are also edge hits
+                {
+                    if (chargeColorIdx < 0) chargeColorIdx = !isCosmic ? 0 : colorIdx + 3;
+                    storeHit = true;
+                }
+                else if (spacePoint->Chisq() > -5.)                             // Hits which form seeds for tracks
+                {
+                    if (chargeColorIdx < 0) chargeColorIdx = !isCosmic ? 5 : colorIdx + 3;
+                    storeHit = true;
+                }
+                else if (!recoOpt->fSkeletonOnly)                                // hits made from pairs
+                {
+                    chargeColorIdx = 15;
+                    storeHit       = true;
+                }
             
-            if (chargeColorIdx < 0) chargeColorIdx = 0;
+                if (chargeColorIdx < 0) chargeColorIdx = 0;
+            }
             
             if (storeHit) colorToHitMap[chargeColorIdx].push_back(HitPosition()={pos[0],pos[1],pos[2]});
         }

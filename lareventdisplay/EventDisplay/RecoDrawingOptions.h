@@ -50,6 +50,7 @@ public:
     bool fSkeletonOnly;
     bool fBestPCAAxisOnly;
     bool fDrawTrackVertexAssns;
+    bool fDraw3DSpacePointHeatMap;
     
     std::vector<art::InputTag> fWireLabels;         ///< module labels that produced wires
     std::vector<art::InputTag> fHitLabels;     		///< module labels that produced hits

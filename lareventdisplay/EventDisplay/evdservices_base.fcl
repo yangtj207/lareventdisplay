@@ -63,6 +63,7 @@ standard_recodrawingopt:
  DrawSkeleton3DHitsOnly:    false          # Draw only the "skeleton" 3D hits
  DrawBestPCAAxisOnly:       true           # Draw only the best PCA axis
  DrawTrackVertexAssns:      false          # Draw Track/Vertex associations
+ Draw3DSpacePointHeatMap:   true           # Draw Spacepoints in 3D display with heat map (requires hit associations)
  WireModuleLabels:          ["caldata"]    # list of module labels in which to look for recob::Wires
  HitModuleLabels:           ["gaushit"]    # list of module labels in which to look for recob::Hits
  EndPoint2DModuleLabels:    [""]           # list of module labels in which to look for recob::EndPoint2Ds

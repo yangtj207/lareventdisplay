@@ -50,6 +50,7 @@ void RecoDrawingOptions::reconfigure(fhicl::ParameterSet const& pset)
     fSkeletonOnly              = pset.get< bool                       >("DrawSkeleton3DHitsOnly"   );
     fBestPCAAxisOnly           = pset.get< bool                       >("DrawBestPCAAxisOnly"      );
     fDrawTrackVertexAssns      = pset.get< bool                       >("DrawTrackVertexAssns"     );
+    fDraw3DSpacePointHeatMap   = pset.get< bool                       >("Draw3DSpacePointHeatMap"  );
     fHitLabels                 = pset.get< std::vector<art::InputTag> >("HitModuleLabels"          );
     fSpacePointLabels 	       = pset.get< std::vector<art::InputTag> >("SpacePointModuleLabels"   );
     fProngLabels      	       = pset.get< std::vector<art::InputTag> >("ProngModuleLabels"        );

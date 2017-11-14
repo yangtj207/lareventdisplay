@@ -865,35 +865,36 @@ void RecoBaseDrawer::Cluster2D(const art::Event& evt,
         this->GetSpacePoints(evt, which, spacePointVec);
         
         // No space points no continue
-        if (spacePointVec.size() < 1) continue;
-        
-        // Add the relations to recover associations cluster hits
-        art::FindManyP<recob::Hit> spHitAssnVec(spacePointVec, evt, which);
-        
-        if (spHitAssnVec.isValid())
+        if (spacePointVec.size() > 0)
         {
-            // Create a local hit vector...
-            std::vector<const recob::Hit*> freeHitVec;
+            // Add the relations to recover associations cluster hits
+            art::FindManyP<recob::Hit> spHitAssnVec(spacePointVec, evt, which);
         
-            // loop through space points looking for those that are free
-            for(const auto& spacePointPtr : spacePointVec)
+            if (spHitAssnVec.isValid())
             {
-                if (spacePointPtr->Chisq() < -99.)
+                // Create a local hit vector...
+                std::vector<const recob::Hit*> freeHitVec;
+        
+                // loop through space points looking for those that are free
+                for(const auto& spacePointPtr : spacePointVec)
                 {
-                    // Recover associated hits
-                    const std::vector<art::Ptr<recob::Hit>>& hitVec = spHitAssnVec.at(spacePointPtr.key());
-                
-                    for(const auto& hit : hitVec)
+                    if (spacePointPtr->Chisq() < -99.)
                     {
-                        if(hit->WireID().Plane != plane) continue;
+                        // Recover associated hits
+                        const std::vector<art::Ptr<recob::Hit>>& hitVec = spHitAssnVec.at(spacePointPtr.key());
+                
+                        for(const auto& hit : hitVec)
+                        {
+                            if(hit->WireID().Plane != plane) continue;
                     
-                        freeHitVec.push_back(hit.get());
+                            freeHitVec.push_back(hit.get());
+                        }
                     }
                 }
-            }
         
-            // Draw the free hits in gray
-            this->Hit2D(freeHitVec, kGray, view, false);
+                // Draw the free hits in gray
+                this->Hit2D(freeHitVec, kGray, view, false);
+            }
         }
         
         // Ok, now proceed with our normal processing of hits on clusters
@@ -2135,8 +2136,6 @@ void RecoBaseDrawer::DrawPFParticle3D(const art::Ptr<recob::PFParticle>&        
             for (const auto& hit : hitPair.second) pm.SetNextPoint(hit[0],hit[1],hit[2]);
             nHitsDrawn += hitPair.second.size();
         }
-        
-        std::cout << "** number hits input: " << hitsVec.size() << ", number drawn: " << nHitsDrawn << std::endl;
     }
     
     // Now try to draw any associated edges
@@ -2146,77 +2145,51 @@ void RecoBaseDrawer::DrawPFParticle3D(const art::Ptr<recob::PFParticle>&        
     
         if (!edgeVec.empty())
         {
-            std::map<int,int> indexMap;
-        
+            std::cout << "************ found edge with " << edgeVec.size() << " entries *************" << std::endl;
+            TPolyMarker3D& pm = view->AddPolyMarker3D(2*edgeVec.size(), colorIdx, kFullDotLarge, 0.5);
+
             for (const auto& edge : edgeVec)
             {
-                if (indexMap.find(edge->SecondPointID()) != indexMap.end()) continue;
-            
-                indexMap[edge->FirstPointID()] = edge->SecondPointID();
-            }
-        
-            for(const auto& indexPair : indexMap)
-            {
-                art::Ptr<recob::SpacePoint> firstSP  = spacePointVec.at(indexPair.first);
-                art::Ptr<recob::SpacePoint> secondSP = spacePointVec.at(indexPair.second);
+                art::Ptr<recob::SpacePoint> firstSP  = spacePointVec.at(edge->FirstPointID());
+                art::Ptr<recob::SpacePoint> secondSP = spacePointVec.at(edge->SecondPointID());
                 
-                if (firstSP->ID() != indexPair.first || secondSP->ID() != indexPair.second)
+                if (firstSP->ID() != edge->FirstPointID() || secondSP->ID() != edge->SecondPointID())
                 {
-                    std::cout << "Space point index mismatch, first: " << firstSP->ID() << ", " << indexPair.first << ", second: " << secondSP->ID() << ", " << indexPair.second << std::endl;
+                    std::cout << "Space point index mismatch, first: " << firstSP->ID() << ", " << edge->FirstPointID() << ", second: " << secondSP->ID() << ", " << edge->SecondPointID() << std::endl;
                     continue;
                 }
             
-                if (indexPair.second == 0) continue;
+//                if (edge->SecondPointID() == 0) continue;
             
-                TVector3 lineVec(secondSP->XYZ()[0]-firstSP->XYZ()[0],secondSP->XYZ()[1]-firstSP->XYZ()[1],secondSP->XYZ()[2]-firstSP->XYZ()[2]);
                 TVector3 startPoint(firstSP->XYZ()[0],firstSP->XYZ()[1],firstSP->XYZ()[2]);
-                TVector3 endPoint(startPoint + lineVec);
-            
+                TVector3 endPoint(secondSP->XYZ()[0],secondSP->XYZ()[1],secondSP->XYZ()[2]);
+                TVector3 lineVec(endPoint - startPoint);
+                
+                pm.SetNextPoint(startPoint[0],startPoint[1],startPoint[2]);
+                pm.SetNextPoint(endPoint[0],  endPoint[1],  endPoint[2]);
+
                 double length = lineVec.Mag();
                 
                 if (length == 0.)
                 {
-                    std::cout << "Edge length is zero, index 1: " << indexPair.first << ", index 2: " << indexPair.second << std::endl;
-                    continue;
-                }
-            
-                // Is there a bug in the associations code?
-                if (length > 5.)
-                {
-                    std::cout << ">>>> Found bad edge length: " << length << std::endl;
+                    std::cout << "Edge length is zero, index 1: " << edge->FirstPointID() << ", index 2: " << edge->SecondPointID() << std::endl;
                     continue;
                 }
             
                 double minLen = std::max(2.01,length);
             
-                lineVec.SetMag(1.);
-            
                 if (minLen > length)
                 {
+                    lineVec.SetMag(1.);
+                    
                     startPoint += -0.5 * (minLen - length) * lineVec;
                     endPoint   +=  0.5 * (minLen - length) * lineVec;
                 }
-            
-                // Want color to reflect "heat map"
-                const std::vector<art::Ptr<recob::Hit>>& hitVec = spHitAssnVec.at(firstSP.key());
-            
-                int    chargeColorIdx(15);
-            
-                if (firstSP->Chisq() > -10.)
-                {
-                    double pulseHeights[] = {0.,0.,0.};
                 
-                    for(const auto& hit : hitVec)
-                    {
-                        if (!hit) break;
-                        pulseHeights[hit->View()] = hit->Integral(); //PeakAmplitude();
-                    }
-                
-                    if (pulseHeights[2] > 0.) chargeColorIdx = cst->CalQ(geo::kCollection).GetColor(pulseHeights[2]);
-                }
+                std::cout << "    Drawing edge len: " << length << ", from sp: " << firstSP->ID() << " (" << startPoint[0] << "," << startPoint[1] << "," << startPoint[2] << ")" << " to " << secondSP->ID() << " (" << endPoint[0] << "," << endPoint[1] << "," << endPoint[2] << ")" << std::endl;
             
                 // Get a polyline object to draw from the first to the second space point
-                TPolyLine3D& pl = view->AddPolyLine3D(2, chargeColorIdx, 4, 1);
+                TPolyLine3D& pl = view->AddPolyLine3D(2, colorIdx, 1, 1);
             
                 pl.SetPoint(0, startPoint[0], startPoint[1], startPoint[2]);
                 pl.SetPoint(1, endPoint[0],   endPoint[1],   endPoint[2]);
@@ -2453,8 +2426,6 @@ void RecoBaseDrawer::DrawSpacePoint3D(std::vector<art::Ptr<recob::SpacePoint>>& 
         
         spmap[spcolor].push_back(&*pspt);
     }
-    
-    std::cout << "Drawing space points, have " << spts.size() << " space points, " << spmap.size() << " colors, " << spmap[spcolor].size() << " hits" << std::endl;
 
     // Loop over colors.
     // Note that larger (=better) space points are plotted on

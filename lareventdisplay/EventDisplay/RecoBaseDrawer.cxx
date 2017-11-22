@@ -2409,7 +2409,7 @@ void RecoBaseDrawer::DrawSpacePoint3D(std::vector<art::Ptr<recob::SpacePoint>>& 
         // For rainbow effect, choose root colors in range [51,100].
         // We are using 100=best (red), 51=worst (blue).
         
-        if (pspt->Chisq() > -100.) continue;
+        //if (pspt->Chisq() > -100.) continue;
         
         spcolor = 20;
         

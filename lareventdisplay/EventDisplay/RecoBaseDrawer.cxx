@@ -64,6 +64,8 @@
 #include "canvas/Persistency/Common/FindMany.h" 
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
+#include "lardata/RecoBaseProxy/Track.h"
+
 namespace {
   // Utility function to make uniform error messages.
   void writeErrMsg(const char* fcn,
@@ -1402,7 +1404,9 @@ void RecoBaseDrawer::Prong2D(const art::Event& evt,
             
             art::InputTag const whichTag( recoOpt->fCosmicTagLabels.size() > imod ? recoOpt->fCosmicTagLabels[imod] : "");
             art::FindManyP<anab::CosmicTag> cosmicTrackTags( track, evt, whichTag );
-            
+
+	    auto tracksProxy = proxy::getCollection<proxy::Tracks>(evt, which);
+
             // loop over the prongs and get the clusters and hits associated with
             // them.  only keep those that are in this view
             for(size_t t = 0; t < track.vals().size(); ++t)
@@ -1429,9 +1433,7 @@ void RecoBaseDrawer::Prong2D(const art::Event& evt,
                     trkID.SetTextColor(evd::kColor[tid%evd::kNCOLS]);
                     trkID.SetTextSize(0.1);
                 }
-        
-                std::vector<const recob::Hit*> hits = fmh.at(t);
-        
+
                 float Score = -999;
                 if( cosmicTrackTags.isValid() ){
                     if( cosmicTrackTags.at(t).size() > 0 ) {
@@ -1440,12 +1442,22 @@ void RecoBaseDrawer::Prong2D(const art::Event& evt,
                     }
                 }
         
-                // only get the hits for the current view
-                std::vector<const recob::Hit*>::iterator itr = hits.begin();
-                while(itr < hits.end()){
-                    if((*itr)->View() != gview) hits.erase(itr);
-                    else itr++;
-                }
+		std::vector<const recob::Hit*> hits;
+		if (track.vals().at(t)->NumberTrajectoryPoints() == fmh.at(t).size()) {
+		  auto tp = tracksProxy[t];
+		  for (auto point: tp.points()) {
+		    if (!point.isPointValid()) continue;
+		    hits.push_back(point.hit());
+		  }
+		} else {
+		  hits = fmh.at(t);
+		}
+		// only get the hits for the current view
+		std::vector<const recob::Hit*>::iterator itr = hits.begin();
+		while(itr < hits.end()){
+		    if((*itr)->View() != gview) hits.erase(itr);
+		    else itr++;
+		}
         
                 const recob::Track* aTrack(track.vals().at(t));
                 int   color(evd::kColor[(aTrack->ID()&65535)%evd::kNCOLS]);
@@ -1610,7 +1622,9 @@ void RecoBaseDrawer::DrawTrackVertexAssns2D(const art::Event& evt,
         art::FindMany<recob::Hit> fmh(trackCol, evt, which);
 
         art::FindManyP<anab::CosmicTag> cosmicTrackTags( trackCol, evt, recoOpt->fTrkVtxCosmicLabels[imod] );
-        
+
+	auto tracksProxy = proxy::getCollection<proxy::Tracks>(evt, which);
+
         // Need to keep track of vertices unfortunately
         int lastVtxIdx(-1);
         int color(kRed);
@@ -1662,9 +1676,7 @@ void RecoBaseDrawer::DrawTrackVertexAssns2D(const art::Event& evt,
             TText& trkID = view->AddText(wire, tick, txt);
             trkID.SetTextColor(color);
             trkID.SetTextSize(0.1);
-	
-            std::vector<const recob::Hit*> hits = fmh.at(track.key());
-            
+
             float cosmicScore = -999;
             if( cosmicTrackTags.isValid() ){
 	      if( cosmicTrackTags.at(track.key()).size() > 0 ) {
@@ -1673,6 +1685,16 @@ void RecoBaseDrawer::DrawTrackVertexAssns2D(const art::Event& evt,
 	      }
             }
             
+	    std::vector<const recob::Hit*> hits;
+	    if (track->NumberTrajectoryPoints() == fmh.at(track.key()).size()) {
+	      auto tp = tracksProxy[track.key()];
+	      for (auto point: tp.points()) {
+		if (!point.isPointValid()) continue;
+		hits.push_back(point.hit());
+	      }
+	    } else {
+	      hits = fmh.at(track.key());
+	    }
             // only get the hits for the current view
             std::vector<const recob::Hit*>::iterator itr = hits.begin();
             while(itr < hits.end()){

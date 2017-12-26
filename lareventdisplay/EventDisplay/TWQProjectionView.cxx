@@ -45,6 +45,7 @@
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "lardata/Utilities/GeometryUtilities.h"
 

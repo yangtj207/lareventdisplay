@@ -36,6 +36,7 @@
 
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Principal/Event.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 #include "lardata/Utilities/GeometryUtilities.h"
 
 namespace {

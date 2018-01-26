@@ -2211,7 +2211,7 @@ void RecoBaseDrawer::DrawPFParticle3D(const art::Ptr<recob::PFParticle>&        
                 std::cout << "    Drawing edge len: " << length << ", from sp: " << firstSP->ID() << " (" << startPoint[0] << "," << startPoint[1] << "," << startPoint[2] << ")" << " to " << secondSP->ID() << " (" << endPoint[0] << "," << endPoint[1] << "," << endPoint[2] << ")" << std::endl;
             
                 // Get a polyline object to draw from the first to the second space point
-                TPolyLine3D& pl = view->AddPolyLine3D(2, colorIdx, 1, 1);
+                TPolyLine3D& pl = view->AddPolyLine3D(2, colorIdx, 2, 1);
             
                 pl.SetPoint(0, startPoint[0], startPoint[1], startPoint[2]);
                 pl.SetPoint(1, endPoint[0],   endPoint[1],   endPoint[2]);
@@ -2317,6 +2317,90 @@ void RecoBaseDrawer::DrawPFParticle3D(const art::Ptr<recob::PFParticle>&        
         for(const auto& daughterIdx : pfPart->Daughters())
         {
             DrawPFParticle3D(pfParticleVec.at(daughterIdx), pfParticleVec, spacePointVec, edgeAssnsVec, spacePointAssnVec, spHitAssnVec, trackAssnVec, pcAxisAssnVec, cosmicTagAssnVec, depth, view);
+        }
+    }
+    
+    return;
+}
+
+//......................................................................
+void RecoBaseDrawer::Edge3D(const art::Event& evt, evdb::View3D* view)
+{
+    art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
+    
+    if (recoOpt->fDrawEdges < 1) return;
+    
+    // The plan is to loop over the list of possible particles
+    for(size_t imod = 0; imod < recoOpt->fEdgeLabels.size(); ++imod)
+    {
+        art::InputTag const which = recoOpt->fEdgeLabels[imod];
+        
+        // Start off by recovering our 3D Clusters for this label
+        art::PtrVector<recob::Edge> edgeVec;
+        this->GetEdges(evt, which, edgeVec);
+        
+        mf::LogDebug("RecoBaseDrawer") << "RecoBaseDrawer: number Edges to draw: " << edgeVec.size() << std::endl;
+        
+        if (!edgeVec.empty())
+        {
+            // Get the space points created by the PFParticle producer
+            std::vector<art::Ptr<recob::SpacePoint>> spacePointVec;
+            this->GetSpacePoints(evt, which, spacePointVec);
+            
+            // First draw the space points (all of them), then circle back on the edges...
+            int colorIdx(20);
+            
+            TPolyMarker3D& pm = view->AddPolyMarker3D(spacePointVec.size(), colorIdx, kFullDotMedium, 1.);
+            
+            for(const auto& spacePoint : spacePointVec)
+            {
+                TVector3 spPosition(spacePoint->XYZ()[0],spacePoint->XYZ()[1],spacePoint->XYZ()[2]);
+                
+                pm.SetNextPoint(spPosition[0],spPosition[1],spPosition[2]);
+            }
+            
+            // Now draw the edges
+            for (const auto& edge : edgeVec)
+            {
+                art::Ptr<recob::SpacePoint> firstSP  = spacePointVec.at(edge->FirstPointID());
+                art::Ptr<recob::SpacePoint> secondSP = spacePointVec.at(edge->SecondPointID());
+                
+                if (firstSP->ID() != edge->FirstPointID() || secondSP->ID() != edge->SecondPointID())
+                {
+                    std::cout << "Space point index mismatch, first: " << firstSP->ID() << ", " << edge->FirstPointID() << ", second: " << secondSP->ID() << ", " << edge->SecondPointID() << std::endl;
+                    continue;
+                }
+                
+                TVector3 startPoint(firstSP->XYZ()[0],firstSP->XYZ()[1],firstSP->XYZ()[2]);
+                TVector3 endPoint(secondSP->XYZ()[0],secondSP->XYZ()[1],secondSP->XYZ()[2]);
+//                TVector3 lineVec(endPoint - startPoint);
+                
+//                double length = lineVec.Mag();
+                
+//                if (length == 0.)
+//                {
+//                    std::cout << "Edge length is zero, index 1: " << edge->FirstPointID() << ", index 2: " << edge->SecondPointID() << std::endl;
+//                    continue;
+//                }
+                
+//                double minLen = std::max(2.01,length);
+                
+//                if (minLen > length)
+//                {
+//                    lineVec.SetMag(1.);
+//
+//                    startPoint += -0.5 * (minLen - length) * lineVec;
+//                    endPoint   +=  0.5 * (minLen - length) * lineVec;
+//                }
+//
+//                std::cout << "    Drawing edge len: " << length << ", from sp: " << firstSP->ID() << " (" << startPoint[0] << "," << startPoint[1] << "," << startPoint[2] << ")" << " to " << secondSP->ID() << " (" << endPoint[0] << "," << endPoint[1] << "," << endPoint[2] << ")" << std::endl;
+                
+                // Get a polyline object to draw from the first to the second space point
+                TPolyLine3D& pl = view->AddPolyLine3D(2, colorIdx, 1, 1);
+                
+                pl.SetPoint(0, startPoint[0], startPoint[1], startPoint[2]);
+                pl.SetPoint(1, endPoint[0],   endPoint[1],   endPoint[2]);
+            }
         }
     }
     

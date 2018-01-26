@@ -40,6 +40,7 @@ standard_recodrawingopt:
                                            # 2 to draw outlines - not working yet,    
  DrawPFParticles:           0              # 1 to draw PFParticles
                                            # 4 to have 3D display "white out" if tagged as cosmic
+ DrawEdges:                 0              # draws edges and associated space points in 3D display, 0 = off, 1 = on
  Draw2DSlopeEndPoints:      0              # draws end points and slopes for clusters, 0 = off, 1 = on
  DrawSpacePoints:           0              # 0 = off, 1 = on                                              
  DrawProngs:                0              # 0 = off, 1 = on                                              
@@ -70,7 +71,8 @@ standard_recodrawingopt:
  SpacePointModuleLabels:    ["spacepts"]   # list of module labels in which to look for recob::SpacePoints     
  ProngModuleLabels:         [""]           # list of module labels in which to look for recob::Prongs     
  ClusterModuleLabels:       ["dbcluster"]  # list of module labels in which to look for recob::Clusters  
- PFParticleModuleLabels:    ["pandora"]    # list of module labels in which to look for recob::PFParticles 
+ PFParticleModuleLabels:    ["pandora"]    # list of module labels in which to look for recob::PFParticles
+ EdgeModuleLabels:          [""]           # list of module labels in which to look for recob::Edges
  TrackModuleLabels:         [""]           # list of module labels in which to look for recob::Tracks     
  ShowerModuleLabels:        ["showerreco"] # list of module labels in which to look for recob::Showers    
  VertexModuleLabels:        [""]           # list of module labels in which to look for recob::Vertexs    

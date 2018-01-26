@@ -169,6 +169,7 @@ public:
                           const art::FindMany<anab::CosmicTag>&    cosmicTagAssnVec,
                           int                                      depth,
                           evdb::View3D*                            view);
+    void Edge3D(const art::Event& evt, evdb::View3D*     view);
     void Prong3D(const art::Event& evt,
 		         evdb::View3D*     view);
     void DrawSpacePoint3D(std::vector<art::Ptr<recob::SpacePoint>>& spts,

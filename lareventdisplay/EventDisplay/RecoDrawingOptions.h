@@ -30,6 +30,7 @@ public:
     int  fDrawHits;
     int  fDrawClusters;
     int  fDrawPFParticles;
+    int  fDrawEdges;
     int  fDraw2DSlopeEndPoints;
     int  fDrawSpacePoints;
     int  fDrawProngs;
@@ -57,6 +58,7 @@ public:
     std::vector<art::InputTag> fEndPoint2DLabels; 	///< module labels that produced end point 2d objects
     std::vector<art::InputTag> fClusterLabels;    	///< module labels that produced clusters
     std::vector<art::InputTag> fPFParticleLabels;   ///< module labels that produced PFParticles
+    std::vector<art::InputTag> fEdgeLabels;         ///< module labels that produced Edge objects
     std::vector<art::InputTag> fSpacePointLabels; 	///< module labels that produced space points
     std::vector<art::InputTag> fProngLabels;   		///< module labels that produced prongs
     std::vector<art::InputTag> fTrackLabels;   		///< module labels that produced tracks

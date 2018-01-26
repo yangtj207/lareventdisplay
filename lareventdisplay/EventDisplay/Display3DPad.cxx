@@ -13,7 +13,6 @@
 #include "nutools/EventDisplayBase/View3D.h"
 #include "nutools/EventDisplayBase/EventHolder.h"
 #include "larcore/Geometry/Geometry.h"
-//#include "lareventdisplay/EventDisplay/GeometryDrawer.h"
 #include "lareventdisplay/EventDisplay/ExptDrawers/IExperimentDrawer.h"
 #include "lareventdisplay/EventDisplay/RawDataDrawer.h"
 #include "lareventdisplay/EventDisplay/SimulationDrawer.h"
@@ -68,18 +67,18 @@ namespace evd{
 
     if(evt){
       this->GeometryDraw()->DetOutline3D(fView);
-      this->SimulationDraw()->MCTruth3D   (*evt, fView);
-      this->RecoBaseDraw()->  PFParticle3D(*evt, fView);
-      this->RecoBaseDraw()->  SpacePoint3D(*evt, fView);
-      this->RecoBaseDraw()->  Prong3D     (*evt, fView);
-      this->RecoBaseDraw()->  Seed3D      (*evt, fView);
-      this->RecoBaseDraw()->  BezierTrack3D (*evt, fView);
-      this->RecoBaseDraw()->  Vertex3D    (*evt, fView);
-      this->RecoBaseDraw()->  Event3D     (*evt, fView);
+      this->SimulationDraw()->MCTruth3D    (*evt, fView);
+      this->RecoBaseDraw()->  PFParticle3D (*evt, fView);
+      this->RecoBaseDraw()->  Edge3D       (*evt, fView);
+      this->RecoBaseDraw()->  SpacePoint3D (*evt, fView);
+      this->RecoBaseDraw()->  Prong3D      (*evt, fView);
+      this->RecoBaseDraw()->  Seed3D       (*evt, fView);
+      this->RecoBaseDraw()->  BezierTrack3D(*evt, fView);
+      this->RecoBaseDraw()->  Vertex3D     (*evt, fView);
+      this->RecoBaseDraw()->  Event3D      (*evt, fView);
     
       art::ServiceHandle<evd::EvdLayoutOptions> evdlayoutoptions;
-      if(evdlayoutoptions->fMakeSeeds)
-	UpdateSeedCurve();
+      if(evdlayoutoptions->fMakeSeeds) UpdateSeedCurve();
     }
 
     this->Pad()->Clear();
@@ -87,7 +86,7 @@ namespace evd{
     if (fPad->GetView()==0) {
       int irep;
       double rmin[]={-2.1*geo->DetHalfWidth(),-2.1*geo->DetHalfHeight(),-0.5*geo->DetLength()};
-      double rmax[]={ 2.1*geo->DetHalfWidth(), 2.1*geo->DetHalfHeight(), 2.1*geo->DetLength()};
+      double rmax[]={ 2.1*geo->DetHalfWidth(), 2.1*geo->DetHalfHeight(), 0.5*geo->DetLength()};
       TView3D* v = new TView3D(1,rmin,rmax);
       v->SetPerspective();
       v->SetView(0.0,260.0,270.0,irep);

@@ -361,6 +361,8 @@ public:
     int GetEvents(const art::Event&             evt,
 		          const art::InputTag&          which,
 		          art::PtrVector<recob::Event>& event);
+    
+    float SpacePointChiSq(const std::vector<art::Ptr<recob::Hit>>&) const;
 
     std::vector<std::array<double, 3>> Circle3D(const TVector3& pos, const TVector3& axisDir, const double& radius);
 

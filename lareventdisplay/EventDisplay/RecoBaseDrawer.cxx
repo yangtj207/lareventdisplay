@@ -3,6 +3,7 @@
 /// \author  brebel@fnal.gov
 #include <cmath>
 #include <map>
+#include <limits>
 #include <stdint.h>
 
 #include "TMath.h"
@@ -2042,6 +2043,54 @@ void RecoBaseDrawer::PFParticle3D(const art::Event& evt,
     return;
 }
     
+float RecoBaseDrawer::SpacePointChiSq(const std::vector<art::Ptr<recob::Hit>>& hitVec) const
+{
+    float hitChiSq(0.);
+    
+    bool  usePlane[]     = {false,false,false};
+    float peakTimeVec[]  = {0.,0.,0.};
+    float peakSigmaVec[] = {0.,0.,0.};
+    float aveSum(0.);
+    float weightSum(0.);
+    
+    // Temp ad hoc correction to investigate...
+    std::map<size_t,double> planeOffsetMap;
+    
+    planeOffsetMap[0] = 0.;
+    planeOffsetMap[1] = 4.;
+    planeOffsetMap[2] = 8.;
+
+    for(const auto& hit : hitVec)
+    {
+        if (!hit) continue;
+        
+        float peakTime = hit->PeakTime() - planeOffsetMap[hit->WireID().Plane];
+        float peakRMS  = hit->RMS();
+        
+        aveSum    += peakTime / (peakRMS * peakRMS);
+        weightSum += 1. / (peakRMS * peakRMS);
+        
+        peakTimeVec[hit->WireID().Plane]  = peakTime;
+        peakSigmaVec[hit->WireID().Plane] = peakRMS;
+        usePlane[hit->WireID().Plane]     = true;
+    }
+    
+    aveSum /= weightSum;
+    
+    for(int idx = 0; idx < 3; idx++)
+    {
+        if (usePlane[idx])
+        {
+            float deltaTime       = peakTimeVec[idx] - aveSum;
+            float sigmaPeakTimeSq = peakSigmaVec[idx]*peakSigmaVec[idx];
+            
+            hitChiSq += deltaTime * deltaTime / sigmaPeakTimeSq;
+        }
+    }
+
+    return hitChiSq;
+}
+
 void RecoBaseDrawer::DrawPFParticle3D(const art::Ptr<recob::PFParticle>&              pfPart,
                                       const art::PtrVector<recob::PFParticle>&        pfParticleVec,
                                       const std::vector<art::Ptr<recob::SpacePoint>>& spacePointVec,
@@ -2087,11 +2136,85 @@ void RecoBaseDrawer::DrawPFParticle3D(const art::Ptr<recob::PFParticle>&        
         using HitPosition = std::array<double,3>;
         std::map<int,std::vector<HitPosition>> colorToHitMap;
         
+        // ******* Zoom through to find min/max to set the scale factor
+        std::vector<float> sigSqVec;
+        
+        sigSqVec.resize(hitsVec.size(), 0.);
+
+        std::map<size_t,std::map<size_t,std::vector<std::pair<std::pair<float,float>,const std::vector<art::Ptr<recob::Hit>>&>>>> wireToWireToChiMap;
+
+        for(const auto& spacePoint : hitsVec)
+        {
+            const std::vector<art::Ptr<recob::Hit>>& hitVec = spHitAssnVec.at(spacePoint.key());
+            
+            float origHitChiSq = SpacePointChiSq(hitVec);
+            float hitChiSq = spacePoint->Chisq();
+
+            size_t wire0(0);
+            size_t wire1(0);
+            
+            for(const auto& hit : hitVec)
+            {
+                if (!hit) continue;
+                
+                if (hit->WireID().Plane == 0) wire0 = hit->WireID().Wire;
+                if (hit->WireID().Plane == 1) wire1 = hit->WireID().Wire;
+            }
+            
+            wireToWireToChiMap[wire0][wire1].push_back(std::pair<std::pair<float,float>,const std::vector<art::Ptr<recob::Hit>>&>(std::pair<float,float>(hitChiSq,origHitChiSq),hitVec));
+            
+            sigSqVec.emplace_back(hitChiSq);
+        }
+        
+        // Ok, massive printout to follow
+        std::cout << "**************************************************************************************************" << std::endl;
+        for(const auto& pair0 : wireToWireToChiMap)
+        {
+            for(const auto& pair1 : pair0.second)
+            {
+                const std::vector<art::Ptr<recob::Hit>>& locHitVec = pair1.second.front().second;
+                
+                std::cout << "-- Wire0: " << pair0.first << ", Wire1: " << pair1.first << ", hitChiSq: " << pair1.second.front().first.first << ", orig: " << pair1.second.front().first.second;
+                for(const auto& hit : locHitVec)
+                {
+                    if (!hit) continue;
+                    
+                    std::cout << ", Pl: " << hit->WireID().Plane << ", t: " << hit->PeakTime() << ", rms: " << hit->RMS();
+                }
+                std::cout << std::endl;
+            }
+        }
+        std::cout << "**************************************************************************************************" << std::endl;
+
+        std::sort(sigSqVec.begin(),sigSqVec.end());
+        
+        float minDelTSigSq = sigSqVec.front();
+        float maxDelTSigSq = sigSqVec.back();
+        
+        // Back up a bit to get some scale...
+        int cnt(10);
+        
+        while(cnt-- && sigSqVec.back() > 0.1 * maxDelTSigSq) sigSqVec.pop_back();
+        
+        maxDelTSigSq = sigSqVec.back();
+
+        float delTScaleFctr = (cst->fRecoQHigh[geo::kCollection] - cst->fRecoQLow[geo::kCollection]) / (maxDelTSigSq - minDelTSigSq);
+        
+        float aveValue = std::accumulate(sigSqVec.begin(),sigSqVec.end(),0.) / float(sigSqVec.size());
+        float rms      = std::sqrt(std::inner_product(sigSqVec.begin(), sigSqVec.end(), sigSqVec.begin(), 0.) / float(sigSqVec.size()));
+
+        std::cout << "*****>> # spacepoints: " << hitsVec.size() << ", min: " << minDelTSigSq << ", max: " << maxDelTSigSq << ", ave: " << aveValue << ", rms: " << rms << ", delTScaleFctr: " << delTScaleFctr << std::endl;
+        
+        maxDelTSigSq  = std::min(aveValue + rms, maxDelTSigSq);
+//        minDelTSigSq  = std::max(aveValue - rms, minDelTSigSq);
+        delTScaleFctr = (cst->fRecoQHigh[geo::kCollection] - cst->fRecoQLow[geo::kCollection]) / (maxDelTSigSq - minDelTSigSq);
+        // ******* ok done with this
+
         for(const auto& spacePoint : hitsVec)
         {
             const double* pos = spacePoint->XYZ();
             
-            const std::vector<art::Ptr<recob::Hit>>& hitVec = spHitAssnVec.at(spacePoint.key());
+//            const std::vector<art::Ptr<recob::Hit>>& hitVec = spHitAssnVec.at(spacePoint.key());
             
             bool   storeHit(false);
             int    chargeColorIdx(0);
@@ -2099,17 +2222,26 @@ void RecoBaseDrawer::DrawPFParticle3D(const art::Ptr<recob::PFParticle>&        
             
             if (recoOpt->fDraw3DSpacePointHeatMap)
             {
-                double pulseHeights[] = {0.,0.,0.};
-            
-                for(const auto& hit : hitVec)
-                {
-                    if (!hit) continue;
-                    pulseHeights[hit->WireID().Plane] = hit->PeakAmplitude();
-                }
+//                float pulseHeights[] = {0.,0.,0.};
+//                float  hitChiSq = SpacePointChiSq(hitVec);
+                float  hitChiSq = spacePoint->Chisq();
+
+//                for(const auto& hit : hitVec)
+//                {
+//                    if (!hit) continue;
+//
+//                    pulseHeights[hit->WireID().Plane] = hit->PeakAmplitude();
+//                }
                 
                 storeHit = true;
-            
-                if (pulseHeights[2] >= 0.) chargeColorIdx = cst->CalQ(geo::kCollection).GetColor(pulseHeights[2]);
+                
+                hitChiSq = std::max(minDelTSigSq, std::min(maxDelTSigSq, std::sqrt(hitChiSq)));
+
+                float chgFactor = cst->fRecoQHigh[geo::kCollection] - delTScaleFctr * hitChiSq;
+                //float chgFactor = delTScaleFctr * hitChiSq + cst->fRecoQLow[geo::kCollection];
+
+                chargeColorIdx = cst->CalQ(geo::kCollection).GetColor(chgFactor);
+//                if (pulseHeights[2] >= 0.) chargeColorIdx = cst->CalQ(geo::kCollection).GetColor(pulseHeights[2]);
             }
             else
             {
@@ -2167,7 +2299,6 @@ void RecoBaseDrawer::DrawPFParticle3D(const art::Ptr<recob::PFParticle>&        
     
         if (!edgeVec.empty())
         {
-            std::cout << "************ found edge with " << edgeVec.size() << " entries *************" << std::endl;
             TPolyMarker3D& pm = view->AddPolyMarker3D(2*edgeVec.size(), colorIdx, kFullDotLarge, 0.5);
 
             for (const auto& edge : edgeVec)
@@ -2207,11 +2338,9 @@ void RecoBaseDrawer::DrawPFParticle3D(const art::Ptr<recob::PFParticle>&        
                     startPoint += -0.5 * (minLen - length) * lineVec;
                     endPoint   +=  0.5 * (minLen - length) * lineVec;
                 }
-                
-                std::cout << "    Drawing edge len: " << length << ", from sp: " << firstSP->ID() << " (" << startPoint[0] << "," << startPoint[1] << "," << startPoint[2] << ")" << " to " << secondSP->ID() << " (" << endPoint[0] << "," << endPoint[1] << "," << endPoint[2] << ")" << std::endl;
             
                 // Get a polyline object to draw from the first to the second space point
-                TPolyLine3D& pl = view->AddPolyLine3D(2, colorIdx, 2, 1);
+                TPolyLine3D& pl = view->AddPolyLine3D(2, colorIdx, 4, 1);
             
                 pl.SetPoint(0, startPoint[0], startPoint[1], startPoint[2]);
                 pl.SetPoint(1, endPoint[0],   endPoint[1],   endPoint[2]);
@@ -2367,33 +2496,21 @@ void RecoBaseDrawer::Edge3D(const art::Event& evt, evdb::View3D* view)
                 
                 if (firstSP->ID() != edge->FirstPointID() || secondSP->ID() != edge->SecondPointID())
                 {
-                    std::cout << "Space point index mismatch, first: " << firstSP->ID() << ", " << edge->FirstPointID() << ", second: " << secondSP->ID() << ", " << edge->SecondPointID() << std::endl;
+                    mf::LogDebug("RecoBaseDrawer") << "Edge: Space point index mismatch, first: " << firstSP->ID() << ", " << edge->FirstPointID() << ", second: " << secondSP->ID() << ", " << edge->SecondPointID() << std::endl;
                     continue;
                 }
                 
                 TVector3 startPoint(firstSP->XYZ()[0],firstSP->XYZ()[1],firstSP->XYZ()[2]);
                 TVector3 endPoint(secondSP->XYZ()[0],secondSP->XYZ()[1],secondSP->XYZ()[2]);
-//                TVector3 lineVec(endPoint - startPoint);
+                TVector3 lineVec(endPoint - startPoint);
                 
-//                double length = lineVec.Mag();
+                double length = lineVec.Mag();
                 
-//                if (length == 0.)
-//                {
+                if (length == 0.)
+                {
 //                    std::cout << "Edge length is zero, index 1: " << edge->FirstPointID() << ", index 2: " << edge->SecondPointID() << std::endl;
-//                    continue;
-//                }
-                
-//                double minLen = std::max(2.01,length);
-                
-//                if (minLen > length)
-//                {
-//                    lineVec.SetMag(1.);
-//
-//                    startPoint += -0.5 * (minLen - length) * lineVec;
-//                    endPoint   +=  0.5 * (minLen - length) * lineVec;
-//                }
-//
-//                std::cout << "    Drawing edge len: " << length << ", from sp: " << firstSP->ID() << " (" << startPoint[0] << "," << startPoint[1] << "," << startPoint[2] << ")" << " to " << secondSP->ID() << " (" << endPoint[0] << "," << endPoint[1] << "," << endPoint[2] << ")" << std::endl;
+                    continue;
+                }
                 
                 // Get a polyline object to draw from the first to the second space point
                 TPolyLine3D& pl = view->AddPolyLine3D(2, colorIdx, 1, 1);

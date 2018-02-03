@@ -288,15 +288,6 @@ void SimulationDrawer::MCTruth3D(const art::Event& evt,
     // get the particles from the Geant4 step
     std::vector<const simb::MCParticle*> plist;
     this->GetParticle(evt, plist);
-      
-    // Useful variables
-    double xMinimum(-1.*(maxx-minx));
-    double xMaximum( 2.*(maxx-minx));
-    
-    double xMinFromTicks = theDetector->ConvertTicksToX(0,0,0,0);
-    double xMaxFromTicks = theDetector->ConvertTicksToX(theDetector->NumberTimeSamples(),0,0,0);
-    
-    std::cout << "# samples: " << theDetector->NumberTimeSamples() << ", min/max X: " << xMinFromTicks << "/" << xMaxFromTicks << ", xMinimum/xMaximum: " << xMinimum << "/" << xMaximum << std::endl;
     
     // Define a couple of colors for neutrals and if we gray it out...
     int neutralColor(12);
@@ -348,10 +339,11 @@ void SimulationDrawer::MCTruth3D(const art::Event& evt,
                 // In particular, the cosmic rays will not be correctly placed without this
                 //double g4Ticks(detClocks->TPCG4Time2Tick(mcPart->T())+theDetector->GetXTicksOffset(0,0,0)-theDetector->TriggerOffset());
                 //double g4Ticks(detClocks->TPCG4Time2Tick(mcPart->T())+theDetector->GetXTicksOffset(0,0,0));
-                double g4Ticks(detClocks->TPCG4Time2Tick(mcPart->T()));
                 //double g4Ticks(detClocks->TPCG4Time2Tick(mcPart->T()));
+                double g4Ticks(detClocks->TPCG4Time2Tick(mcPart->T())-theDetector->TriggerOffset());
                 double xOffset(0.); //(theDetector->ConvertTicksToX(g4Ticks, 0, 0, 0));
-                bool   xOffsetNotSet(true);
+                double xPosMinTick = 0.;
+                double xPosMaxTick = std::numeric_limits<double>::max();
 		
                 // collect the points from this particle
                 int numTrajPoints = mcTraj.size();
@@ -366,35 +358,31 @@ void SimulationDrawer::MCTruth3D(const art::Event& evt,
                     double zPos = mcTraj.Z(hitIdx);
                 
                     // If the original simulated hit did not occur in the TPC volume then don't draw it
-                    if (xPos < minx || xPos > maxx || yPos < miny || yPos > maxy|| zPos < minz || zPos > maxz) continue;
+//                    if (xPos < minx || xPos > maxx || yPos < miny || yPos > maxy|| zPos < minz || zPos > maxz) continue;
                     
-                    // Check xOffset state and set if necessary
-                    if (xOffsetNotSet)
+                    // If we have cosmic rays then we need to get the offset which allows translating from
+                    // when they were generated vs when they were tracked.
+                    // Note that this also explicitly checks that they are in a TPC volume
+                    geo::Point_t hitLocation(xPos,yPos,zPos);
+                    
+                    try
                     {
-                        double hitLocation[] = {xPos,yPos,zPos};
+                        geo::TPCID   tpcID = geom->PositionToTPCID(hitLocation);
+                        geo::PlaneID planeID(tpcID,0);
                         
-                        try
-                        {
-                            const geo::CryostatGeo& cryoGeo = geom->PositionToCryostat(hitLocation);
-                            int                     tpcIdx  = cryoGeo.FindTPCAtPosition(hitLocation, 1.);
-                                
-                            xMinFromTicks = theDetector->ConvertTicksToX(0,0,tpcIdx,cryoGeo.ID().Cryostat);
-                            xMaxFromTicks = theDetector->ConvertTicksToX(theDetector->NumberTimeSamples(),0,tpcIdx,cryoGeo.ID().Cryostat);
-                            
-                            if (xMaxFromTicks < xMinFromTicks) std::swap(xMinFromTicks,xMaxFromTicks);
-
-                            xOffset       = xMinFromTicks - theDetector->ConvertTicksToX(g4Ticks, 0, tpcIdx, cryoGeo.ID().Cryostat);
-                            xOffsetNotSet = false;
-                            xOffset = 0.;
-                        }
-                        catch(...) {continue;}
+                        xPosMinTick   = theDetector->ConvertTicksToX(0,planeID);
+                        xPosMaxTick   = theDetector->ConvertTicksToX(theDetector->NumberTimeSamples(),planeID);
+                        xOffset       = theDetector->ConvertTicksToX(g4Ticks, planeID) - xPosMinTick;
+                        
+                        if (xPosMaxTick < xPosMinTick) std::swap(xPosMinTick,xPosMaxTick);
                     }
+                    catch(...) {continue;}
                 
                     // Now move the hit position to correspond to the timing
                     xPos += xOffset;
                 
                     // Check fiducial limits
-                    if (xPos > xMinFromTicks && xPos < xMaxFromTicks)
+                    if (xPos > xPosMinTick && xPos < xPosMaxTick)
                     {
                         // Check for space charge offsets
 //                        if (spaceCharge->EnableSimEfieldSCE())
@@ -468,11 +456,12 @@ void SimulationDrawer::MCTruth3D(const art::Event& evt,
         // In particular, the cosmic rays will not be correctly placed without this
         //double g4Ticks(detClocks->TPCG4Time2Tick(mcPart->T())+theDetector->GetXTicksOffset(0,0,0)-theDetector->TriggerOffset());
         //double g4Ticks(detClocks->TPCG4Time2Tick(mcPart->T())+theDetector->GetXTicksOffset(0,0,0));
-        double g4Ticks(detClocks->TPCG4Time2Tick(mcPart->T()));
+        double g4Ticks(detClocks->TPCG4Time2Tick(mcPart->T())-theDetector->TriggerOffset());
 //        double g4Ticks(detClocks->TPCG4Time2Tick(mcPart->T()));
         double xOffset(0.); //theDetector->ConvertTicksToX(g4Ticks, 0, 0, 0));
-        bool   xOffsetNotSet(true);
-        
+        double xPosMinTick = 0.;
+        double xPosMaxTick = std::numeric_limits<double>::max();
+
         int colorIdx(evd::Style::ColorFromPDG(mcPart->PdgCode()));
         int markerIdx(kFullDotSmall);
         int markerSize(2);
@@ -493,30 +482,26 @@ void SimulationDrawer::MCTruth3D(const art::Event& evt,
             const std::vector<double>& posVec = partToPosMapItr->second[posIdx];
             
             // Check xOffset state and set if necessary
-            if (xOffsetNotSet)
+            geo::Point_t hitLocation(posVec[0],posVec[1],posVec[2]);
+            
+            try
             {
-                double hitLocation[] = {posVec[0],posVec[1],posVec[2]};
-                
-                try
-                {
-                    const geo::CryostatGeo& cryoGeo = geom->PositionToCryostat(hitLocation);
-                    int                     tpcIdx  = cryoGeo.FindTPCAtPosition(hitLocation, 1.);
-                        
-                    xMinFromTicks = theDetector->ConvertTicksToX(0,0,tpcIdx,cryoGeo.ID().Cryostat);
-                    xMaxFromTicks = theDetector->ConvertTicksToX(theDetector->NumberTimeSamples(),0,tpcIdx,cryoGeo.ID().Cryostat);
-                    
-                    if (xMaxFromTicks < xMinFromTicks) std::swap(xMinFromTicks,xMaxFromTicks);
+                geo::TPCID   tpcID = geom->PositionToTPCID(hitLocation);
+                geo::PlaneID planeID(tpcID,0);
 
-                    xOffset       = xMinFromTicks - theDetector->ConvertTicksToX(g4Ticks, 0, tpcIdx, cryoGeo.ID().Cryostat);
-                    xOffsetNotSet = false;
-                    xOffset = 0.;
-                }
-                catch(...) {continue;}
+                xPosMinTick   = theDetector->ConvertTicksToX(0,planeID);
+                xPosMaxTick   = theDetector->ConvertTicksToX(theDetector->NumberTimeSamples(),planeID);
+                xOffset       = theDetector->ConvertTicksToX(g4Ticks, planeID) - xPosMinTick;
+                
+                if (xPosMaxTick < xPosMinTick) std::swap(xPosMinTick,xPosMaxTick);
             }
+            catch(...) {continue;}
 
             double xCoord = posVec[0] + xOffset;
-            
-            if (xCoord > xMinFromTicks && xCoord < xMaxFromTicks)
+        
+            // If a voxel records an energy deposit then must have been in the TPC
+            // But because things get shifted still need to cut off if outside drift
+            if (xCoord > xPosMinTick && xCoord < xPosMaxTick)
             {
                 hitPositions[3*hitCount    ] = xCoord;
                 hitPositions[3*hitCount + 1] = posVec[1];

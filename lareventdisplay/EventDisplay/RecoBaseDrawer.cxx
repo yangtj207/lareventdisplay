@@ -2135,11 +2135,12 @@ void RecoBaseDrawer::DrawPFParticle3D(const art::Ptr<recob::PFParticle>&        
     {
         using HitPosition = std::array<double,3>;
         std::map<int,std::vector<HitPosition>> colorToHitMap;
-        
+
+/*
         // ******* Zoom through to find min/max to set the scale factor
         std::vector<float> sigSqVec;
         
-        sigSqVec.resize(hitsVec.size(), 0.);
+        sigSqVec.reserve(hitsVec.size());
 
         std::map<size_t,std::map<size_t,std::vector<std::pair<std::pair<float,float>,const std::vector<art::Ptr<recob::Hit>>&>>>> wireToWireToChiMap;
 
@@ -2209,7 +2210,11 @@ void RecoBaseDrawer::DrawPFParticle3D(const art::Ptr<recob::PFParticle>&        
 //        minDelTSigSq  = std::max(aveValue - rms, minDelTSigSq);
         delTScaleFctr = (cst->fRecoQHigh[geo::kCollection] - cst->fRecoQLow[geo::kCollection]) / (maxDelTSigSq - minDelTSigSq);
         // ******* ok done with this
-
+*/
+        float minHitChiSquare(0.);
+        float maxHitChiSquare(2.);
+        float hitChiSqScale((cst->fRecoQHigh[geo::kCollection] - cst->fRecoQLow[geo::kCollection]) / (maxHitChiSquare - minHitChiSquare));
+        
         for(const auto& spacePoint : hitsVec)
         {
             const double* pos = spacePoint->XYZ();
@@ -2235,9 +2240,9 @@ void RecoBaseDrawer::DrawPFParticle3D(const art::Ptr<recob::PFParticle>&        
                 
                 storeHit = true;
                 
-                hitChiSq = std::max(minDelTSigSq, std::min(maxDelTSigSq, std::sqrt(hitChiSq)));
+                hitChiSq = std::max(minHitChiSquare, std::min(maxHitChiSquare, hitChiSq));
 
-                float chgFactor = cst->fRecoQHigh[geo::kCollection] - delTScaleFctr * hitChiSq;
+                float chgFactor = cst->fRecoQHigh[geo::kCollection] - hitChiSqScale * hitChiSq;
                 //float chgFactor = delTScaleFctr * hitChiSq + cst->fRecoQLow[geo::kCollection];
 
                 chargeColorIdx = cst->CalQ(geo::kCollection).GetColor(chgFactor);
@@ -2286,7 +2291,7 @@ void RecoBaseDrawer::DrawPFParticle3D(const art::Ptr<recob::PFParticle>&        
         for(auto& hitPair : colorToHitMap)
         {
             //TPolyMarker3D& pm = view->AddPolyMarker3D(hitPair.second.size(), hitPair.first, kFullDotMedium, 3);
-            TPolyMarker3D& pm = view->AddPolyMarker3D(hitPair.second.size(), hitPair.first, kFullDotLarge, 0.3);
+            TPolyMarker3D& pm = view->AddPolyMarker3D(hitPair.second.size(), hitPair.first, kFullDotLarge, 0.25); //kFullDotLarge, 0.3);
             for (const auto& hit : hitPair.second) pm.SetNextPoint(hit[0],hit[1],hit[2]);
             nHitsDrawn += hitPair.second.size();
         }

@@ -1341,6 +1341,7 @@ void RecoBaseDrawer::DrawTrack2D(std::vector<const recob::Hit*>& hits,
     size_t     nTrackHits = track->NumberTrajectoryPoints();
     TPolyLine& pl         = view->AddPolyLine(track->CountValidPoints(),1,1,0); //kColor[id%evd::kNCOLS],1,0);
     
+    size_t vidx = 0;
     for(size_t idx = 0; idx < nTrackHits; idx++)
     {
         if (track->HasValidPoint(idx)==0) continue;
@@ -1360,7 +1361,7 @@ void RecoBaseDrawer::DrawTrack2D(std::vector<const recob::Hit*>& hits,
             wireHit = 1.*atoi(e.explain_self().substr(e.explain_self().find("#")+1,5).c_str());
         }
 
-        pl.SetPoint(idx,wireHit,tickHit);
+        pl.SetPoint(vidx++,wireHit,tickHit);
     }
     
     return;

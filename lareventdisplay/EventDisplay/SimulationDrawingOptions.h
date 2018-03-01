@@ -23,7 +23,7 @@ namespace evd {
     explicit SimulationDrawingOptions(fhicl::ParameterSet const& pset, art::ActivityRegistry& reg);
     ~SimulationDrawingOptions();
     
-    void reconfigure(fhicl::ParameterSet const& pset) override;
+    void reconfigure(fhicl::ParameterSet const& pset) ;
 
     bool        fShowMCTruthText;
     bool        fShowMCTruthVectors;

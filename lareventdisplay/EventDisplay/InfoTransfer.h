@@ -46,7 +46,7 @@ namespace evd {
     void Rebuild(const art::Event& evt);
 
 
-    void reconfigure(fhicl::ParameterSet const& pset) override;
+    void reconfigure(fhicl::ParameterSet const& pset) ;
     void SetTestFlag(int value){ testflag = value;  };
     int GetTestFlag(){return testflag; };
     void SetRunNumber(int value){ fRun = value; };

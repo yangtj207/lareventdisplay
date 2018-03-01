@@ -43,7 +43,7 @@ namespace evd {
     explicit RawDrawingOptions(fhicl::ParameterSet const& pset, art::ActivityRegistry& reg);
     ~RawDrawingOptions();
 
-    void reconfigure(fhicl::ParameterSet const& pset) override;
+    void reconfigure(fhicl::ParameterSet const& pset) ;
     
     int          fDrawRawDataOrCalibWires;                 ///< 0 for raw							  
     int    	     fTicksPerPoint;                           ///< number of ticks to include in one point

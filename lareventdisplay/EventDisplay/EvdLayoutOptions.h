@@ -23,7 +23,7 @@ namespace evd {
     explicit EvdLayoutOptions(fhicl::ParameterSet const& pset, art::ActivityRegistry& reg);
     ~EvdLayoutOptions();
 
-    void reconfigure(fhicl::ParameterSet const& pset) override;
+    void reconfigure(fhicl::ParameterSet const& pset) ;
       
       const fhicl::ParameterSet& fParameterSet;
       

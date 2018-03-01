@@ -53,6 +53,7 @@ art_make(
 	    canvas
     	    ${MF_MESSAGELOGGER}
             cetlib cetlib_except
+            pthread
             ${ROOT_BASIC_LIB_LIST}
           )
 

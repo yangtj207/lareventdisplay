@@ -2487,9 +2487,9 @@ void RecoBaseDrawer::Edge3D(const art::Event& evt, evdb::View3D* view)
             this->GetSpacePoints(evt, which, spacePointVec);
             
             // First draw the space points (all of them), then circle back on the edges...
-            int colorIdx(2); //41); //2);
+            int colorIdx(41); //2);
             
-            TPolyMarker3D& pm = view->AddPolyMarker3D(spacePointVec.size(), colorIdx, kFullDotLarge, 0.5); //kFullDotMedium, 0.5); //kFullDotLarge, 0.5);
+            TPolyMarker3D& pm = view->AddPolyMarker3D(spacePointVec.size(), colorIdx, kFullDotMedium, 0.5); //kFullDotLarge, 0.5);
             
             for(const auto& spacePoint : spacePointVec)
             {
@@ -2523,7 +2523,7 @@ void RecoBaseDrawer::Edge3D(const art::Event& evt, evdb::View3D* view)
                 }
                 
                 // Get a polyline object to draw from the first to the second space point
-                TPolyLine3D& pl = view->AddPolyLine3D(2, colorIdx, 4, 1);
+                TPolyLine3D& pl = view->AddPolyLine3D(2, colorIdx, 1, 1); //4, 1);
                 
                 pl.SetPoint(0, startPoint[0], startPoint[1], startPoint[2]);
                 pl.SetPoint(1, endPoint[0],   endPoint[1],   endPoint[2]);

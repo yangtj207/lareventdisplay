@@ -17,7 +17,7 @@ namespace evd {
     explicit AnalysisDrawingOptions(fhicl::ParameterSet const& pset, art::ActivityRegistry& reg);
     ~AnalysisDrawingOptions();
     
-    void reconfigure(fhicl::ParameterSet const& pset) override;
+    void reconfigure(fhicl::ParameterSet const& pset) ;
 
     int fDrawCalorimetry;
     int fDrawParticleID;

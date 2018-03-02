@@ -20,7 +20,7 @@ namespace evd {
     explicit ColorDrawingOptions(fhicl::ParameterSet const& pset, art::ActivityRegistry& reg);
     ~ColorDrawingOptions();
 
-    void reconfigure(fhicl::ParameterSet const& pset) override;
+    void reconfigure(fhicl::ParameterSet const& pset) ;
 
     const evdb::ColorScale& RawQ(geo::SigType_t st) const;
     const evdb::ColorScale& CalQ(geo::SigType_t st) const;

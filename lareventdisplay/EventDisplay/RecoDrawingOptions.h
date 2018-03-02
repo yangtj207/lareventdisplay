@@ -25,7 +25,7 @@ public:
     explicit RecoDrawingOptions(fhicl::ParameterSet const& pset, art::ActivityRegistry& reg);
     ~RecoDrawingOptions();
     
-    void reconfigure(fhicl::ParameterSet const& pset) override;
+    void reconfigure(fhicl::ParameterSet const& pset) ;
 
     int  fDrawHits;
     int  fDrawClusters;

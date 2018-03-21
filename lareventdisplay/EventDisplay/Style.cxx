@@ -64,43 +64,43 @@ namespace evd{
 
   int Style::ColorFromPDG(int pdgcode) {
     switch (pdgcode) {
-    case 11:
-    case -11:
-    case 12:
-    case -12:
-      return kRed;
-    case 13:
-    case -13:
-    case 14:
-    case -14:
-      return kBlue;
-    case 15:
-    case -15:
-    case 16:
-    case -16:
-      return kGreen;
-    case 22:
-      return kYellow-1;
-    case 111:
-    case 211:
-    case -211:
-    case  321:
-    case -321:
-    case  130:
-    case  310:
-      return kMagenta-3;
-    case 2112:
-    case 2212:
-      return kMagenta+3;
-    default:
-      return kBlack;
+      case 11:
+      case -11:
+      case 12:
+      case -12:
+        return kRed;
+      case 13:
+      case -13:
+      case 14:
+      case -14:
+        return kBlue;
+      case 15:
+      case -15:
+      case 16:
+      case -16:
+        return kGreen;
+      case 22:
+        return kYellow-1;
+      case 111:
+      case 211:
+      case -211:
+      case  321:
+      case -321:
+      case  130:
+      case  310:
+        return kMagenta-3;
+      case 2112:
+      case 2212:
+        return kMagenta+3;
+      default:
+        return kBlack;
     }
   }
 
   //............................................................
 
   int Style::LineWidthFromPDG(int pdgcode) {
-    if (pdgcode == 2112 || pdgcode == 2212) return 4;
+    if (pdgcode == 2112 || pdgcode == 2212) return 3;
     return 2;
   }
 
@@ -110,6 +110,7 @@ namespace evd{
     switch (pdgcode) {
     case 11:
     case -11:
+        return kDotted;
     case 13:
     case -13:
     case 15:

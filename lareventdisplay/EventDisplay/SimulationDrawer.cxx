@@ -8,6 +8,7 @@
 #include <algorithm>
 
 #include "TParticle.h"
+#include "TLine.h"
 #include "TLatex.h"
 #include "TPolyMarker3D.h"
 #include "TPolyMarker.h"
@@ -33,9 +34,10 @@
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 #include "lardata/DetectorInfo/DetectorProperties.h"
 #include "lardata/DetectorInfoServices/DetectorClocksService.h"
+#include "larsim/MCCheater/BackTrackerService.h"
+#include "larsim/MCCheater/ParticleInventoryService.h"
 
-//#include "larevt/SpaceChargeServices/SpaceChargeService.h"
-//#include "larevt/SpaceCharge/SpaceChargeStandard.h"
+#include "larevt/SpaceChargeServices/SpaceChargeService.h"
 
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Principal/View.h"
@@ -209,62 +211,138 @@ SimulationDrawer::SimulationDrawer()
 					  unsigned int      plane)
   {
     if( evt.isRealData() ) return;
+    
+    const spacecharge::SpaceCharge* sce = lar::providerFrom<spacecharge::SpaceChargeService>();
 
     art::ServiceHandle<evd::SimulationDrawingOptions> drawopt;
     // If the option is turned off, there's nothing to do
-    if (!drawopt->fShowMCTruthVectors) return;
+    if (drawopt->fShowMCTruthVectors > 3) {
+      std::cout<<"Unsupported ShowMCTruthVectors option (> 2)\n";
+      return;
+    }
 
     detinfo::DetectorProperties const* detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
 
     art::ServiceHandle<geo::Geometry>          geo;
     art::ServiceHandle<evd::RawDrawingOptions> rawopt;
     // get the x position of the plane in question
-    double xyz[3]  = {0.};
+    double xyz1[3]  = {0.};
     double xyz2[3] = {0.};
-
-    // Unpack and draw the MC vectors
-    std::vector<const simb::MCTruth*> mctruth;
-    this->GetMCTruth(evt, mctruth);
+    // shift the truth by a fixed amount so it doesn't overlay the reco
+    double xShift = -2;
     
-    for (size_t i = 0; i < mctruth.size(); ++i) {
-      if (mctruth[i]->Origin() == simb::kCosmicRay) continue;
-      for (int j = 0; j < mctruth[i]->NParticles(); ++j) {
-	const simb::MCParticle& p = mctruth[i]->GetParticle(j);
-	
-	// Skip all but incoming and out-going particles
-	if (!(p.StatusCode()==0 || p.StatusCode()==1)) continue;
-
-	double r  = p.P()*10.0;           // Scale length so 10 cm = 1 GeV/c
-
-	if (r < 0.1) continue;            // Skip very short particles
-	if (p.StatusCode() == 0) r = -r;  // Flip for incoming particles
-
-  	xyz[0]  = p.Vx();
-	xyz[1]  = p.Vy();
-	xyz[2]  = p.Vz();
-	xyz2[0] = xyz[0] + r * p.Px()/p.P();
-	xyz2[1] = xyz[1] + r * p.Py()/p.P();
-	xyz2[2] = xyz[2] + r * p.Pz()/p.P();
-		
-	double w1 = geo->WireCoordinate(xyz[1], xyz[2], (int)plane, rawopt->fTPC, rawopt->fCryostat);
-	double w2 = geo->WireCoordinate(xyz2[1], xyz2[2], (int)plane, rawopt->fTPC, rawopt->fCryostat);
-	
-        double time = detprop->ConvertXToTicks(xyz[0]+p.T()*detprop->DriftVelocity()*1e-3, (int)plane, rawopt->fTPC, rawopt->fCryostat);
-        double time2 = detprop->ConvertXToTicks(xyz2[0]+p.T()*detprop->DriftVelocity()*1e-3, (int)plane, rawopt->fTPC, rawopt->fCryostat);
-
-	if(rawopt->fAxisOrientation < 1){
-	  TLine& l = view->AddLine(w1, time, w2, time2);
-	  evd::Style::FromPDG(l, p.PdgCode());
-	}
-	else{
-	  TLine& l = view->AddLine(time, w1, time2, w2);
-	  evd::Style::FromPDG(l, p.PdgCode());
-	}
-
-      } // loop on j particles in list
-    } // loop on truths
-
-  }
+    static bool first = true;
+    if(first) {
+      std::cout<<"******** Show MCTruth (Genie) particles when ShowMCTruthVectors = 1 or 3 ******** \n";
+      std::cout<<"  MCTruth vectors corrected for space charge? "<<sce->EnableCorrSCE()<<" and shifted by "<<xShift<<" cm in X\n";
+      std::cout<<"  Neutrons and photons drawn with dotted lines. \n";
+      std::cout<<"  Red = e+/-, nue, nuebar. Blue = mu+/-, numu, numubar. Green = tau+/-, nutau, nutaubar.\n";
+      std::cout<<"  Yellow = photons. Magenta = pions, protons and nuetrons.\n";
+      std::cout<<"******** Show MCParticle (Geant) decay photons (e.g. from pizeros) when ShowMCTruthVectors = 2 or 3 ******** \n";
+      std::cout<<"  Photons > 50 MeV are drawn as dotted lines corrected for space charge and are not shifted.\n";
+      std::cout<<"  Decay photon end points are drawn at 2 interaction lengths (44 cm) from the start position.\n";
+      std::cout<<"  Color: Green = (50 < E_photon < 100 MeV), Blue = (100 MeV < E_photon < 200 MeV), Red = (E_photon > 300 MeV).\n";
+    }
+    
+    bool showTruth = (drawopt->fShowMCTruthVectors == 1 || drawopt->fShowMCTruthVectors == 3);
+    bool showPhotons = (drawopt->fShowMCTruthVectors > 1);
+    
+    if(showTruth) {
+      // Unpack and draw the MC vectors
+      std::vector<const simb::MCTruth*> mctruth;
+      this->GetMCTruth(evt, mctruth);
+      
+      for (size_t i = 0; i < mctruth.size(); ++i) {
+        if (mctruth[i]->Origin() == simb::kCosmicRay) continue;
+        for (int j = 0; j < mctruth[i]->NParticles(); ++j) {
+          const simb::MCParticle& p = mctruth[i]->GetParticle(j);
+          
+          // Skip all but incoming and out-going particles
+          if (!(p.StatusCode()==0 || p.StatusCode()==1)) continue;
+          
+          double r  = p.P()*10.0;           // Scale length so 10 cm = 1 GeV/c
+          
+          if (p.StatusCode() == 0) r = -r;  // Flip for incoming particles
+          
+          auto gptStart = geo::Point_t(p.Vx(),p.Vy(),p.Vz());
+          geo::Point_t sceOffset {0, 0, 0};
+          if(sce->EnableCorrSCE()) sceOffset = sce->GetPosOffsets(gptStart);
+//          std::cout<<"Pos "<<std::fixed<<std::setprecision(1)<<gptStart.X()<<" "<<gptStart.Y()<<" "<<gptStart.Z();
+//          std::cout<<" sceOffset "<<std::setprecision(1)<<sceOffset.X()<<" "<<sceOffset.Y()<<" "<<sceOffset.Z()<<"\n";
+          xyz1[0]  = p.Vx() - sceOffset.X();
+          xyz1[1]  = p.Vy() + sceOffset.Y();
+          xyz1[2]  = p.Vz() + sceOffset.Z();
+          xyz2[0] = xyz1[0] + r * p.Px()/p.P();
+          xyz2[1] = xyz1[1] + r * p.Py()/p.P();
+          xyz2[2] = xyz1[2] + r * p.Pz()/p.P();
+          
+          double w1 = geo->WireCoordinate(xyz1[1], xyz1[2], (int)plane, rawopt->fTPC, rawopt->fCryostat);
+          double w2 = geo->WireCoordinate(xyz2[1], xyz2[2], (int)plane, rawopt->fTPC, rawopt->fCryostat);
+          
+          double time = detprop->ConvertXToTicks(xyz1[0] + xShift, (int)plane, rawopt->fTPC, rawopt->fCryostat);
+          double time2 = detprop->ConvertXToTicks(xyz2[0] + xShift, (int)plane, rawopt->fTPC, rawopt->fCryostat);
+          
+          if(rawopt->fAxisOrientation < 1){
+            TLine& l = view->AddLine(w1, time, w2, time2);
+            evd::Style::FromPDG(l, p.PdgCode());
+          }
+          else{
+            TLine& l = view->AddLine(time, w1, time2, w2);
+            evd::Style::FromPDG(l, p.PdgCode());
+          }
+          // 
+          
+        } // loop on j particles in list
+      } // loop on truths
+    } // showTruth
+    
+    if(showPhotons) {
+      // draw pizero photons with T > 30 MeV
+      art::ServiceHandle<cheat::ParticleInventoryService> pi_serv;
+      sim::ParticleList const& plist = pi_serv->ParticleList();
+      if(plist.empty()) return;
+      // photon interaction length approximate 
+      double r = 44;
+      for(sim::ParticleList::const_iterator ipart = plist.begin(); ipart != plist.end(); ++ipart) {
+        simb::MCParticle* p = (*ipart).second;
+        int trackID = p->TrackId();
+        art::Ptr<simb::MCTruth> theTruth = pi_serv->TrackIdToMCTruth_P(trackID);
+        if(theTruth->Origin() != simb::kBeamNeutrino) continue;
+        if(p->PdgCode() != 22) continue;
+        if(p->Process() != "Decay") continue;
+        int TMeV = 1000 * (p->E() - p->Mass());
+        if(TMeV < 30) continue;
+        auto gptStart = geo::Point_t(p->Vx(),p->Vy(),p->Vz());
+        geo::Point_t sceOffset {0, 0, 0};
+        if(sce->EnableCorrSCE()) sceOffset = sce->GetPosOffsets(gptStart);
+//        std::cout<<"Pos "<<std::fixed<<std::setprecision(1)<<gptStart.X()<<" "<<gptStart.Y()<<" "<<gptStart.Z();
+//        std::cout<<" sceOffset "<<std::setprecision(1)<<sceOffset.X()<<" "<<sceOffset.Y()<<" "<<sceOffset.Z()<<"\n";
+        xyz1[0]  = p->Vx() - sceOffset.X();
+        xyz1[1]  = p->Vy() + sceOffset.Y();
+        xyz1[2]  = p->Vz() + sceOffset.Z();
+        xyz2[0] = xyz1[0] + r * p->Px()/p->P();
+        xyz2[1] = xyz1[1] + r * p->Py()/p->P();
+        xyz2[2] = xyz1[2] + r * p->Pz()/p->P();
+        double w1 = geo->WireCoordinate(xyz1[1], xyz1[2], (int)plane, rawopt->fTPC, rawopt->fCryostat);
+        double t1 = detprop->ConvertXToTicks(xyz1[0], (int)plane, rawopt->fTPC, rawopt->fCryostat);
+        double w2 = geo->WireCoordinate(xyz2[1], xyz2[2], (int)plane, rawopt->fTPC, rawopt->fCryostat);
+        double t2 = detprop->ConvertXToTicks(xyz2[0], (int)plane, rawopt->fTPC, rawopt->fCryostat);
+        TLine& l = view->AddLine(w1, t1, w2, t2);
+        l.SetLineWidth(2);
+        l.SetLineStyle(kDotted);
+        if(TMeV < 100) {
+          l.SetLineColor(kGreen);
+        } else if(TMeV < 200) {
+          l.SetLineColor(kBlue);
+        } else {
+          l.SetLineColor(kRed);
+        }
+      } // ipart
+    } // showPhotons
+    
+    first = false;
+    
+  } // MCTruthVectors2D
 
   //......................................................................
   //this method draws the true particle trajectories in 3D
@@ -278,7 +356,7 @@ void SimulationDrawer::MCTruth3D(const art::Event& evt,
     if (!drawopt->fShowMCTruthTrajectories) return;
     
     // Space charge service...
-//    const spacecharge::SpaceCharge* spaceCharge = lar::providerFrom<spacecharge::SpaceChargeService>();
+    const spacecharge::SpaceCharge* sce = lar::providerFrom<spacecharge::SpaceChargeService>();
 
     //  geo::GeometryCore const* geom = lar::providerFrom<geo::Geometry>();
     detinfo::DetectorProperties const* theDetector = lar::providerFrom<detinfo::DetectorPropertiesService>();
@@ -397,14 +475,15 @@ void SimulationDrawer::MCTruth3D(const art::Event& evt,
                     if (xPos > xMinFromTicks && xPos < xMaxFromTicks)
                     {
                         // Check for space charge offsets
-//                        if (spaceCharge->EnableSimEfieldSCE())
-//                        {
-//                            std::vector<double> offsetVec = spaceCharge->GetPosOffsets(xPos,yPos,zPos);
-//                            xPos += offsetVec[0] - 0.7;
-//                            yPos -= offsetVec[1];
-//                            zPos -= offsetVec[2];
-//                        }
-                        
+                        if (sce->EnableSimEfieldSCE()) {
+                          auto gpt = geo::Point_t(xPos,yPos,zPos);
+                          double xoff = sce->GetPosOffsets(gpt).X();
+                          double yoff = sce->GetPosOffsets(gpt).Y();
+                          double zoff = sce->GetPosOffsets(gpt).Z();
+                          xPos -= xoff;
+                          yPos += yoff;
+                          zPos += zoff;
+                        }
                         hitPositions[3*hitCount    ] = xPos;
                         hitPositions[3*hitCount + 1] = yPos;
                         hitPositions[3*hitCount + 2] = zPos;

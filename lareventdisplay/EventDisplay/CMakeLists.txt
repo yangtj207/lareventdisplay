@@ -18,6 +18,8 @@ art_make_library(
 	                    lareventdisplay_EventDisplay_RawDrawingOptions_service
 	                    lareventdisplay_EventDisplay_SimulationDrawingOptions_service
 	                    larevt_Filters
+          larsim_MCCheater_BackTrackerService_service
+          larsim_MCCheater_ParticleInventoryService_service
  			    larsim_Simulation nutools_ParticleNavigation lardataobj_Simulation
 			    lardataobj_RawData
 			    lardataobj_RecoBase

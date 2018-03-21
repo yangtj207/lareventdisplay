@@ -844,9 +844,9 @@ void RecoBaseDrawer::Cluster2D(const art::Event& evt,
     
     static bool first = true;
     if(first) {
-      std::cout<<"DrawClusters: 0 = none, 1 = cluster hits, 2 = unique marker, 3 = cluster hits with connecting lines.\n";
-      std::cout<<"              4 = with cluster ID with PFParticle color match if it exists or black if no association exists.\n";
-      std::cout<<" color scheme: By cluster ID in each plane or by PFParticle ID (Self) if a PFParticle - Cluster association exists.\n";
+      std::cout<<"******** DrawClusters: 0 = none, 1 = cluster hits, 2 = unique marker, 3 = cluster hits with connecting lines.\n";
+      std::cout<<" 4 = with T<cluster or trajectory ID> P<PFParticle ID> color-matched. Unmatched cluster IDs shown in black.\n";
+      std::cout<<" Color scheme: By cluster ID in each plane or by PFParticle ID (Self) if a PFParticle - Cluster association exists.\n";
       first = false;
     }
     
@@ -1748,7 +1748,7 @@ void RecoBaseDrawer::Vertex2D(const art::Event& evt,
     static bool first = true;
     
     if(first) {
-      std::cout<<"DrawVertices: Open circles color coded across all planes. Set DrawVertices > 1 to display the vertex ID\n";
+      std::cout<<"******** DrawVertices: Open circles color coded across all planes. Set DrawVertices > 1 to display the vertex ID\n";
       first = false;
     }
     

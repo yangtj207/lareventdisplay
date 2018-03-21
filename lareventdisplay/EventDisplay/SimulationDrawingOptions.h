@@ -26,7 +26,7 @@ namespace evd {
     void reconfigure(fhicl::ParameterSet const& pset) ;
 
     bool        fShowMCTruthText;
-    bool        fShowMCTruthVectors;
+    unsigned short fShowMCTruthVectors; // 0 = none, 1 = MCTruth, 2 = MCParticles
     bool        fShowMCTruthTrajectories;
     bool        fShowMCTruthColors;
     bool        fShowMCTruthFullSize;

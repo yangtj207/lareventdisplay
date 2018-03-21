@@ -913,6 +913,7 @@ void RecoBaseDrawer::Cluster2D(const art::Event& evt,
             int clusterIdx(std::abs(clust[ic]->ID()));
             int colorIdx(clusterIdx%evd::kNCOLS);
             bool pfpAssociation = false;
+            int pfpIndex = INT_MAX;
             float cosmicscore = FLT_MIN;
             
             if (fmc.isValid())
@@ -924,6 +925,7 @@ void RecoBaseDrawer::Cluster2D(const art::Event& evt,
                     clusterIdx = pfplist[0]->Self();
                     colorIdx   = clusterIdx % evd::kNCOLS;
                     pfpAssociation = true;
+                    pfpIndex = pfplist[0]->Self();
                     //Get cosmic score
                     if (recoOpt->fDrawCosmicTags)
                     {
@@ -956,21 +958,26 @@ void RecoBaseDrawer::Cluster2D(const art::Event& evt,
                 if (recoOpt->fDrawCosmicTags&&cosmicscore!=FLT_MIN)
                     this->Hit2D(hits, view, cosmicscore);
 
-                if(recoOpt->fDrawClusters > 3) {
-                    // BB: draw the cluster ID
-                    //std::string s = std::to_string(clusterIdx);
-                    // TY: change to draw cluster id instead of index
-                    std::string s = std::to_string(clusterIdx) + "," + std::to_string(clust[ic]->ID());
-                    char const* txt = s.c_str();
-                    double wire = clust[ic]->StartWire();
-                    double tick = 20 + clust[ic]->StartTick();
-                    TText& clID = view->AddText(wire, tick, txt);
-                    if(pfpAssociation) {
-                      clID.SetTextColor(color);
-                    } else {
-                      clID.SetTextColor(kBlack);
-                    }
-                } // recoOpt->fDrawClusters > 3
+              if(recoOpt->fDrawClusters > 3) {
+                // BB: draw the cluster ID
+                //std::string s = std::to_string(clusterIdx);
+                // TY: change to draw cluster id instead of index
+//                std::string s = std::to_string(clusterIdx) + "," + std::to_string(clust[ic]->ID());
+                // BB: Put a T in front to denote a trajectory ID
+                std::string s = "T" + std::to_string(clust[ic]->ID());
+                // append the PFP index + 1 (sort of the ID)
+                if(pfpIndex != INT_MAX) s = s + " P" + std::to_string(pfpIndex + 1);
+                char const* txt = s.c_str();
+                double wire = 0.5 * (clust[ic]->StartWire() + clust[ic]->EndWire());
+                double tick = 20 + 0.5 * (clust[ic]->StartTick() + clust[ic]->EndTick());
+                TText& clID = view->AddText(wire, tick, txt);
+                clID.SetTextSize(0.05);
+                if(pfpAssociation) {
+                  clID.SetTextColor(color);
+                } else {
+                  clID.SetTextColor(kBlack);
+                }
+              } // recoOpt->fDrawClusters > 3
             }
             else {
 
@@ -1765,11 +1772,11 @@ void RecoBaseDrawer::Vertex2D(const art::Event& evt,
         
         // BB: draw the vertex ID
         if(recoOpt->fDrawVertices > 1) {
-          std::string s = std::to_string(vertex[v]->ID());
+          std::string s = "3V" + std::to_string(vertex[v]->ID());
           char const* txt = s.c_str();
-          TText& vtxID = view->AddText(wire, time+10, txt);
+          TText& vtxID = view->AddText(wire, time+30, txt);
           vtxID.SetTextColor(color);
-          vtxID.SetTextSize(0.07);
+          vtxID.SetTextSize(0.05);
         }
       } // end loop over vertices to draw from this label
     } // end loop over vertex module lables

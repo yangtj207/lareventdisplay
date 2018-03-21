@@ -29,7 +29,7 @@ namespace evd {
   void SimulationDrawingOptions::reconfigure(fhicl::ParameterSet const& pset)
   {
     fShowMCTruthText         = pset.get< bool        >("ShowMCTruthText",         true);
-    fShowMCTruthVectors      = pset.get< bool        >("ShowMCTruthVectors",      true);
+    fShowMCTruthVectors      = pset.get< unsigned short >("ShowMCTruthVectors",      0);
     fShowMCTruthTrajectories = pset.get< bool        >("ShowMCTruthTrajectories", true);
     fShowMCTruthColors       = pset.get< bool        >("ShowMCTruthColors",       true);
     fShowMCTruthFullSize     = pset.get< bool        >("ShowMCTruthFullSize",     true);

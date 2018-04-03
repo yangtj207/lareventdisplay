@@ -12,12 +12,12 @@
 
 namespace evd{
 
-  static const int kTPAD = 0;
-  static const int kQPAD = 1;
-  static const int kRAW   = 0;
-  static const int kCALIB = 1;
-  static const int kPE =  2;
-  static const int kTNS = 3;
+  //static const int kTPAD = 0;
+  //static const int kQPAD = 1;
+  //static const int kRAW   = 0;
+  //static const int kCALIB = 1;
+  //static const int kPE =  2;
+  //static const int kTNS = 3;
 
   //......................................................................
 

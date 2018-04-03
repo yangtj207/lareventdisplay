@@ -154,7 +154,7 @@ private:
     TGLabel* fDistanceLabel;
     TGLabel* fPlaneLabel;
     TGLabel* fThresLabel;
-    TGLabel* fGreyLabel;
+    //TGLabel* fGreyLabel;
     
     TGNumberEntry* fWireEntry;     ///< Wire number displayed.
     TGNumberEntry* fPlaneEntry;    ///< Plane number displayed.
@@ -183,10 +183,10 @@ private:
     TGTextButton* fCalcAngle; ///<Calculate the 2D & 3D angles between lines
     TGTextButton* fClear; ///<Clears the selected points in an event
     
-    TGTextButton* fClearSeeds; ///<Clears the selected points in an eventually
+    //TGTextButton* fClearSeeds; ///<Clears the selected points in an eventually
     TGTextButton* fClearLastSeed; ///<Clears the selected points in an event
     
-    TGTextButton* fRefitSeeds; ///<Clears the selected points in an event
+    //TGTextButton* fRefitSeeds; ///<Clears the selected points in an event
     
     TGTextButton* fRedraw; ///< Button to force redraw
     

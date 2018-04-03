@@ -81,7 +81,7 @@ namespace evd {
     std::vector<recob::Seed>& SeedVector();
     
    private:
-      int test;
+      //int test;
       std::vector<recob::Seed> fSeedVector;   
     
       std::vector < std::vector <double > > starthitout;

@@ -535,7 +535,7 @@ namespace evd {
       double Correct(float adc) const
         {
           if (adc < 0.) return 0.;
-          register double const dQdX = adc / wirePitch / electronsToADC;
+          double const dQdX = adc / wirePitch / electronsToADC;
           detinfo::DetectorProperties const* detp = lar::providerFrom<detinfo::DetectorPropertiesService>();
           return detp->BirksCorrection(dQdX);
         } // Correct()
@@ -1894,7 +1894,7 @@ namespace evd {
       (std::ptrdiff_t iCell) const
     {
       // { w1, t1, w2, t2 }
-      register size_t const nTDCCells = TDCAxis().NCells();
+      size_t const nTDCCells = TDCAxis().NCells();
       std::ptrdiff_t iWireCell = (std::ptrdiff_t) (iCell / nTDCCells),
         iTDCCell = (std::ptrdiff_t) (iCell % nTDCCells);
       

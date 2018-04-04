@@ -11,13 +11,8 @@
 #ifdef __ROOTCLING__
 namespace art { 
   class Event;
-  class ServiceHandle;
-}
-namespace recob{
-  class Hit;
 }
 #else
-#include "art/Framework/Services/Registry/ServiceHandle.h"
 #endif
 
 namespace evdb{

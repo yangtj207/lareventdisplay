@@ -11,17 +11,6 @@
 #include "canvas/Persistency/Common/FindManyP.h"
 #include "art/Framework/Principal/View.h"
 
-#ifdef __ROOTCLING__
-
-namespace art { 
-    class Event;
-    class ServiceHandle;
-}
-
-#else
-#include "art/Framework/Services/Registry/ServiceHandle.h"
-#endif
-
 #include "lareventdisplay/EventDisplay/OrthoProj.h"
 #include "lardataobj/RecoBase/SpacePoint.h"
 

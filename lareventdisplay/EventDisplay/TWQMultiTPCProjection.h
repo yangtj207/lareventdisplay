@@ -11,6 +11,7 @@
 
 #include "TGButton.h" // For TGCheckButton
 
+#include "lardata/Utilities/PxUtils.h" // util::PxPoint, util::PxLine
 #include "nutools/EventDisplayBase/Canvas.h"
 
 #include "RQ_OBJECT.h"
@@ -24,11 +25,6 @@ class TGTextView;
 class TGLabel;
 class TRootEmbeddedCanvas;
 
-namespace util {
-class PxLine;
-class PxPoint;
-
-}
 
 namespace evd {
 

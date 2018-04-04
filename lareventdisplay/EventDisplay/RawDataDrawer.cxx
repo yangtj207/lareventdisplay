@@ -766,7 +766,7 @@ namespace evd {
         return bAllOk;
       }
     
-    virtual std::string Name() const
+    virtual std::string Name() const override
       {
         std::string msg = cet::demangle_symbol(typeid(*this).name());
         msg +=

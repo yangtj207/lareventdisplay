@@ -13,14 +13,12 @@
 #ifdef __ROOTCLING__
 namespace art { 
   class Event;
-  class ServiceHandle;
 }
 namespace trkf
 {
  class HitPtrVec;
 }
 #else
-#include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "larreco/Deprecated/BezierTrack.h"
 #endif
 
@@ -81,7 +79,7 @@ namespace evd {
     std::vector<recob::Seed>& SeedVector();
     
    private:
-      int test;
+      //int test;
       std::vector<recob::Seed> fSeedVector;   
     
       std::vector < std::vector <double > > starthitout;

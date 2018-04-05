@@ -2284,7 +2284,7 @@ void RecoBaseDrawer::DrawPFParticle3D(const art::Ptr<recob::PFParticle>&        
                 if (chargeColorIdx < 0) chargeColorIdx = 0;
             }
             
-            if (storeHit) colorToHitMap[chargeColorIdx].push_back(HitPosition()={pos[0],pos[1],pos[2]});
+            if (storeHit) colorToHitMap[chargeColorIdx].push_back(HitPosition()={{pos[0],pos[1],pos[2]}});
         }
         
         size_t nHitsDrawn(0);
@@ -2383,7 +2383,7 @@ void RecoBaseDrawer::DrawPFParticle3D(const art::Ptr<recob::PFParticle>&        
             double markSize[2]  = {          0.5,           0.2};
             int pcaIdx(0);
 
-            if (!isCosmic) lineColor[2] = colorIdx;
+            if (!isCosmic) lineColor[1] = colorIdx;
             
             // The order of axes in the returned association vector is arbitrary... the "first" axis is
             // better and we can divine that by looking at the axis id's (the best will have been made first)

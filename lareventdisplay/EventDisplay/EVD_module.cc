@@ -37,6 +37,11 @@ extern "C" {
 #include "art/Framework/Services/Optional/TFileDirectory.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
+#if defined __clang__
+  #pragma clang diagnostic push
+  #pragma clang diagnostic ignored "-Wunused-private-field"
+#endif
+
 /// The Event Display
 namespace evd{
 
@@ -165,6 +170,9 @@ namespace evd {
   DEFINE_ART_MODULE(EVD)
 
 } // namespace evd
+#if defined __clang__
+  #pragma clang diagnostic pop
+#endif
 
 #endif // EVD
 ////////////////////////////////////////////////////////////////////////

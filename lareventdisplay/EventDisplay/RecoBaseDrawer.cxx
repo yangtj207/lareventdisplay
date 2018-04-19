@@ -528,6 +528,14 @@ void RecoBaseDrawer::EndPoint2D(const art::Event& evt,
             
             TMarker& strt = view->AddMarker(x, y, color, 30, 2.0);
             strt.SetMarkerColor(color);
+          // BB: draw the ID
+          if(recoOpt->fDraw2DEndPoints > 1) {
+            std::string s = "2V" + std::to_string(ep2d[iep]->ID());
+            char const* txt = s.c_str();
+            TText& vtxID = view->AddText(x, y+20, txt);
+            vtxID.SetTextColor(color);
+            vtxID.SetTextSize(0.05);
+          }
             
         } // loop on iep end points
     } // loop on imod folders

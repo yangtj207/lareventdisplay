@@ -307,7 +307,7 @@ SimulationDrawer::SimulationDrawer()
         simb::MCParticle* p = (*ipart).second;
         int trackID = p->TrackId();
         art::Ptr<simb::MCTruth> theTruth = pi_serv->TrackIdToMCTruth_P(trackID);
-        if(theTruth->Origin() != simb::kBeamNeutrino) continue;
+        if(theTruth->Origin() == simb::kCosmicRay) continue;
         if(p->PdgCode() != 22) continue;
         if(p->Process() != "Decay") continue;
         int TMeV = 1000 * (p->E() - p->Mass());

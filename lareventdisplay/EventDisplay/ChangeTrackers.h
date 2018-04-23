@@ -18,6 +18,7 @@
 
 // C/C++ standard libraries
 #include <string> // std::to_string()
+#include <ostream>
 #include <type_traits> // std::enable_if_t
 
 
@@ -100,10 +101,9 @@ namespace util {
   }; // EventChangeTracker_t
   
   
-  template <typename Stream>
-  decltype(auto) operator<<
-    (Stream&& out, EventChangeTracker_t const& trk)
-    { out << std::string(trk); return std::forward<Stream>(out); }
+  inline std::ostream& operator<<
+    (std::ostream& out, EventChangeTracker_t const& trk)
+    { out << std::string(trk); return out; }
   
   
   
@@ -202,10 +202,9 @@ namespace util {
   }; // DataProductChangeTracker_t
   
   
-  template <typename Stream>
-  decltype(auto) operator<<
-    (Stream&& out, DataProductChangeTracker_t const& trk)
-    { out << std::string(trk); return std::forward<Stream>(out); }
+  inline std::ostream& operator<<
+    (std::ostream& out, DataProductChangeTracker_t const& trk)
+    { out << std::string(trk); return out; }
   
   
   
@@ -316,9 +315,9 @@ namespace util {
   }; // PlaneDataChangeTracker_t
   
   
-  template <typename Stream>
-  decltype(auto) operator<< (Stream&& out, PlaneDataChangeTracker_t const& trk)
-    { out << std::string(trk); return std::forward<Stream>(out); }
+  inline std::ostream& operator<<
+    (std::ostream& out, PlaneDataChangeTracker_t const& trk)
+    { out << std::string(trk); return out; }
   
   
 } // namespace util

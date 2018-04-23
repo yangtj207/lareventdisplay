@@ -917,7 +917,7 @@ void SimulationDrawer::MCTruth3D(const art::Event& evt,
             	
             	if (inreadoutwindow && (xCoord > xMinimum && xCoord < xMaximum))
             	{
-            		posVecCorr.push_back({xCoord, posVec[1], posVec[2] });              	
+            		posVecCorr.push_back({{xCoord, posVec[1], posVec[2] }});              	
             	}
         }
         

@@ -356,7 +356,9 @@ namespace evd{
 // 	}
 		  
     //}
-      if(hitlist[hitindex].isNull() || (hitindex<0 || hitindex > hitlist.size())){
+      // for c2: unsigned int hitindex cannot be < 0
+      //if(hitlist[hitindex].isNull() || (hitindex<0 || hitindex > hitlist.size())){
+      if(hitlist[hitindex].isNull() || ( hitindex > hitlist.size())){
 	WriteMsg("no luck finding hit in evd, please try again");
 	break;
       }

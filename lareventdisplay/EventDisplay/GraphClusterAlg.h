@@ -18,7 +18,6 @@
 #ifdef __ROOTCLING__
 namespace art { 
   class Event;
-  class ServiceHandle;
 }
 
 namespace fhicl {
@@ -31,8 +30,6 @@ namespace recob {
 
 
 #else
-#include "art/Framework/Services/Registry/ActivityRegistry.h"
-#include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "lareventdisplay/EventDisplay/InfoTransfer.h"
 #include "larcore/Geometry/Geometry.h"
 #include "fhiclcpp/ParameterSet.h" 
@@ -52,10 +49,6 @@ namespace geo {
 namespace recob { 
   class Hit;
   class Cluster; 
-}
-
-namespace art {
-  class Event; 
 }
 
 namespace evd {

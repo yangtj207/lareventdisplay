@@ -119,7 +119,7 @@ namespace evd{
       if(!evt) return;
 
       //check if raw (dual phase) or deconvoluted (single phase) waveform was fitted
-      auto hitResults = anab::FVectorReader<recob::Hit, 3>::create(*evt, "dprawhit");
+      auto hitResults = anab::FVectorReader<recob::Hit, 4>::create(*evt, "dprawhit");
 
       if(hitResults) //raw waveform (dual phase)
       {

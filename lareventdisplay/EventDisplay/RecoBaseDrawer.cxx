@@ -4101,7 +4101,7 @@ void RecoBaseDrawer::FillTQHistoDP(const art::Event&    evt,
         std::vector<const recob::Hit*> hits;
         this->GetHits(evt, which, hits, plane);
 
-        auto hitResults = anab::FVectorReader<recob::Hit, 3>::create(evt, "dprawhit");
+        auto hitResults = anab::FVectorReader<recob::Hit, 4>::create(evt, "dprawhit");
         const auto & fitParams = hitResults->vectors();
 
         int FitParamsOffset = CountHits(evt, which, rawOpt->fCryostat, rawOpt->fTPC, plane);
@@ -4113,7 +4113,7 @@ void RecoBaseDrawer::FillTQHistoDP(const art::Event&    evt,
             hpeaktimes.push_back(fitParams[FitParamsOffset+i][0]);
             htau1.push_back(fitParams[FitParamsOffset+i][1]);
             htau2.push_back(fitParams[FitParamsOffset+i][2]);
-            hitamplitudes.push_back(hits[i]->PeakAmplitude());
+            hitamplitudes.push_back(fitParams[FitParamsOffset+i][3]);
             hstartT.push_back(hits[i]->StartTick());
             hendT.push_back(hits[i]->EndTick());
             hNMultiHit.push_back(hits[i]->Multiplicity());

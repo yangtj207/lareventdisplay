@@ -21,7 +21,7 @@ art_make( TOOL_LIBRARIES
 			canvas
             nutools_EventDisplayBase
 			${MF_MESSAGELOGGER}
-			${MF_UTILITIES}
+			
 			${FHICLCPP}
 			${CETLIB}
 			${Boost_FILESYSTEM_LIBRARY}

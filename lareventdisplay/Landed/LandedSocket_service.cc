@@ -68,7 +68,9 @@ namespace evd
 	    //	    std::cout << "seek: " << diff << std::endl;
 	    if (rootinput->seekToEvent(diff, true))
 	      {
-		LOG_DEBUG("Landed") << "seek succeeded\n";
+// workaround for #19851
+//		LOG_DEBUG("Landed") << "seek succeeded\n";
+		mf::LogDebug("Landed") << "seek succeeded\n";
 		socket_->send(boost::asio::buffer("OK\n", 3));
 		record_=newrec;
 	      }
@@ -123,7 +125,9 @@ namespace evd
     if (socket_->receive(boost::asio::buffer(conf))!=1)
       throw cet::exception("Landed") << "LANDED app did not confirm detector geometry\n";
     else
-      LOG_DEBUG("Landed") << "LANDED app has confirmed detector geometry\n";
+// workaround for #19851
+//      LOG_DEBUG("Landed") << "LANDED app has confirmed detector geometry\n";
+      mf::LogDebug("Landed") << "LANDED app has confirmed detector geometry\n";
 
   }
   void LandedSocket::

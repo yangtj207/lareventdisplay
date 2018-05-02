@@ -210,7 +210,9 @@ namespace evd{
   void TWireProjPad::Draw(const char* opt) 
   {
     // DumpPadsInCanvas(fPad, "TWireProjPad", "Draw()");
-    LOG_DEBUG("TWireProjPad") << "Started to draw plane " << fPlane;
+// workaround for #19851
+//    LOG_DEBUG("TWireProjPad") << "Started to draw plane " << fPlane;
+    mf::LogDebug("TWireProjPad") << "Started to draw plane " << fPlane;
     
     ///\todo: Why is kSelectedColor hard coded?
     int kSelectedColor = 4;
@@ -287,11 +289,15 @@ namespace evd{
       this->ShowFull();
     }
     
-    LOG_DEBUG("TWireProjPad") << "Started rendering plane " << fPlane;
+// workaround for #19851
+//    LOG_DEBUG("TWireProjPad") << "Started rendering plane " << fPlane;
+    mf::LogDebug("TWireProjPad") << "Started rendering plane " << fPlane;
     
     fView->Draw();
 
-    LOG_DEBUG("TWireProjPad") << "Drawing of plane " << fPlane << " completed";
+// workaround for #19851
+//    LOG_DEBUG("TWireProjPad") << "Drawing of plane " << fPlane << " completed";
+    mf::LogDebug("TWireProjPad") << "Drawing of plane " << fPlane << " completed";
   }
 
   //......................................................................
@@ -426,7 +432,9 @@ namespace evd{
     fCurrentZoom[1] = xaxis.GetBinUpEdge(xaxis.GetLast());
     fCurrentZoom[2] = fHisto->GetMinimum();
     fCurrentZoom[3] = fHisto->GetMaximum();
-    LOG_DEBUG("TWireProjPad") << "Zoom set to wires ("
+// workaround for #19851
+//    LOG_DEBUG("TWireProjPad") << "Zoom set to wires ("
+    mf::LogDebug("TWireProjPad") << "Zoom set to wires ("
       << fCurrentZoom[0] << "; " << fCurrentZoom[1] << " ), tick ("
       << fCurrentZoom[2] << "; " << fCurrentZoom[3] << ") for plane #"
       << fPlane;
@@ -629,7 +637,9 @@ namespace evd{
 	try{
 	  BTrack.GetProjectedPointUVWT(float(i)/N,projpt,ticks,c,t );
 	  LastGoodValue=i;
-	  LOG_DEBUG("TWireProjPad") << i << " ";
+// workaround for #19851
+//	  LOG_DEBUG("TWireProjPad") << i << " ";
+	  mf::LogDebug("TWireProjPad") << i << " ";
 	}
 	catch(cet::exception excp){
 	  BTrack.GetProjectedPointUVWT(float(LastGoodValue)/N, projpt, ticks, c, t);

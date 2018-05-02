@@ -368,7 +368,9 @@ namespace evd{
     curr_zooming_plane=-1;
   
     unsigned int const nPlanes = fPlanes.size();
-    LOG_DEBUG("TWQProjectionView") << "Start drawing " << nPlanes << " planes";
+// workaround for #19851
+//    LOG_DEBUG("TWQProjectionView") << "Start drawing " << nPlanes << " planes";
+    mf::LogDebug("TWQProjectionView") << "Start drawing " << nPlanes << " planes";
     //  double Charge=0, ConvCharge=0;
     for(unsigned int i=0;i<nPlanes;++i){
       TWireProjPad* planePad = fPlanes[i];
@@ -1778,7 +1780,9 @@ namespace evd{
   
   //......................................................................
   void TWQProjectionView::ForceRedraw() {
-    LOG_DEBUG("TWQProjectionView") << "Explicit request for redrawing";
+// workaround for #19851
+//    LOG_DEBUG("TWQProjectionView") << "Explicit request for redrawing";
+    mf::LogDebug("TWQProjectionView") << "Explicit request for redrawing";
     
     // for now, bother only about redrawing the plane pads
     SetZoomFromView();
@@ -2070,7 +2074,9 @@ namespace evd{
         NewTPC.TPC = (geo::TPCID::TPCID_t) 0;
       }
       
-      LOG_DEBUG("TWQProjectionView") << __func__ << ": invalid TPC "
+// workaround for #19851
+//      LOG_DEBUG("TWQProjectionView") << __func__ << ": invalid TPC "
+      mf::LogDebug("TWQProjectionView") << __func__ << ": invalid TPC "
         << RequestedTPC << ", corrected as " << NewTPC << " instead";
     }
     
@@ -2079,7 +2085,9 @@ namespace evd{
         << RequestedTPC << " turned into an invalid TPC " << NewTPC;
     }
     else if (NewTPC != CurrentTPC) { // do we need to change after all? 
-      LOG_DEBUG("TWQProjectionView") << __func__ << ": switching from "
+// workaround for #19851
+//      LOG_DEBUG("TWQProjectionView") << __func__ << ": switching from "
+      mf::LogDebug("TWQProjectionView") << __func__ << ": switching from "
         << CurrentTPC << " to " << NewTPC;
     
       // new cryostat?
@@ -2464,7 +2472,9 @@ namespace evd{
       )
       return false;
     
-    LOG_DEBUG("TWQProjectionView") << "New event or product: " << *fLastEvent;
+// workaround for #19851
+//    LOG_DEBUG("TWQProjectionView") << "New event or product: " << *fLastEvent;
+    mf::LogDebug("TWQProjectionView") << "New event or product: " << *fLastEvent;
     
     art::ServiceHandle<evd::EvdLayoutOptions> drawopt;
     SetAutomaticZoomMode(drawopt->fAutoZoomInterest == 1);

@@ -1163,7 +1163,9 @@ namespace evd {
     
     // if we have no region of interest, prepare to extract it
     bool const bExtractRoI = !hasRegionOfInterest(plane);
-    LOG_TRACE("RawDataDrawer") << "Region of interest for " << pid
+// workaround for #19851
+//    LOG_TRACE("RawDataDrawer") << "Region of interest for " << pid
+    mf::LogTrace("RawDataDrawer") << "Region of interest for " << pid
       << (bExtractRoI? " extracted": " not extracted") << " on this draw";
     
     if (!bExtractRoI) return;

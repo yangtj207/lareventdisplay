@@ -31,7 +31,7 @@
 #include "lareventdisplay/EventDisplay/SimulationDrawingOptions.h"
 #include "lareventdisplay/EventDisplay/RawDrawingOptions.h"
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
-#include "lardata/DetectorInfo/DetectorProperties.h"
+#include "lardataalg/DetectorInfo/DetectorProperties.h"
 #include "lardata/DetectorInfoServices/DetectorClocksService.h"
 
 //#include "larevt/SpaceChargeServices/SpaceChargeService.h"

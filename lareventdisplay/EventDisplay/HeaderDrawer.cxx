@@ -11,21 +11,23 @@
 #include "TTimeStamp.h"
 
 #include "art/Framework/Principal/Event.h"
+#include "lareventdisplay/EventDisplay/EvdLayoutOptions.h"
 
 namespace evd{
 
-  HeaderDrawer::HeaderDrawer() { }
+HeaderDrawer::HeaderDrawer() { }
 
-  //......................................................................
+//......................................................................
 
-  HeaderDrawer::~HeaderDrawer() { }
+HeaderDrawer::~HeaderDrawer() { }
 
+//......................................................................
 
-  //......................................................................
-
-  void HeaderDrawer::Header(evdb::View2D* view)
-  {
-    TText& titlet = view->AddText(0.03,0.80,"LArSoft");
+void HeaderDrawer::Header(evdb::View2D* view)
+{
+    art::ServiceHandle<evd::EvdLayoutOptions> layoutopt;
+      
+    TText& titlet = view->AddText(0.03,0.80,layoutopt->fDisplayName.c_str());
     titlet.SetTextSize(0.13);
     titlet.SetTextFont(72);
 
@@ -64,25 +66,20 @@ namespace evd{
     char timebuff[256];
   
     // Skip first one since ROOT returns these numbers starting from 1 not 0
-    static const char* days[] = {"",
-				 "Mon","Tue","Wed","Thu","Fri","Sat","Sun"
-    };
-    static const char* months[] = {"",
-				   "Jan","Feb","Mar","Apr","May","Jun",
-				   "Jul","Aug","Sep","Oct","Nov","Dec"
-    };
+    static const char* days[] = {"","Mon","Tue","Wed","Thu","Fri","Sat","Sun"};
+    static const char* months[] = {"","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"};
   
     sprintf(runbuff,  "Run:   %d/%d",run,srun);
     sprintf(eventbuff,"Event: %d",event);
     sprintf(datebuff, "UTC %s %s %d, %d", 
-	    days[dayofweek],
-	    months[month],
-	    day,
-	    year);
+            days[dayofweek],
+            months[month],
+            day,
+            year);
     sprintf(timebuff, "%.2d:%.2d:%2.9f", 
-	    hour, 
-	    minute, 
-	    (float)second+(float)nano/1.0E9);
+            hour,
+            minute,
+            (float)second+(float)nano/1.0E9);
 
     TText& runt   = view->AddText(0.04,0.60, runbuff);
     TText& eventt = view->AddText(0.04,0.45, eventbuff);
@@ -100,7 +97,7 @@ namespace evd{
 
     timet.SetTextSize(0.12);
     timet.SetTextFont(42);
-  }
+}
 
 }// namespace
 ////////////////////////////////////////////////////////////////////////

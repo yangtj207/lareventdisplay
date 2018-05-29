@@ -118,20 +118,21 @@ standard_simdrawingopt:
 
 standard_evdlayoutopt:
 {
- ShowSideBar:		1          # toggle extra sidebar visibility option
- AutoZoomInterest:	1          # toggle the auto zoom to interesting region option
- PrintTotalCharge:	1          # Print out the sum of collected charge 
- ShowEndPointSection:	1          # Show Sidebar section with EndPoint extrapolation
- ShowEndPointMarkers:	1          # toggle visbility of markers for EndPoint finding
- ShowClusterSection:    0          # Show Sidebar section for making clusters
- MakeClusters: 		0	   # draw two lines to create clusters
- MakeSeeds: 		0	   # draw two lines to create clusters
- ChangeWire: 		1	   # change wire with mouse click
- EnableMCTruthCheckBox: 1          # 1 turn on the check box, 0 don't make it
- ThreeWindowReadout:    true
- DisplayBackingGrid:    true
- DisplayAxes:           true
- Experiment3DDrawer:    @local::standard_drawer
+  ShowSideBar:           1          # toggle extra sidebar visibility option
+  AutoZoomInterest:      1          # toggle the auto zoom to interesting region option
+  PrintTotalCharge:      1          # Print out the sum of collected charge
+  ShowEndPointSection:   1          # Show Sidebar section with EndPoint extrapolation
+  ShowEndPointMarkers:   1          # toggle visbility of markers for EndPoint finding
+  ShowClusterSection:    0          # Show Sidebar section for making clusters
+  MakeClusters:          0          # draw two lines to create clusters
+  MakeSeeds:             0          # draw two lines to create clusters
+  ChangeWire:            1          # change wire with mouse click
+  EnableMCTruthCheckBox: 1          # 1 turn on the check box, 0 don't make it
+  ThreeWindowReadout:    true
+  DisplayBackingGrid:    true
+  DisplayAxes:           true
+  DisplayName:           "LArSoft"
+  Experiment3DDrawer:    @local::standard_drawer
 }
 
 standard_scanopt:

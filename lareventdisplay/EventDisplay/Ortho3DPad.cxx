@@ -14,7 +14,7 @@
 #include "TGNumberEntry.h"
 #include "TLatex.h"
 
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 
 #include "lareventdisplay/EventDisplay/Ortho3DPad.h"

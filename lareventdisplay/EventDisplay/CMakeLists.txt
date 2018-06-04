@@ -38,7 +38,7 @@ art_make_library(
 			    art_Utilities
 			    canvas
 			    ${MF_MESSAGELOGGER}
-			    ${MF_UTILITIES}
+			    
 	                    ${FHICLCPP}
 			    cetlib cetlib_except
                             ${ROOT_EVE_LIB_LIST}
@@ -56,7 +56,7 @@ simple_plugin ( GraphCluster module
 			art_Utilities
 			canvas
 			${MF_MESSAGELOGGER}
-			${MF_UTILITIES}
+			
 	                ${FHICLCPP}
 			cetlib cetlib_except
                 
@@ -73,7 +73,7 @@ simple_plugin ( EVD module
 			art_Utilities
 			canvas
 			${MF_MESSAGELOGGER}
-			${MF_UTILITIES}
+			
 	                ${FHICLCPP}
 			cetlib cetlib_except
                 
@@ -95,7 +95,7 @@ simple_plugin ( AnalysisDrawingOptions service
 			art_Utilities
 			canvas
 			${MF_MESSAGELOGGER}
-			${MF_UTILITIES}
+			
 	                ${FHICLCPP}
 			cetlib cetlib_except
                         ${ROOT_BASIC_LIB_LIST}
@@ -118,7 +118,7 @@ simple_plugin ( ColorDrawingOptions service
 			art_Utilities
 			canvas
 			${MF_MESSAGELOGGER}
-			${MF_UTILITIES}
+			
 	                ${FHICLCPP}
 			cetlib cetlib_except
                         ${ROOT_BASIC_LIB_LIST}
@@ -141,7 +141,7 @@ simple_plugin ( EvdLayoutOptions service
 			art_Utilities
 			canvas
 			${MF_MESSAGELOGGER}
-			${MF_UTILITIES}
+			
 	                ${FHICLCPP}
 			cetlib cetlib_except
                         ${ROOT_BASIC_LIB_LIST}
@@ -164,7 +164,7 @@ simple_plugin ( InfoTransfer service
 			art_Utilities
 			canvas
 			${MF_MESSAGELOGGER}
-			${MF_UTILITIES}
+			
 	                ${FHICLCPP}
 			cetlib cetlib_except
                         ${ROOT_BASIC_LIB_LIST}
@@ -187,7 +187,7 @@ simple_plugin ( RawDrawingOptions service
 			art_Utilities
 			canvas
 			${MF_MESSAGELOGGER}
-			${MF_UTILITIES}
+			
 	                ${FHICLCPP}
 			cetlib cetlib_except
                         ${ROOT_BASIC_LIB_LIST}
@@ -210,8 +210,8 @@ simple_plugin ( RecoDrawingOptions service
 			art_Utilities
 			canvas
 			${MF_MESSAGELOGGER}
-			${MF_UTILITIES}
-			${MF_UTILITIES}
+			
+			
 	                ${FHICLCPP}
 			cetlib cetlib_except
                         ${ROOT_BASIC_LIB_LIST}
@@ -234,7 +234,7 @@ simple_plugin ( SimulationDrawingOptions service
 			art_Utilities
 			canvas
 			${MF_MESSAGELOGGER}
-			${MF_UTILITIES}
+			
 	                ${FHICLCPP}
 			cetlib cetlib_except
                         ${ROOT_BASIC_LIB_LIST}

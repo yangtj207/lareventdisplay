@@ -14,7 +14,7 @@
 #include "lareventdisplay/EventDisplay/Ortho3DView.h"
 #include "lareventdisplay/EventDisplay/Ortho3DPad.h"
 
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 #include "art/Framework/Principal/Event.h"
 
 //......................................................................

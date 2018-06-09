@@ -12,7 +12,7 @@
 #include "TPolyLine.h"
 #include "TText.h"
 
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 #include "nutools/EventDisplayBase/View2D.h"
 #include "nutools/EventDisplayBase/EventHolder.h"

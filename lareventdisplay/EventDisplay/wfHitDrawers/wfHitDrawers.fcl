@@ -1,0 +1,15 @@
+BEGIN_PROLOG
+
+gaushit_drawer:
+{
+  tool_type:       DrawGausHits
+
+  NumPoints:       1000
+}
+
+skewhit_drawer:
+{
+tool_type:         DrawSkewHits
+}
+
+END_PROLOG

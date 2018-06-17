@@ -205,8 +205,8 @@ SimulationDrawer::SimulationDrawer()
   //......................................................................
   //this is the method you would use to color code hits by the MC truth pdg value
   void SimulationDrawer::MCTruthVectors2D(const art::Event& evt,
-					  evdb::View2D*     view,
-					  unsigned int      plane)
+                                          evdb::View2D*     view,
+                                          unsigned int      plane)
   {
     if( evt.isRealData() ) return;
 

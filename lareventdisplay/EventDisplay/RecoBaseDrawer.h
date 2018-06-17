@@ -235,24 +235,11 @@ public:
     void SeedOrtho(const art::Event& evt,
 		           evd::OrthoProj_t  proj,
 		           evdb::View2D*     view);
-    
-    using HitParams_t = struct HitParams_t
-    {
-        float hitCenter;
-        float hitSigma;
-        float hitHeight;
-        float hitStart;
-        float hitEnd;
-    };
-    
-    using ROIHitParamsVec = std::vector<HitParams_t>;
-    using HitParamsVec    = std::vector<ROIHitParamsVec>;
 
     void FillTQHisto(const art::Event&    evt,
-		             unsigned int         plane,
+                     unsigned int         plane,
                      unsigned int         wire,
-		             TH1F*                histo,
-                     HitParamsVec&        hitParamsVec);
+                     TH1F*                histo);
 
     void FillQHisto(const art::Event& evt,
 		            unsigned int      plane,

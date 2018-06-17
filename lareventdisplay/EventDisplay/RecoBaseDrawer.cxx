@@ -15,6 +15,7 @@
 #include "TPolyLine3D.h"
 #include "TPolyMarker.h"
 #include "TPolyMarker3D.h"
+#include "TMarker3DBox.h"
 #include "TVector3.h"
 #include "TText.h"
 #include "TColor.h"
@@ -2134,7 +2135,7 @@ void RecoBaseDrawer::DrawPFParticle3D(const art::Ptr<recob::PFParticle>&        
     
     if (!hitsVec.empty())
     {
-        using HitPosition = std::array<double,3>;
+        using HitPosition = std::array<double,6>;
         std::map<int,std::vector<HitPosition>> colorToHitMap;
 
 /*
@@ -2219,6 +2220,7 @@ void RecoBaseDrawer::DrawPFParticle3D(const art::Ptr<recob::PFParticle>&        
         for(const auto& spacePoint : hitsVec)
         {
             const double* pos = spacePoint->XYZ();
+            const double* err = spacePoint->ErrXYZ();
             
 //            const std::vector<art::Ptr<recob::Hit>>& hitVec = spHitAssnVec.at(spacePoint.key());
             
@@ -2284,7 +2286,7 @@ void RecoBaseDrawer::DrawPFParticle3D(const art::Ptr<recob::PFParticle>&        
                 if (chargeColorIdx < 0) chargeColorIdx = 0;
             }
             
-            if (storeHit) colorToHitMap[chargeColorIdx].push_back(HitPosition()={{pos[0],pos[1],pos[2]}});
+            if (storeHit) colorToHitMap[chargeColorIdx].push_back(HitPosition()={{pos[0],pos[1],pos[2],err[3],err[3],err[5]}});
         }
         
         size_t nHitsDrawn(0);
@@ -2294,6 +2296,13 @@ void RecoBaseDrawer::DrawPFParticle3D(const art::Ptr<recob::PFParticle>&        
             //TPolyMarker3D& pm = view->AddPolyMarker3D(hitPair.second.size(), hitPair.first, kFullDotMedium, 3);
             TPolyMarker3D& pm = view->AddPolyMarker3D(hitPair.second.size(), hitPair.first, kFullDotLarge, 0.25); //kFullDotLarge, 0.3);
             for (const auto& hit : hitPair.second) pm.SetNextPoint(hit[0],hit[1],hit[2]);
+            //for(const auto& hit : hitPair.second)
+            //{
+            //    TMarker3DBox& box = view->AddMarker3DBox(hit[0],hit[1],hit[2],hit[3],hit[4],hit[5]);
+            //    box.SetFillColor(hitPair.first);
+            //    box.SetLineColor(hitPair.first);
+            //}
+            
             nHitsDrawn += hitPair.second.size();
         }
     }
@@ -4115,8 +4124,7 @@ int RecoBaseDrawer::CountHits(const art::Event&    evt,
 void RecoBaseDrawer::FillTQHisto(const art::Event& evt,
                                  unsigned int      plane,
                                  unsigned int      wire,
-                                 TH1F*             histo,
-                                 HitParamsVec&     hitParamsVec)
+                                 TH1F*             histo)
 {
     art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
@@ -4153,47 +4161,6 @@ void RecoBaseDrawer::FillTQHisto(const art::Event& evt,
                 histo->Fill(1.*ii, wirSig[ii]);
         }//end loop over wires
     }//end loop over wire modules
-    
-    for (size_t imod = 0; imod < recoOpt->fHitLabels.size(); ++imod)
-    {
-        art::InputTag const which = recoOpt->fHitLabels[imod];
-        
-        std::vector<const recob::Hit*> hits;
-        this->GetHits(evt, which, hits, plane);
-        
-        // Get an initial container for common hits on ROI
-        ROIHitParamsVec roiHitParamsVec;
-        raw::TDCtick_t  lastEndTick(6400);
-        
-        for (size_t i = 0; i < hits.size(); ++i)
-        {
-            // check for correct wire, plane, cryostat and tpc were checked in GetHits
-            if(hits[i]->WireID().Wire != wire) continue;
-            
-            // check roi end condition
-            if (hits[i]->EndTick() > lastEndTick)
-            {
-                if (!roiHitParamsVec.empty()) hitParamsVec.push_back(roiHitParamsVec);
-                roiHitParamsVec.clear();
-            }
-            
-            HitParams_t hitParams;
-            
-            hitParams.hitCenter = hits[i]->PeakTime();
-            hitParams.hitSigma  = hits[i]->RMS();
-            hitParams.hitHeight = hits[i]->PeakAmplitude();
-            hitParams.hitStart  = hits[i]->StartTick();
-            hitParams.hitEnd    = hits[i]->EndTick();
-            
-            roiHitParamsVec.emplace_back(hitParams);
-            
-            lastEndTick = hits[i]->EndTick();
-        }//end loop over reco hits
-        
-        // Just in case (probably never called...)
-        if (!roiHitParamsVec.empty()) hitParamsVec.push_back(roiHitParamsVec);
-        
-    }//end loop over HitFinding modules
     
     return;
 }

@@ -7,6 +7,7 @@ FILE( GLOB src_files *.cxx )
 cet_rootcint( ${PACKAGE} )
 
 add_subdirectory(ExptDrawers)
+add_subdirectory(wfHitDrawers)
 
 art_make_library( 
         	  SOURCE ${src_files} ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE}Cint.cc

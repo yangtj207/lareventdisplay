@@ -3,6 +3,8 @@
 ##include "trackfinderservices.fcl"
 #include "database_standard.fcl"
 #include "experiment3ddrawers.fcl"
+#include "wfHitDrawers.fcl"
+
 BEGIN_PROLOG
 
 standard_colordrawingopt:
@@ -92,6 +94,7 @@ standard_recodrawingopt:
  FlashTMin:                 -1e9           # Minimal time for a flash to be displayed.
  FlashTMax:                 1e9            # Maximum time for a flash to be displayed.
  CalorimetryAlgorithm:      @local::standard_calorimetryalgdata
+ HitDrawer:                 @local::gaushit_drawer
 }
 
 standard_analysisdrawingopt:

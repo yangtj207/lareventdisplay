@@ -81,13 +81,10 @@ void RecoDrawingOptions::reconfigure(fhicl::ParameterSet const& pset)
     fFlashMinPE                = pset.get< double                     >("FlashMinPE", 0.0          );
     fFlashTMin                 = pset.get< double                     >("FlashTMin", -1e9          );
     fFlashTMax                 = pset.get< double                     >("FlashTMax", 1e9           );
+    
+    fHitDrawerParams           = pset.get< fhicl::ParameterSet        >("HitDrawer"                );
   }
-  
-}
-
-namespace evd {
 
   DEFINE_ART_SERVICE(RecoDrawingOptions)
-
 } // namespace evd
 ////////////////////////////////////////////////////////////////////////

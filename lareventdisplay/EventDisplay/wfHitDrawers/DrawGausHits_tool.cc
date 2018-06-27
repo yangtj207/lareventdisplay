@@ -8,10 +8,12 @@
 #include "art/Utilities/ToolMacros.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "cetlib_except/exception.h"
+#include "canvas/Persistency/Common/FindManyP.h"
 #include "nutools/EventDisplayBase/EventHolder.h"
 #include "lareventdisplay/EventDisplay/RecoDrawingOptions.h"
 #include "larcore/Geometry/Geometry.h"
 #include "lardataobj/RecoBase/Hit.h"
+#include "lardataobj/RecoBase/Wire.h"
 
 #include "TF1.h"
 #include "TPolyLine.h"
@@ -81,18 +83,29 @@ void DrawGausHits::Draw(evdb::View2D&                      view2D,
         // Step one is to recover the hits for this label that match the input channel
         art::InputTag const which = recoOpt->fHitLabels[imod];
         
-        std::vector<const recob::Hit*> hits;
-        std::vector<const recob::Hit*> temp;
+        art::Handle< std::vector<recob::Hit> > hitVecHandle;
+        event->getByLabel(which, hitVecHandle);
         
-        event->getView(which, temp);
+        // Get a container for the subset of hits we are drawing
+        art::PtrVector<recob::Hit> hitPtrVec;
         
-        for(const auto& hit : temp)
+        for(size_t hitIdx = 0; hitIdx < hitVecHandle->size(); hitIdx++)
         {
-            if (hit->Channel() == channel) hits.push_back(hit);
+            art::Ptr<recob::Hit> hit(hitVecHandle, hitIdx);
+            
+            if (hit->Channel() == channel) hitPtrVec.push_back(hit);
         }
         
-        // Now go through and process the hits back into the hit parameters
+        if (hitPtrVec.empty()) continue;
         
+        // Get associations to wires
+        art::FindManyP<recob::Wire> wireAssnsVec(hitPtrVec, *event, which);
+        std::vector<float>          wireDataVec;
+        
+        // Recover the full (zero-padded outside ROI's) deconvolved waveform for this wire
+        if (wireAssnsVec.isValid() && wireAssnsVec.size() > 0) wireDataVec = wireAssnsVec.at(0).front()->Signal();
+
+        // Now go through and process the hits back into the hit parameters
         using HitParams_t = struct HitParams_t
         {
             float hitCenter;
@@ -106,14 +119,14 @@ void DrawGausHits::Draw(evdb::View2D&                      view2D,
         using HitParamsVec    = std::vector<ROIHitParamsVec>;
         
         // Get an initial container for common hits on ROI
-        HitParamsVec hitParamsVec;
+        HitParamsVec    hitParamsVec;
         ROIHitParamsVec roiHitParamsVec;
-        raw::TDCtick_t  lastEndTick(6400);
+        raw::TDCtick_t  lastEndTick(10000);
         
-        for (size_t i = 0; i < hits.size(); ++i)
+        for (const auto& hit : hitPtrVec)
         {
             // check roi end condition
-            if (hits[i]->EndTick() > lastEndTick)
+            if (hit->EndTick() > lastEndTick)
             {
                 if (!roiHitParamsVec.empty()) hitParamsVec.push_back(roiHitParamsVec);
                 roiHitParamsVec.clear();
@@ -121,15 +134,15 @@ void DrawGausHits::Draw(evdb::View2D&                      view2D,
             
             HitParams_t hitParams;
             
-            hitParams.hitCenter = hits[i]->PeakTime();
-            hitParams.hitSigma  = hits[i]->RMS();
-            hitParams.hitHeight = hits[i]->PeakAmplitude();
-            hitParams.hitStart  = hits[i]->StartTick();
-            hitParams.hitEnd    = hits[i]->EndTick();
+            hitParams.hitCenter = hit->PeakTime();
+            hitParams.hitSigma  = hit->RMS();
+            hitParams.hitHeight = hit->PeakAmplitude();
+            hitParams.hitStart  = hit->StartTick();
+            hitParams.hitEnd    = hit->EndTick();
             
             roiHitParamsVec.emplace_back(hitParams);
             
-            lastEndTick = hits[i]->EndTick();
+            lastEndTick = hit->EndTick();
         }//end loop over reco hits
         
         // Just in case (probably never called...)
@@ -140,14 +153,20 @@ void DrawGausHits::Draw(evdb::View2D&                      view2D,
         for(const auto& roiHitParamsVec : hitParamsVec)
         {
             // Create a histogram here...
-            double roiStart = roiHitParamsVec.front().hitStart; //roiHitParamsVec.front().hitStart - 3. * roiHitParamsVec.front().hitSigma;
-            double roiStop  = roiHitParamsVec.back().hitEnd;    //roiHitParamsVec.back().hitEnd    + 3. * roiHitParamsVec.back().hitSigma;
-            //                        double width    = roiStop - roiStart;
+            double roiStart = roiHitParamsVec.front().hitStart;
+            double roiStop  = roiHitParamsVec.back().hitEnd;
             
             std::string funcString = "gaus(0)";
             std::string funcName   = Form("hitshape_%05zu_c%02zu",size_t(channel),roiCount++);
             
             for(size_t idx = 1; idx < roiHitParamsVec.size(); idx++) funcString += "+gaus(" + std::to_string(3*idx) + ")";
+            
+            // Include a baseline
+            float baseline(0.);
+            
+            if (!wireDataVec.empty()) baseline = wireDataVec.at(roiStart);
+            
+            funcString += "+" + std::to_string(baseline);
             
             hitFuncVec.emplace_back(std::make_unique<TF1>(TF1(funcName.c_str(),funcString.c_str(),roiStart,roiStop)));
             
@@ -162,15 +181,15 @@ void DrawGausHits::Draw(evdb::View2D&                      view2D,
                 
                 TPolyLine& hitHeight = view2D.AddPolyLine(2, kBlack, 1, 1);
                 
-                hitHeight.SetPoint(0, hitParams.hitCenter, 0.);
-                hitHeight.SetPoint(1, hitParams.hitCenter, hitParams.hitHeight);
+                hitHeight.SetPoint(0, hitParams.hitCenter, baseline);
+                hitHeight.SetPoint(1, hitParams.hitCenter, hitParams.hitHeight + baseline);
                 
                 hitHeight.Draw("same");
                 
                 TPolyLine& hitSigma = view2D.AddPolyLine(2, kGray, 1, 1);
                 
-                hitSigma.SetPoint(0, hitParams.hitCenter - hitParams.hitSigma, 0.6 * hitParams.hitHeight);
-                hitSigma.SetPoint(1, hitParams.hitCenter + hitParams.hitSigma, 0.6 * hitParams.hitHeight);
+                hitSigma.SetPoint(0, hitParams.hitCenter - hitParams.hitSigma, 0.6 * hitParams.hitHeight + baseline);
+                hitSigma.SetPoint(1, hitParams.hitCenter + hitParams.hitSigma, 0.6 * hitParams.hitHeight + baseline);
                 
                 hitSigma.Draw("same");
                 

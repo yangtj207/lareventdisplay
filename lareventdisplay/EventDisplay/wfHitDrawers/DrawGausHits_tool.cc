@@ -48,6 +48,7 @@ private:
     using HitParamsVec    = std::vector<ROIHitParamsVec>;
     
     int     fNumPoints;
+    bool    fFloatBaseline;
 };
     
 //----------------------------------------------------------------------
@@ -63,7 +64,9 @@ DrawGausHits::~DrawGausHits()
     
 void DrawGausHits::configure(const fhicl::ParameterSet& pset)
 {
-    fNumPoints = pset.get<int>("NumPoints", 1000);
+    fNumPoints     = pset.get< int>("NumPoints",     1000);
+    fFloatBaseline = pset.get<bool>("FloatBaseline", false);
+    
     return;
 }
 
@@ -164,7 +167,7 @@ void DrawGausHits::Draw(evdb::View2D&                      view2D,
             // Include a baseline
             float baseline(0.);
             
-            if (!wireDataVec.empty()) baseline = wireDataVec.at(roiStart);
+            if (fFloatBaseline && !wireDataVec.empty()) baseline = wireDataVec.at(roiStart);
             
             funcString += "+" + std::to_string(baseline);
             

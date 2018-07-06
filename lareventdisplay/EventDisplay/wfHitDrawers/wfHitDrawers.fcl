@@ -5,6 +5,7 @@ gaushit_drawer:
   tool_type:       DrawGausHits
 
   NumPoints:       1000
+  FloatBaseline:   false
 }
 
 skewhit_drawer:

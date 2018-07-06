@@ -2138,81 +2138,6 @@ void RecoBaseDrawer::DrawPFParticle3D(const art::Ptr<recob::PFParticle>&        
         using HitPosition = std::array<double,6>;
         std::map<int,std::vector<HitPosition>> colorToHitMap;
 
-/*
-        // ******* Zoom through to find min/max to set the scale factor
-        std::vector<float> sigSqVec;
-        
-        sigSqVec.reserve(hitsVec.size());
-
-        std::map<size_t,std::map<size_t,std::vector<std::pair<std::pair<float,float>,const std::vector<art::Ptr<recob::Hit>>&>>>> wireToWireToChiMap;
-
-        for(const auto& spacePoint : hitsVec)
-        {
-            const std::vector<art::Ptr<recob::Hit>>& hitVec = spHitAssnVec.at(spacePoint.key());
-            
-            float origHitChiSq = SpacePointChiSq(hitVec);
-            float hitChiSq = spacePoint->Chisq();
-
-            size_t wire0(0);
-            size_t wire1(0);
-            
-            for(const auto& hit : hitVec)
-            {
-                if (!hit) continue;
-                
-                if (hit->WireID().Plane == 0) wire0 = hit->WireID().Wire;
-                if (hit->WireID().Plane == 1) wire1 = hit->WireID().Wire;
-            }
-            
-            wireToWireToChiMap[wire0][wire1].push_back(std::pair<std::pair<float,float>,const std::vector<art::Ptr<recob::Hit>>&>(std::pair<float,float>(hitChiSq,origHitChiSq),hitVec));
-            
-            sigSqVec.emplace_back(hitChiSq);
-        }
-        
-        // Ok, massive printout to follow
-        std::cout << "**************************************************************************************************" << std::endl;
-        for(const auto& pair0 : wireToWireToChiMap)
-        {
-            for(const auto& pair1 : pair0.second)
-            {
-                const std::vector<art::Ptr<recob::Hit>>& locHitVec = pair1.second.front().second;
-                
-                std::cout << "-- Wire0: " << pair0.first << ", Wire1: " << pair1.first << ", hitChiSq: " << pair1.second.front().first.first << ", orig: " << pair1.second.front().first.second;
-                for(const auto& hit : locHitVec)
-                {
-                    if (!hit) continue;
-                    
-                    std::cout << ", Pl: " << hit->WireID().Plane << ", t: " << hit->PeakTime() << ", rms: " << hit->RMS();
-                }
-                std::cout << std::endl;
-            }
-        }
-        std::cout << "**************************************************************************************************" << std::endl;
-
-        std::sort(sigSqVec.begin(),sigSqVec.end());
-        
-        float minDelTSigSq = sigSqVec.front();
-        float maxDelTSigSq = sigSqVec.back();
-        
-        // Back up a bit to get some scale...
-        int cnt(10);
-        
-        while(cnt-- && sigSqVec.back() > 0.1 * maxDelTSigSq) sigSqVec.pop_back();
-        
-        maxDelTSigSq = sigSqVec.back();
-
-        float delTScaleFctr = (cst->fRecoQHigh[geo::kCollection] - cst->fRecoQLow[geo::kCollection]) / (maxDelTSigSq - minDelTSigSq);
-        
-        float aveValue = std::accumulate(sigSqVec.begin(),sigSqVec.end(),0.) / float(sigSqVec.size());
-        float rms      = std::sqrt(std::inner_product(sigSqVec.begin(), sigSqVec.end(), sigSqVec.begin(), 0.) / float(sigSqVec.size()));
-
-        std::cout << "*****>> # spacepoints: " << hitsVec.size() << ", min: " << minDelTSigSq << ", max: " << maxDelTSigSq << ", ave: " << aveValue << ", rms: " << rms << ", delTScaleFctr: " << delTScaleFctr << std::endl;
-        
-        maxDelTSigSq  = std::min(aveValue + rms, maxDelTSigSq);
-//        minDelTSigSq  = std::max(aveValue - rms, minDelTSigSq);
-        delTScaleFctr = (cst->fRecoQHigh[geo::kCollection] - cst->fRecoQLow[geo::kCollection]) / (maxDelTSigSq - minDelTSigSq);
-        // ******* ok done with this
-*/
         float minHitChiSquare(0.);
         float maxHitChiSquare(2.);
         float hitChiSqScale((cst->fRecoQHigh[geo::kCollection] - cst->fRecoQLow[geo::kCollection]) / (maxHitChiSquare - minHitChiSquare));
@@ -2222,34 +2147,20 @@ void RecoBaseDrawer::DrawPFParticle3D(const art::Ptr<recob::PFParticle>&        
             const double* pos = spacePoint->XYZ();
             const double* err = spacePoint->ErrXYZ();
             
-//            const std::vector<art::Ptr<recob::Hit>>& hitVec = spHitAssnVec.at(spacePoint.key());
-            
-            bool   storeHit(false);
-            int    chargeColorIdx(0);
-            double spacePointChiSq(spacePoint->Chisq());
+            bool  storeHit(false);
+            int   chargeColorIdx(0);
+            float spacePointChiSq(spacePoint->Chisq());
             
             if (recoOpt->fDraw3DSpacePointHeatMap)
             {
-//                float pulseHeights[] = {0.,0.,0.};
-//                float  hitChiSq = SpacePointChiSq(hitVec);
-                float  hitChiSq = spacePoint->Chisq();
-
-//                for(const auto& hit : hitVec)
-//                {
-//                    if (!hit) continue;
-//
-//                    pulseHeights[hit->WireID().Plane] = hit->PeakAmplitude();
-//                }
-                
                 storeHit = true;
-                
-                hitChiSq = std::max(minHitChiSquare, std::min(maxHitChiSquare, hitChiSq));
+
+                float hitChiSq = std::max(minHitChiSquare, std::min(maxHitChiSquare, spacePointChiSq));
 
                 float chgFactor = cst->fRecoQHigh[geo::kCollection] - hitChiSqScale * hitChiSq;
                 //float chgFactor = delTScaleFctr * hitChiSq + cst->fRecoQLow[geo::kCollection];
 
                 chargeColorIdx = cst->CalQ(geo::kCollection).GetColor(chgFactor);
-//                if (pulseHeights[2] >= 0.) chargeColorIdx = cst->CalQ(geo::kCollection).GetColor(pulseHeights[2]);
             }
             else
             {
@@ -2296,12 +2207,6 @@ void RecoBaseDrawer::DrawPFParticle3D(const art::Ptr<recob::PFParticle>&        
             //TPolyMarker3D& pm = view->AddPolyMarker3D(hitPair.second.size(), hitPair.first, kFullDotMedium, 3);
             TPolyMarker3D& pm = view->AddPolyMarker3D(hitPair.second.size(), hitPair.first, kFullDotLarge, 0.25); //kFullDotLarge, 0.3);
             for (const auto& hit : hitPair.second) pm.SetNextPoint(hit[0],hit[1],hit[2]);
-            //for(const auto& hit : hitPair.second)
-            //{
-            //    TMarker3DBox& box = view->AddMarker3DBox(hit[0],hit[1],hit[2],hit[3],hit[4],hit[5]);
-            //    box.SetFillColor(hitPair.first);
-            //    box.SetLineColor(hitPair.first);
-            //}
             
             nHitsDrawn += hitPair.second.size();
         }
@@ -2651,11 +2556,11 @@ void RecoBaseDrawer::DrawSpacePoint3D(std::vector<art::Ptr<recob::SpacePoint>>& 
         // For rainbow effect, choose root colors in range [51,100].
         // We are using 100=best (red), 51=worst (blue).
         
-        //if (pspt->Chisq() > -100.) continue;
+        if (pspt->Chisq() > -100.) continue;
         
-        spcolor = 20;
+        spcolor = 12;
         
-        if (pspt->Chisq() < -100.) spcolor = 10;
+        if (pspt->Chisq() < -100.) spcolor = 16;
 
         if(recoOpt->fColorSpacePointsByChisq)
         {

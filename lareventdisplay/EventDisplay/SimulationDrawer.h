@@ -27,19 +27,11 @@ namespace evd {
 
   public:
     // Drawing functions
-    void MCTruthShortText(const art::Event& evt,
-			  evdb::View2D*     view);
-    void MCTruthLongText(const art::Event& evt,
-			 evdb::View2D*     view);
-    void MCTruthVectors2D(const art::Event& evt,
-			  evdb::View2D*     view,
-			  unsigned int      plane);
-    void MCTruth3D(const art::Event& evt,
-		   evdb::View3D*     view);
-    void MCTruthOrtho(const art::Event& evt,
-		      evd::OrthoProj_t  proj,
-		      double            msize,
-		      evdb::View2D*     view);
+    void MCTruthShortText(const art::Event& evt, evdb::View2D*    view);
+    void MCTruthLongText( const art::Event& evt, evdb::View2D*    view);
+    void MCTruthVectors2D(const art::Event& evt, evdb::View2D*    view, unsigned int plane);
+    void MCTruth3D(       const art::Event& evt, evdb::View3D*    view);
+    void MCTruthOrtho(    const art::Event& evt, evd::OrthoProj_t proj, double       msize, evdb::View2D* view);
 
     void HiLite(int trkId, bool hlt=true);
 
@@ -51,14 +43,11 @@ namespace evd {
     double maxz;
 
   private:
-    int GetMCTruth(const art::Event&                  evt,
-		   std::vector<const simb::MCTruth*>& mctruth);
-
-    int GetParticle(const art::Event&                     evt,
-		    std::vector<const simb::MCParticle*>& plist);
+    int GetMCTruth( const art::Event& evt, std::vector<const simb::MCTruth*>&    mctruth);
+    int GetParticle(const art::Event& evt, std::vector<const simb::MCParticle*>& plist);
 
   private:
-    std::map<int,bool>       fHighlite;
+    std::map<int,bool> fHighlite;
 
   };
 }

@@ -43,7 +43,7 @@ private:
     TH1F*                             fRecoHisto;       ///< 1-D Histogram of charge or charge vs time
     evdb::View2D*                     fView;            ///< Superimpose scale on 1D histo
     IWFHitDrawerPtr                   fHitDrawerTool;   ///< An instance of the tool to draw hits
-    std::vector<std::unique_ptr<TF1>> fHitFuncVec; ///< Keep track of functions to draw over reco hits
+    std::vector<std::unique_ptr<TF1>> fHitFuncVec;      ///< Keep track of functions to draw over reco hits
   };
 }
 

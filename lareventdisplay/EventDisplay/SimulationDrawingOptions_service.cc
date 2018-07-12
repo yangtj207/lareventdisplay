@@ -28,13 +28,16 @@ namespace evd {
   //......................................................................
   void SimulationDrawingOptions::reconfigure(fhicl::ParameterSet const& pset)
   {
-    fShowMCTruthText         = pset.get< bool        >("ShowMCTruthText",         true);
-    fShowMCTruthVectors      = pset.get< bool        >("ShowMCTruthVectors",      true);
-    fShowMCTruthTrajectories = pset.get< bool        >("ShowMCTruthTrajectories", true);
-    fShowMCTruthColors       = pset.get< bool        >("ShowMCTruthColors",       true);
-    fShowMCTruthFullSize     = pset.get< bool        >("ShowMCTruthFullSize",     true);
-    fMinEnergyDeposition     = pset.get< double      >("MinimumEnergyDeposition"      );
-    fG4ModuleLabel           = pset.get< std::string >("G4ModuleLabel"                ); 
+    fShowMCTruthText         = pset.get< bool          >      ("ShowMCTruthText",         true);
+    fShowMCTruthVectors      = pset.get< bool          >      ("ShowMCTruthVectors",      true);
+    fShowMCTruthTrajectories = pset.get< bool          >      ("ShowMCTruthTrajectories", true);
+    fShowMCTruthColors       = pset.get< bool          >      ("ShowMCTruthColors",       true);
+    fShowMCTruthFullSize     = pset.get< bool          >      ("ShowMCTruthFullSize",     true);
+    fMinEnergyDeposition     = pset.get< double        >      ("MinimumEnergyDeposition"      );
+    fG4ModuleLabel           = pset.get< art::InputTag >      ("G4ModuleLabel"                );
+    fSimEnergyLabel          = pset.get< art::InputTag >      ("SimEnergyLabel"               );
+      
+    f3DDrawerParams          = pset.get< fhicl::ParameterSet >("Drawer3D"                     );
   }
   
 }

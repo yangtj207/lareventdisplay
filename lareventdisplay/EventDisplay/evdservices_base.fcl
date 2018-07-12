@@ -4,6 +4,7 @@
 #include "database_standard.fcl"
 #include "experiment3ddrawers.fcl"
 #include "wfHitDrawers.fcl"
+#include "SimDrawers.fcl"
 
 BEGIN_PROLOG
 
@@ -117,6 +118,12 @@ standard_simdrawingopt:
  ShowMCTruthFullSize:     true       # toggle to use larger size markers for visibility
  MinimumEnergyDeposition: 5e-5       # in GeV
  G4ModuleLabel:           "largeant" # module labels producing sim::SimChannel objects
+ SimEnergyLabel:          "largeant" # Producer of the SimEnergyDeposits
+
+ Draw3DTools:
+ {
+   Drawer3D:              @local::larvoxel_drawer3D
+ }
 }
 
 standard_evdlayoutopt:

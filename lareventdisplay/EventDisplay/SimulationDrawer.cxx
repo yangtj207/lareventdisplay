@@ -34,23 +34,17 @@
 #include "lardataalg/DetectorInfo/DetectorProperties.h"
 #include "lardata/DetectorInfoServices/DetectorClocksService.h"
 
-//#include "larevt/SpaceChargeServices/SpaceChargeService.h"
-//#include "larevt/SpaceCharge/SpaceChargeStandard.h"
-
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Principal/View.h"
 #include "art/Framework/Principal/Event.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 namespace {
-  // Utility function to make uniform error messages.
-  void writeErrMsg(const char* fcn,
-		   cet::exception const& e)
-  {
-    mf::LogWarning("SimulationDrawer") << "SimulationDrawer::" << fcn
-				       << " failed with message:\n"
-				       << e;
-  }
+    // Utility function to make uniform error messages.
+    void writeErrMsg(const char* fcn, cet::exception const& e)
+    {
+        mf::LogWarning("SimulationDrawer") << "SimulationDrawer::" << fcn << " failed with message:\n" << e;
+    }
 }
 
 namespace evd{
@@ -66,6 +60,8 @@ SimulationDrawer::SimulationDrawer()
     minz = 1e9;
     maxz = -1e9;
     
+    // This is looking to find the range of the complete active volume... this may not be the
+    // best way to do this...
     for(size_t cryoIdx = 0; cryoIdx < geom->Ncryostats(); cryoIdx++)
     {
         const geo::CryostatGeo& cryoGeo = geom->Cryostat(cryoIdx);
@@ -74,8 +70,8 @@ SimulationDrawer::SimulationDrawer()
         {
             const geo::TPCGeo& tpc = cryoGeo.TPC(tpcIdx);
         
-            std::cout << "Cryo/TPC idx: " << cryoIdx << "/" << tpcIdx << ", TPC center: " << tpc.GetCenter()[0] << ", " << tpc.GetCenter()[1] << ", " << tpc.GetCenter()[2] << std::endl;
-            std::cout << "         TPC Active center: " << tpc.GetActiveVolumeCenter()[0] << ", " << tpc.GetActiveVolumeCenter()[1] << ", " << tpc.GetActiveVolumeCenter()[2] << ", H/W/L: " << tpc.ActiveHalfHeight() << "/" << tpc.ActiveHalfWidth() << "/" << tpc.ActiveLength() << std::endl;
+            mf::LogDebug("SimulationDrawer") << "Cryo/TPC idx: " << cryoIdx << "/" << tpcIdx << ", TPC center: " << tpc.GetCenter()[0] << ", " << tpc.GetCenter()[1] << ", " << tpc.GetCenter()[2] << std::endl;
+            mf::LogDebug("SimulationDrawer") << "         TPC Active center: " << tpc.GetActiveVolumeCenter()[0] << ", " << tpc.GetActiveVolumeCenter()[1] << ", " << tpc.GetActiveVolumeCenter()[2] << ", H/W/L: " << tpc.ActiveHalfHeight() << "/" << tpc.ActiveHalfWidth() << "/" << tpc.ActiveLength() << std::endl;
 
             if (minx>tpc.GetCenter()[0]-tpc.HalfWidth())
                 minx = tpc.GetCenter()[0]-tpc.HalfWidth();
@@ -90,29 +86,29 @@ SimulationDrawer::SimulationDrawer()
             if (maxz<tpc.GetCenter()[2]+tpc.Length()/2.)
                 maxz = tpc.GetCenter()[2]+tpc.Length()/2.;
         
-            std::cout << "        minx/maxx: " << minx << "/" << maxx << ", miny/maxy: " << miny << "/" << maxy << ", minz/miny: " << minz << "/" << maxz << std::endl;
+            mf::LogDebug("SimulationDrawer") << "        minx/maxx: " << minx << "/" << maxx << ", miny/maxy: " << miny << "/" << maxy << ", minz/miny: " << minz << "/" << maxz << std::endl;
         }
     }
 }
 
-  //......................................................................
+//......................................................................
 
-  SimulationDrawer::~SimulationDrawer()
-  {
-  }
+SimulationDrawer::~SimulationDrawer()
+{
+}
 
-  //......................................................................
+//......................................................................
 
-  void SimulationDrawer::MCTruthShortText(const art::Event& evt,
-                                          evdb::View2D*     view)
-  {
+void SimulationDrawer::MCTruthShortText(const art::Event& evt,
+                                        evdb::View2D*     view)
+{
 
     if( evt.isRealData() ) return;
-
+  
     art::ServiceHandle<evd::SimulationDrawingOptions> drawopt;
     // Skip drawing if option is turned off
     if (!drawopt->fShowMCTruthText) return;
-
+  
     std::vector<const simb::MCTruth*> mctruth;
     this->GetMCTruth(evt, mctruth);
     
@@ -159,112 +155,113 @@ SimulationDrawer::SimulationDrawer()
         }
         TLatex& latex = view->AddLatex(0.03, 0.2, mctext.c_str());
         latex.SetTextSize(0.6);
-
+  
     } // loop on i mctruth objects
-  }
+}
 
-  //......................................................................
+//......................................................................
 
-  void SimulationDrawer::MCTruthLongText(const art::Event& evt,
-					 evdb::View2D* /*view*/) 
-  {
-      if( evt.isRealData() ) return;
+void SimulationDrawer::MCTruthLongText(const art::Event& evt,
+				 evdb::View2D* /*view*/)
+{
+    if( evt.isRealData() ) return;
 
-      art::ServiceHandle<evd::SimulationDrawingOptions> drawopt;
-      // Skip drawing if option is turned off
-      if (!drawopt->fShowMCTruthText) return;
+    art::ServiceHandle<evd::SimulationDrawingOptions> drawopt;
+    // Skip drawing if option is turned off
+    if (!drawopt->fShowMCTruthText) return;
 
-      std::vector<const simb::MCTruth*> mctruth;
-      this->GetMCTruth(evt, mctruth);
-      std::cout<<"\nMCTruth Ptcl trackID            PDG      P      T   Moth  Process\n";
-      for (unsigned int i=0; i<mctruth.size(); ++i) {
-          for (int j=0; j<mctruth[i]->NParticles(); ++j) {
-            const simb::MCParticle& p = mctruth[i]->GetParticle(j);
-            if(p.StatusCode() == 0 || p.StatusCode() == 1) {
-              int KE = 1000 * (p.E() - p.Mass());
-              std::cout<<std::right<<std::setw(7)<<i<<std::setw(5)<<j
-              <<std::setw(8)<<p.TrackId()
-              <<" "<<std::setw(14)<<Style::LatexName(p.PdgCode())
-              <<std::setw(7)<<int(1000 * p.P())
-              <<std::setw(7)<<KE<<std::setw(7)<<p.Mother()
-              <<" "<<p.Process()
-              <<"\n";
-            }
+    std::vector<const simb::MCTruth*> mctruth;
+    this->GetMCTruth(evt, mctruth);
+    std::cout<<"\nMCTruth Ptcl trackID            PDG      P      T   Moth  Process\n";
+    for (unsigned int i=0; i<mctruth.size(); ++i) {
+        for (int j=0; j<mctruth[i]->NParticles(); ++j) {
+          const simb::MCParticle& p = mctruth[i]->GetParticle(j);
+          if(p.StatusCode() == 0 || p.StatusCode() == 1) {
+            int KE = 1000 * (p.E() - p.Mass());
+            std::cout<<std::right<<std::setw(7)<<i<<std::setw(5)<<j
+            <<std::setw(8)<<p.TrackId()
+            <<" "<<std::setw(14)<<Style::LatexName(p.PdgCode())
+            <<std::setw(7)<<int(1000 * p.P())
+            <<std::setw(7)<<KE<<std::setw(7)<<p.Mother()
+            <<" "<<p.Process()
+            <<"\n";
+          }
 /*
                 std::cout << Style::LatexName(p.PdgCode())
                   << "\t\t" << p.E() << " GeV"
                   << "\t"   << "(" << p.P() << " GeV/c)"
                   << std::endl;
 */
-          } // loop on j particles in list
-      }
-    std::cout<<"Note: Momentum, P, and kinetic energy, T, in MeV/c\n";
-  } // MCTruthLongText
+        } // loop on j particles in list
+    }
+  std::cout<<"Note: Momentum, P, and kinetic energy, T, in MeV/c\n";
+} // MCTruthLongText
 
 
-  //......................................................................
-  //this is the method you would use to color code hits by the MC truth pdg value
-  void SimulationDrawer::MCTruthVectors2D(const art::Event& evt,
-                                          evdb::View2D*     view,
-                                          unsigned int      plane)
-  {
+//......................................................................
+//this is the method you would use to color code hits by the MC truth pdg value
+void SimulationDrawer::MCTruthVectors2D(const art::Event& evt,
+                                        evdb::View2D*     view,
+                                        unsigned int      plane)
+{
     if( evt.isRealData() ) return;
-
+  
     art::ServiceHandle<evd::SimulationDrawingOptions> drawopt;
     // If the option is turned off, there's nothing to do
     if (!drawopt->fShowMCTruthVectors) return;
-
+  
     detinfo::DetectorProperties const* detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
-
+  
     art::ServiceHandle<geo::Geometry>          geo;
     art::ServiceHandle<evd::RawDrawingOptions> rawopt;
     // get the x position of the plane in question
     double xyz[3]  = {0.};
     double xyz2[3] = {0.};
-
+  
     // Unpack and draw the MC vectors
     std::vector<const simb::MCTruth*> mctruth;
     this->GetMCTruth(evt, mctruth);
     
-    for (size_t i = 0; i < mctruth.size(); ++i) {
-      if (mctruth[i]->Origin() == simb::kCosmicRay) continue;
-      for (int j = 0; j < mctruth[i]->NParticles(); ++j) {
-	const simb::MCParticle& p = mctruth[i]->GetParticle(j);
-	
-	// Skip all but incoming and out-going particles
-	if (!(p.StatusCode()==0 || p.StatusCode()==1)) continue;
-
-	double r  = p.P()*10.0;           // Scale length so 10 cm = 1 GeV/c
-
-	if (r < 0.1) continue;            // Skip very short particles
-	if (p.StatusCode() == 0) r = -r;  // Flip for incoming particles
-
-  	xyz[0]  = p.Vx();
-	xyz[1]  = p.Vy();
-	xyz[2]  = p.Vz();
-	xyz2[0] = xyz[0] + r * p.Px()/p.P();
-	xyz2[1] = xyz[1] + r * p.Py()/p.P();
-	xyz2[2] = xyz[2] + r * p.Pz()/p.P();
-		
-	double w1 = geo->WireCoordinate(xyz[1], xyz[2], (int)plane, rawopt->fTPC, rawopt->fCryostat);
-	double w2 = geo->WireCoordinate(xyz2[1], xyz2[2], (int)plane, rawopt->fTPC, rawopt->fCryostat);
-	
-        double time = detprop->ConvertXToTicks(xyz[0]+p.T()*detprop->DriftVelocity()*1e-3, (int)plane, rawopt->fTPC, rawopt->fCryostat);
-        double time2 = detprop->ConvertXToTicks(xyz2[0]+p.T()*detprop->DriftVelocity()*1e-3, (int)plane, rawopt->fTPC, rawopt->fCryostat);
-
-	if(rawopt->fAxisOrientation < 1){
-	  TLine& l = view->AddLine(w1, time, w2, time2);
-	  evd::Style::FromPDG(l, p.PdgCode());
-	}
-	else{
-	  TLine& l = view->AddLine(time, w1, time2, w2);
-	  evd::Style::FromPDG(l, p.PdgCode());
-	}
-
-      } // loop on j particles in list
+    for (size_t i = 0; i < mctruth.size(); ++i)
+    {
+        if (mctruth[i]->Origin() == simb::kCosmicRay) continue;
+        for (int j = 0; j < mctruth[i]->NParticles(); ++j)
+        {
+            const simb::MCParticle& p = mctruth[i]->GetParticle(j);
+        
+            // Skip all but incoming and out-going particles
+            if (!(p.StatusCode()==0 || p.StatusCode()==1)) continue;
+        
+            double r  = p.P()*10.0;           // Scale length so 10 cm = 1 GeV/c
+        
+            if (r < 0.1) continue;            // Skip very short particles
+            if (p.StatusCode() == 0) r = -r;  // Flip for incoming particles
+        
+            xyz[0]  = p.Vx();
+            xyz[1]  = p.Vy();
+            xyz[2]  = p.Vz();
+            xyz2[0] = xyz[0] + r * p.Px()/p.P();
+            xyz2[1] = xyz[1] + r * p.Py()/p.P();
+            xyz2[2] = xyz[2] + r * p.Pz()/p.P();
+        
+            double w1 = geo->WireCoordinate(xyz[1], xyz[2], (int)plane, rawopt->fTPC, rawopt->fCryostat);
+            double w2 = geo->WireCoordinate(xyz2[1], xyz2[2], (int)plane, rawopt->fTPC, rawopt->fCryostat);
+        
+            double time = detprop->ConvertXToTicks(xyz[0]+p.T()*detprop->DriftVelocity()*1e-3, (int)plane, rawopt->fTPC, rawopt->fCryostat);
+            double time2 = detprop->ConvertXToTicks(xyz2[0]+p.T()*detprop->DriftVelocity()*1e-3, (int)plane, rawopt->fTPC, rawopt->fCryostat);
+    
+            if(rawopt->fAxisOrientation < 1){
+                TLine& l = view->AddLine(w1, time, w2, time2);
+                evd::Style::FromPDG(l, p.PdgCode());
+            }
+            else{
+                TLine& l = view->AddLine(time, w1, time2, w2);
+                evd::Style::FromPDG(l, p.PdgCode());
+            }
+        } // loop on j particles in list
     } // loop on truths
 
-  }
+}
 
   //......................................................................
   //this method draws the true particle trajectories in 3D
@@ -276,9 +273,6 @@ void SimulationDrawer::MCTruth3D(const art::Event& evt,
     art::ServiceHandle<evd::SimulationDrawingOptions> drawopt;
     // If the option is turned off, there's nothing to do
     if (!drawopt->fShowMCTruthTrajectories) return;
-    
-    // Space charge service...
-//    const spacecharge::SpaceCharge* spaceCharge = lar::providerFrom<spacecharge::SpaceChargeService>();
 
     //  geo::GeometryCore const* geom = lar::providerFrom<geo::Geometry>();
     detinfo::DetectorProperties const* theDetector = lar::providerFrom<detinfo::DetectorPropertiesService>();
@@ -295,7 +289,7 @@ void SimulationDrawer::MCTruth3D(const art::Event& evt,
     int neutrinoColor(38);
     
     // Use the LArVoxelList to get the true energy deposition locations as opposed to using MCTrajectories
-    const sim::LArVoxelList voxels = sim::SimListUtils::GetLArVoxelList(evt,drawopt->fG4ModuleLabel);
+    const sim::LArVoxelList voxels = sim::SimListUtils::GetLArVoxelList(evt,drawopt->fG4ModuleLabel.label());
       
     mf::LogDebug("SimulationDrawer") << "Starting loop over " << plist.size() << " McParticles, voxel list size is " << voxels.size() << std::endl;
       
@@ -344,10 +338,10 @@ void SimulationDrawer::MCTruth3D(const art::Event& evt,
                 double xOffset(0.); //(theDetector->ConvertTicksToX(g4Ticks, 0, 0, 0));
                 double xPosMinTick = 0.;
                 double xPosMaxTick = std::numeric_limits<double>::max();
-		
+
                 // collect the points from this particle
                 int numTrajPoints = mcTraj.size();
-		
+
                 std::unique_ptr<double[]> hitPositions(new double[3*numTrajPoints]);
                 int                       hitCount(0);
             
@@ -564,11 +558,11 @@ void SimulationDrawer::MCTruth3D(const art::Event& evt,
 
   //......................................................................
   //this method draws the true particle trajectories in 3D Ortho view.
-  void SimulationDrawer::MCTruthOrtho(const art::Event& evt,
-				      evd::OrthoProj_t  proj,
-				      double            msize,
-				      evdb::View2D*     view)
-  {
+void SimulationDrawer::MCTruthOrtho(const art::Event& evt,
+                                    evd::OrthoProj_t  proj,
+                                    double            msize,
+                                    evdb::View2D*     view)
+{
     if( evt.isRealData() ) return;
 
     art::ServiceHandle<evd::SimulationDrawingOptions> drawopt;
@@ -595,7 +589,7 @@ void SimulationDrawer::MCTruth3D(const art::Event& evt,
 //    double zMaximum(geom->DetLength());
     
     // Use the LArVoxelList to get the true energy deposition locations as opposed to using MCTrajectories
-    const sim::LArVoxelList voxels = sim::SimListUtils::GetLArVoxelList(evt,drawopt->fG4ModuleLabel);
+    const sim::LArVoxelList voxels = sim::SimListUtils::GetLArVoxelList(evt,drawopt->fG4ModuleLabel.label());
     
     mf::LogDebug("SimulationDrawer") << "Starting loop over " << plist.size() << " McParticles, voxel list size is " << voxels.size() << std::endl;
     
@@ -663,46 +657,44 @@ void SimulationDrawer::MCTruth3D(const art::Event& evt,
                     if (xPos < minx || xPos > maxx || yPos < miny || yPos > maxy|| zPos < minz || zPos > maxz) continue;
                                         
                     if ((xPos < tpcminx) || (xPos > tpcmaxx))
-		    {
-		        vtx[0] = xPos; vtx[1] = yPos; vtx[2] = zPos; 
-                    	geo::TPCID tpcid = geom->FindTPCAtPosition(vtx);                  	
-                    	unsigned int cryo = geom->FindCryostatAtPosition(vtx);
-                    	
-                    	if (tpcid.isValid) 
-                    	{
-                    		unsigned int tpc = tpcid.TPC;
-                    		const geo::TPCGeo& tpcgeo = geom->GetElement(tpcid);	    	
-		    		tpcminx = tpcgeo.MinX(); tpcmaxx = tpcgeo.MaxX();
-                   		
-                    		coeff = theDetector->GetXTicksCoefficient(tpc, cryo);
-                    		readoutwindowsize = theDetector->ConvertTicksToX(theDetector->ReadOutWindowSize(), 0, tpc, cryo);
-                    		
-		    		// The following is meant to get the correct offset for drawing the particle trajectory
-                    		// In particular, the cosmic rays will not be correctly placed without this		    
-		    		g4Ticks = detClocks->TPCG4Time2Tick(mcPart->T())
-		    			+theDetector->GetXTicksOffset(0, tpc, cryo)
-		    			-theDetector->TriggerOffset();
-		    		
-		    		xOffset = theDetector->ConvertTicksToX(g4Ticks, 0, tpc, cryo);
-		    	}
-		    	else { xOffset = 0; tpcminx = 1.0; tpcmaxx = -1.0; coeff = 0.0; readoutwindowsize = 0.0;}
-		    }
-   		    	    
-		    // Now move the hit position to correspond to the timing
+                    {
+                        vtx[0] = xPos; vtx[1] = yPos; vtx[2] = zPos;
+                        geo::TPCID tpcid = geom->FindTPCAtPosition(vtx);
+                        unsigned int cryo = geom->FindCryostatAtPosition(vtx);
+                    
+                        if (tpcid.isValid)
+                        {
+                            unsigned int tpc = tpcid.TPC;
+                            const geo::TPCGeo& tpcgeo = geom->GetElement(tpcid);
+                            tpcminx = tpcgeo.MinX(); tpcmaxx = tpcgeo.MaxX();
+                    
+                            coeff = theDetector->GetXTicksCoefficient(tpc, cryo);
+                            readoutwindowsize = theDetector->ConvertTicksToX(theDetector->ReadOutWindowSize(), 0, tpc, cryo);
+                        
+                            // The following is meant to get the correct offset for drawing the particle trajectory
+                            // In particular, the cosmic rays will not be correctly placed without this
+                            g4Ticks = detClocks->TPCG4Time2Tick(mcPart->T()) + theDetector->GetXTicksOffset(0, tpc, cryo) - theDetector->TriggerOffset();
+                
+                            xOffset = theDetector->ConvertTicksToX(g4Ticks, 0, tpc, cryo);
+                        }
+                        else { xOffset = 0; tpcminx = 1.0; tpcmaxx = -1.0; coeff = 0.0; readoutwindowsize = 0.0;}
+                    }
+                
+                    // Now move the hit position to correspond to the timing
                     xPos += xOffset;
                     
                     bool inreadoutwindow = false;
-   		    if (coeff < 0) 
-   		    {
-   		    	if ((xPos > readoutwindowsize) && (xPos < tpcmaxx)) inreadoutwindow = true;
-   		    }
+                    if (coeff < 0)
+                    {
+                        if ((xPos > readoutwindowsize) && (xPos < tpcmaxx)) inreadoutwindow = true;
+                    }
                     else if (coeff > 0) 
-   		    {
-   		    	if ((xPos > tpcminx) && (xPos < readoutwindowsize)) inreadoutwindow = true;	
-   		    }
-   		    		    
+                    {
+                        if ((xPos > tpcminx) && (xPos < readoutwindowsize)) inreadoutwindow = true;
+                    }
+                    
                     if (!inreadoutwindow) continue;
-                	
+                
                     // Check fiducial limits
                     if (xPos > xMinimum && xPos < xMaximum)
                     {
@@ -751,11 +743,11 @@ void SimulationDrawer::MCTruth3D(const art::Event& evt,
                 // It can be in some instances that mcPart here could be zero.
                 const simb::MCParticle* mcPart = trackToMcParticleMap[trackId];
                              
-	        partToPosMap[mcPart].push_back(std::vector<double>(3));
+                partToPosMap[mcPart].push_back(std::vector<double>(3));
                 
-        	partToPosMap[mcPart].back()[0] = vxd.VoxelID().X();
-        	partToPosMap[mcPart].back()[1] = vxd.VoxelID().Y();
-        	partToPosMap[mcPart].back()[2] = vxd.VoxelID().Z();
+                partToPosMap[mcPart].back()[0] = vxd.VoxelID().X();
+                partToPosMap[mcPart].back()[1] = vxd.VoxelID().Y();
+                partToPosMap[mcPart].back()[2] = vxd.VoxelID().Z();
             }
         } // end if this track id is in the current voxel
     }// end loop over voxels
@@ -874,8 +866,7 @@ void SimulationDrawer::MCTruth3D(const art::Event& evt,
 
   //......................................................................
 
-  int SimulationDrawer::GetMCTruth(const art::Event& evt,
-				   std::vector<const simb::MCTruth*>& mcvec) 
+  int SimulationDrawer::GetMCTruth(const art::Event& evt, std::vector<const simb::MCTruth*>& mcvec)
   {
     mcvec.clear();
 

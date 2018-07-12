@@ -38,7 +38,6 @@ public:
     
     // Access to the drawing utilities
     HeaderDrawer*                HeaderDraw();
-    //GeometryDrawer*   	       GeometryDraw();
     evd_tool::IExperimentDrawer* GeometryDraw();
     SimulationDrawer* 	         SimulationDraw();
     RawDataDrawer*    	         RawDataDraw();
@@ -52,7 +51,6 @@ protected:
     
     TPad*                fPad;              ///< The ROOT graphics pad
     HeaderDrawer*     	 fHeaderDraw;       ///< Drawer for event header info
-    //GeometryDrawer*      fGeometryDraw;     ///< Drawer for detector geometry
     IExperimentDrawerPtr fGeometryDraw;     ///< Drawer for detector geometry
     SimulationDrawer* 	 fSimulationDraw;   ///< Drawer for simulation objects
     RawDataDrawer*    	 fRawDataDraw;      ///< Drawer for raw data

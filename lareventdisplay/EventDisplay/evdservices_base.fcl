@@ -123,6 +123,7 @@ standard_simdrawingopt:
  Draw3DTools:
  {
    Drawer3D:              @local::larvoxel_drawer3D
+   SimEnergyDep3D:        @local::simenergydeposit_drawer3D
  }
 }
 

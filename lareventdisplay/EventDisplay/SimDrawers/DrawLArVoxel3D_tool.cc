@@ -47,14 +47,6 @@ public:
     
 private:
     int GetMCTruth(const art::Event&, std::vector<const simb::MCTruth*>&) const;
-    
-    double fMinX;
-    double fMaxX;
-    double fMinY;
-    double fMaxY;
-    double fMinZ;
-    double fMaxZ;
-
 };
     
 //----------------------------------------------------------------------
@@ -64,37 +56,6 @@ DrawLArVoxel3D::DrawLArVoxel3D(const fhicl::ParameterSet& pset)
 //    fNumPoints     = pset.get< int>("NumPoints",     1000);
 //    fFloatBaseline = pset.get<bool>("FloatBaseline", false);
     // For now only draw cryostat=0.
-    art::ServiceHandle<geo::Geometry> geom;
-    fMinX = 1e9;
-    fMaxX = -1e9;
-    fMinY = 1e9;
-    fMaxY = -1e9;
-    fMinZ = 1e9;
-    fMaxZ = -1e9;
-    
-    // This is looking to find the range of the complete active volume... this may not be the
-    // best way to do this...
-    for(size_t cryoIdx = 0; cryoIdx < geom->Ncryostats(); cryoIdx++)
-    {
-        const geo::CryostatGeo& cryoGeo = geom->Cryostat(cryoIdx);
-        
-        for (size_t tpcIdx = 0; tpcIdx < cryoGeo.NTPC(); tpcIdx++)
-        {
-            const geo::TPCGeo& tpc = cryoGeo.TPC(tpcIdx);
-            
-            mf::LogDebug("SimulationDrawer") << "Cryo/TPC idx: " << cryoIdx << "/" << tpcIdx << ", TPC center: " << tpc.GetCenter()[0] << ", " << tpc.GetCenter()[1] << ", " << tpc.GetCenter()[2] << std::endl;
-            mf::LogDebug("SimulationDrawer") << "         TPC Active center: " << tpc.GetActiveVolumeCenter()[0] << ", " << tpc.GetActiveVolumeCenter()[1] << ", " << tpc.GetActiveVolumeCenter()[2] << ", H/W/L: " << tpc.ActiveHalfHeight() << "/" << tpc.ActiveHalfWidth() << "/" << tpc.ActiveLength() << std::endl;
-            
-            if (fMinX > tpc.GetCenter()[0] - tpc.HalfWidth())   fMinX = tpc.GetCenter()[0] - tpc.HalfWidth();
-            if (fMaxX < tpc.GetCenter()[0] + tpc.HalfWidth())   fMaxX = tpc.GetCenter()[0] + tpc.HalfWidth();
-            if (fMinY > tpc.GetCenter()[1] - tpc.HalfHeight())  fMinY = tpc.GetCenter()[1] - tpc.HalfHeight();
-            if (fMaxY < tpc.GetCenter()[1] + tpc.HalfHeight())  fMaxY = tpc.GetCenter()[1] + tpc.HalfHeight();
-            if (fMinZ > tpc.GetCenter()[2] - tpc.Length()/2.)   fMinZ = tpc.GetCenter()[2] - tpc.Length()/2.;
-            if (fMaxZ < tpc.GetCenter()[2] + tpc.Length()/2.)   fMaxZ = tpc.GetCenter()[2] + tpc.Length()/2.;
-            
-            mf::LogDebug("SimulationDrawer") << "        minx/maxx: " << fMinX << "/" << fMaxX << ", miny/maxy: " << fMinY << "/" << fMaxY << ", minz/miny: " << fMinZ << "/" << fMaxZ << std::endl;
-        }
-    }
 
     return;
 }

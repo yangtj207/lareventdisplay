@@ -37,7 +37,7 @@ namespace evd {
     fG4ModuleLabel           = pset.get< art::InputTag >      ("G4ModuleLabel"                );
     fSimEnergyLabel          = pset.get< art::InputTag >      ("SimEnergyLabel"               );
       
-    f3DDrawerParams          = pset.get< fhicl::ParameterSet >("Drawer3D"                     );
+    f3DDrawerParams          = pset.get< fhicl::ParameterSet >("Draw3DTools"                  );
   }
   
 }

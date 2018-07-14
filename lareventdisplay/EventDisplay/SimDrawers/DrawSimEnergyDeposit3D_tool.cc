@@ -90,7 +90,7 @@ void DrawSimEnergyDeposit3D::Draw(const art::Event& evt, evdb::View3D* view) con
     
     evt.getByLabel(drawOpt->fSimEnergyLabel, simEnergyDepositHandle);
     
-    if (simEnergyDepositHandle->size() > 0)
+    if (simEnergyDepositHandle.isValid() && simEnergyDepositHandle->size() > 0)
     {
         // Define a couple of colors for neutrals and if we gray it out...
 //    int neutralColor(12);
@@ -113,7 +113,7 @@ void DrawSimEnergyDeposit3D::Draw(const art::Event& evt, evdb::View3D* view) con
             hitPositions[3*hitCount + 2] = 0.5 * (startPoint.Z() + stopPoint.Z());
             hitCount++;
     
-            std::cout << "--> Hit: " << hitCount << " x,y,z: " << 0.5 * (startPoint.X() + stopPoint.X()) << "," << 0.5 * (startPoint.Y() + stopPoint.Y()) << "," << 0.5 * (startPoint.Z() + stopPoint.Z()) << ", # e: " <<     simEnergyDeposit.NumElectrons() << std::endl;
+            std::cout << "--> Hit: " << hitCount << " x,y,z: " << 0.5 * (startPoint.X() + stopPoint.X()) << "," << 0.5 * (startPoint.Y() + stopPoint.Y()) << "," << 0.5 * (startPoint.Z() + stopPoint.Z()) << ", # e: " <<     simEnergyDeposit.NumElectrons() << ", # gamma: " << simEnergyDeposit.NumPhotons() << ", edep: " << simEnergyDeposit.Energy() << std::endl;
         }
         
         int colorIdx(3);

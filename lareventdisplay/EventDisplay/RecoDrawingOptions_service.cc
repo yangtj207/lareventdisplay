@@ -30,6 +30,7 @@ void RecoDrawingOptions::reconfigure(fhicl::ParameterSet const& pset)
 {
     fDrawHits                  = pset.get< int                        >("DrawHits"                 );
     fDrawClusters    	       = pset.get< int                        >("DrawClusters"   	       );
+    fDrawSlices = pset.get<int>("DrawSlices", 0);
     fDrawPFParticles           = pset.get< int                        >("DrawPFParticles"          );
     fDrawSpacePoints   	       = pset.get< int                        >("DrawSpacePoints"          );
     fDrawProngs      	       = pset.get< int                        >("DrawProngs"     	       );
@@ -52,6 +53,7 @@ void RecoDrawingOptions::reconfigure(fhicl::ParameterSet const& pset)
     fDrawTrackVertexAssns      = pset.get< bool                       >("DrawTrackVertexAssns"     );
     fDraw3DSpacePointHeatMap   = pset.get< bool                       >("Draw3DSpacePointHeatMap"  );
     fHitLabels                 = pset.get< std::vector<art::InputTag> >("HitModuleLabels"          );
+    if(pset.has_key("SliceModuleLabels")) fSliceLabels = pset.get< std::vector<art::InputTag> >("SliceModuleLabels");
     fSpacePointLabels 	       = pset.get< std::vector<art::InputTag> >("SpacePointModuleLabels"   );
     fProngLabels      	       = pset.get< std::vector<art::InputTag> >("ProngModuleLabels"        );
     fEndPoint2DLabels 	       = pset.get< std::vector<art::InputTag> >("EndPoint2DModuleLabels"   );

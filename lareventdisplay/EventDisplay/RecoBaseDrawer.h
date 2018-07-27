@@ -13,6 +13,7 @@
 
 #include "lareventdisplay/EventDisplay/OrthoProj.h"
 #include "lardataobj/RecoBase/SpacePoint.h"
+#include "lardataobj/RecoBase/Slice.h"
 
 class TVector3;
 class TH1F;
@@ -113,6 +114,7 @@ public:
 			      double        cosy,
                               int           color,
                               evdb::View2D* view);
+  void Slice2D(const art::Event& evt, evdb::View2D* view, unsigned int plane);
     void Cluster2D(const art::Event& evt,
 		           evdb::View2D*     view,
 		           unsigned int      plane);
@@ -305,6 +307,7 @@ public:
                 const art::InputTag&            which,
 		        std::vector<const recob::Hit*>& hits,
 		        unsigned int                    plane);
+  int GetSlices(const art::Event& evt, const art::InputTag& which, art::PtrVector<recob::Slice>& slices);
     int GetClusters(const art::Event&               evt,
 		            const art::InputTag&            which,
 		            art::PtrVector<recob::Cluster>& clust);

@@ -827,6 +827,80 @@ void RecoBaseDrawer::BezierTrack3D(const art::Event& evt,
     }
 }
 
+  //......................................................................
+  void RecoBaseDrawer::Slice2D(const art::Event& evt, evdb::View2D* view, unsigned int plane)
+  {
+    // Color code hits associated with Slices
+    art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
+    art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;    
+    if (rawOpt->fDrawRawDataOrCalibWires < 1) return;
+    if (recoOpt->fDrawSlices == 0) return;
+    
+    art::ServiceHandle<geo::Geometry> geo;
+    detinfo::DetectorProperties const* detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
+//    geo::View_t gview = geo->TPC(rawOpt->fTPC).Plane(plane).View();
+    
+    static bool first = true;
+    if(first) {
+      std::cout<<"******** DrawSlices: 0 = none, 1 = color coded, 2 = color coded + ID at slice center\n";
+      std::cout<<"  3 = open circle at slice center with size proportional to the AspectRatio. Closed circles";
+      std::cout<<"      at the slice ends with connecting dotted lines\n";
+      first = false;
+    }
+    unsigned int c = rawOpt->fCryostat;
+    unsigned int t = rawOpt->fTPC;
+    
+    for(size_t imod = 0; imod < recoOpt->fSliceLabels.size(); ++imod) {
+      art::InputTag const which = recoOpt->fSliceLabels[imod];
+      art::PtrVector<recob::Slice> slices;
+      this->GetSlices(evt, which, slices);
+      if(slices.size() < 1) continue;
+      art::FindMany<recob::Hit> fmh(slices, evt, which);
+      for(size_t isl = 0; isl < slices.size(); ++isl) {
+        int slcID(std::abs(slices[isl]->ID()));
+        int color(slcID%evd::kNCOLS);
+        if(recoOpt->fDrawSlices < 3) {
+          // draw color-coded hits
+          std::vector<const recob::Hit*> hits = fmh.at(isl);
+          if (this->Hit2D(hits, color, view, false) < 1) continue;
+          if(recoOpt->fDrawSlices == 2) {
+            double tick = detprop->ConvertXToTicks(slices[isl]->Center().X(), plane, t, c);
+            double wire = geo->WireCoordinate(slices[isl]->Center().Y(),slices[isl]->Center().Z(),plane,t,c);
+            std::string s = std::to_string(slcID);
+            char const* txt = s.c_str();
+            TText& slcID = view->AddText(wire, tick, txt);
+            slcID.SetTextSize(0.05);
+            slcID.SetTextColor(color);
+          } // draw ID
+        } else {
+          // draw the center, end points and direction vector
+          double tick = detprop->ConvertXToTicks(slices[isl]->Center().X(), plane, t, c);
+          double wire = geo->WireCoordinate(slices[isl]->Center().Y(),slices[isl]->Center().Z(),plane,t,c);
+          float markerSize = 1;
+          if(slices[isl]->AspectRatio() > 0) {
+            markerSize = 1 / slices[isl]->AspectRatio();
+            if(markerSize > 3) markerSize = 3;
+          }
+          TMarker& ctr = view->AddMarker(wire, tick, color, 24, markerSize);
+          ctr.SetMarkerColor(color);
+          // npts, color, width, style
+          TPolyLine& pline = view->AddPolyLine(2, color, 2, 3);
+          tick = detprop->ConvertXToTicks(slices[isl]->End0Pos().X(), plane, t, c);
+          wire = geo->WireCoordinate(slices[isl]->End0Pos().Y(),slices[isl]->End0Pos().Z(),plane,t,c);
+          TMarker& end0 = view->AddMarker(wire, tick, color, 20, 1.0);
+          end0.SetMarkerColor(color);
+          pline.SetPoint(0, wire, tick);
+          tick = detprop->ConvertXToTicks(slices[isl]->End1Pos().X(), plane, t, c);
+          wire = geo->WireCoordinate(slices[isl]->End1Pos().Y(),slices[isl]->End1Pos().Z(),plane,t,c);
+          TMarker& end1 = view->AddMarker(wire, tick, color, 20, 1.0);
+          end1.SetMarkerColor(color);
+          pline.SetPoint(1, wire, tick);
+        }
+      } // isl
+      
+    } // imod
+
+  } // Slice2D
 //......................................................................
 void RecoBaseDrawer::Cluster2D(const art::Event& evt,
                                evdb::View2D*     view,
@@ -3620,6 +3694,31 @@ int RecoBaseDrawer::GetHits(const art::Event&               evt,
 
     return hits.size();
 }
+
+  //......................................................................
+  int RecoBaseDrawer::GetSlices(const art::Event& evt, const art::InputTag& which,
+                                art::PtrVector<recob::Slice>& slices)
+  {
+    slices.clear();
+    art::PtrVector<recob::Slice> temp;
+    
+    art::Handle< std::vector<recob::Slice> > slcCol;
+    
+    try{
+      evt.getByLabel(which, slcCol);
+      temp.reserve(slcCol->size());
+      for(unsigned int i = 0; i < slcCol->size(); ++i){
+        art::Ptr<recob::Slice> slc(slcCol, i);
+        temp.push_back(slc);
+      }
+      temp.swap(slices);
+    }
+    catch(cet::exception& e){
+      writeErrMsg("GetSlices", e);
+    }
+    
+    return slices.size();
+  }
 
 //......................................................................
 int RecoBaseDrawer::GetClusters(const art::Event&               evt, 

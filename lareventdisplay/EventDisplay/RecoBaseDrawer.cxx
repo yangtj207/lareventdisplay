@@ -858,11 +858,17 @@ void RecoBaseDrawer::BezierTrack3D(const art::Event& evt,
       art::FindMany<recob::Hit> fmh(slices, evt, which);
       for(size_t isl = 0; isl < slices.size(); ++isl) {
         int slcID(std::abs(slices[isl]->ID()));
-        int color(slcID%evd::kNCOLS);
+        int color(evd::kColor[slcID%evd::kNCOLS]);
         if(recoOpt->fDrawSlices < 3) {
           // draw color-coded hits
           std::vector<const recob::Hit*> hits = fmh.at(isl);
-          if (this->Hit2D(hits, color, view, false) < 1) continue;
+          std::vector<const recob::Hit*> hits_on_plane;
+          for (auto hit : hits){
+            if (hit->WireID().Plane == plane){
+              hits_on_plane.push_back(hit);
+            }
+          }
+          if (this->Hit2D(hits_on_plane, color, view, false) < 1) continue;
           if(recoOpt->fDrawSlices == 2) {
             double tick = detprop->ConvertXToTicks(slices[isl]->Center().X(), plane, t, c);
             double wire = geo->WireCoordinate(slices[isl]->Center().Y(),slices[isl]->Center().Z(),plane,t,c);

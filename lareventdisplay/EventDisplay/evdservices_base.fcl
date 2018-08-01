@@ -112,6 +112,7 @@ standard_simdrawingopt:
  ShowMCTruthTrajectories: true       # toggle showing of MC truth trajectories in 3D, all depositions
  ShowMCTruthColors:       true       # toggle to use PDG colors for particles
  ShowMCTruthFullSize:     true       # toggle to use larger size markers for visibility
+ ShowScintillationLight:  false      # toggle to draw all low energy photons (if they are there, they are plenty++)
  MinimumEnergyDeposition: 5e-5       # in GeV
  G4ModuleLabel:           "largeant" # module labels producing sim::SimChannel objects
 }

@@ -30,6 +30,7 @@ namespace evd {
     bool        fShowMCTruthTrajectories;
     bool        fShowMCTruthColors;
     bool        fShowMCTruthFullSize;
+    bool        fShowScintillationLight = false; ///< Whether to draw low energy light (default: no).
     double      fMinEnergyDeposition;
     std::string fG4ModuleLabel;           ///< module label producing sim::SimChannel objects
 

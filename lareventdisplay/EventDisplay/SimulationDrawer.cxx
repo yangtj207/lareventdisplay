@@ -355,6 +355,11 @@ void SimulationDrawer::MCTruth3D(const art::Event& evt,
     // If the option is turned off, there's nothing to do
     if (!drawopt->fShowMCTruthTrajectories) return;
     
+    // learn whether we want to draw the scintillation light too;
+    // in fact, we don't care whether it's scintillation or not,
+    // but it is photons with very low energy, close to the optical range
+    bool const fDrawLight = drawopt->fShowScintillationLight;
+    
     // Space charge service...
     const spacecharge::SpaceCharge* sce = lar::providerFrom<spacecharge::SpaceChargeService>();
 
@@ -377,6 +382,7 @@ void SimulationDrawer::MCTruth3D(const art::Event& evt,
     std::cout << "# samples: " << theDetector->NumberTimeSamples() << ", min/max X: " << xMinFromTicks << "/" << xMaxFromTicks << ", xMinimum/xMaximum: " << xMinimum << "/" << xMaximum << std::endl;
     
     // Define a couple of colors for neutrals and if we gray it out...
+    Color_t const scintillationColor = kMagenta;
     int neutralColor(12);
     int grayedColor(15);
     int neutrinoColor(38);
@@ -399,112 +405,158 @@ void SimulationDrawer::MCTruth3D(const art::Event& evt,
     std::map<int, const simb::MCParticle*> trackToMcParticleMap;
       
     // Should we display the trajectories too?
+    constexpr unsigned int MaxParticles = 100000000;
     double minPartEnergy(0.01);
-      
-    for(size_t p = 0; p < plist.size(); ++p)
-    {
-        trackToMcParticleMap[plist[p]->TrackId()] = plist[p];
+    
+    auto const* pDatabasePDG = TDatabasePDG::Instance();
+    
+    unsigned int nDrawnParticles = 0U;
+    for (const simb::MCParticle* mcPart: plist) {
+        trackToMcParticleMap[mcPart->TrackId()] = mcPart;
         
         // Quick loop through to draw trajectories...
-        if (drawopt->fShowMCTruthTrajectories)
-        {
-            // Is there an associated McTrajectory?
-            const simb::MCParticle*   mcPart = plist[p];
-            const simb::MCTrajectory& mcTraj = mcPart->Trajectory();
-            
-            int           pdgCode(mcPart->PdgCode());
-            int           colorIdx(evd::Style::ColorFromPDG(mcPart->PdgCode()));
-            TParticlePDG* partPDG(TDatabasePDG::Instance()->GetParticle(pdgCode));
-            double        partCharge = partPDG ? partPDG->Charge() : 0.;
-            double        partEnergy = mcPart->E();
-                                   
-            if (!drawopt->fShowMCTruthColors) colorIdx = grayedColor;
+        if (!drawopt->fShowMCTruthTrajectories) continue;
         
-            if (!mcTraj.empty() && partEnergy > minPartEnergy && mcPart->TrackId() < 100000000)
-            {
-                // The following is meant to get the correct offset for drawing the particle trajectory
-                // In particular, the cosmic rays will not be correctly placed without this
-                //double g4Ticks(detClocks->TPCG4Time2Tick(mcPart->T())+theDetector->GetXTicksOffset(0,0,0)-theDetector->TriggerOffset());
-                //double g4Ticks(detClocks->TPCG4Time2Tick(mcPart->T())+theDetector->GetXTicksOffset(0,0,0));
-                double g4Ticks(detClocks->TPCG4Time2Tick(mcPart->T()));
-                //double g4Ticks(detClocks->TPCG4Time2Tick(mcPart->T()));
-                double xOffset(0.); //(theDetector->ConvertTicksToX(g4Ticks, 0, 0, 0));
-                bool   xOffsetNotSet(true);
-		
-                // collect the points from this particle
-                int numTrajPoints = mcTraj.size();
-		
-                std::unique_ptr<double[]> hitPositions(new double[3*numTrajPoints]);
-                int                       hitCount(0);
-            
-                for(int hitIdx = 0; hitIdx < numTrajPoints; hitIdx++)
-                {
-                    double xPos = mcTraj.X(hitIdx);
-                    double yPos = mcTraj.Y(hitIdx);
-                    double zPos = mcTraj.Z(hitIdx);
-                
-                    // If the original simulated hit did not occur in the TPC volume then don't draw it
-                    if (xPos < minx || xPos > maxx || yPos < miny || yPos > maxy|| zPos < minz || zPos > maxz) continue;
-                    
-                    // Check xOffset state and set if necessary
-                    if (xOffsetNotSet)
-                    {
-                        double hitLocation[] = {xPos,yPos,zPos};
-                        
-                        try
-                        {
-                            const geo::CryostatGeo& cryoGeo = geom->PositionToCryostat(hitLocation);
-                            int                     tpcIdx  = cryoGeo.FindTPCAtPosition(hitLocation, 1.);
-                                
-                            xMinFromTicks = theDetector->ConvertTicksToX(0,0,tpcIdx,cryoGeo.ID().Cryostat);
-                            xMaxFromTicks = theDetector->ConvertTicksToX(theDetector->NumberTimeSamples(),0,tpcIdx,cryoGeo.ID().Cryostat);
-                            
-                            if (xMaxFromTicks < xMinFromTicks) std::swap(xMinFromTicks,xMaxFromTicks);
-
-                            xOffset       = xMinFromTicks - theDetector->ConvertTicksToX(g4Ticks, 0, tpcIdx, cryoGeo.ID().Cryostat);
-                            xOffsetNotSet = false;
-                            xOffset = 0.;
-                        }
-                        catch(...) {continue;}
-                    }
-                
-                    // Now move the hit position to correspond to the timing
-                    xPos += xOffset;
-                
-                    // Check fiducial limits
-                    if (xPos > xMinFromTicks && xPos < xMaxFromTicks)
-                    {
-                        // Check for space charge offsets
-                        if (sce->EnableSimEfieldSCE()) {
-                          auto gpt = geo::Point_t(xPos,yPos,zPos);
-                          double xoff = sce->GetPosOffsets(gpt).X();
-                          double yoff = sce->GetPosOffsets(gpt).Y();
-                          double zoff = sce->GetPosOffsets(gpt).Z();
-                          xPos -= xoff;
-                          yPos += yoff;
-                          zPos += zoff;
-                        }
-                        hitPositions[3*hitCount    ] = xPos;
-                        hitPositions[3*hitCount + 1] = yPos;
-                        hitPositions[3*hitCount + 2] = zPos;
-                        hitCount++;
-                    }
-                }
-                
-                TPolyLine3D& pl(view->AddPolyLine3D(1, colorIdx, 1, 1));
-                
-                // Draw neutrals as a gray dotted line to help fade into background a bit...
-                if (partCharge == 0.)
-                {
-                    pl.SetLineColor(neutralColor);
-                    pl.SetLineStyle(3);
-                    pl.SetLineWidth(1);
-                }
-                pl.SetPolyLine(hitCount, hitPositions.get(), "");
-            }
+        // Is there an associated McTrajectory?
+        const simb::MCTrajectory& mcTraj = mcPart->Trajectory();
+        if (mcTraj.empty()) continue;
+        
+        int           const pdgCode(mcPart->PdgCode());
+        int           const colorIdx
+        { drawopt->fShowMCTruthColors? evd::Style::ColorFromPDG(mcPart->PdgCode()): grayedColor };
+        TParticlePDG const* partPDG(pDatabasePDG->GetParticle(pdgCode));
+        double        const partCharge = partPDG ? partPDG->Charge() : 0.;
+        double        const partEnergy = mcPart->E();
+        
+        // is this a photon with less than 100 eV of energy?
+        // (LArG4 scintillation photons are "Rootini", PDG code 0... *burp*)
+        bool const isScintillationLight = ((pdgCode == 22) || (pdgCode == 0)) && (partEnergy < 1e-7);
+        
+        if (isScintillationLight) {
+            // we do not apply any threshold, but we draw it only if requested
+            if (!fDrawLight) continue;
         }
-    }
-      
+        else { // apply the "normal" threshold
+            if (partEnergy < minPartEnergy) continue;
+        }
+        
+        if (nDrawnParticles++ >= MaxParticles) {
+          if (nDrawnParticles == MaxParticles) {
+            mf::LogWarning("SimulationDrawer")
+              << "Only " << nDrawnParticles << "/" << plist.size()
+              << " MCParticle's will be displayed.";
+          }
+          continue; // too many!
+        }
+        
+        /*
+         * The following is meant to get the correct offset for drawing the particle trajectory
+         * In particular, the cosmic rays will not be correctly placed without this
+         * 
+         * More specifically, the true location of the cosmic ray betrays the
+         * expectation of the reader.
+         * When we look at an event, we expect that if two particles are close
+         * by, their observables (in our case, ionization tracks) will be as
+         * close. The event display projects into a static picture everything
+         * that happens at any time. This is not a big deal in a fast detector,
+         * where the time window can be short, but has consequences of mixing
+         * activity at different times for a LArTPC.
+         * The slowness of TPCs is a major problem for physics. Here we are
+         * facing a minor spin-off of that problem: if a pion is produced at a
+         * certain position x by the neutrino interaction, and then one
+         * millisecond later a cosmic rays passes at the same location, the
+         * display will show both at the same position x, but the detection
+         * will be delayed by the number of ticks the TDC counted in that one
+         * millisecond. Reconstruction will not be fooled by the close distance
+         * of the two tracks, but the display leads us to expect that confusion
+         * /should/ arise.
+         * 
+         */
+        //double g4Ticks(detClocks->TPCG4Time2Tick(mcPart->T())+theDetector->GetXTicksOffset(0,0,0)-theDetector->TriggerOffset());
+        //double g4Ticks(detClocks->TPCG4Time2Tick(mcPart->T())+theDetector->GetXTicksOffset(0,0,0));
+        double g4Ticks(detClocks->TPCG4Time2Tick(mcPart->T()));
+        //double g4Ticks(detClocks->TPCG4Time2Tick(mcPart->T()));
+        double xOffset(0.); //(theDetector->ConvertTicksToX(g4Ticks, 0, 0, 0));
+        bool   xOffsetNotSet(true);
+          // collect the points from this particle
+        int const numTrajPoints = mcTraj.size();
+
+        std::vector<double> hitPositions;
+        hitPositions.reserve(3*numTrajPoints);
+        std::size_t hitCount = 0U;
+        
+        
+        for(int hitIdx = 0; hitIdx < numTrajPoints; hitIdx++)
+        {
+            double xPos = mcTraj.X(hitIdx);
+            double yPos = mcTraj.Y(hitIdx);
+            double zPos = mcTraj.Z(hitIdx);
+        
+            // If the original simulated hit did not occur in the TPC volume then don't draw it
+            if (xPos < minx || xPos > maxx || yPos < miny || yPos > maxy|| zPos < minz || zPos > maxz) continue;
+            
+            // Check xOffset state and set if necessary
+            if (xOffsetNotSet)
+            {
+                try
+                {
+                    auto const* pTPC = geom->PositionToTPCptr(geo::Point_t(xPos, yPos, zPos));
+                    if (!pTPC) continue;
+                    
+                    geo::PlaneID const firstPlane { pTPC->ID(), 0 };
+                    xMinFromTicks = theDetector->ConvertTicksToX(0, firstPlane);
+                    xMaxFromTicks = theDetector->ConvertTicksToX(theDetector->NumberTimeSamples(), firstPlane);
+                    
+                    if (xMaxFromTicks < xMinFromTicks) std::swap(xMinFromTicks,xMaxFromTicks);
+
+                    xOffset       = xMinFromTicks - theDetector->ConvertTicksToX(g4Ticks, firstPlane);
+                    xOffsetNotSet = false;
+                    xOffset = 0.;  // ?!?
+                }
+                catch(...) {continue;}
+            }
+        
+            // Now move the hit position to correspond to the timing
+            xPos += xOffset;
+        
+            // Check fiducial limits
+            if (xPos > xMinFromTicks && xPos < xMaxFromTicks)
+            {
+                // Check for space charge offsets
+//                if (spaceCharge->EnableSimEfieldSCE())
+//                {
+//                    std::vector<double> offsetVec = spaceCharge->GetPosOffsets(xPos,yPos,zPos);
+//                    xPos += offsetVec[0] - 0.7;
+//                    yPos -= offsetVec[1];
+//                    zPos -= offsetVec[2];
+//                }
+                
+              hitPositions.push_back(xPos);
+              hitPositions.push_back(yPos);
+              hitPositions.push_back(zPos);
+              ++hitCount;
+            }
+        } // for hitIdx
+        
+        
+        TPolyLine3D& pl(view->AddPolyLine3D(1, colorIdx, 1, 1));
+        
+        // Draw neutrals as a gray dotted line to help fade into background a bit...
+        if (isScintillationLight) {
+            pl.SetLineColor(scintillationColor);
+            pl.SetLineStyle(kSolid);
+            pl.SetLineWidth(1);
+        }
+        else if (partCharge == 0.)
+        {
+            pl.SetLineColor(neutralColor);
+            pl.SetLineStyle(kDotted);
+            pl.SetLineWidth(1);
+        }
+        pl.SetPolyLine(hitCount, hitPositions.data(), "");
+    } // for mcPart
+    
+    
     // Now we set up and build the map between MCParticles and a vector of positions obtained from the voxels
     std::map<const simb::MCParticle*, std::vector<std::vector<double> > > partToPosMap;
       

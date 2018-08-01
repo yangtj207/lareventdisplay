@@ -361,7 +361,7 @@ void SimulationDrawer::MCTruth3D(const art::Event& evt,
     bool const fDrawLight = drawopt->fShowScintillationLight;
     
     // Space charge service...
-    const spacecharge::SpaceCharge* sce = lar::providerFrom<spacecharge::SpaceChargeService>();
+  //  const spacecharge::SpaceCharge* sce = lar::providerFrom<spacecharge::SpaceChargeService>();
 
     //  geo::GeometryCore const* geom = lar::providerFrom<geo::Geometry>();
     detinfo::DetectorProperties const* theDetector = lar::providerFrom<detinfo::DetectorPropertiesService>();

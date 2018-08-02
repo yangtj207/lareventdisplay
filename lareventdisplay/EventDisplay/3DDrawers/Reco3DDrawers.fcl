@@ -1,0 +1,13 @@
+BEGIN_PROLOG
+
+#larvoxel_drawer3D:
+#{
+#    tool_type:       DrawLArVoxel3D
+#}
+
+#simenergydeposit_drawer3D:
+#{
+#    tool_type:       DrawSimEnergyDeposit3D
+#}
+
+END_PROLOG

@@ -237,6 +237,7 @@ namespace evd{
                                     kSelectedColor,
                                     fView);
    
+      this->RecoBaseDraw()->  Slice2D               (*evt, fView, fPlane);
       this->RecoBaseDraw()->  Cluster2D             (*evt, fView, fPlane);
       this->RecoBaseDraw()->  EndPoint2D            (*evt, fView, fPlane);
       this->RecoBaseDraw()->  Prong2D               (*evt, fView, fPlane);

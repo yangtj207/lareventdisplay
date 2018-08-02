@@ -29,15 +29,22 @@ namespace evd {
   void SimulationDrawingOptions::reconfigure(fhicl::ParameterSet const& pset)
   {
     fShowMCTruthText         = pset.get< bool          >      ("ShowMCTruthText",         true);
-    fShowMCTruthVectors      = pset.get< bool          >      ("ShowMCTruthVectors",      true);
-    fShowMCTruthTrajectories = pset.get< bool          >      ("ShowMCTruthTrajectories", true);
-    fShowMCTruthColors       = pset.get< bool          >      ("ShowMCTruthColors",       true);
-    fShowMCTruthFullSize     = pset.get< bool          >      ("ShowMCTruthFullSize",     true);
-    fMinEnergyDeposition     = pset.get< double        >      ("MinimumEnergyDeposition"      );
-    fG4ModuleLabel           = pset.get< art::InputTag >      ("G4ModuleLabel"                );
-    fSimEnergyLabel          = pset.get< art::InputTag >      ("SimEnergyLabel"               );
+    try {
+      fShowMCTruthVectors = pset.get< unsigned short >("ShowMCTruthVectors", 0);
+    } // try
+    catch (...) {
+      std::cout<<"ShowMCTruthVectors changed to unsigned short. Please update your fcl configuration\n";
+      fShowMCTruthVectors      = pset.get< bool >("ShowMCTruthVectors",0);
+    } // catch
+    fShowMCTruthTrajectories = pset.get< bool          >      ("ShowMCTruthTrajectories",  true);
+    fShowMCTruthColors       = pset.get< bool          >      ("ShowMCTruthColors",        true);
+    fShowMCTruthFullSize     = pset.get< bool          >      ("ShowMCTruthFullSize",      true);
+    fShowScintillationLight  = pset.get< bool          >      ("ShowScintillationLight",  false);
+    fMinEnergyDeposition     = pset.get< double        >      ("MinimumEnergyDeposition"       );
+    fG4ModuleLabel           = pset.get< art::InputTag >      ("G4ModuleLabel"                 );
+    fSimEnergyLabel          = pset.get< art::InputTag >      ("SimEnergyLabel"                );
       
-    f3DDrawerParams          = pset.get< fhicl::ParameterSet >("Draw3DTools"                  );
+    f3DDrawerParams          = pset.get< fhicl::ParameterSet >("Draw3DTools"                   );
   }
   
 }

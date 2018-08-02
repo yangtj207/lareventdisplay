@@ -28,15 +28,16 @@ public:
     void reconfigure(fhicl::ParameterSet const& pset) ;
   
     bool                fShowMCTruthText;
-    bool                fShowMCTruthVectors;
+    unsigned short      fShowMCTruthVectors;
     bool                fShowMCTruthTrajectories;
     bool                fShowMCTruthColors;
     bool                fShowMCTruthFullSize;
+    bool                fShowScintillationLight = false; ///< Whether to draw low energy light (default: no).
     double              fMinEnergyDeposition;
-    art::InputTag       fG4ModuleLabel;           ///< module label producing sim::SimChannel objects
+    art::InputTag       fG4ModuleLabel;                  ///< module label producing sim::SimChannel objects
     art::InputTag       fSimEnergyLabel;
     
-    fhicl::ParameterSet f3DDrawerParams;          ///< FHICL paramegers for the 3D drawers
+    fhicl::ParameterSet f3DDrawerParams;                  ///< FHICL paramegers for the 3D drawers
 };
     
 }//namespace

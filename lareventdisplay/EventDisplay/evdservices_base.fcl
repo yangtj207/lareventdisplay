@@ -5,6 +5,7 @@
 #include "experiment3ddrawers.fcl"
 #include "wfHitDrawers.fcl"
 #include "SimDrawers.fcl"
+#include "spacecharge.fcl"
 
 BEGIN_PROLOG
 
@@ -112,7 +113,7 @@ standard_analysisdrawingopt:
 standard_simdrawingopt:
 {
  ShowMCTruthText:         true       # toggle showing of MC interaction on or off
- ShowMCTruthVectors:      true       # toggle showing of MC truth directions in 2D
+ ShowMCTruthVectors:      1          # Show MCTruth vectors shifted by space charge effects
  ShowMCTruthTrajectories: true       # toggle showing of MC truth trajectories in 3D, all depositions
  ShowMCTruthColors:       true       # toggle to use PDG colors for particles
  ShowMCTruthFullSize:     true       # toggle to use larger size markers for visibility

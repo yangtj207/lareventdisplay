@@ -59,6 +59,7 @@ public:
     std::vector<art::InputTag> fClusterLabels;           ///< module labels that produced clusters
     std::vector<art::InputTag> fPFParticleLabels;        ///< module labels that produced PFParticles
     std::vector<art::InputTag> fEdgeLabels;              ///< module labels that produced Edge objects
+    std::vector<art::InputTag> fExtremePointLabels;      ///< module labels that produced Extreme Points
     std::vector<art::InputTag> fSpacePointLabels;        ///< module labels that produced space points
     std::vector<art::InputTag> fProngLabels;             ///< module labels that produced prongs
     std::vector<art::InputTag> fTrackLabels;             ///< module labels that produced tracks

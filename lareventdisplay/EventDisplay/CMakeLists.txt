@@ -9,6 +9,7 @@ cet_rootcint( ${PACKAGE} )
 add_subdirectory(ExptDrawers)
 add_subdirectory(wfHitDrawers)
 add_subdirectory(SimDrawers)
+add_subdirectory(3DDrawers)
 
 art_make_library( 
               SOURCE ${src_files} ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE}Cint.cc

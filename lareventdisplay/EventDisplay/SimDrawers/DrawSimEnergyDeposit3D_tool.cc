@@ -113,7 +113,7 @@ void DrawSimEnergyDeposit3D::Draw(const art::Event& evt, evdb::View3D* view) con
             hitPositions[3*hitCount + 2] = 0.5 * (startPoint.Z() + stopPoint.Z());
             hitCount++;
     
-            std::cout << "--> Hit: " << hitCount << " x,y,z: " << 0.5 * (startPoint.X() + stopPoint.X()) << "," << 0.5 * (startPoint.Y() + stopPoint.Y()) << "," << 0.5 * (startPoint.Z() + stopPoint.Z()) << ", # e: " <<     simEnergyDeposit.NumElectrons() << ", # gamma: " << simEnergyDeposit.NumPhotons() << ", edep: " << simEnergyDeposit.Energy() << std::endl;
+            mf::LogDebug("SimEnergyDeposit3DDrawer") << "--> Hit: " << hitCount << " x,y,z: " << 0.5 * (startPoint.X() + stopPoint.X()) << "," << 0.5 * (startPoint.Y() + stopPoint.Y()) << "," << 0.5 * (startPoint.Z() + stopPoint.Z()) << ", # e: " <<     simEnergyDeposit.NumElectrons() << ", # gamma: " << simEnergyDeposit.NumPhotons() << ", edep: " << simEnergyDeposit.Energy() << std::endl;
         }
         
         int colorIdx(3);

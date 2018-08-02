@@ -2445,6 +2445,33 @@ void RecoBaseDrawer::Edge3D(const art::Event& evt, evdb::View3D* view)
         }
     }
     
+    // Draw any associated Extreme Points
+    for(size_t imod = 0; imod < recoOpt->fExtremePointLabels.size(); ++imod)
+    {
+        art::InputTag const which = recoOpt->fExtremePointLabels[imod];
+        
+        // Start off by recovering our 3D Clusters for this label
+        std::vector<art::Ptr<recob::SpacePoint>> spacePointVec;
+        this->GetSpacePoints(evt, which, spacePointVec);
+
+        mf::LogDebug("RecoBaseDrawer") << "RecoBaseDrawer: number Extreme points to draw: " << spacePointVec.size() << std::endl;
+        
+        if (!spacePointVec.empty())
+        {
+            // First draw the space points (all of them), then circle back on the edges...
+            int colorIdx(kYellow); 
+            
+            TPolyMarker3D& pm = view->AddPolyMarker3D(spacePointVec.size(), colorIdx, kFullDotLarge, 1.0); //kFullDotLarge, 0.5);
+            
+            for(const auto& spacePoint : spacePointVec)
+            {
+                TVector3 spPosition(spacePoint->XYZ()[0],spacePoint->XYZ()[1],spacePoint->XYZ()[2]);
+                
+                pm.SetNextPoint(spPosition[0],spPosition[1],spPosition[2]);
+            }
+        }
+    }
+
     return;
 }
 

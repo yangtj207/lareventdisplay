@@ -59,6 +59,7 @@ void RecoDrawingOptions::reconfigure(fhicl::ParameterSet const& pset)
     fClusterLabels    	       = pset.get< std::vector<art::InputTag> >("ClusterModuleLabels"      );
     fPFParticleLabels          = pset.get< std::vector<art::InputTag> >("PFParticleModuleLabels"   );
     fEdgeLabels                = pset.get< std::vector<art::InputTag> >("EdgeModuleLabels"         );
+    fExtremePointLabels        = pset.get< std::vector<art::InputTag> >("ExtremeModuleLabels"      );
     fTrackLabels      	       = pset.get< std::vector<art::InputTag> >("TrackModuleLabels"        );
     fShowerLabels     	       = pset.get< std::vector<art::InputTag> >("ShowerModuleLabels"       );
     fVertexLabels     	       = pset.get< std::vector<art::InputTag> >("VertexModuleLabels"       );

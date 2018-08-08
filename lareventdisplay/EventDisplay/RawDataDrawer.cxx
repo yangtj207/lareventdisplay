@@ -1613,11 +1613,13 @@ namespace evd {
 	if (drawopt->fUncompressWithPed){//Use pedestal in uncompression
 	  int pedestal = (int)digit->GetPedestal();
 	  raw::RawDigit::ADCvector_t samples;
+	  samples.resize(digit->Samples());
 	  Uncompress(digit->ADCs(), samples, pedestal, digit->Compression());
 	  data.StealData(std::move(samples));
 	}
 	else{
 	  raw::RawDigit::ADCvector_t samples;
+	  samples.resize(digit->Samples());
 	  Uncompress(digit->ADCs(), samples, digit->Compression());
 	  data.StealData(std::move(samples));
 	}

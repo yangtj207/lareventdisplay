@@ -183,6 +183,8 @@ public:
 		          evdb::View3D*     view);
     void Event3D(const art::Event& evt,
                 evdb::View3D*     view);
+    void Slice3D(const art::Event& evt,
+                evdb::View3D*     view);
     void OpFlashOrtho(const art::Event& evt,
 		      evd::OrthoProj_t  proj,
 		      evdb::View2D*     view);

@@ -57,6 +57,8 @@ standard_recodrawingopt:
  DrawCosmicTags:            0  		       # 0 = off, 1 = on
 
  DrawEvents:                0  		       # 0 = off, 1 = on
+ DrawSlices:                0
+ DrawSliceSpacePoints:      0
  Draw2DEndPoints:           0              # 0 = off, 1 = on, this is for the recob::EndPoint2D objects
  SelectedHitColor:	        6		       # color to display hits selected via handscan.
                                            # 0:white, 1:black 2:red 3:green 4:blue 

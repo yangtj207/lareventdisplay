@@ -76,6 +76,7 @@ namespace evd{
       this->RecoBaseDraw()->  BezierTrack3D (*evt, fView);
       this->RecoBaseDraw()->  Vertex3D    (*evt, fView);
       this->RecoBaseDraw()->  Event3D     (*evt, fView);
+      this->RecoBaseDraw()->  Slice3D     (*evt, fView);
     
       art::ServiceHandle<evd::EvdLayoutOptions> evdlayoutoptions;
       if(evdlayoutoptions->fMakeSeeds)

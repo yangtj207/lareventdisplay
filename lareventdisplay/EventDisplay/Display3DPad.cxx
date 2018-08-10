@@ -92,6 +92,7 @@ void Display3DPad::Draw()
         this->RecoBaseDraw()->  Seed3D       (*evt, fView);
         this->RecoBaseDraw()->  Vertex3D     (*evt, fView);
         this->RecoBaseDraw()->  Event3D      (*evt, fView);
+        this->RecoBaseDraw()->  Slice3D      (*evt, fView);
         
         for(auto& draw3D : fSim3DDrawerVec) draw3D->Draw(*evt, fView);
         

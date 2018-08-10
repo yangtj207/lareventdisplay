@@ -2691,7 +2691,8 @@ void RecoBaseDrawer::DrawSpacePoint3D(std::vector<art::Ptr<recob::SpacePoint>>& 
             if(spcolor < 51)  spcolor = 51;
             if(spcolor > 100) spcolor = 100;
         }
-        else if (pspt->Chisq() < -1.) spcolor += 6;
+        else spcolor = color; 
+          //if (pspt->Chisq() < -1.) spcolor += 6;
         
         spmap[spcolor].push_back(&*pspt);
     }
@@ -3055,6 +3056,30 @@ void RecoBaseDrawer::Event3D(const art::Event& evt,
   } // end if we are drawing events
 
   return;
+}
+//......................................................................
+void RecoBaseDrawer::Slice3D(const art::Event& evt,
+                             evdb::View3D*     view) 
+{    
+  art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
+  art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
+  
+  if(rawOpt->fDrawRawDataOrCalibWires < 1) return;
+  if(recoOpt->fDrawSlices < 1 ) return;
+  if(recoOpt->fDrawSliceSpacePoints < 1 ) return;
+  for(size_t imod = 0; imod < recoOpt->fSliceLabels.size(); ++imod) {
+    art::InputTag const which = recoOpt->fSliceLabels[imod];
+    art::PtrVector<recob::Slice> slices;
+    this->GetSlices(evt, which, slices);
+    if(slices.size() < 1) continue;
+    art::FindManyP<recob::SpacePoint> fmsp(slices, evt, which);
+    for(size_t isl = 0; isl < slices.size(); ++isl) {
+      int slcID = std::abs(slices[isl]->ID());
+      int color = evd::kColor[slcID%evd::kNCOLS];
+      std::vector<art::Ptr<recob::SpacePoint>> spts = fmsp.at(isl);
+      DrawSpacePoint3D(spts, view, color, kFullDotLarge, 2);
+    }
+  }
 }
 //......................................................................
 void RecoBaseDrawer::OpFlashOrtho(const art::Event& evt,

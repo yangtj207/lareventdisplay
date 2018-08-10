@@ -30,6 +30,7 @@ public:
     int  fDrawHits;
     int  fDrawClusters;
     int  fDrawSlices;
+    int  fDrawSliceSpacePoints;
     int  fDrawPFParticles;
     int  fDrawEdges;
     int  fDraw2DSlopeEndPoints;

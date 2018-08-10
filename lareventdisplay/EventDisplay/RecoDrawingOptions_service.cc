@@ -31,6 +31,7 @@ void RecoDrawingOptions::reconfigure(fhicl::ParameterSet const& pset)
     fDrawHits                  = pset.get< int                        >("DrawHits"                 );
     fDrawClusters    	       = pset.get< int                        >("DrawClusters"   	       );
     fDrawSlices = pset.get<int>("DrawSlices", 0);
+    fDrawSliceSpacePoints      = pset.get< int                        >("DrawSliceSpacePoints",0);
     fDrawPFParticles           = pset.get< int                        >("DrawPFParticles"          );
     fDrawEdges                 = pset.get< int                        >("DrawEdges"                );
     fDrawSpacePoints   	       = pset.get< int                        >("DrawSpacePoints"          );

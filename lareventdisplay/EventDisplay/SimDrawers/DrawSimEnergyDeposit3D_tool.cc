@@ -86,42 +86,49 @@ void DrawSimEnergyDeposit3D::Draw(const art::Event& evt, evdb::View3D* view) con
     art::ServiceHandle<geo::Geometry>  geom;
     
     // Recover a handle to the collection of MCParticles
-    art::Handle< std::vector<sim::SimEnergyDeposit>> simEnergyDepositHandle;
+    art::Handle<std::vector<sim::SimEnergyDeposit>> simEnergyDepositHandle;
     
     evt.getByLabel(drawOpt->fSimEnergyLabel, simEnergyDepositHandle);
     
     if (simEnergyDepositHandle.isValid() && simEnergyDepositHandle->size() > 0)
     {
-        // Define a couple of colors for neutrals and if we gray it out...
-//    int neutralColor(12);
-//    int grayedColor(15);
-//    int neutrinoColor(38);
-    
         mf::LogDebug("SimEnergyDeposit3DDrawer") << "Starting loop over " << simEnergyDepositHandle->size() << " SimEnergyDeposits, " << std::endl;
-    
-        // The simplest approach is to loop over the SimEnergyDeposits and draw their centers
-        std::unique_ptr<double[]> hitPositions(new double[3*simEnergyDepositHandle->size()]);
-        int                       hitCount(0);
         
+        // Would like to draw the deposits as markers with colors given by particle id
+        // So we make two passes, first to fill a map with color the key and positions for the markers
+        std::map<int,std::vector<sim::SimEnergyDeposit::Point_t>> colorToPositionMap;
+        
+        // First loop through energy deposits
         for(const auto& simEnergyDeposit : *simEnergyDepositHandle)
         {
-            geo::Point_t startPoint = simEnergyDeposit.Start();
-            geo::Point_t stopPoint  = simEnergyDeposit.End();
-        
-            hitPositions[3*hitCount    ] = 0.5 * (startPoint.X() + stopPoint.X());
-            hitPositions[3*hitCount + 1] = 0.5 * (startPoint.Y() + stopPoint.Y());
-            hitPositions[3*hitCount + 2] = 0.5 * (startPoint.Z() + stopPoint.Z());
-            hitCount++;
-    
-            mf::LogDebug("SimEnergyDeposit3DDrawer") << "--> Hit: " << hitCount << " x,y,z: " << 0.5 * (startPoint.X() + stopPoint.X()) << "," << 0.5 * (startPoint.Y() + stopPoint.Y()) << "," << 0.5 * (startPoint.Z() + stopPoint.Z()) << ", # e: " <<     simEnergyDeposit.NumElectrons() << ", # gamma: " << simEnergyDeposit.NumPhotons() << ", edep: " << simEnergyDeposit.Energy() << std::endl;
+            colorToPositionMap[evd::Style::ColorFromPDG(simEnergyDeposit.PdgCode())].emplace_back(simEnergyDeposit.MidPoint());
         }
         
-        int colorIdx(3);
-        int markerIdx(kFullDotSmall);
-        int markerSize(2);
-    
-        TPolyMarker3D& pm = view->AddPolyMarker3D(1, colorIdx, markerIdx, markerSize);
-        pm.SetPolyMarker(hitCount, hitPositions.get(), markerIdx);
+        // Now we can do some drawing
+        for(const auto& pair : colorToPositionMap)
+        {
+            int colorIdx(pair.first);
+            int markerIdx(kFullDotMedium);
+            int markerSize(2);
+            
+            TPolyMarker3D& pm = view->AddPolyMarker3D(1, colorIdx, markerIdx, markerSize);
+
+            // Import positions into an array
+            std::vector<double> posArrayVec;
+            int    hitCount(0);
+            
+            posArrayVec.resize(3 * pair.second.size());
+            
+            for(const auto& point : pair.second)
+            {
+                posArrayVec[3*hitCount    ] = point.X();
+                posArrayVec[3*hitCount + 1] = point.Y();
+                posArrayVec[3*hitCount + 2] = point.Z();
+                hitCount++;
+            }
+            
+            pm.SetPolyMarker(hitCount, posArrayVec.data(), markerIdx);
+        }
     }
     
     return;

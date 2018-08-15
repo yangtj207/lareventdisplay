@@ -1847,11 +1847,27 @@ void RecoBaseDrawer::Vertex2D(const art::Event& evt,
       this->GetVertices(evt, which, vertex);
       
       if(vertex.size() < 1) continue;
-      
+
+      double local[3] = {0.,0.,0.};
+      double world[3] = {0.,0.,0.};
+      const geo::TPCGeo &tpc = geo->TPC(rawOpt->fTPC);
+      tpc.LocalToWorld(local,world);
+      double minxyz[3], maxxyz[3];
+      minxyz[0] = world[0] - geo->DetHalfWidth(rawOpt->fTPC, rawOpt->fCryostat);
+      maxxyz[0] = world[0] + geo->DetHalfWidth(rawOpt->fTPC, rawOpt->fCryostat);
+      minxyz[1] = world[1] - geo->DetHalfWidth(rawOpt->fTPC, rawOpt->fCryostat);
+      maxxyz[1] = world[1] + geo->DetHalfWidth(rawOpt->fTPC, rawOpt->fCryostat);
+      minxyz[2] = world[2] - geo->DetLength(rawOpt->fTPC, rawOpt->fCryostat)/2;
+      maxxyz[2] = world[2] + geo->DetLength(rawOpt->fTPC, rawOpt->fCryostat)/2;
+
       for(size_t v = 0; v < vertex.size(); ++v){
-        // BB: draw polymarker at the vertex position in this plane
+        // ensure the vertex is inside the current tpc
         double xyz[3];
         vertex[v]->XYZ(xyz);
+        if(xyz[0] < minxyz[0] || xyz[0] > maxxyz[0]) continue;
+        if(xyz[1] < minxyz[1] || xyz[1] > maxxyz[1]) continue;
+        if(xyz[2] < minxyz[2] || xyz[2] > maxxyz[2]) continue;
+        // BB: draw polymarker at the vertex position in this plane
         double wire = geo->WireCoordinate(xyz[1], xyz[2], plane, rawOpt->fTPC, rawOpt->fCryostat);
         double time = detprop->ConvertXToTicks(xyz[0], plane, rawOpt->fTPC, rawOpt->fCryostat);
         int color  = evd::kColor[vertex[v]->ID()%evd::kNCOLS];

@@ -81,6 +81,8 @@ void DrawLArVoxel3D::Draw(const art::Event& evt, evdb::View3D* view) const
     
     evt.getByLabel(drawOpt->fG4ModuleLabel, mcParticleHandle);
     
+    if (!mcParticleHandle.isValid()) return;
+    
     // Define a couple of colors for neutrals and if we gray it out...
     int neutralColor(12);
     int grayedColor(15);

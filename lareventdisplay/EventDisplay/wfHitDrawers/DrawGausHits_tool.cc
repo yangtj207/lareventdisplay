@@ -175,6 +175,8 @@ void DrawGausHits::Draw(evdb::View2D&                      view2D,
             
             TF1* f1 = hitFuncVec.back().get();
             
+            f1->SetLineColor(imod + 2);
+            
             size_t idx(0);
             for(const auto& hitParams : roiHitParamsVec)
             {

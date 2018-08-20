@@ -357,7 +357,7 @@ void SimulationDrawer::MCTruth3D(const art::Event& evt,
     // learn whether we want to draw the scintillation light too;
     // in fact, we don't care whether it's scintillation or not,
     // but it is photons with very low energy, close to the optical range
-    bool const fDrawLight = drawopt->fShowScintillationLight;
+ //   bool const fDrawLight = drawopt->fShowScintillationLight;
     
     // Space charge service...
   //  const spacecharge::SpaceCharge* sce = lar::providerFrom<spacecharge::SpaceChargeService>();

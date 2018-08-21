@@ -4122,7 +4122,7 @@ void RecoBaseDrawer::FillTQHisto(const art::Event& evt,
             if(hits[i]->WireID().Wire != wire) continue;
             
             // check roi end condition
-            if (hits[i]->EndTick() > lastEndTick)
+            if (std::abs(hits[i]->EndTick() - lastEndTick))
             {
                 if (!roiHitParamsVec.empty()) hitParamsVec.push_back(roiHitParamsVec);
                 roiHitParamsVec.clear();

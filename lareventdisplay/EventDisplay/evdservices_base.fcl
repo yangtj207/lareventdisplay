@@ -91,6 +91,7 @@ standard_recodrawingopt:
  TrkVtxFilterLabels:        [""]           # list of producers of associations between the two above
 
  EventModuleLabels:         [""]           # list of module labels in which to look for recob::Events     
+ SliceModuleLabels:         [""]           # list of module labels in which to look for recob::Slices
  ColorProngsByLabel:        0              # 0 = generate color from id.
                                            # 1 = generate color from label.
  ColorSpacePointsByChisq:   0              # 0 = off, 1 = on

@@ -885,7 +885,7 @@ namespace evd {
 	}
       else
 	{
-	  throw art::Exception(art::errors::Configuration) << "RawDataDrawer: bad configuration for PedestalOption: " << rawopt->fPedestalOption;
+	  mf::LogWarning  ("RawDataDrawer") << " PedestalOption is not understood: " << rawopt->fPedestalOption << ".  Pedestals not subtracted.";
 	}
 
       // loop over all the wires that are covered by this channel;
@@ -1378,7 +1378,7 @@ namespace evd {
 	}
       else
 	{
-	  throw art::Exception(art::errors::Configuration) << "RawDataDrawer: bad configuration for PedestalOption: " << rawopt->fPedestalOption;
+	  mf::LogWarning  ("RawDataDrawer") << " PedestalOption is not understood: " << rawopt->fPedestalOption << ".  Pedestals not subtracted.";
 	}
 
         for(short d: uncompressed)
@@ -1467,7 +1467,7 @@ namespace evd {
 	}
       else
 	{
-	  throw art::Exception(art::errors::Configuration) << "RawDataDrawer: bad configuration for PedestalOption: " << rawopt->fPedestalOption;
+	  mf::LogWarning  ("RawDataDrawer") << " PedestalOption is not understood: " << rawopt->fPedestalOption << ".  Pedestals not subtracted.";
 	}
     
     for(size_t j = 0; j < uncompressed.size(); ++j)

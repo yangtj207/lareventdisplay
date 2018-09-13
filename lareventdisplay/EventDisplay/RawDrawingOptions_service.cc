@@ -44,7 +44,8 @@ namespace evd {
     fUncompressWithPed          = pset.get< bool >("UncompressWithPed",false);
     fSeeBadChannels             = pset.get< bool >("SeeBadChannels", false);
     fRoIthresholds              = pset.get< std::vector<float> >("RoIthresholds", std::vector<float>());
-    
+    fPedestalOption             = pset.get< int         >("PedestalOption",       0    );
+
     if (fRoIthresholds.empty()) fRoIthresholds.push_back((float) fMinSignal);
   }
 }

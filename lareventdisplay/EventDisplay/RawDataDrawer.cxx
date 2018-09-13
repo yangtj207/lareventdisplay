@@ -870,8 +870,24 @@ namespace evd {
       raw::RawDigit::ADCvector_t const& uncompressed = digit_info.Data();
       
       // recover the pedestal
-      float const pedestal = pedestalRetrievalAlg.PedMean(channel);
-      
+      float  pedestal = 0;
+      if (rawopt->fPedestalOption == 0)
+	{
+          pedestal = pedestalRetrievalAlg.PedMean(channel);
+	}
+      else if (rawopt->fPedestalOption == 1)
+	{
+          pedestal = hit.GetPedestal();
+	}
+      else if (rawopt->fPedestalOption == 2)
+	{
+	  pedestal = 0;
+	}
+      else
+	{
+	  throw art::Exception(art::errors::Configuration) << "RawDataDrawer: bad configuration for PedestalOption: " << rawopt->fPedestalOption;
+	}
+
       // loop over all the wires that are covered by this channel;
       // without knowing better, we have to draw into all of them
       for (geo::WireID const& wireID: WireIDs){
@@ -894,6 +910,7 @@ namespace evd {
           if (!operation->ProcessTick(iTick)) continue;
           
           float const adc = uncompressed[iTick] - pedestal;
+	  //std::cout << "adc, pedestal: " << adc << " " << pedestal << std::endl;
           
           if (!operation->Operate(wireID, iTick, adc)) return false;
           
@@ -1344,7 +1361,25 @@ namespace evd {
 
         raw::RawDigit::ADCvector_t const& uncompressed = digit_info.Data();
         
-        float const pedestal = pedestalRetrievalAlg.PedMean(channel);
+        //float const pedestal = pedestalRetrievalAlg.PedMean(channel);
+      // recover the pedestal
+      float  pedestal = 0;
+      if (rawopt->fPedestalOption == 0)
+	{
+          pedestal = pedestalRetrievalAlg.PedMean(channel);
+	}
+      else if (rawopt->fPedestalOption == 1)
+	{
+          pedestal = hit.GetPedestal();
+	}
+      else if (rawopt->fPedestalOption == 2)
+	{
+	  pedestal = 0;
+	}
+      else
+	{
+	  throw art::Exception(art::errors::Configuration) << "RawDataDrawer: bad configuration for PedestalOption: " << rawopt->fPedestalOption;
+	}
 
         for(short d: uncompressed)
           histo->Fill(float(d) - pedestal); //pedestals[plane]); //hit.GetPedestal());
@@ -1415,7 +1450,25 @@ namespace evd {
     
     raw::RawDigit::ADCvector_t const& uncompressed = pDigit->Data();
     
-    float const pedestal = pedestalRetrievalAlg.PedMean(channel);
+
+      // recover the pedestal
+      float  pedestal = 0;
+      if (rawopt->fPedestalOption == 0)
+	{
+          pedestal = pedestalRetrievalAlg.PedMean(channel);
+	}
+      else if (rawopt->fPedestalOption == 1)
+	{
+          pedestal = pDigit->DigitPtr()->GetPedestal();
+	}
+      else if (rawopt->fPedestalOption == 2)
+	{
+	  pedestal = 0;
+	}
+      else
+	{
+	  throw art::Exception(art::errors::Configuration) << "RawDataDrawer: bad configuration for PedestalOption: " << rawopt->fPedestalOption;
+	}
     
     for(size_t j = 0; j < uncompressed.size(); ++j)
       histo->Fill(float(j), float(uncompressed[j]) - pedestal); //pedestals[plane]); //hit.GetPedestal());

@@ -62,7 +62,9 @@ namespace evd {
     bool         fSeeBadChannels;                          ///< Allow "bad" channels to be viewed
     
     std::vector<float> fRoIthresholds;                     ///< region of interest thresholds, per plane
-    
+
+    int          fPedestalOption;                          ///< 0: use DetPedestalService;   1:  Use pedestal in raw::RawDigt;   2:  no ped subtraction
+
     /// Returns the current TPC as a TPCID
     geo::TPCID   CurrentTPC() const { return geo::TPCID(fCryostat, fTPC); }
     
@@ -76,7 +78,7 @@ namespace evd {
         return (plane < fRoIthresholds.size())?
           fRoIthresholds[plane]: fRoIthresholds.back();
       } // RoIthreshold(plane number)
-    
+
   };
 }//namespace
 #endif // __CINT__

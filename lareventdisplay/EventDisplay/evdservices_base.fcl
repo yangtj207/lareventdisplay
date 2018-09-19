@@ -79,6 +79,7 @@ standard_recodrawingopt:
  ClusterModuleLabels:       ["dbcluster"]  # list of module labels in which to look for recob::Clusters  
  PFParticleModuleLabels:    ["pandora"]    # list of module labels in which to look for recob::PFParticles
  EdgeModuleLabels:          [""]           # list of module labels in which to look for recob::Edges
+ ExtremeModuleLabels:       [""]
  TrackModuleLabels:         [""]           # list of module labels in which to look for recob::Tracks     
  ShowerModuleLabels:        ["showerreco"] # list of module labels in which to look for recob::Showers    
  VertexModuleLabels:        [""]           # list of module labels in which to look for recob::Vertexs    

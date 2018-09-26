@@ -34,6 +34,7 @@ standard_rawdrawingopt:
  TPC:                        0     # TPC number to display in TWQProjection view
  Cryostat:                   0     # Cryostat number to display in TWQProjection view
  RawDataLabel:               "daq" # label of module making the raw digits
+ PedestalOption:             0     # 0: use DetPedestalService; 1: use pedestal from raw digits;  2:  no pedestal subtraction
 }
 
 standard_recodrawingopt:

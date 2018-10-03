@@ -20,7 +20,6 @@ namespace art {
   class PtrVector;
   class Ptr;
   class ServiceHandle;
-  class View;
 }
 
 namespace fhicl {
@@ -38,7 +37,6 @@ namespace recob {
 #include "canvas/Persistency/Common/Ptr.h"
 #include "art/Framework/Services/Registry/ActivityRegistry.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Principal/View.h"
 #include "lareventdisplay/EventDisplay/InfoTransfer.h"
 #include "larcore/Geometry/Geometry.h"
 #include "lardata/Utilities/StatCollector.h"
@@ -322,7 +320,7 @@ namespace evd {
     cvec.reserve(fNPlanes);
     
     for(unsigned int ip=0;ip<fNPlanes;ip++)  {
-      art::ProductID aid = this->getProductID< std::vector < recob::Cluster > >();
+      art::ProductID aid = evt.getProductID< std::vector < recob::Cluster > >();
       art::Ptr< recob::Cluster > aptr(aid, ip, evt.productGetter(aid));
       cvec.push_back(aptr);
     }

@@ -271,7 +271,8 @@ public:
                        std::vector<double>& hpeaktimes,
                        std::vector<int>& hstartT,
                        std::vector<int>& hendT,
-		       std::vector<int>& hNMultiHit);
+		       std::vector<int>& hNMultiHit,
+		       std::vector<int>& hLocalHitIndex);
 
     int GetRegionOfInterest(int  plane,
 			                int& minw,

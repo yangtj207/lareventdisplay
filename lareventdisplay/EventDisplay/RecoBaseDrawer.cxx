@@ -4204,7 +4204,8 @@ void RecoBaseDrawer::FillTQHistoDP(const art::Event&    evt,
                                    std::vector<double>& hpeaktimes,
                                    std::vector<int>&    hstartT,
                                    std::vector<int>&    hendT,
-                                   std::vector<int>&    hNMultiHit)
+                                   std::vector<int>&    hNMultiHit,
+				   std::vector<int>&    hLocalHitIndex)
 {
     art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
@@ -4263,6 +4264,7 @@ void RecoBaseDrawer::FillTQHistoDP(const art::Event&    evt,
             hstartT.push_back(hits[i]->StartTick());
             hendT.push_back(hits[i]->EndTick());
             hNMultiHit.push_back(hits[i]->Multiplicity());
+	    hLocalHitIndex.push_back(hits[i]->LocalIndex());
         }//end loop over reco hits
     }//end loop over HitFinding modules
 

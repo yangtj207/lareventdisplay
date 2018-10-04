@@ -37,6 +37,7 @@ namespace evd {
       fShowMCTruthVectors      = pset.get< bool >("ShowMCTruthVectors",0);
     } // catch
     fShowMCTruthTrajectories = pset.get< bool          >      ("ShowMCTruthTrajectories",  true);
+    fShowSimChannelInfo      = pset.get< bool          >      ("ShowSimChannelInfo",       true);
     fShowMCTruthColors       = pset.get< bool          >      ("ShowMCTruthColors",        true);
     fShowMCTruthFullSize     = pset.get< bool          >      ("ShowMCTruthFullSize",      true);
     fShowScintillationLight  = pset.get< bool          >      ("ShowScintillationLight",  false);

@@ -30,6 +30,7 @@ public:
     bool                fShowMCTruthText;
     unsigned short      fShowMCTruthVectors;
     bool                fShowMCTruthTrajectories;
+    bool                fShowSimChannelInfo;
     bool                fShowMCTruthColors;
     bool                fShowMCTruthFullSize;
     bool                fShowScintillationLight = false; ///< Whether to draw low energy light (default: no).

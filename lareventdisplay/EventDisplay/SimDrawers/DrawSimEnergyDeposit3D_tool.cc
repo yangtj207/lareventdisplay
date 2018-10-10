@@ -78,7 +78,7 @@ void DrawSimEnergyDeposit3D::Draw(const art::Event& evt, evdb::View3D* view) con
     art::ServiceHandle<evd::SimulationDrawingOptions> drawOpt;
     
     // If the option is turned off, there's nothing to do
-    if (!drawOpt->fShowSimChannelInfo) return;
+    if (!drawOpt->fShowSimEnergyInfo) return;
     
     // Recover a handle to the collection of MCParticles
     // We need these so we can determine the offset (if any)

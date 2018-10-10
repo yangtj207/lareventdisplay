@@ -69,6 +69,9 @@ void DrawLArVoxel3D::Draw(const art::Event& evt, evdb::View3D* view) const
     art::ServiceHandle<evd::SimulationDrawingOptions> drawOpt;
     
     // If the option is turned off, there's nothing to do
+    if (!drawOpt->fShowSimChannelInfo) return;
+
+    // If the option is turned off, there's nothing to do
     if (!drawOpt->fShowMCTruthTrajectories) return;
 
     //  geo::GeometryCore const* geom = lar::providerFrom<geo::Geometry>();
@@ -89,7 +92,7 @@ void DrawLArVoxel3D::Draw(const art::Event& evt, evdb::View3D* view) const
     int neutrinoColor(38);
     
     // Use the LArVoxelList to get the true energy deposition locations as opposed to using MCTrajectories
-    const sim::LArVoxelList voxels = sim::SimListUtils::GetLArVoxelList(evt,drawOpt->fG4ModuleLabel.label());
+    const sim::LArVoxelList voxels = sim::SimListUtils::GetLArVoxelList(evt,drawOpt->fSimChannelLabel.encode());
     
     mf::LogDebug("SimulationDrawer") << "Starting loop over " << mcParticleHandle->size() << " McParticles, voxel list size is " << voxels.size() << std::endl;
     

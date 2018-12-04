@@ -134,6 +134,7 @@ namespace evd{
           std::vector<int>    hstartT;
           std::vector<int>    hendT;
           std::vector<int>    hNMultiHit;
+          std::vector<int>    hLocalHitIndex;
 
           if(fTQ == kTQ)
           {
@@ -155,7 +156,8 @@ namespace evd{
                                                   hpeaktimes,
                                                   hstartT,
                                                   hendT,
-                                                  hNMultiHit);
+                                                  hNMultiHit,
+						  hLocalHitIndex);
 
 
               // draw with histogram style, only (square) lines, no errors
@@ -179,7 +181,7 @@ namespace evd{
               // this loop draws the double-exponential shapes for identified hits in the reco histo
               for (size_t i = 0; i < hamplitudes.size() && drawopt->fDrawRawDataOrCalibWires != kRAW; ++i) {
                   // If there is more than one peak in this fit, draw the sum of all peaks
-                  if( (i==0 && hNMultiHit[i]>1) || (i>0 && hNMultiHit[i]>1 && hstartT[i] != hstartT[i-1]) )
+                  if( hNMultiHit[i] > 1 && hLocalHitIndex[i] == 0)
                   {
                       // create TPolyLine that actually gets drawn
                       TPolyLine& p2 = fView->AddPolyLine(1001,kRed,3,1);
@@ -187,7 +189,7 @@ namespace evd{
                       // set coordinates of TPolyLine based fitted function
                       for(int j = 0; j<1001; ++j)
                       {
-                          double x = hstartT[i]+j*(hendT[i]-hstartT[i])/1000;
+                          double x = hstartT[i]+j*(hendT[i+hNMultiHit[i]-1]-hstartT[i])/1000;
                           double y = RecoBaseDraw()->EvalMultiExpoFit(x,i,hNMultiHit[i],htau1,htau2,hamplitudes,hpeaktimes);
                           p2.SetPoint(j, x, y);
                       }
@@ -201,7 +203,7 @@ namespace evd{
 
                   // set coordinates of TPolyLine based fitted function
                   for(int j = 0; j<1001; ++j){
-                      double x = hstartT[i]+j*(hendT[i]-hstartT[i])/1000;
+                      double x = hstartT[i-hLocalHitIndex[i]]+j*(hendT[i+hNMultiHit[i]-hLocalHitIndex[i]-1]-hstartT[i-hLocalHitIndex[i]])/1000;
                       double y = RecoBaseDraw()->EvalExpoFit(x,htau1[i],htau2[i],hamplitudes[i],hpeaktimes[i]);
                       p1.SetPoint(j, x, y);
                   }

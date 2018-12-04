@@ -1426,9 +1426,9 @@ void RecoBaseDrawer::DrawTrack2D(std::vector<const recob::Hit*>& hits,
     //use yprime-component of dir cos in rotated coord sys to get
     //   dTdW (number of time ticks per unit of wire pitch)
     double rotang = 3.1416-thetawire;
-    double yprime = std::cos(rotang)*startDir[1]
-    +std::sin(rotang)*startDir[2];
-    double dTdW = startDir[0]*wirePitch/driftvelocity/timetick/yprime;
+    double yprime = std::cos(rotang)*startDir.Y()
+      +std::sin(rotang)*startDir.Z();
+    double dTdW = startDir.X()*wirePitch/driftvelocity/timetick/yprime;
     
     this->Draw2DSlopeEndPoints(wire, tick, dTdW, color, view);
     
@@ -1517,9 +1517,9 @@ void RecoBaseDrawer::Prong2D(const art::Event& evt,
                 if(recoOpt->fDrawTracks > 1)
                 {
                     // BB: draw the track ID at the end of the track
-                    double x = track.vals().at(t)->End()(0);
-                    double y = track.vals().at(t)->End()(1);
-                    double z = track.vals().at(t)->End()(2);
+		    double x = track.vals().at(t)->End().X();
+		    double y = track.vals().at(t)->End().Y();
+		    double z = track.vals().at(t)->End().Z();
                     double tick = 30 + detprop->ConvertXToTicks(x, plane, tpc, cstat);
                     double wire = geo->WireCoordinate(y, z, plane, tpc, cstat);
                     tid = track.vals().at(t)->ID()&65535; //this is a hack for PMA track id which uses the 16th bit to identify shower-like track.;
@@ -1756,9 +1756,9 @@ void RecoBaseDrawer::DrawTrackVertexAssns2D(const art::Event& evt,
             const art::Ptr<recob::Track>& track = vertexTrackAssn.second;
             
             // BB: draw the track ID at the end of the track
-            double x    = track->End()(0);
-            double y    = track->End()(1);
-            double z    = track->End()(2);
+            double x    = track->End().X();
+            double y    = track->End().Y();
+            double z    = track->End().Z();
             double tick = 30 + detprop->ConvertXToTicks(x, plane, tpc, cstat);
             double wire = geo->WireCoordinate(y, z, plane, tpc, cstat);
             
@@ -3615,9 +3615,9 @@ void RecoBaseDrawer::DrawTrackOrtho(const recob::Track& track,
       int tid = track.ID()&65535; //this is a hack for PMA track id which uses the 16th bit to identify shower-like track.
       std::string s = std::to_string(tid);
       char const* txt = s.c_str();
-      double x = track.End()(0);
-      double y = track.End()(1);
-      double z = track.End()(2);
+      double x = track.End().X();
+      double y = track.End().Y();
+      double z = track.End().Z();
       if(proj == evd::kXY) {
 	  TText& trkID = view->AddText(x, y, txt);
         trkID.SetTextColor(evd::kColor[tid%evd::kNCOLS]);
@@ -4204,7 +4204,8 @@ void RecoBaseDrawer::FillTQHistoDP(const art::Event&    evt,
                                    std::vector<double>& hpeaktimes,
                                    std::vector<int>&    hstartT,
                                    std::vector<int>&    hendT,
-                                   std::vector<int>&    hNMultiHit)
+                                   std::vector<int>&    hNMultiHit,
+				   std::vector<int>&    hLocalHitIndex)
 {
     art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
@@ -4263,6 +4264,7 @@ void RecoBaseDrawer::FillTQHistoDP(const art::Event&    evt,
             hstartT.push_back(hits[i]->StartTick());
             hendT.push_back(hits[i]->EndTick());
             hNMultiHit.push_back(hits[i]->Multiplicity());
+	    hLocalHitIndex.push_back(hits[i]->LocalIndex());
         }//end loop over reco hits
     }//end loop over HitFinding modules
 

@@ -44,12 +44,12 @@ namespace evd
     record_=0;
   }
   void LandedSocket::
-  preProcessEvent(art::Event const&)
+  preProcessEvent(art::Event const&, art::ScheduleContext)
   {
 
   }
   void LandedSocket::
-  postProcessEvent(art::Event const& event)
+  postProcessEvent(art::Event const& event, art::ScheduleContext)
   {
     if (socket_!=nullptr)
       {

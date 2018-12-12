@@ -80,7 +80,7 @@ namespace evd {
   
   
   //......................................................................
-  void InfoTransfer::Rebuild(const art::Event& evt)
+  void InfoTransfer::Rebuild(const art::Event& evt, art::ScheduleContext)
   {
     art::ServiceHandle<geo::Geometry>  geo;
     unsigned int nplanes = geo->Nplanes();

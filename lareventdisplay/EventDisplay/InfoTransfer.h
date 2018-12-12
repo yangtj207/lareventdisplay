@@ -17,6 +17,7 @@
 #include "art/Framework/Services/Registry/ActivityRegistry.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Services/Registry/ServiceMacros.h"
+#include "art/Persistency/Provenance/ScheduleContext.h"
 #include "nutools/EventDisplayBase/Reconfigurable.h"
 
 #include "lardataobj/RecoBase/Hit.h"
@@ -43,7 +44,7 @@ namespace evd {
     // products are put into the event in LArG4.  This is the least bad way of ensuring the
     // InfoTransfer works in jobs that combine MC production and reconstruction analysis based
     // on MC truth.  Don't copy this design pattern without talking to brebel@fnal.gov first
-    void Rebuild(const art::Event& evt);
+    void Rebuild(const art::Event& evt, art::ScheduleContext);
 
 
     void reconfigure(fhicl::ParameterSet const& pset) ;
@@ -143,4 +144,3 @@ namespace evd {
 #endif // __CINT__
 DECLARE_ART_SERVICE(evd::InfoTransfer, LEGACY)
 #endif
-

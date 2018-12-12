@@ -2,6 +2,7 @@
 #define LANDEDSOCKET_H
 
 #include "art/Framework/Services/Registry/ServiceMacros.h"
+#include "art/Persistency/Provenance/ScheduleContext.h"
 
 namespace fhicl { class ParameterSet; }
 namespace art   { class ActivityRegistry; }
@@ -26,8 +27,8 @@ namespace evd
     void postBeginJob();
     void postBeginJobWorkers(art::InputSource*,
 			     std::vector<art::Worker*> const&);
-    void preProcessEvent(art::Event const&);
-    void postProcessEvent(art::Event const&); 
+    void preProcessEvent(art::Event const&, art::ScheduleContext);
+    void postProcessEvent(art::Event const&, art::ScheduleContext);
 
   private:
     art::InputSource* inputSource_;

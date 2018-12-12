@@ -23,7 +23,6 @@ art_make(
             art_Utilities
 	    canvas
             ${MF_MESSAGELOGGER}
-            
             ${FHICLCPP}
             cetlib cetlib_except
             ${CLHEP}
@@ -49,6 +48,7 @@ art_make(
     	    art_Utilities canvas
     	    ${ART_FRAMEWORK_IO_ROOT_ROOTINPUT_SOURCE}
     	    ${ART_FRAMEWORK_IO_ROOT}
+            art_Framework_Principal
     	    art_Persistency_Provenance
 	    canvas
     	    ${MF_MESSAGELOGGER}

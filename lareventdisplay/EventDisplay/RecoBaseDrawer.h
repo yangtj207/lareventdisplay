@@ -6,10 +6,11 @@
 
 #include <vector>
 
+#include "art/Framework/Principal/Event.h"
+#include "art/Framework/Principal/View.h"
 #include "canvas/Persistency/Common/PtrVector.h"
 #include "canvas/Persistency/Common/FindMany.h"
 #include "canvas/Persistency/Common/FindManyP.h"
-#include "art/Framework/Principal/View.h"
 
 #include "lareventdisplay/EventDisplay/OrthoProj.h"
 #include "lardataobj/RecoBase/SpacePoint.h"

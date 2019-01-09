@@ -39,7 +39,7 @@ namespace recob {
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "lareventdisplay/EventDisplay/InfoTransfer.h"
 #include "larcore/Geometry/Geometry.h"
-#include "lardata/Utilities/StatCollector.h"
+#include "lardataalg/Utilities/StatCollector.h"
 
 #endif
 

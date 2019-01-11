@@ -872,21 +872,21 @@ namespace evd {
       // recover the pedestal
       float  pedestal = 0;
       if (rawopt->fPedestalOption == 0)
-	{
+      {
           pedestal = pedestalRetrievalAlg.PedMean(channel);
-	}
-      else if (rawopt->fPedestalOption == 1)
-	{
+      }
+        else if (rawopt->fPedestalOption == 1)
+      {
           pedestal = hit.GetPedestal();
-	}
-      else if (rawopt->fPedestalOption == 2)
-	{
-	  pedestal = 0;
-	}
-      else
-	{
-	  mf::LogWarning  ("RawDataDrawer") << " PedestalOption is not understood: " << rawopt->fPedestalOption << ".  Pedestals not subtracted.";
-	}
+      }
+        else if (rawopt->fPedestalOption == 2)
+      {
+          pedestal = 0;
+      }
+        else
+      {
+        mf::LogWarning  ("RawDataDrawer") << " PedestalOption is not understood: " << rawopt->fPedestalOption << ".  Pedestals not subtracted.";
+      }
 
       // loop over all the wires that are covered by this channel;
       // without knowing better, we have to draw into all of them
@@ -1365,21 +1365,21 @@ namespace evd {
       // recover the pedestal
       float  pedestal = 0;
       if (rawopt->fPedestalOption == 0)
-	{
+      {
           pedestal = pedestalRetrievalAlg.PedMean(channel);
-	}
+      }
       else if (rawopt->fPedestalOption == 1)
-	{
+      {
           pedestal = hit.GetPedestal();
-	}
+      }
       else if (rawopt->fPedestalOption == 2)
-	{
-	  pedestal = 0;
-	}
+      {
+          pedestal = 0;
+      }
       else
-	{
-	  mf::LogWarning  ("RawDataDrawer") << " PedestalOption is not understood: " << rawopt->fPedestalOption << ".  Pedestals not subtracted.";
-	}
+      {
+          mf::LogWarning  ("RawDataDrawer") << " PedestalOption is not understood: " << rawopt->fPedestalOption << ".  Pedestals not subtracted.";
+      }
 
         for(short d: uncompressed)
           histo->Fill(float(d) - pedestal); //pedestals[plane]); //hit.GetPedestal());
@@ -1454,21 +1454,21 @@ namespace evd {
       // recover the pedestal
       float  pedestal = 0;
       if (rawopt->fPedestalOption == 0)
-	{
+      {
           pedestal = pedestalRetrievalAlg.PedMean(channel);
-	}
+      }
       else if (rawopt->fPedestalOption == 1)
-	{
+      {
           pedestal = pDigit->DigitPtr()->GetPedestal();
-	}
+      }
       else if (rawopt->fPedestalOption == 2)
-	{
-	  pedestal = 0;
-	}
+      {
+          pedestal = 0;
+      }
       else
-	{
-	  mf::LogWarning  ("RawDataDrawer") << " PedestalOption is not understood: " << rawopt->fPedestalOption << ".  Pedestals not subtracted.";
-	}
+      {
+          mf::LogWarning  ("RawDataDrawer") << " PedestalOption is not understood: " << rawopt->fPedestalOption << ".  Pedestals not subtracted.";
+      }
     
     for(size_t j = 0; j < uncompressed.size(); ++j)
       histo->Fill(float(j), float(uncompressed[j]) - pedestal); //pedestals[plane]); //hit.GetPedestal());

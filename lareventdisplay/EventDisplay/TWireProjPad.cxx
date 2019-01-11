@@ -235,7 +235,8 @@ namespace evd{
       if(recoOpt->fUseHitSelector)
         this->RecoBaseDraw()->Hit2D(this->HitSelectorGet()->GetSelectedHits(fPlane),
                                     kSelectedColor,
-                                    fView);
+                                    fView,
+                                    true);
    
       this->RecoBaseDraw()->  Slice2D               (*evt, fView, fPlane);
       this->RecoBaseDraw()->  Cluster2D             (*evt, fView, fPlane);

@@ -298,7 +298,7 @@ int RecoBaseDrawer::Hit2D(const art::Event& evt,
         fConvertedCharge[itr->WireID().Plane] += detp->BirksCorrection(dQdX);
       } // loop on hits
 
-      nHitsDrawn = this->Hit2D(hits, kBlack, view);
+      nHitsDrawn = this->Hit2D(hits, kBlack, view, recoOpt->fDrawAllWireIDs);
 
     } // loop on imod folders
     
@@ -317,6 +317,7 @@ int RecoBaseDrawer::Hit2D(const art::Event& evt,
 int RecoBaseDrawer::Hit2D(std::vector<const recob::Hit*> hits,
                           int                            color,
                           evdb::View2D*                  view,
+                          bool                           allWireIDs,
                           bool                           drawConnectingLines,
                           int                            lineWidth)
 {
@@ -333,55 +334,65 @@ int RecoBaseDrawer::Hit2D(std::vector<const recob::Hit*> hits,
     
     int nHitsDrawn(0);
   
-    for(unsigned int c = 0; c < hits.size(); ++c)
+    for(const auto& hit : hits)
     {
-        // check that we are in the correct TPC
-        // the view should tell use we are in the correct plane
-        if(hits[c]->WireID().TPC      != rawOpt->fTPC ||
-           hits[c]->WireID().Cryostat != rawOpt->fCryostat) continue;
+        // Note that the WireID in the hit object is useless for those detectors where a channel can correspond to
+        // more than one plane/wire. So our plan is to recover the list of wire IDs from the channel number and
+        // loop over those (if there are any)
+        // However, we need to preserve the option for drawing hits only associated to the wireID it contains
+        std::vector<geo::WireID> wireIDs;
         
-        if (std::isnan(hits[c]->PeakTime()) || std::isnan(hits[c]->Integral()))
-        {
-            std::cout << "====>> Found hit with a NAN, channel: " << hits[c]->Channel() << ", start/end: " << hits[c]->StartTick() << "/" << hits[c]->EndTick() << ", chisquare: " << hits[c]->GoodnessOfFit() << std::endl;
-        }
-
-        if (hits[c]->PeakTime() > rawOpt->fTicks) continue;
+        if (allWireIDs) wireIDs = geo->ChannelToWire(hit->Channel());
+        else            wireIDs.push_back(hit->WireID());
         
-        w = hits[c]->WireID().Wire;
-
-        // Try to get the "best" charge measurement, ie. the one last in
-        // the calibration chain
-        float time = hits[c]->PeakTime();
-        float rms  = 0.5 * hits[c]->RMS();
-
-        if(rawOpt->fAxisOrientation < 1){
-            TBox& b1 = view->AddBox(w-0.5, time-rms, w+0.5, time+rms);
-            if(drawConnectingLines && c > 0) {
-                TLine& l = view->AddLine(w, time, wold, timeold);
-                l.SetLineColor(color);
-                l.SetBit(kCannotPick);
-            }
-            b1.SetFillStyle(0);
-            b1.SetBit(kCannotPick);
-            b1.SetLineColor(color);
-            b1.SetLineWidth(lineWidth);
-        }
-        else
+        // Loop to find match
+        for(const auto& wireID : wireIDs)
         {
-            TBox& b1 = view->AddBox(time-rms, w-0.5, time+rms, w+0.5);
-            if(drawConnectingLines && c > 0) {
-                TLine& l = view->AddLine(time, w, timeold, wold);
-                l.SetLineColor(color);
-                l.SetBit(kCannotPick);
+            if (wireID.TPC != rawOpt->fTPC || wireID.Cryostat != rawOpt->fCryostat) continue;
+        
+            if (std::isnan(hit->PeakTime()) || std::isnan(hit->Integral()))
+            {
+                std::cout << "====>> Found hit with a NAN, channel: " << hit->Channel() << ", start/end: " << hit->StartTick() << "/" << hit->EndTick() << ", chisquare: " <<   hit->GoodnessOfFit() << std::endl;
             }
-            b1.SetFillStyle(0);
-            b1.SetBit(kCannotPick);
-            b1.SetLineColor(color);
-            b1.SetLineWidth(lineWidth);
+    
+            if (hit->PeakTime() > rawOpt->fTicks) continue;
+            
+            w = wireID.Wire;
+    
+            // Try to get the "best" charge measurement, ie. the one last in
+            // the calibration chain
+            float time = hit->PeakTime();
+            float rms  = 0.5 * hit->RMS();
+    
+            if(rawOpt->fAxisOrientation < 1){
+                TBox& b1 = view->AddBox(w-0.5, time-rms, w+0.5, time+rms);
+                if(drawConnectingLines && nHitsDrawn > 0) {
+                    TLine& l = view->AddLine(w, time, wold, timeold);
+                    l.SetLineColor(color);
+                    l.SetBit(kCannotPick);
+                }
+                b1.SetFillStyle(0);
+                b1.SetBit(kCannotPick);
+                b1.SetLineColor(color);
+                b1.SetLineWidth(lineWidth);
+            }
+            else
+            {
+                TBox& b1 = view->AddBox(time-rms, w-0.5, time+rms, w+0.5);
+                if(drawConnectingLines && nHitsDrawn > 0) {
+                    TLine& l = view->AddLine(time, w, timeold, wold);
+                    l.SetLineColor(color);
+                    l.SetBit(kCannotPick);
+                }
+                b1.SetFillStyle(0);
+                b1.SetBit(kCannotPick);
+                b1.SetLineColor(color);
+                b1.SetLineWidth(lineWidth);
+            }
+            wold = w;
+            timeold = time;
+            nHitsDrawn++;
         }
-        wold = w;
-        timeold = time;
-        nHitsDrawn++;
     } // loop on hits
   
     return nHitsDrawn;
@@ -401,22 +412,22 @@ int RecoBaseDrawer::Hit2D(std::vector<const recob::Hit*> hits,
     float        timeold(0.);
     int          nHitsDrawn(0);
     
-    for(unsigned int c = 0; c < hits.size(); ++c)
+    for(const auto& hit : hits)
     {
         // check that we are in the correct TPC
         // the view should tell use we are in the correct plane
-        if(hits[c]->WireID().TPC      != rawOpt->fTPC ||
-           hits[c]->WireID().Cryostat != rawOpt->fCryostat) continue;
+        if(hit->WireID().TPC      != rawOpt->fTPC ||
+           hit->WireID().Cryostat != rawOpt->fCryostat) continue;
       
-        w = hits[c]->WireID().Wire;
+        w = hit->WireID().Wire;
 
         // Try to get the "best" charge measurement, ie. the one last in
         // the calibration chain
-        float time = hits[c]->PeakTime();
+        float time = hit->PeakTime();
 
         if(rawOpt->fAxisOrientation < 1)
         {
-            if( c > 0)
+            if( nHitsDrawn > 0)
             {
                 TLine& l = view->AddLine(w, time+100, wold, timeold+100);
                 l.SetLineWidth(3);
@@ -427,7 +438,7 @@ int RecoBaseDrawer::Hit2D(std::vector<const recob::Hit*> hits,
         }
         else
         {
-            if(c > 0)
+            if(nHitsDrawn > 0)
             {
                 TLine& l = view->AddLine(time+20, w, timeold+20, wold);
                 l.SetLineColor(1);
@@ -870,7 +881,7 @@ void RecoBaseDrawer::BezierTrack3D(const art::Event& evt,
               hits_on_plane.push_back(hit);
             }
           }
-          if (this->Hit2D(hits_on_plane, color, view, false) < 1) continue;
+          if (this->Hit2D(hits_on_plane, color, view, false, false) < 1) continue;
           if(recoOpt->fDrawSlices == 2) {
             double tick = detprop->ConvertXToTicks(slices[isl]->Center().X(), plane, t, c);
             double wire = geo->WireCoordinate(slices[isl]->Center().Y(),slices[isl]->Center().Z(),plane,t,c);
@@ -975,17 +986,17 @@ void RecoBaseDrawer::Cluster2D(const art::Event& evt,
                         // Recover associated hits
                         const std::vector<art::Ptr<recob::Hit>>& hitVec = spHitAssnVec.at(spacePointPtr.key());
                 
-                        for(const auto& hit : hitVec)
+                        for(const auto& hitPtr : hitVec)
                         {
-                            if(hit->WireID().Plane != plane) continue;
+                            if(hitPtr.get()->WireID().Plane != plane) continue;
                     
-                            freeHitVec.push_back(hit.get());
+                            freeHitVec.push_back(hitPtr.get());
                         }
                     }
                 }
         
                 // Draw the free hits in gray
-                this->Hit2D(freeHitVec, kGray, view, false);
+                this->Hit2D(freeHitVec, kGray, view, false, false, false);
             }
         }
         
@@ -1043,7 +1054,7 @@ void RecoBaseDrawer::Cluster2D(const art::Event& evt,
                 
                 // If there are no hits in this cryostat/TPC then we skip the rest
                 // That no hits were drawn is the sign for this
-                if (this->Hit2D(hits, color, view, drawConnectingLines) < 1) continue;
+                if (this->Hit2D(hits, color, view, false, drawConnectingLines) < 1) continue;
                 
                 if (recoOpt->fDrawCosmicTags&&cosmicscore!=FLT_MIN)
                     this->Hit2D(hits, view, cosmicscore);
@@ -1353,9 +1364,9 @@ void RecoBaseDrawer::DrawProng2D(std::vector<const recob::Hit*>&     hits,
 
     // first draw the hits
     if (cscore<-1000) //shower
-      this->Hit2D(hits, color, view, false, lineWidth);
+      this->Hit2D(hits, color, view, false, false, lineWidth);
     else
-      this->Hit2D(hits, color, view, false, lineWidth);
+      this->Hit2D(hits, color, view, false, false, lineWidth);
 
     double tick0 = detprop->ConvertXToTicks(startPos.X(), plane, t, c);
     double wire0 = geo->WireCoordinate(startPos.Y(),startPos.Z(),plane,t,c);
@@ -1394,7 +1405,7 @@ void RecoBaseDrawer::DrawTrack2D(std::vector<const recob::Hit*>& hits,
     unsigned int t = rawOpt->fTPC;
     
     // first draw the hits
-    this->Hit2D(hits, color, view, true, lineWidth);
+    this->Hit2D(hits, color, view, false, true, lineWidth);
     
     const auto& startPos = track->Vertex();
     const auto& startDir = track->VertexDirection();
@@ -1926,7 +1937,7 @@ void RecoBaseDrawer::Event2D(const art::Event& evt,
                     else itr++;
                 }
 	  
-                this->Hit2D(hits, evd::kColor[event[e]->ID()%evd::kNCOLS], view);
+                this->Hit2D(hits, evd::kColor[event[e]->ID()%evd::kNCOLS], view, false, true);
             }// end loop over events
         } // end loop over event module lables
     } // end if we are drawing events
@@ -3871,7 +3882,8 @@ int RecoBaseDrawer::GetHits(const art::Event&               evt,
                             std::vector<const recob::Hit*>& hits,
                             unsigned int                    plane) 
 {
-    art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
+    art::ServiceHandle<evd::RawDrawingOptions> rawOpt;
+    art::ServiceHandle<geo::Geometry>          geo;
 
     hits.clear();
 
@@ -3879,11 +3891,20 @@ int RecoBaseDrawer::GetHits(const art::Event&               evt,
 
     try{
         evt.getView(which, temp);
-        for(size_t t = 0; t < temp.size(); ++t){
-
-            if( temp[t]->WireID().Plane    == plane        &&
-                temp[t]->WireID().TPC      == rawOpt->fTPC &&
-                temp[t]->WireID().Cryostat == rawOpt->fCryostat) hits.push_back(temp[t]);
+        for(const auto& hit : temp)
+        {
+            // Note that the WireID in the hit object is useless for those detectors where a channel can correspond to
+            // more than one plane/wire. So our plan is to recover the list of wire IDs from the channel number and
+            // loop over those (if there are any)
+            const std::vector<geo::WireID>& wireIDs = geo->ChannelToWire(hit->Channel());
+            
+            // Loop to find match
+            for(const auto& wireID : wireIDs)
+            {
+                if( wireID.Plane    == plane        &&
+                    wireID.TPC      == rawOpt->fTPC &&
+                    wireID.Cryostat == rawOpt->fCryostat) hits.push_back(hit);
+            }
         }
     }
     catch(cet::exception& e){

@@ -75,6 +75,7 @@ public:
     int  Hit2D(std::vector<const recob::Hit*> hits,
 	           int                            color,
 	           evdb::View2D*                  view,
+               bool                           allWireIds,
                bool                           drawConnectingLines = false,
                int                            lineWidth = 1);
     int  Hit2D(std::vector<const recob::Hit*> hits,

@@ -82,7 +82,7 @@
 #include "larcorealg/Geometry/CryostatGeo.h"
 #include "larcorealg/Geometry/TPCGeo.h"
 #include "larcorealg/Geometry/PlaneGeo.h"
-#include "lardata/Utilities/StatCollector.h" // lar::util::MinMaxCollector<>
+#include "lardataalg/Utilities/StatCollector.h" // lar::util::MinMaxCollector<>
 #include "larcore/Geometry/Geometry.h"
 #include "lardata/DetectorInfoServices/LArPropertiesService.h"
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"

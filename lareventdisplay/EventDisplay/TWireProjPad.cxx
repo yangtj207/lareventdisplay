@@ -210,7 +210,7 @@ namespace evd{
   void TWireProjPad::Draw(const char* opt) 
   {
     // DumpPadsInCanvas(fPad, "TWireProjPad", "Draw()");
-    LOG_DEBUG("TWireProjPad") << "Started to draw plane " << fPlane;
+    MF_LOG_DEBUG("TWireProjPad") << "Started to draw plane " << fPlane;
     
     ///\todo: Why is kSelectedColor hard coded?
     int kSelectedColor = 4;
@@ -289,11 +289,11 @@ namespace evd{
       this->ShowFull();
     }
     
-    LOG_DEBUG("TWireProjPad") << "Started rendering plane " << fPlane;
+    MF_LOG_DEBUG("TWireProjPad") << "Started rendering plane " << fPlane;
     
     fView->Draw();
 
-    LOG_DEBUG("TWireProjPad") << "Drawing of plane " << fPlane << " completed";
+    MF_LOG_DEBUG("TWireProjPad") << "Drawing of plane " << fPlane << " completed";
   }
 
   //......................................................................
@@ -408,7 +408,7 @@ namespace evd{
   //
   void TWireProjPad::SetZoomRange(int i1, int i2,int y1, int y2)
   {
-    LOG_DEBUG("TWireProjPad")
+    MF_LOG_DEBUG("TWireProjPad")
       << "SetZoomRange(" << i1 << ", " << i2 << ", " << y1 << ", " << y2
       << ") on plane #" << fPlane;
     
@@ -428,7 +428,7 @@ namespace evd{
     fCurrentZoom[1] = xaxis.GetBinUpEdge(xaxis.GetLast());
     fCurrentZoom[2] = fHisto->GetMinimum();
     fCurrentZoom[3] = fHisto->GetMaximum();
-    LOG_DEBUG("TWireProjPad") << "Zoom set to wires ("
+    MF_LOG_DEBUG("TWireProjPad") << "Zoom set to wires ("
       << fCurrentZoom[0] << "; " << fCurrentZoom[1] << " ), tick ("
       << fCurrentZoom[2] << "; " << fCurrentZoom[3] << ") for plane #"
       << fPlane;
@@ -631,7 +631,7 @@ namespace evd{
 	try{
 	  BTrack.GetProjectedPointUVWT(float(i)/N,projpt,ticks,c,t );
 	  LastGoodValue=i;
-	  LOG_DEBUG("TWireProjPad") << i << " ";
+	  MF_LOG_DEBUG("TWireProjPad") << i << " ";
 	}
 	catch(cet::exception excp){
 	  BTrack.GetProjectedPointUVWT(float(LastGoodValue)/N, projpt, ticks, c, t);

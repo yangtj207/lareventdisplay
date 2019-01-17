@@ -82,7 +82,7 @@
 #include "larcorealg/Geometry/CryostatGeo.h"
 #include "larcorealg/Geometry/TPCGeo.h"
 #include "larcorealg/Geometry/PlaneGeo.h"
-#include "lardata/Utilities/StatCollector.h" // lar::util::MinMaxCollector<>
+#include "lardataalg/Utilities/StatCollector.h" // lar::util::MinMaxCollector<>
 #include "larcore/Geometry/Geometry.h"
 #include "lardata/DetectorInfoServices/LArPropertiesService.h"
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
@@ -602,7 +602,7 @@ namespace evd {
   void RawDataDrawer::SetDrawingLimits
     (float low_wire, float high_wire, float low_tdc, float high_tdc)
   {
-    LOG_DEBUG("RawDataDrawer") << __func__
+    MF_LOG_DEBUG("RawDataDrawer") << __func__
       << "() setting drawing range as wires ( "
       << low_wire << " - " << high_wire
       << " ), ticks ( " << low_tdc << " - " << high_tdc << " )";
@@ -617,7 +617,7 @@ namespace evd {
       fDrawingRange->SetTDCRange(low_tdc, high_tdc, tdc_pixels, 1.F);
     }
     else {
-      LOG_DEBUG("RawDataDrawer")
+      MF_LOG_DEBUG("RawDataDrawer")
         << "Pad size not available -- using existing cell size";
       fDrawingRange->SetWireRange(low_wire, high_wire);
       fDrawingRange->SetMinWireCellSize(1.F);
@@ -818,7 +818,7 @@ namespace evd {
     
     if(digit_cache->empty()) return true;
     
-    LOG_DEBUG("RawDataDrawer") << "RawDataDrawer::RunOperation() running "
+    MF_LOG_DEBUG("RawDataDrawer") << "RawDataDrawer::RunOperation() running "
       << operation->Name();
     
     // if we have an initialization failure, return false immediately;
@@ -1020,7 +1020,7 @@ namespace evd {
     evd::RawDrawingOptions const& rawopt
       = *art::ServiceHandle<evd::RawDrawingOptions>();
     
-    LOG_DEBUG("RawDataDrawer")
+    MF_LOG_DEBUG("RawDataDrawer")
       << "Filling " << BoxInfo.size() << " boxes to be rendered";
     
     // drawing options:
@@ -1057,7 +1057,7 @@ namespace evd {
       std::tie(min_wire, min_tick, max_wire, max_tick)
         = fDrawingRange->GetCellBox(iBox);
     /*
-      LOG_TRACE("RawDataDrawer")
+      MF_LOG_TRACE("RawDataDrawer")
         << "Wires ( " << min_wire << " - " << max_wire << " ) ticks ("
         << min_tick << " - " << max_tick << " ) for cell " << iBox;
     */
@@ -1088,7 +1088,7 @@ namespace evd {
       ++nDrawnBoxes;
     } // for (iBox)
     
-    LOG_DEBUG("RawDataDrawer")
+    MF_LOG_DEBUG("RawDataDrawer")
       << "Sent " << nDrawnBoxes << "/" << BoxInfo.size()
       << " boxes to be rendered";
   } // RawDataDrawer::QueueDrawingBoxes()
@@ -1176,7 +1176,7 @@ namespace evd {
     
     // if we have no region of interest, prepare to extract it
     bool const bExtractRoI = !hasRegionOfInterest(plane);
-    LOG_TRACE("RawDataDrawer") << "Region of interest for " << pid
+    MF_LOG_TRACE("RawDataDrawer") << "Region of interest for " << pid
       << (bExtractRoI? " extracted": " not extracted") << " on this draw";
     
     if (!bExtractRoI) return;
@@ -1224,12 +1224,12 @@ namespace evd {
       std::unique_ptr<OperationBaseClass> operation;
       
       // we will do the drawing in one pass
-      LOG_DEBUG("RawDataDrawer")
+      MF_LOG_DEBUG("RawDataDrawer")
         << __func__ << "() setting up one-pass drawing";
       operation.reset(new BoxDrawer(pid, this, view));
       
       if (!hasRoI) { // we don't have any RoI; since it's cheap, let's get it
-        LOG_DEBUG("RawDataDrawer") << __func__ << "() adding RoI extraction";
+        MF_LOG_DEBUG("RawDataDrawer") << __func__ << "() adding RoI extraction";
         
         // swap cards: operation becomes a multiple operation:
         // - prepare the two operations (one is there already, somehow)
@@ -1253,7 +1253,7 @@ namespace evd {
     else { // we are zooming to RoI
       // first, we want the RoI extracted; the extractor will update this object
       if (!hasRoI) {
-        LOG_DEBUG("RawDataDrawer") << __func__
+        MF_LOG_DEBUG("RawDataDrawer") << __func__
           << "() setting up RoI extraction for " << pid;
         RoIextractorClass extractor(pid, this);
         if (!RunOperation(evt, &extractor)) {
@@ -1263,7 +1263,7 @@ namespace evd {
         }
       }
       else {
-        LOG_DEBUG("RawDataDrawer") << __func__
+        MF_LOG_DEBUG("RawDataDrawer") << __func__
           << "() using existing RoI for " << pid
           << ": wires ( " << fWireMin[plane] << " - " << fWireMax[plane]
           << " ), ticks ( " << fTimeMin[plane] << " - " << fTimeMax[plane]
@@ -1274,7 +1274,7 @@ namespace evd {
       SetDrawingLimitsFromRoI(pid);
       
       // then we draw
-      LOG_DEBUG("RawDataDrawer") << __func__ << "() setting up drawing";
+      MF_LOG_DEBUG("RawDataDrawer") << __func__ << "() setting up drawing";
       BoxDrawer drawer(pid, this, view);
       if (!RunOperation(evt, &drawer)) {
         throw art::Exception(art::errors::Unknown)
@@ -1576,7 +1576,7 @@ namespace evd {
   //......................................................................    
   void RawDataDrawer::ResetRegionOfInterest() {
     
-    LOG_DEBUG("RawDataDrawer") << "RawDataDrawer[" << ((void*) this)
+    MF_LOG_DEBUG("RawDataDrawer") << "RawDataDrawer[" << ((void*) this)
       << "]: resetting the region of interest";
     
     std::fill(fWireMin.begin(), fWireMin.end(), -1);
@@ -1592,7 +1592,7 @@ namespace evd {
   void RawDataDrawer::GetRawDigits
     (art::Event const& evt, details::CacheID_t const& new_timestamp)
   {
-    LOG_DEBUG("RawDataDrawer") << "GetRawDigits() for " << new_timestamp
+    MF_LOG_DEBUG("RawDataDrawer") << "GetRawDigits() for " << new_timestamp
       << " (last for: " << *fCacheID << ")";
     
     // update cache
@@ -1815,7 +1815,7 @@ namespace evd {
       
       if (update_info) return false; // already up to date: move on!
       
-      LOG_DEBUG("RawDataDrawer")
+      MF_LOG_DEBUG("RawDataDrawer")
         << "Refilling raw digit cache RawDigitCacheDataClass["
         << ((void*) this ) << "] for " << new_timestamp;
       

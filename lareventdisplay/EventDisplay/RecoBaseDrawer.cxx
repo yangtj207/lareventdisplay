@@ -583,7 +583,7 @@ void RecoBaseDrawer::OpFlash2D(const art::Event& evt,
         int NFlashes = opflashes.size();
         //double TopCoord = 1000;
 
-	LOG_VERBATIM("RecoBaseDrawer") <<"Total "<<NFlashes<<" flashes.";
+	MF_LOG_VERBATIM("RecoBaseDrawer") <<"Total "<<NFlashes<<" flashes.";
 
         // project each seed into this view
         for (size_t iof = 0; iof < opflashes.size(); ++iof) {
@@ -591,7 +591,7 @@ void RecoBaseDrawer::OpFlash2D(const art::Event& evt,
 	    if (opflashes[iof]->Time() < recoOpt->fFlashTMin) continue;
 	    if (opflashes[iof]->Time() > recoOpt->fFlashTMax) continue;
             int Color = evd::kColor[(iof)%evd::kNCOLS];
-            LOG_VERBATIM("RecoBaseDrawer") << "Flash t: "
+            MF_LOG_VERBATIM("RecoBaseDrawer") << "Flash t: "
                         << opflashes[iof]->Time()
                         << "\t y,z : "
                         << opflashes[iof]->YCenter()

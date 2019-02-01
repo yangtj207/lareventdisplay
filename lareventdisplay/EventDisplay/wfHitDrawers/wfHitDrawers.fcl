@@ -13,4 +13,9 @@ skewhit_drawer:
 tool_type:         DrawSkewHits
 }
 
+wiredata_drawer:
+{
+  tool_type:       DrawWireData
+}
+
 END_PROLOG

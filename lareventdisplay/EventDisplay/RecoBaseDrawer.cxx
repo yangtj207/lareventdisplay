@@ -4244,6 +4244,10 @@ void RecoBaseDrawer::FillTQHisto(const art::Event& evt,
     art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
     art::ServiceHandle<geo::Geometry>            geo;
     
+    float minSig(std::numeric_limits<float>::max());
+    float maxSig(std::numeric_limits<float>::lowest());
+    bool  setLimits(false);
+
     // Check if we're supposed to draw raw hits at all
     if(rawOpt->fDrawRawDataOrCalibWires==0) return;
     
@@ -4272,9 +4276,22 @@ void RecoBaseDrawer::FillTQHisto(const art::Event& evt,
             
             std::vector<float> wirSig = wires[i]->Signal();
             for(unsigned int ii = 0; ii < wirSig.size(); ++ii)
-                histo->Fill(1.*ii, wirSig[ii]);
+            {
+//                histo->SetLineColor(imod+4);
+//                histo->Fill(1.*ii, wirSig[ii]);
+                minSig = std::min(minSig,wirSig[ii]);
+                maxSig = std::max(maxSig,wirSig[ii]);
+            }
+            
+            setLimits = true;
         }//end loop over wires
     }//end loop over wire modules
+    
+    if (setLimits)
+    {
+        histo->SetMaximum(1.2 * maxSig);
+        histo->SetMinimum(1.2 * minSig);
+    }
     
     return;
 }

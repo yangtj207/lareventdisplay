@@ -23,6 +23,7 @@
 #include "lareventdisplay/EventDisplay/RawDataDrawer.h"
 #include "lareventdisplay/EventDisplay/RecoBaseDrawer.h"
 #include "lareventdisplay/EventDisplay/wfHitDrawers/IWFHitDrawer.h"
+#include "lareventdisplay/EventDisplay/wfHitDrawers/IWFWireDrawer.h"
 #include "larcore/Geometry/Geometry.h"
 #include "larcorealg/Geometry/CryostatGeo.h"
 #include "larcorealg/Geometry/TPCGeo.h"
@@ -99,10 +100,10 @@ TQPad::TQPad(const char* nm, const char* ti,
     fView = new evdb::View2D();
     
     art::ServiceHandle<evd::RecoDrawingOptions> recoOptions;
-    const fhicl::ParameterSet&                  pset = recoOptions->fHitDrawerParams;
     
-    fHitDrawerTool = art::make_tool<evdb_tool::IWFHitDrawer>(pset);
-    
+    fHitDrawerTool  = art::make_tool<evdb_tool::IWFHitDrawer>(recoOptions->fHitDrawerParams);
+    fWireDrawerTool = art::make_tool<evdb_tool::IWFWireDrawer>(recoOptions->fWireDrawerParams);
+
     fHitFuncVec.clear();
 }
 
@@ -282,7 +283,7 @@ void TQPad::Draw()
                     fRawHisto->SetMaximum(1.1*std::max(fRawHisto->GetMaximum(), fRecoHisto->GetMaximum()));
                     fRawHisto->SetMinimum(1.1*std::min(fRawHisto->GetMinimum(), fRecoHisto->GetMinimum()));
                     fRawHisto->Draw(defaultDrawOptions.c_str());
-                    fRecoHisto->Draw((defaultDrawOptions + " same").c_str());
+                    fRecoHisto->Draw(std::string("AXIS same").c_str());
                     break;
             } // switch
 
@@ -292,6 +293,7 @@ void TQPad::Draw()
                 raw::ChannelID_t channel = geoSvc->PlaneWireToChannel(fPlane,fWire,drawopt->fTPC,drawopt->fCryostat);
                 
                 fHitDrawerTool->Draw(*fView, fHitFuncVec, channel);
+                fWireDrawerTool->Draw(*fView, channel);
             }
             
 /* This code needs additional work to draw the text on the pad
@@ -429,6 +431,7 @@ void TQPad::BookHistogram()
             fRawHisto = new TH1F("fRAWTQHisto", ";t [ticks];q [ADC]", (int)tqxhi,tqxlo,tqxhi+tqxlo);
             fRecoHisto = new TH1F("fCALTQHisto", ";t [ticks];q [ADC]", (int)tqxhi,tqxlo,tqxhi+tqxlo);
             fRecoHisto->SetLineColor(kBlue);
+            fRecoHisto->SetLineWidth(1);
             break;
         default:
             throw cet::exception("TQPad") << __func__ << ": unexpected quantity #" << fTQ << "\n";

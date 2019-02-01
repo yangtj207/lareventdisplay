@@ -90,6 +90,7 @@ public:
     double                     fFlashTMax;               ///< Maximum time for a flash to be displayed.
     
     fhicl::ParameterSet        fHitDrawerParams;         ///< FHICL paramegers for the hit drawing
+    fhicl::ParameterSet        fWireDrawerParams;        ///< FHICL paramegers for the wire drawing
   };
 }//namespace
 #endif // __CINT__

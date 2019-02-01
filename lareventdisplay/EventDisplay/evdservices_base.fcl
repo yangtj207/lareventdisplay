@@ -103,6 +103,7 @@ standard_recodrawingopt:
  FlashTMax:                 1e9            # Maximum time for a flash to be displayed.
  CalorimetryAlgorithm:      @local::standard_calorimetryalgdata
  HitDrawer:                 @local::gaushit_drawer
+ WireDrawer:                @local::wiredata_drawer
 }
 
 standard_analysisdrawingopt:

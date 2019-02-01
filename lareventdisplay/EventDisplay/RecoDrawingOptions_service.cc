@@ -88,6 +88,7 @@ void RecoDrawingOptions::reconfigure(fhicl::ParameterSet const& pset)
     fFlashTMax                 = pset.get< double                     >("FlashTMax", 1e9           );
     
     fHitDrawerParams           = pset.get< fhicl::ParameterSet        >("HitDrawer"                );
+    fWireDrawerParams          = pset.get< fhicl::ParameterSet        >("WireDrawer"               );
   }
 
   DEFINE_ART_SERVICE(RecoDrawingOptions)

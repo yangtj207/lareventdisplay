@@ -1,16 +1,16 @@
 ///////////////////////////////////////////////////////////////////////
 ///
-/// \file   IWFHitDrawers.h
+/// \file   IWFWireDrawer.h
 ///
 /// \brief  This provides an interface for tools which are tasked with
-///         drawing the reconstructed hits on waveforms
+///         drawing the "wire" data (deconvolved waveforms)
 ///
 /// \author T. Usher
 ///
 ////////////////////////////////////////////////////////////////////////
 
-#ifndef IWFHitDrawer_H
-#define IWFHitDrawer_H
+#ifndef IWFWireDrawer_H
+#define IWFWireDrawer_H
 
 #include "fhiclcpp/ParameterSet.h"
 #include "larcoreobj/SimpleTypesAndConstants/RawTypes.h" // raw::ChannelID_t
@@ -19,15 +19,13 @@
 
 namespace evdb_tool
 {
-    class IWFHitDrawer
+    class IWFWireDrawer
     {
     public:
-        virtual ~IWFHitDrawer() noexcept = default;
+        virtual ~IWFWireDrawer() noexcept = default;
         
         virtual void configure(const fhicl::ParameterSet& pset)       = 0;
-        virtual void Draw(evdb::View2D&,
-                          std::vector<std::unique_ptr<TF1>>&,
-                          raw::ChannelID_t&)                    const = 0;
+        virtual void Draw(evdb::View2D&, raw::ChannelID_t&)     const = 0;
     };
 }
 

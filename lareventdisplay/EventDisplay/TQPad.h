@@ -8,7 +8,11 @@
 #include "lareventdisplay/EventDisplay/DrawingPad.h"
 #include "TH1F.h"
 namespace evdb { class View2D; }
-namespace evdb_tool { class IWFHitDrawer;}
+namespace evdb_tool
+{
+    class IWFHitDrawer;
+    class IWFWireDrawer;
+}
 
 namespace evd
 {
@@ -34,7 +38,8 @@ public:
 private:
     void BookHistogram();
       
-    using IWFHitDrawerPtr = std::unique_ptr<evdb_tool::IWFHitDrawer>;
+    using IWFHitDrawerPtr  = std::unique_ptr<evdb_tool::IWFHitDrawer>;
+    using IWFWireDrawerPtr = std::unique_ptr<evdb_tool::IWFWireDrawer>;
 
     unsigned int                      fWire;
     unsigned int                      fPlane;           ///< Which plane in the detector
@@ -43,6 +48,7 @@ private:
     TH1F*                             fRecoHisto;       ///< 1-D Histogram of charge or charge vs time
     evdb::View2D*                     fView;            ///< Superimpose scale on 1D histo
     IWFHitDrawerPtr                   fHitDrawerTool;   ///< An instance of the tool to draw hits
+    IWFWireDrawerPtr                  fWireDrawerTool;  ///< An instance of the tool to draw hits
     std::vector<std::unique_ptr<TF1>> fHitFuncVec;      ///< Keep track of functions to draw over reco hits
   };
 }

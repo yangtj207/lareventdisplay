@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "canvas/Persistency/Common/PtrVector.h"
-#include "art/Framework/Principal/View.h"
 
 #ifdef __ROOTCLING__
 namespace art { 

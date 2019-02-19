@@ -6,8 +6,6 @@
 /// \author  andrzej.szelc@yale.edu
 /// \author  ellen.klein@yale.edu
 ////////////////////////////////////////////////////////////////////////
-#ifndef GRAPHCLUSTER_H
-#define GRAPHCLUSTER_H
 
 #include <vector>
 #include <string>
@@ -116,9 +114,6 @@ namespace evd {
   public:
     
     explicit GraphCluster(fhicl::ParameterSet const&); 
-    virtual ~GraphCluster();
-         
-    void reconfigure(fhicl::ParameterSet const& p);
     void produce(art::Event& evt); 
 
   private:
@@ -126,8 +121,6 @@ namespace evd {
 
     GraphClusterAlg fGClAlg;
 
-  protected: 
-    
   //  art::ServiceHandle<evd::InfoTransfer> intr;
   //  art::ServiceHandle<geo::Geometry>  geo;
     
@@ -172,9 +165,9 @@ namespace evd {
 
   //-------------------------------------------------
   GraphCluster::GraphCluster(fhicl::ParameterSet const& pset) : 
+    EDProducer{pset},
   fGClAlg(pset.get< fhicl::ParameterSet >("GraphClusterAlg"))
   {
-    this->reconfigure(pset);
     art::ServiceHandle<geo::Geometry>  geo;
 	
 	
@@ -195,19 +188,6 @@ namespace evd {
 //     etime.resize(fNPlanes);
   }
   
-  
-  //-------------------------------------------------
-  GraphCluster::~GraphCluster()
-  {
-  }
-  
-  //-------------------------------------------------
-  void GraphCluster::reconfigure(fhicl::ParameterSet const& /*pset*/)
-  {
-
-
-    return;
-  }
   
   //
   //-------------------------------------------------
@@ -347,6 +327,3 @@ namespace evd {
   DEFINE_ART_MODULE(GraphCluster)
   
 } //end of evd namespace
-
-
-#endif // GRAPHCLUSTER_H

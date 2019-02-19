@@ -8,8 +8,9 @@
 
 #include "lareventdisplay/EventDisplay/DrawingPad.h"
 
-class TGraph;
+#include <string>
 
+class TGraph;
 
 namespace evdb { class View2D; }
 

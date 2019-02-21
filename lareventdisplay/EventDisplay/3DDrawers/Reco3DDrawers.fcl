@@ -1,13 +1,18 @@
 BEGIN_PROLOG
 
-#larvoxel_drawer3D:
-#{
-#    tool_type:       DrawLArVoxel3D
-#}
+spacepointstandard_drawer3D:
+{
+    tool_type:  SpacePoint3DDrawerStandard
+}
 
-#simenergydeposit_drawer3D:
-#{
-#    tool_type:       DrawSimEnergyDeposit3D
-#}
+spacepointchisquare_drawer3D:
+{
+    tool_type:  SpacePoint3DDrawerChiSquare
+}
+
+spacepointhitcharge_drawer3D:
+{
+    tool_type:  SpacePoint3DDrawerHitCharge
+}
 
 END_PROLOG

@@ -53,7 +53,10 @@ void RecoDrawingOptions::reconfigure(fhicl::ParameterSet const& pset)
     fSkeletonOnly              = pset.get< bool                       >("DrawSkeleton3DHitsOnly"   );
     fBestPCAAxisOnly           = pset.get< bool                       >("DrawBestPCAAxisOnly"      );
     fDrawTrackVertexAssns      = pset.get< bool                       >("DrawTrackVertexAssns"     );
+    fDraw3DSpacePoints         = pset.get< bool                       >("Draw3DSpacePoints"        );
     fDraw3DSpacePointHeatMap   = pset.get< bool                       >("Draw3DSpacePointHeatMap"  );
+    fDraw3DEdges               = pset.get< bool                       >("Draw3DEdges"              );
+    fDraw3DPCAAxes             = pset.get< bool                       >("Draw3DPCAAxes"            );
     fDrawAllWireIDs            = pset.get< bool                       >("DrawAllWireIDs"           );
     fHitLabels                 = pset.get< std::vector<art::InputTag> >("HitModuleLabels"          );
     if(pset.has_key("SliceModuleLabels")) fSliceLabels = pset.get< std::vector<art::InputTag> >("SliceModuleLabels");
@@ -89,6 +92,9 @@ void RecoDrawingOptions::reconfigure(fhicl::ParameterSet const& pset)
     
     fHitDrawerParams           = pset.get< fhicl::ParameterSet        >("HitDrawer"                );
     fWireDrawerParams          = pset.get< fhicl::ParameterSet        >("WireDrawer"               );
+
+    fSpacePointDrawerParams    = pset.get< fhicl::ParameterSet        >("SpacePointDrawer"         );
+    fAllSpacePointDrawerParams = pset.get< fhicl::ParameterSet        >("AllSpacePointDrawer"      );
   }
 
   DEFINE_ART_SERVICE(RecoDrawingOptions)

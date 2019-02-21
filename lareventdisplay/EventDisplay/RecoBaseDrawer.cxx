@@ -30,6 +30,7 @@
 #include "lareventdisplay/EventDisplay/ColorDrawingOptions.h"
 #include "lareventdisplay/EventDisplay/RawDrawingOptions.h"
 #include "lareventdisplay/EventDisplay/Style.h"
+#include "lareventdisplay/EventDisplay/3DDrawers/ISpacePoints3D.h"
 #include "lardataobj/RecoBase/Wire.h"
 #include "lardataobj/RecoBase/Edge.h"
 #include "lardataobj/RecoBase/Hit.h"
@@ -60,6 +61,7 @@
 #include "cetlib_except/exception.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Principal/Event.h"
+#include "art/Utilities/make_tool.h"
 #include "canvas/Persistency/Common/Ptr.h"
 #include "canvas/Persistency/Common/PtrVector.h"
 #include "art/Framework/Principal/Handle.h" 
@@ -85,7 +87,8 @@ namespace evd{
 RecoBaseDrawer::RecoBaseDrawer()
 {
     art::ServiceHandle<geo::Geometry>            geo;
-    art::ServiceHandle<evd::RawDrawingOptions>   rawopt;
+    art::ServiceHandle<evd::RawDrawingOptions>   rawOptions;
+    art::ServiceHandle<evd::RecoDrawingOptions>  recoOptions;
 
     fWireMin.resize(0);   
     fWireMax.resize(0);    
@@ -108,9 +111,12 @@ RecoBaseDrawer::RecoBaseDrawer()
             fWireMin[p] = 0;
             fWireMax[p] = geo->TPC(t).Plane(p).Nwires();
             fTimeMin[p] = 0;
-            fTimeMax[p] = rawopt->fTicks;
+            fTimeMax[p] = rawOptions->fTicks;
         }// end loop over planes
     }// end loop over TPCs
+    
+    fAllSpacePointDrawer = art::make_tool<evdb_tool::ISpacePoints3D>(recoOptions->fAllSpacePointDrawerParams);
+    fSpacePointDrawer    = art::make_tool<evdb_tool::ISpacePoints3D>(recoOptions->fSpacePointDrawerParams);
 }
 
 //......................................................................
@@ -2085,7 +2091,7 @@ void RecoBaseDrawer::SpacePoint3D(const art::Event& evt,
 //          sptsVec.push_back(&*spt);
 //          std::cout<<sptsVec.back()<<std::endl;
 //        }
-        this->DrawSpacePoint3D(spts, view, color, kFullDotMedium, 1);
+        fAllSpacePointDrawer->Draw(spts, view, color, kFullDotMedium, 1);
     }
 
     return;
@@ -2231,7 +2237,7 @@ void RecoBaseDrawer::DrawPFParticle3D(const art::Ptr<recob::PFParticle>&        
     art::ServiceHandle<evd::ColorDrawingOptions> cst;
     
     // First let's draw the hits associated to this cluster
-    const std::vector<art::Ptr<recob::SpacePoint>>& hitsVec(spacePointAssnVec.at(pfPart->Self()));
+    const std::vector<art::Ptr<recob::SpacePoint>>& hitsVec(spacePointAssnVec.at(pfPart.key()));
     
     // Use the particle ID to determine the color to draw the points
     // Ok, this is what we would like to do eventually but currently all particles are the same...
@@ -2255,7 +2261,8 @@ void RecoBaseDrawer::DrawPFParticle3D(const art::Ptr<recob::PFParticle>&        
     // Reset color index if a cosmic
     if (isCosmic) colorIdx = 12;
     
-    if (!hitsVec.empty())
+    if (!hitsVec.empty() && recoOpt->fDraw3DSpacePoints) fSpacePointDrawer->Draw(hitsVec, view, 1, kFullDotLarge, 0.25, &spHitAssnVec);
+/*
     {
         using HitPosition = std::array<double,6>;
         std::map<int,std::vector<HitPosition>> colorToHitMap;
@@ -2333,9 +2340,10 @@ void RecoBaseDrawer::DrawPFParticle3D(const art::Ptr<recob::PFParticle>&        
             nHitsDrawn += hitPair.second.size();
         }
     }
+*/
     
     // Now try to draw any associated edges
-    if (edgeAssnsVec.isValid())
+    if (edgeAssnsVec.isValid() && recoOpt->fDraw3DEdges)
     {
         const std::vector<art::Ptr<recob::Edge>>& edgeVec(edgeAssnsVec.at(pfPart->Self()));
     
@@ -2402,7 +2410,7 @@ void RecoBaseDrawer::DrawPFParticle3D(const art::Ptr<recob::PFParticle>&        
     }
     
     // Look up the PCA info
-    if (pcAxisAssnVec.isValid())
+    if (pcAxisAssnVec.isValid() && recoOpt->fDraw3DPCAAxes)
     {
         std::vector<const recob::PCAxis*> pcaVec(pcAxisAssnVec.at(pfPart.key()));
     
@@ -2679,77 +2687,6 @@ void RecoBaseDrawer::Prong3D(const art::Event& evt,
 }
 
 //......................................................................
-void RecoBaseDrawer::DrawSpacePoint3D(std::vector<art::Ptr<recob::SpacePoint>>& spts,
-					                  evdb::View3D*                             view,
-                                      int                                       color,
-                                      int                                       marker,
-                                      float                                     size)
-{
-    // Get services.
-
-    art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
-
-    // Organize space points into separate collections according to the color
-    // we want them to be.
-    // If option If option fColorSpacePointsByChisq is false, this means
-    // having a single collection with color inherited from the prong
-    // (specified by the argument color).
-
-    std::map<int, std::vector<const recob::SpacePoint*> > spmap;   // Indexed by color.
-    int spcolor = color;
-
-    for(auto &pspt : spts) {
-      //std::cout<<pspt<<std::endl;
-      //if(pspt == 0) throw cet::exception("RecoBaseDrawer:DrawSpacePoint3D") << "space point is null\n";
-
-        // For rainbow effect, choose root colors in range [51,100].
-        // We are using 100=best (red), 51=worst (blue).
-        
-//        if (pspt->Chisq() > -100.) continue;
-        
-        spcolor = 12;
-        
-        if (pspt->Chisq() < -100.) spcolor = 16;
-
-        if(recoOpt->fColorSpacePointsByChisq)
-        {
-            spcolor = 100 - 2.5 * pspt->Chisq();
-            
-            if(spcolor < 51)  spcolor = 51;
-            if(spcolor > 100) spcolor = 100;
-        }
-        else spcolor = color; 
-          //if (pspt->Chisq() < -1.) spcolor += 6;
-        
-        spmap[spcolor].push_back(&*pspt);
-    }
-
-    // Loop over colors.
-    // Note that larger (=better) space points are plotted on
-    // top for optimal visibility.
-
-    for(auto const icolor : spmap)
-    {
-        int spcolor = icolor.first;
-        const std::vector<const recob::SpacePoint*>& psps = icolor.second;
-
-        // Make and fill a polymarker.
-
-        TPolyMarker3D& pm = view->AddPolyMarker3D(psps.size(), spcolor, marker, size);
-
-        for(size_t s = 0; s < psps.size(); ++s)
-        {
-            const recob::SpacePoint& spt = *psps[s];
-
-            const double *xyz = spt.XYZ();
-            pm.SetPoint(s, xyz[0], xyz[1], xyz[2]);
-        }
-    }
-  
-    return;
-}
-
-//......................................................................
 void RecoBaseDrawer::DrawTrack3D(const recob::Track& track,
                                  evdb::View3D*       view,
                                  int                 color,
@@ -2788,7 +2725,7 @@ void RecoBaseDrawer::DrawTrack3D(const recob::Track& track,
                         if(&*p == &track)
                         {
                           std::vector<art::Ptr<recob::SpacePoint>> spts = fmsp.at(i);
-                          DrawSpacePoint3D(spts, view, color, marker, spSize);
+                          fSpacePointDrawer->Draw(spts, view, color, marker, spSize);
                         }
 	                }
                 }
@@ -2900,7 +2837,7 @@ void RecoBaseDrawer::DrawShower3D(const recob::Shower& shower,
             std::vector<art::Ptr<recob::SpacePoint>> spts;
             try {
               spts = fmsp.at(i);
-              DrawSpacePoint3D(spts, view, color);
+              fSpacePointDrawer->Draw(spts, view, color);
             }
             catch (...) {
               noSpts = true;
@@ -3104,7 +3041,7 @@ void RecoBaseDrawer::Slice3D(const art::Event& evt,
       int slcID = std::abs(slices[isl]->ID());
       int color = evd::kColor[slcID%evd::kNCOLS];
       std::vector<art::Ptr<recob::SpacePoint>> spts = fmsp.at(isl);
-      DrawSpacePoint3D(spts, view, color, kFullDotLarge, 2);
+      fSpacePointDrawer->Draw(spts, view, color, kFullDotLarge, 2);
     }
   }
 }

@@ -51,6 +51,10 @@ namespace util {
     class DetectorProperties;
 }
 
+namespace evdb_tool {
+    class ISpacePoints3D;
+}
+
 namespace evd {
 
 class ColorDrawingOptions;
@@ -165,11 +169,6 @@ public:
     void Edge3D(const art::Event& evt, evdb::View3D*     view);
     void Prong3D(const art::Event& evt,
 		         evdb::View3D*     view);
-    void DrawSpacePoint3D(std::vector<art::Ptr<recob::SpacePoint>>& spts,
-                          evdb::View3D*                                view,
-                          int                                          color,
-                          int                                          marker = 3,
-                          float                                        size = 1.);
     void DrawTrack3D(const recob::Track& track,
 		             evdb::View3D*       view,
                      int                 color,
@@ -358,6 +357,10 @@ public:
 
         
   private:
+    using ISpacePointDrawerPtr = std::unique_ptr<evdb_tool::ISpacePoints3D>;
+    
+    ISpacePointDrawerPtr      fAllSpacePointDrawer;
+    ISpacePointDrawerPtr      fSpacePointDrawer;
 
     std::vector<int>          fWireMin;         ///< lowest wire in interesting region for each plane
     std::vector<int>          fWireMax;         ///< highest wire in interesting region for each plane

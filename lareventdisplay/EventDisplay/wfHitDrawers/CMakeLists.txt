@@ -2,12 +2,14 @@ cet_enable_asserts()
 
 art_make( TOOL_LIBRARIES
             larcorealg_Geometry
+            lareventdisplay_EventDisplay_ColorDrawingOptions_service
             lareventdisplay_EventDisplay_RawDrawingOptions_service
             lareventdisplay_EventDisplay_RecoDrawingOptions_service
             larevt_CalibrationDBI_IOVData
             larevt_CalibrationDBI_Providers
             larcore_Geometry_Geometry_service
             lardata_Utilities
+            lardata_ArtDataHelper
             ${ART_FRAMEWORK_CORE}
             ${ART_FRAMEWORK_PRINCIPAL}
             ${ART_FRAMEWORK_SERVICES_REGISTRY}

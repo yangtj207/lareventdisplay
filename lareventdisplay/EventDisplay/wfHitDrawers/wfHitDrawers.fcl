@@ -10,12 +10,22 @@ gaushit_drawer:
 
 skewhit_drawer:
 {
-tool_type:         DrawSkewHits
+  tool_type:       DrawSkewHits
 }
 
 wiredata_drawer:
 {
   tool_type:       DrawWireData
+}
+
+wirehist_drawer:
+{
+  tool_type:       DrawWireHist
+}
+
+rawdigithist_drawer:
+{
+  tool_type:       DrawRawHist
 }
 
 END_PROLOG

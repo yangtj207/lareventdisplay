@@ -4,7 +4,7 @@
 ////////////////////////////////////////////////////////////////////////
 
 #include <cmath>
-#include "lareventdisplay/EventDisplay/wfHitDrawers/IWFWireDrawer.h"
+#include "lareventdisplay/EventDisplay/wfHitDrawers/IWaveformDrawer.h"
 #include "art/Utilities/ToolMacros.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "cetlib_except/exception.h"
@@ -22,18 +22,25 @@
 namespace evdb_tool
 {
 
-class DrawWireData : public IWFWireDrawer
+class DrawWireData : public IWaveformDrawer
 {
 public:
     explicit DrawWireData(const fhicl::ParameterSet& pset);
     
     ~DrawWireData();
     
-    void configure(const fhicl::ParameterSet& pset)       override;
-    void Draw(evdb::View2D&, raw::ChannelID_t&)     const override;
+    void configure(const fhicl::ParameterSet& pset)           override;
+    void Fill(evdb::View2D&, raw::ChannelID_t&, float, float) override;
+    void Draw(const std::string&)                             override;
     
+    float getMaximum() const                                  override {return fMaximum;};
+    float getMinimum() const                                  override {return fMinimum;};
+
 private:
     
+    float            fMaximum;
+    float            fMinimum;
+
     std::vector<int> fColorMap;
 };
     
@@ -59,8 +66,10 @@ void DrawWireData::configure(const fhicl::ParameterSet& pset)
 }
 
     
-void DrawWireData::Draw(evdb::View2D&     view2D,
-                        raw::ChannelID_t& channel) const
+void DrawWireData::Fill(evdb::View2D&     view2D,
+                        raw::ChannelID_t& channel,
+                        float             lowBin,
+                        float             hiBin)
 {
     art::ServiceHandle<evd::RecoDrawingOptions> recoOpt;
     
@@ -88,12 +97,22 @@ void DrawWireData::Draw(evdb::View2D&     view2D,
 
             TPolyLine& wireWaveform = view2D.AddPolyLine(signal.size(), fColorMap[imod % fColorMap.size()], 2, 1);
                 
-            for(size_t idx = 0; idx < signal.size(); idx++) wireWaveform.SetPoint(idx,float(idx)+0.5,signal[idx]);
+            for(size_t idx = 0; idx < signal.size(); idx++)
+            {
+                float bin = float(idx) + 0.5;
+                
+                if (bin >= lowBin && bin <= hiBin) wireWaveform.SetPoint(idx,bin,signal[idx]);
+            }
                 
             wireWaveform.Draw("same");
         }
     }//end loop over HitFinding modules
 
+    return;
+}
+    
+void DrawWireData::Draw(const std::string&)
+{
     return;
 }
     

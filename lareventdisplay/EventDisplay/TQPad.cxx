@@ -23,7 +23,7 @@
 #include "lareventdisplay/EventDisplay/RawDataDrawer.h"
 #include "lareventdisplay/EventDisplay/RecoBaseDrawer.h"
 #include "lareventdisplay/EventDisplay/wfHitDrawers/IWFHitDrawer.h"
-#include "lareventdisplay/EventDisplay/wfHitDrawers/IWFWireDrawer.h"
+#include "lareventdisplay/EventDisplay/wfHitDrawers/IWaveformDrawer.h"
 #include "larcore/Geometry/Geometry.h"
 #include "larcorealg/Geometry/CryostatGeo.h"
 #include "larcorealg/Geometry/TPCGeo.h"
@@ -54,6 +54,7 @@ TQPad::TQPad(const char* nm, const char* ti,
     DrawingPad(nm, ti, x1, y1, x2, y2),
     fWire(wire),
     fPlane(plane),
+    fFrameHist(0),
     fRawHisto(0),
     fRecoHisto(0)
 {
@@ -99,10 +100,12 @@ TQPad::TQPad(const char* nm, const char* ti,
     this->BookHistogram();
     fView = new evdb::View2D();
     
+    art::ServiceHandle<evd::RawDrawingOptions>  rawOptions;
     art::ServiceHandle<evd::RecoDrawingOptions> recoOptions;
-    
-    fHitDrawerTool  = art::make_tool<evdb_tool::IWFHitDrawer>(recoOptions->fHitDrawerParams);
-    fWireDrawerTool = art::make_tool<evdb_tool::IWFWireDrawer>(recoOptions->fWireDrawerParams);
+
+    fHitDrawerTool      = art::make_tool<evdb_tool::IWFHitDrawer>(recoOptions->fHitDrawerParams);
+    fRawDigitDrawerTool = art::make_tool<evdb_tool::IWaveformDrawer>(rawOptions->fRawDigitDrawerParams);
+    fWireDrawerTool     = art::make_tool<evdb_tool::IWaveformDrawer>(recoOptions->fWireDrawerParams);
 
     fHitFuncVec.clear();
 }
@@ -112,6 +115,7 @@ TQPad::TQPad(const char* nm, const char* ti,
 TQPad::~TQPad()
 {
     if (fView)      { delete fView;      fView      = 0; }
+    if (fFrameHist) { delete fFrameHist; fFrameHist = 0; }
     if (fRawHisto)  { delete fRawHisto;  fRawHisto  = 0; }
     if (fRecoHisto) { delete fRecoHisto; fRecoHisto = 0; }
 }
@@ -256,72 +260,40 @@ void TQPad::Draw()
         fHitFuncVec.clear();
 
         if(fTQ == kTQ){
-            fRawHisto->Reset("ICEM");
-            fRecoHisto->Reset("ICEM");
+            // Recover a channel number from current information
+            raw::ChannelID_t channel = geoSvc->PlaneWireToChannel(fPlane,fWire,drawopt->fTPC,drawopt->fCryostat);
+            
+            // Call the tools to fill the histograms for RawDigits and Wire data
+            fRawDigitDrawerTool->Fill(*fView, channel, this->RawDataDraw()->StartTick(), this->RawDataDraw()->TotalClockTicks());
+            fWireDrawerTool->Fill(*fView, channel, this->RawDataDraw()->StartTick(), this->RawDataDraw()->TotalClockTicks());
+            
+            // Vertical limits set for the enclosing histogram, then draw it with axes only
+            fFrameHist->SetMaximum(1.1*std::max(fRawDigitDrawerTool->getMaximum(), fWireDrawerTool->getMaximum()));
+            fFrameHist->SetMinimum(1.1*std::min(fRawDigitDrawerTool->getMinimum(), fWireDrawerTool->getMinimum()));
+            fFrameHist->Draw("AXIS");
 
-            this->RawDataDraw()->FillTQHisto(*evt,
-                                             fPlane,
-                                             fWire,
-                                             fRawHisto);
-
-            this->RecoBaseDraw()->FillTQHisto(*evt,
-                                              fPlane,
-                                              fWire,
-                                              fRecoHisto);
-     
             // draw with histogram style, only (square) lines, no errors
-            static const std::string defaultDrawOptions = "HIST";
-     
-            switch (drawopt->fDrawRawDataOrCalibWires) {
-                case kRAW:
-                    fRawHisto->Draw(defaultDrawOptions.c_str());
-                    break;
-                case kCALIB:
-                    fRecoHisto->Draw(defaultDrawOptions.c_str());
-                    break;
-                case kRAWCALIB:
-                    fRawHisto->SetMaximum(1.1*std::max(fRawHisto->GetMaximum(), fRecoHisto->GetMaximum()));
-                    fRawHisto->SetMinimum(1.1*std::min(fRawHisto->GetMinimum(), fRecoHisto->GetMinimum()));
-                    fRawHisto->Draw(defaultDrawOptions.c_str());
-                    fRecoHisto->Draw(std::string("AXIS same").c_str());
-                    break;
-            } // switch
+            static const std::string defaultDrawOptions = "HIST same";
 
-            // this loop draws Gaussian shapes for identified hits in the reco histo
+            // Draw the desired histograms
+            // If its not just the raw hists then we output the wire histograms
             if (drawopt->fDrawRawDataOrCalibWires != kRAW)
             {
-                raw::ChannelID_t channel = geoSvc->PlaneWireToChannel(fPlane,fWire,drawopt->fTPC,drawopt->fCryostat);
+                fWireDrawerTool->Draw(defaultDrawOptions.c_str());
                 
                 fHitDrawerTool->Draw(*fView, fHitFuncVec, channel);
-                fWireDrawerTool->Draw(*fView, channel);
+                
+                for(auto& func : fHitFuncVec) func->Draw((defaultDrawOptions + " same").c_str());
             }
-            
-/* This code needs additional work to draw the text on the pad
-        // BB: draw plane and wire number on the histogram
-        std::string pw = "P:W = " + std::to_string(this->fPlane) +
-          ":" + std::to_string(this->fWire);
-        char const* txt = pw.c_str();
-        std::cout<<" my text "<<txt<<"\n";
-        double xp = 0.1, yp = 0.9;
-        this->cd();
-        TText& plnwir = fView->AddText(xp, yp, txt);xxx
-        plnwir.SetTextColor(kBlack);
-        plnwir.Draw("same");
-*/
-            if     (drawopt->fDrawRawDataOrCalibWires == kCALIB) fRecoHisto->Draw((defaultDrawOptions + " same").c_str());
-            else if(drawopt->fDrawRawDataOrCalibWires == kRAWCALIB)
-            {
-                fRawHisto->Draw((defaultDrawOptions + " same").c_str());
-                fRecoHisto->Draw((defaultDrawOptions + " same").c_str());
-            }
-            
-            for(auto& func : fHitFuncVec) func->Draw((defaultDrawOptions + " same").c_str());
 
-           fRawHisto->SetTitleOffset(0.2, "Y");
-           fRecoHisto->SetLabelSize(0.2, "Y");
+            // Likewise, if it is not just the calib hists then we output the raw histogram
+            if (drawopt->fDrawRawDataOrCalibWires != kCALIB) fRawDigitDrawerTool->Draw(defaultDrawOptions.c_str());
 
+            // This is a remnant from a time long past...
+            fFrameHist->SetTitleOffset(0.2, "Y");
         } // end if fTQ == kTQ
  
+        // I am not sure what the block below is trying to do... I don't see where the hists are actually filled.
         if(fTQ == kQ){
 
             // figure out the signal type for this plane, assume that
@@ -389,6 +361,11 @@ void TQPad::Draw()
 //......................................................................
 void TQPad::BookHistogram()
 {
+    if (fFrameHist)
+    {
+        delete fFrameHist;
+        fFrameHist = 0;
+    }
     if (fRawHisto) {
         delete fRawHisto;
         fRawHisto = 0;
@@ -419,15 +396,20 @@ void TQPad::BookHistogram()
   
     switch (fTQ) {
         case kQ:
+            fFrameHist = new TH1F("fFrameHist", ";t [ticks];[ADC]", 2,0.,1.);
+            fFrameHist->SetMaximum(qxhiraw);
+            fFrameHist->SetMinimum(qxloraw);
+            
             fRawHisto = new TH1F("fRAWQHisto", ";;", 2,0.,1.);
             fRawHisto->SetMaximum(qxhiraw);
             fRawHisto->SetMinimum(qxloraw);
-      
+            
             fRecoHisto = new TH1F("fCALQHisto", ";;", 1,0.,1.);
             fRecoHisto->SetMaximum(qxhireco);
             fRecoHisto->SetMinimum(qxloreco);
             break; // kQ
         case kTQ:
+            fFrameHist = new TH1F("fFrameHist", ";t [ticks];q [ADC]", (int)tqxhi,tqxlo,tqxhi+tqxlo);
             fRawHisto = new TH1F("fRAWTQHisto", ";t [ticks];q [ADC]", (int)tqxhi,tqxlo,tqxhi+tqxlo);
             fRecoHisto = new TH1F("fCALTQHisto", ";t [ticks];q [ADC]", (int)tqxhi,tqxlo,tqxhi+tqxlo);
             fRecoHisto->SetLineColor(kBlue);
@@ -436,17 +418,27 @@ void TQPad::BookHistogram()
         default:
             throw cet::exception("TQPad") << __func__ << ": unexpected quantity #" << fTQ << "\n";
     }//end if fTQ == kTQ
-  
+    
+    fFrameHist->SetLabelSize  (0.15,"X");
+    fFrameHist->SetLabelOffset(0.00,"X");
+    fFrameHist->SetTitleSize  (0.15,"X");
+    fFrameHist->SetTitleOffset(0.80,"X");
+    
+    fFrameHist->SetLabelSize  (0.10,"Y");
+    fFrameHist->SetLabelOffset(0.01,"Y");
+    fFrameHist->SetTitleSize  (0.15,"Y");
+    fFrameHist->SetTitleOffset(0.80,"Y");
+    
     fRawHisto->SetLabelSize  (0.15,"X");
     fRawHisto->SetLabelOffset(0.00,"X");
     fRawHisto->SetTitleSize  (0.15,"X");
     fRawHisto->SetTitleOffset(0.80,"X");
-  
+    
     fRawHisto->SetLabelSize  (0.10,"Y");
     fRawHisto->SetLabelOffset(0.01,"Y");
     fRawHisto->SetTitleSize  (0.15,"Y");
     fRawHisto->SetTitleOffset(0.80,"Y");
-  
+
     fRecoHisto->SetLabelSize  (0.15,"X");
     fRecoHisto->SetLabelOffset(0.00,"X");
     fRecoHisto->SetTitleSize  (0.15,"X");

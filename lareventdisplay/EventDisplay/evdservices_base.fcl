@@ -36,6 +36,7 @@ standard_rawdrawingopt:
  Cryostat:                   0     # Cryostat number to display in TWQProjection view
  RawDataLabel:               "daq" # label of module making the raw digits
  PedestalOption:             0     # 0: use DetPedestalService; 1: use pedestal from raw digits;  2:  no pedestal subtraction
+ RawDigitDrawer:             @local::rawdigithist_drawer
 }
 
 standard_recodrawingopt:
@@ -107,7 +108,7 @@ standard_recodrawingopt:
  FlashTMax:                 1e9            # Maximum time for a flash to be displayed.
  CalorimetryAlgorithm:      @local::standard_calorimetryalgdata
  HitDrawer:                 @local::gaushit_drawer
- WireDrawer:                @local::wiredata_drawer
+ WireDrawer:                @local::wirehist_drawer
  SpacePointDrawer:          @local::spacepointchisquare_drawer3D
  AllSpacePointDrawer:       @local::spacepointstandard_drawer3D
 }

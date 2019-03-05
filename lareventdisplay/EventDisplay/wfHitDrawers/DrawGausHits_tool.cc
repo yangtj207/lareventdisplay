@@ -47,8 +47,9 @@ private:
     using ROIHitParamsVec = std::vector<HitParams_t>;
     using HitParamsVec    = std::vector<ROIHitParamsVec>;
     
-    int     fNumPoints;
-    bool    fFloatBaseline;
+    int              fNumPoints;
+    bool             fFloatBaseline;
+    std::vector<int> fColorVec;
 };
     
 //----------------------------------------------------------------------
@@ -66,6 +67,12 @@ void DrawGausHits::configure(const fhicl::ParameterSet& pset)
 {
     fNumPoints     = pset.get< int>("NumPoints",     1000);
     fFloatBaseline = pset.get<bool>("FloatBaseline", false);
+    
+    fColorVec.clear();
+    fColorVec.push_back(kRed);
+    fColorVec.push_back(kGreen);
+    fColorVec.push_back(kMagenta);
+    fColorVec.push_back(kCyan);
     
     return;
 }
@@ -175,7 +182,7 @@ void DrawGausHits::Draw(evdb::View2D&                      view2D,
             
             TF1* f1 = hitFuncVec.back().get();
             
-            f1->SetLineColor(imod + 2);
+            f1->SetLineColor(fColorVec[imod % fColorVec.size()]);
             
             size_t idx(0);
             for(const auto& hitParams : roiHitParamsVec)

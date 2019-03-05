@@ -77,7 +77,7 @@ standard_recodrawingopt:
  Draw3DSpacePointHeatMap:   true           # Draw Spacepoints in 3D display with heat map (requires hit associations)
  Draw3DEdges:               true           # Draw "edges" in the 3D display
  Draw3DPCAAxes:             true           # Draw the PCA Axes in the 3D display
- DrawAllWireIDs:            true           # Draw hits for all assocated WireIDs
+ DrawAllWireIDs:            false          # Draw hits for all assocated WireIDs
  WireModuleLabels:          ["caldata"]    # list of module labels in which to look for recob::Wires
  HitModuleLabels:           ["gaushit"]    # list of module labels in which to look for recob::Hits
  EndPoint2DModuleLabels:    [""]           # list of module labels in which to look for recob::EndPoint2Ds

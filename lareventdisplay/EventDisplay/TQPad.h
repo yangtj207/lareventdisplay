@@ -45,8 +45,6 @@ private:
     unsigned int                      fPlane;               ///< Which plane in the detector
     int                               fTQ;                  ///< 0 = plot shows charge only, 1 = plot shows charge vs time for a wire
     TH1F*                             fFrameHist;           ///< A dummy histogram to define the axes
-    TH1F*                             fRawHisto;            ///< 1-D Histogram of charge or charge vs time
-    TH1F*                             fRecoHisto;           ///< 1-D Histogram of charge or charge vs time
     evdb::View2D*                     fView;                ///< Superimpose scale on 1D histo
     IWFHitDrawerPtr                   fHitDrawerTool;       ///< An instance of the tool to draw hits
     IWaveformDrawerPtr                fRawDigitDrawerTool;  ///< An instance of the tool to draw hits

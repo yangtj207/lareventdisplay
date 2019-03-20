@@ -36,7 +36,20 @@ public:
     void Draw(evdb::View2D&, std::vector<std::unique_ptr<TF1>>&, raw::ChannelID_t&) const override;
     
 private:
-    
+    double EvalExpoFit(double x,
+                       double tau1,
+                       double tau2,
+                       double amplitude,
+                       double peaktime) const;
+
+    double EvalMultiExpoFit(double x,
+                            int HitNumber,
+                            int NHits,
+                            std::vector<double> tau1,
+                            std::vector<double> tau2,
+                            std::vector<double> amplitude,
+                            std::vector<double> peaktime) const;
+
     mutable std::vector<TPolyLine*> fPolyLineVec;
 };
     
@@ -142,7 +155,7 @@ void DrawSkewHits::Draw(evdb::View2D&                      view2D,
                 for(int j = 0; j<1001; ++j)
                 {
                     double x = hitStartTVec[idx] + j * (hitEndTVec[idx+hitNMultiHitVec[idx]-1]-hitStartTVec[idx])/1000;
-                    double y = 0.; //RecoBaseDraw()->EvalMultiExpoFit(x,i,hNMultiHit[i],htau1,htau2,hamplitudes,hpeaktimes);
+                    double y = EvalMultiExpoFit(x,idx,hitNMultiHitVec[idx],hitTau1Vec,hitTau2Vec,hitPeakAmpVec,hitPeakTimeVec);
                     p2.SetPoint(j, x, y);
                 }
                 
@@ -156,7 +169,7 @@ void DrawSkewHits::Draw(evdb::View2D&                      view2D,
             // set coordinates of TPolyLine based fitted function
             for(int j = 0; j<1001; ++j){
                 double x = hitStartTVec[idx - hitLocalIdxVec[idx]] + j * (hitEndTVec[idx + hitNMultiHitVec[idx] - hitLocalIdxVec[idx] - 1] - hitStartTVec[idx - hitLocalIdxVec[idx]]) / 1000;
-                double y = 0.; //RecoBaseDraw()->EvalExpoFit(x,htau1[i],htau2[i],hamplitudes[i],hpeaktimes[i]);
+                double y = EvalExpoFit(x,hitTau1Vec[idx],hitTau2Vec[idx],hitPeakAmpVec[idx],hitPeakTimeVec[idx]);
                 p1.SetPoint(j, x, y);
             }
             
@@ -167,6 +180,34 @@ void DrawSkewHits::Draw(evdb::View2D&                      view2D,
     }
 
     return;
+}
+
+double DrawSkewHits::EvalExpoFit(double x,
+                                 double tau1,
+                                 double tau2,
+                                 double amplitude,
+                                 double peaktime) const
+{
+    return (amplitude * exp(0.4*(x-peaktime)/tau1) / ( 1 + exp(0.4*(x-peaktime)/tau2) ) );
+}
+
+//......................................................................
+double DrawSkewHits::EvalMultiExpoFit(double x,
+                                      int HitNumber,
+                                      int NHits,
+                                      std::vector<double> tau1,
+                                      std::vector<double> tau2,
+                                      std::vector<double> amplitude,
+                                      std::vector<double> peaktime) const
+{
+    double x_sum = 0.;
+    
+    for(int i = HitNumber; i < HitNumber+NHits; i++)
+    {
+        x_sum += (amplitude[i] * exp(0.4*(x-peaktime[i])/tau1[i]) / ( 1 + exp(0.4*(x-peaktime[i])/tau2[i]) ) );
+    }
+    
+    return x_sum;
 }
 
 DEFINE_ART_CLASS_TOOL(DrawSkewHits)

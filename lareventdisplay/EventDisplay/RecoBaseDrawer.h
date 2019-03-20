@@ -273,19 +273,19 @@ public:
 		              double& charge,
 		              double& convcharge);
 
-    double EvalExpoFit(double x,
-		       double tau1,
-		       double tau2,
-		       double amplitude,
-		       double peaktime);
+    //double EvalExpoFit(double x,
+	//	       double tau1,
+	//	       double tau2,
+	//	       double amplitude,
+	//	       double peaktime);
 
-    double EvalMultiExpoFit(double x,
-			    int HitNumber,
-			    int NHits,
-			    std::vector<double> tau1,
-			    std::vector<double> tau2,
-			    std::vector<double> amplitude,
-			    std::vector<double> peaktime);
+    //double EvalMultiExpoFit(double x,
+	//		    int HitNumber,
+	//		    int NHits,
+	//		    std::vector<double> tau1,
+	//		    std::vector<double> tau2,
+	//		    std::vector<double> amplitude,
+	//		    std::vector<double> peaktime);
     
   private:
     void GetClusterOutlines(std::vector<const recob::Hit*>& hits,

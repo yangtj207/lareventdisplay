@@ -184,15 +184,15 @@ void DrawRawHist::BookHistogram(raw::ChannelID_t& channel, float startTick, floa
     histPtr->SetLineColor(kBlack);
     histPtr->SetLineWidth(1);
     
-    histPtr->SetLabelSize  (0.15,"X");
-    histPtr->SetLabelOffset(0.00,"X");
-    histPtr->SetTitleSize  (0.15,"X");
-    histPtr->SetTitleOffset(0.80,"X");
+    histPtr->GetXaxis()->SetLabelSize  (0.10);    // was 0.15
+    histPtr->GetXaxis()->SetLabelOffset(0.01);    // was 0.00
+    histPtr->GetXaxis()->SetTitleSize  (0.10);    // was 0.15
+    histPtr->GetXaxis()->SetTitleOffset(0.60);    // was 0.80
     
-    histPtr->SetLabelSize  (0.15,"Y");
-    histPtr->SetLabelOffset(0.00,"Y");
-    histPtr->SetTitleSize  (0.15,"Y");
-    histPtr->SetTitleOffset(0.80,"Y");
+    histPtr->GetYaxis()->SetLabelSize  (0.10 );   // was 0.15
+    histPtr->GetYaxis()->SetLabelOffset(0.002);   // was 0.00
+    histPtr->GetYaxis()->SetTitleSize  (0.10 );   // was 0.15
+    histPtr->GetYaxis()->SetTitleOffset(0.16 );   // was 0.80
 }
 
 DEFINE_ART_CLASS_TOOL(DrawRawHist)

@@ -108,6 +108,9 @@ void DrawGausHits::Draw(evdb::View2D&                      view2D,
         
         if (hitPtrVec.empty()) continue;
         
+        // Apparently you cannot trust some hit producers to put the hits in the correct order!
+        std::sort(hitPtrVec.begin(),hitPtrVec.end(),[](const auto& left, const auto& right){return left->PeakTime() < right->PeakTime();});
+        
         // Get associations to wires
         art::FindManyP<recob::Wire> wireAssnsVec(hitPtrVec, *event, which);
         std::vector<float>          wireDataVec;

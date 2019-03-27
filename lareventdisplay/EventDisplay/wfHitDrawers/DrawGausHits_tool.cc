@@ -47,9 +47,10 @@ private:
     using ROIHitParamsVec = std::vector<HitParams_t>;
     using HitParamsVec    = std::vector<ROIHitParamsVec>;
     
-    int              fNumPoints;
-    bool             fFloatBaseline;
-    std::vector<int> fColorVec;
+    int                                       fNumPoints;
+    bool                                      fFloatBaseline;
+    std::vector<int>                          fColorVec;
+    mutable std::vector<std::unique_ptr<TF1>> fHitFunctionVec;
 };
     
 //----------------------------------------------------------------------
@@ -74,6 +75,8 @@ void DrawGausHits::configure(const fhicl::ParameterSet& pset)
     fColorVec.push_back(kMagenta);
     fColorVec.push_back(kCyan);
     
+    fHitFunctionVec.clear();
+    
     return;
 }
 
@@ -86,6 +89,8 @@ void DrawGausHits::Draw(evdb::View2D&     view2D,
     //grab the singleton with the event
     const art::Event* event = evdb::EventHolder::Instance()->GetEvent();
     if(!event) return;
+    
+    fHitFunctionVec.clear();
     
     for (size_t imod = 0; imod < recoOpt->fHitLabels.size(); ++imod)
     {
@@ -181,7 +186,8 @@ void DrawGausHits::Draw(evdb::View2D&     view2D,
             
             funcString += "+" + std::to_string(baseline);
             
-            TF1 hitFunc(funcName.c_str(),funcString.c_str(),roiStart,roiStop);
+            fHitFunctionVec.emplace_back(std::make_unique<TF1>(funcName.c_str(),funcString.c_str(),roiStart,roiStop));
+            TF1& hitFunc = *fHitFunctionVec.back().get();
             
             hitFunc.SetLineColor(fColorVec[imod % fColorVec.size()]);
             

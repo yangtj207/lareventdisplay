@@ -136,13 +136,10 @@ void DrawWireHist::Draw(const std::string& options, float maxLowVal, float maxHi
     for(const auto& histMap : fRecoHistMap)
     {
         TH1F* histPtr = histMap.second.get();
-        
-        // Do we have valid limits to set?
-        if (fMinimum > std::numeric_limits<float>::min() && fMaximum < std::numeric_limits<float>::max())
-        {
-            histPtr->SetMaximum(maxLowVal);
-            histPtr->SetMinimum(maxHiVal);
-        }
+
+        // Set the limits
+        histPtr->SetMaximum(maxHiVal);
+        histPtr->SetMinimum(maxLowVal);
         
         histPtr->Draw(options.c_str());
     }

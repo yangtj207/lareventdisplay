@@ -149,11 +149,8 @@ void DrawRawHist::Draw(const std::string& options, float maxLowVal, float maxHiV
     TH1F* histPtr = fRawDigitHist.get();
     
     // Do we have valid limits to set?
-    if (fMinimum > std::numeric_limits<float>::min() && fMaximum < std::numeric_limits<float>::max())
-    {
-        histPtr->SetMaximum(maxHiVal);
-        histPtr->SetMinimum(maxLowVal);
-    }
+    histPtr->SetMaximum(maxHiVal);
+    histPtr->SetMinimum(maxLowVal);
     
     histPtr->Draw(options.c_str());
     

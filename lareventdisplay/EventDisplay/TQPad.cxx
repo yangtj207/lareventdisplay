@@ -142,6 +142,9 @@ void TQPad::Draw()
         float maxLowVal = 1.1*std::min(fRawDigitDrawerTool->getMinimum(), fWireDrawerTool->getMinimum());
         float maxHiVal  = 1.1*std::max(fRawDigitDrawerTool->getMaximum(), fWireDrawerTool->getMaximum());
         
+        if (!(maxLowVal < std::numeric_limits<float>::max()))    maxLowVal = -10.;
+        if (!(maxHiVal  > std::numeric_limits<float>::lowest())) maxHiVal  =  10.;
+        
         fFrameHist->SetMaximum(maxHiVal);
         fFrameHist->SetMinimum(maxLowVal);
         fFrameHist->Draw("AXIS");

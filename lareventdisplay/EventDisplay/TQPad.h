@@ -49,7 +49,6 @@ private:
     IWFHitDrawerPtr                   fHitDrawerTool;       ///< An instance of the tool to draw hits
     IWaveformDrawerPtr                fRawDigitDrawerTool;  ///< An instance of the tool to draw hits
     IWaveformDrawerPtr                fWireDrawerTool;      ///< An instance of the tool to draw hits
-    std::vector<std::unique_ptr<TF1>> fHitFuncVec;          ///< Keep track of functions to draw over reco hits
   };
 }
 

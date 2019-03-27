@@ -34,7 +34,7 @@ public:
     
     void configure(const fhicl::ParameterSet& pset)           override;
     void Fill(evdb::View2D&, raw::ChannelID_t&, float, float) override;
-    void Draw(const std::string&)                             override;
+    void Draw(const std::string&, float, float)               override;
     
     float getMaximum() const                                  override {return fMaximum;};
     float getMinimum() const                                  override {return fMinimum;};
@@ -122,7 +122,6 @@ void DrawWireHist::Fill(evdb::View2D&     view2D,
             }
             
             histPtr->SetLineColor(fColorMap.at(imod % recoOpt->fWireLabels.size()));
-//            histPtr->Draw("HIST same");
             
             // There is only one channel displayed so if here we are done
             break;
@@ -132,7 +131,7 @@ void DrawWireHist::Fill(evdb::View2D&     view2D,
     return;
 }
     
-void DrawWireHist::Draw(const std::string& options)
+void DrawWireHist::Draw(const std::string& options, float maxLowVal, float maxHiVal)
 {
     for(const auto& histMap : fRecoHistMap)
     {
@@ -141,8 +140,8 @@ void DrawWireHist::Draw(const std::string& options)
         // Do we have valid limits to set?
         if (fMinimum > std::numeric_limits<float>::min() && fMaximum < std::numeric_limits<float>::max())
         {
-            histPtr->SetMaximum(1.2 * fMaximum);
-            histPtr->SetMinimum(1.2 * fMinimum);
+            histPtr->SetMaximum(maxLowVal);
+            histPtr->SetMinimum(maxHiVal);
         }
         
         histPtr->Draw(options.c_str());

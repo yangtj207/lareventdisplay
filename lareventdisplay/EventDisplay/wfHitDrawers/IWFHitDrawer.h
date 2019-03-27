@@ -26,7 +26,6 @@ namespace evdb_tool
         
         virtual void configure(const fhicl::ParameterSet& pset)       = 0;
         virtual void Draw(evdb::View2D&,
-                          std::vector<std::unique_ptr<TF1>>&,
                           raw::ChannelID_t&)                    const = 0;
     };
 }

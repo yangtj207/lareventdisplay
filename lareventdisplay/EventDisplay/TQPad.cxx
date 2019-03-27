@@ -104,8 +104,6 @@ TQPad::TQPad(const char* nm, const char* ti,
     fHitDrawerTool      = art::make_tool<evdb_tool::IWFHitDrawer>(recoOptions->fHitDrawerParams);
     fRawDigitDrawerTool = art::make_tool<evdb_tool::IWaveformDrawer>(rawOptions->fRawDigitDrawerParams);
     fWireDrawerTool     = art::make_tool<evdb_tool::IWaveformDrawer>(recoOptions->fWireDrawerParams);
-
-    fHitFuncVec.clear();
 }
 
 //......................................................................
@@ -129,8 +127,6 @@ void TQPad::Draw()
     
     fPad->Clear();
     fPad->cd();
-    
-    fHitFuncVec.clear();
 
     // Note this handles drawing waveforms for both SP and DP where the difference is handled by the tools
     if(fTQ == kTQ)
@@ -143,8 +139,11 @@ void TQPad::Draw()
         fWireDrawerTool->Fill(*fView, channel, this->RawDataDraw()->StartTick(), this->RawDataDraw()->TotalClockTicks());
         
         // Vertical limits set for the enclosing histogram, then draw it with axes only
-        fFrameHist->SetMaximum(1.1*std::max(fRawDigitDrawerTool->getMaximum(), fWireDrawerTool->getMaximum()));
-        fFrameHist->SetMinimum(1.1*std::min(fRawDigitDrawerTool->getMinimum(), fWireDrawerTool->getMinimum()));
+        float maxLowVal = 1.1*std::min(fRawDigitDrawerTool->getMinimum(), fWireDrawerTool->getMinimum());
+        float maxHiVal  = 1.1*std::max(fRawDigitDrawerTool->getMaximum(), fWireDrawerTool->getMaximum());
+        
+        fFrameHist->SetMaximum(maxHiVal);
+        fFrameHist->SetMinimum(maxLowVal);
         fFrameHist->Draw("AXIS");
 
         // draw with histogram style, only (square) lines, no errors
@@ -154,15 +153,13 @@ void TQPad::Draw()
         // If its not just the raw hists then we output the wire histograms
         if (drawopt->fDrawRawDataOrCalibWires != kRAW)
         {
-            fWireDrawerTool->Draw(defaultDrawOptions.c_str());
+            fWireDrawerTool->Draw(defaultDrawOptions.c_str(),maxLowVal,maxHiVal);
             
-            fHitDrawerTool->Draw(*fView, fHitFuncVec, channel);
-            
-            for(auto& func : fHitFuncVec) func->Draw((defaultDrawOptions + " same").c_str());
+            fHitDrawerTool->Draw(*fView, channel);
         }
 
         // Likewise, if it is not just the calib hists then we output the raw histogram
-        if (drawopt->fDrawRawDataOrCalibWires != kCALIB) fRawDigitDrawerTool->Draw(defaultDrawOptions.c_str());
+        if (drawopt->fDrawRawDataOrCalibWires != kCALIB) fRawDigitDrawerTool->Draw(defaultDrawOptions.c_str(),maxLowVal,maxHiVal);
 
         // This is a remnant from a time long past...
         fFrameHist->SetTitleOffset(0.2, "Y");

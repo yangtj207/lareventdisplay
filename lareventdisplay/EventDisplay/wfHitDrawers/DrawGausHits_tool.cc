@@ -30,8 +30,8 @@ public:
     
     ~DrawGausHits();
     
-    void configure(const fhicl::ParameterSet& pset)                                       override;
-    void Draw(evdb::View2D&, std::vector<std::unique_ptr<TF1>>&, raw::ChannelID_t&) const override;
+    void configure(const fhicl::ParameterSet& pset)       override;
+    void Draw(evdb::View2D&, raw::ChannelID_t&)     const override;
     
 private:
     
@@ -78,9 +78,8 @@ void DrawGausHits::configure(const fhicl::ParameterSet& pset)
 }
 
     
-void DrawGausHits::Draw(evdb::View2D&                      view2D,
-                        std::vector<std::unique_ptr<TF1>>& hitFuncVec,
-                        raw::ChannelID_t&                  channel) const
+void DrawGausHits::Draw(evdb::View2D&     view2D,
+                        raw::ChannelID_t& channel) const
 {
     art::ServiceHandle<evd::RecoDrawingOptions> recoOpt;
     
@@ -182,18 +181,16 @@ void DrawGausHits::Draw(evdb::View2D&                      view2D,
             
             funcString += "+" + std::to_string(baseline);
             
-            hitFuncVec.emplace_back(std::make_unique<TF1>(TF1(funcName.c_str(),funcString.c_str(),roiStart,roiStop)));
+            TF1 hitFunc(funcName.c_str(),funcString.c_str(),roiStart,roiStop);
             
-            TF1* f1 = hitFuncVec.back().get();
-            
-            f1->SetLineColor(fColorVec[imod % fColorVec.size()]);
+            hitFunc.SetLineColor(fColorVec[imod % fColorVec.size()]);
             
             size_t idx(0);
             for(const auto& hitParams : roiHitParamsVec)
             {
-                f1->SetParameter(idx + 0, hitParams.hitHeight);
-                f1->SetParameter(idx + 1, hitParams.hitCenter);
-                f1->SetParameter(idx + 2, hitParams.hitSigma);
+                hitFunc.SetParameter(idx + 0, hitParams.hitHeight);
+                hitFunc.SetParameter(idx + 1, hitParams.hitCenter);
+                hitFunc.SetParameter(idx + 2, hitParams.hitSigma);
                 
                 TPolyLine& hitHeight = view2D.AddPolyLine(2, kBlack, 1, 1);
                 
@@ -211,6 +208,8 @@ void DrawGausHits::Draw(evdb::View2D&                      view2D,
                 
                 idx += 3;
             }
+            
+            hitFunc.Draw("same");
         }
     }//end loop over HitFinding modules
 

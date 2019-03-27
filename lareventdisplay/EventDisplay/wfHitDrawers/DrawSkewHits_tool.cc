@@ -32,8 +32,8 @@ public:
     
     ~DrawSkewHits();
     
-    void configure(const fhicl::ParameterSet& pset)                                       override;
-    void Draw(evdb::View2D&, std::vector<std::unique_ptr<TF1>>&, raw::ChannelID_t&) const override;
+    void configure(const fhicl::ParameterSet& pset)       override;
+    void Draw(evdb::View2D&, raw::ChannelID_t&)     const override;
     
 private:
     double EvalExpoFit(double x,
@@ -70,9 +70,8 @@ void DrawSkewHits::configure(const fhicl::ParameterSet& pset)
 }
 
     
-void DrawSkewHits::Draw(evdb::View2D&                      view2D,
-                        std::vector<std::unique_ptr<TF1>>& hitFuncVec,
-                        raw::ChannelID_t&                  channel) const
+void DrawSkewHits::Draw(evdb::View2D&     view2D,
+                        raw::ChannelID_t& channel) const
 {
     art::ServiceHandle<evd::RawDrawingOptions>  rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions> recoOpt;
@@ -160,6 +159,7 @@ void DrawSkewHits::Draw(evdb::View2D&                      view2D,
                 }
                 
                 fPolyLineVec.push_back(&p2);
+                p2.Draw("same");
             }
             
             // Always draw the single peaks in addition to the sum of all peaks
@@ -175,7 +175,7 @@ void DrawSkewHits::Draw(evdb::View2D&                      view2D,
             
             fPolyLineVec.push_back(&p1);
             
-//            p1.Draw("same");
+            p1.Draw("same");
         }
     }
 

@@ -31,7 +31,7 @@ public:
     
     void configure(const fhicl::ParameterSet& pset)           override;
     void Fill(evdb::View2D&, raw::ChannelID_t&, float, float) override;
-    void Draw(const std::string&)                             override;
+    void Draw(const std::string&, float, float)               override;
     
     float getMaximum() const                                  override {return fMaximum;};
     float getMinimum() const                                  override {return fMinimum;};
@@ -111,7 +111,7 @@ void DrawWireData::Fill(evdb::View2D&     view2D,
     return;
 }
     
-void DrawWireData::Draw(const std::string&)
+void DrawWireData::Draw(const std::string&,float,float)
 {
     return;
 }

@@ -139,7 +139,7 @@ void DrawGausHits::Draw(evdb::View2D&                      view2D,
         for (const auto& hit : hitPtrVec)
         {
             // check roi end condition
-            if (hit->EndTick() > lastEndTick)
+            if (hit->PeakTime() - 3. * hit->RMS() > lastEndTick)
             {
                 if (!roiHitParamsVec.empty()) hitParamsVec.push_back(roiHitParamsVec);
                 roiHitParamsVec.clear();
@@ -150,12 +150,13 @@ void DrawGausHits::Draw(evdb::View2D&                      view2D,
             hitParams.hitCenter = hit->PeakTime();
             hitParams.hitSigma  = hit->RMS();
             hitParams.hitHeight = hit->PeakAmplitude();
-            hitParams.hitStart  = hit->StartTick();
-            hitParams.hitEnd    = hit->EndTick();
+            hitParams.hitStart  = hit->PeakTime() - 3. * hit->RMS();
+            hitParams.hitEnd    = hit->PeakTime() + 3. * hit->RMS(); 
+            
+            lastEndTick         = hitParams.hitEnd;
             
             roiHitParamsVec.emplace_back(hitParams);
-            
-            lastEndTick = hit->EndTick();
+
         }//end loop over reco hits
         
         // Just in case (probably never called...)

@@ -111,6 +111,11 @@ standard_recodrawingopt:
  WireDrawer:                @local::wirehist_drawer
  SpacePointDrawer:          @local::spacepointchisquare_drawer3D
  AllSpacePointDrawer:       @local::spacepointstandard_drawer3D
+
+ Reco3DDrawers:
+ {
+   OpFlash3D:              @local::standard_opflash3D
+ }
 }
 
 standard_analysisdrawingopt:

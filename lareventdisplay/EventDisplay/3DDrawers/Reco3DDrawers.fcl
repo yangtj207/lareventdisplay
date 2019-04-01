@@ -15,4 +15,9 @@ spacepointhitcharge_drawer3D:
     tool_type:  SpacePoint3DDrawerHitCharge
 }
 
+standard_opflash3D:
+{
+    tool_type:  OpFlash3DDrawer
+}
+
 END_PROLOG

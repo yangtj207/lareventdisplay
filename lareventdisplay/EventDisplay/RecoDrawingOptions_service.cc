@@ -95,6 +95,8 @@ void RecoDrawingOptions::reconfigure(fhicl::ParameterSet const& pset)
 
     fSpacePointDrawerParams    = pset.get< fhicl::ParameterSet        >("SpacePointDrawer"         );
     fAllSpacePointDrawerParams = pset.get< fhicl::ParameterSet        >("AllSpacePointDrawer"      );
+    
+    f3DDrawerParams            = pset.get< fhicl::ParameterSet        >("Reco3DDrawers"            );
   }
 
   DEFINE_ART_SERVICE(RecoDrawingOptions)

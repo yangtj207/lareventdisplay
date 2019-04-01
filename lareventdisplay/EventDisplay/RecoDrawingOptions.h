@@ -95,8 +95,10 @@ public:
     fhicl::ParameterSet        fHitDrawerParams;            ///< FHICL parameters for the hit drawing
     fhicl::ParameterSet        fWireDrawerParams;           ///< FHICL parameters for the wire drawing
     
-    fhicl::ParameterSet        fSpacePointDrawerParams;     ///< FHILL parameters for SpacePoint drawing
-    fhicl::ParameterSet        fAllSpacePointDrawerParams;  ///< FHILL parameters for SpacePoint drawing
+    fhicl::ParameterSet        fSpacePointDrawerParams;     ///< FHICL parameters for SpacePoint drawing
+    fhicl::ParameterSet        fAllSpacePointDrawerParams;  ///< FHICL parameters for SpacePoint drawing
+    
+    fhicl::ParameterSet        f3DDrawerParams;             ///< FHICL paramegers for the 3D drawers
   };
 }//namespace
 #endif // __CINT__

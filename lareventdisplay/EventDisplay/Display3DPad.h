@@ -10,7 +10,7 @@
 
 class TH3F;
 namespace evdb      { class View3D;       }
-namespace evdb_tool { class ISim3DDrawer; }
+namespace evdb_tool { class ISim3DDrawer; class I3DDrawer;}
 
 
 namespace evd {
@@ -36,6 +36,7 @@ private:
     evdb::View3D* fView;  ///< Collection of graphics objects to render
     
     std::vector<std::unique_ptr<evdb_tool::ISim3DDrawer>> fSim3DDrawerVec;
+    std::vector<std::unique_ptr<evdb_tool::I3DDrawer>>    fReco3DDrawerVec;
 };
 }
 

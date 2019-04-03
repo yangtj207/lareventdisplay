@@ -101,7 +101,7 @@ void DrawWireHist::Fill(evdb::View2D&     view2D,
         art::InputTag const which = recoOpt->fWireLabels[imod];
         
         art::Handle< std::vector<recob::Wire> > wireVecHandle;
-        event->getByLabel(which, wireVecHandle);
+        if (!event->getByLabel(which, wireVecHandle)) continue;
         
         for(size_t wireIdx = 0; wireIdx < wireVecHandle->size(); wireIdx++)
         {

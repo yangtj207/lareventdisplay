@@ -1681,7 +1681,8 @@ void RecoBaseDrawer::Prong2D(const art::Event& evt,
                                   //startPos,
                                   shower.vals().at(s)->ShowerStart(),
                                   shower.vals().at(s)->Direction(),
-                                  shower.vals().at(s)->ID(),
+                                  //shower.vals().at(s)->ID(),
+                                  s,
                                   -10001); //use -10001 to increase shower hit size
 
             }// end loop over prongs

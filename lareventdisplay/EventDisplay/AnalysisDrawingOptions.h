@@ -23,6 +23,7 @@ namespace evd {
     int fDrawParticleID;
     int fDrawShowerCalor;
     int fCaloPlane;
+    int fTrackID;
 
     std::vector<std::string> fCalorimetryLabels;         ///< module labels that produced calorimetry 
     std::vector<std::string> fParticleIDLabels;     	   ///< module labels that produced particleid

@@ -71,8 +71,9 @@ namespace evd{
 
       for(size_t imod = 0; imod < recoOpt->fTrackLabels.size(); ++imod) {
        
+         
          //Get Track collection
-          art::InputTag which = recoOpt->fTrackLabels[imod];
+         art::InputTag which = recoOpt->fTrackLabels[imod];
          art::Handle<std::vector<recob::Track> > trackListHandle;
          evt.getByLabel(which,trackListHandle);
          std::vector<art::Ptr<recob::Track> > tracklist;
@@ -92,7 +93,10 @@ namespace evd{
 	       if (!fmpid.isValid()) continue;
          
                //Loop over Tracks
+               int ntracks = 0;
                for(size_t trkIter = 0; trkIter<tracklist.size(); ++trkIter){
+                 if (anaOpt->fTrackID >=0 and tracklist[trkIter]->ID() != anaOpt->fTrackID) continue;
+                 ++ntracks;
 		 int color = tracklist[trkIter].key()%evd::kNCOLS;
 		 std::vector<const anab::Calorimetry*> calos = fmcal.at(trkIter);
 		 std::vector<const anab::ParticleID*> pids = fmpid.at(trkIter);
@@ -163,7 +167,7 @@ namespace evd{
 			 pids[pidpl]->PIDA(),
                          int(calos[calopl]->dEdx().size()));
 
-		 double offset = ((double)trkIter)*10.0;
+		 double offset = (ntracks - 1)*10.0;
 		 TLatex& track_tex  = view->AddLatex(13.0, (46.0)     - offset,trackinfo);
 		 TLatex& pida_tex   = view->AddLatex(13.0, (46.0-2.5) - offset,pida);
 		 TLatex& proton_tex = view->AddLatex(13.0, (46.0-5.0) - offset,proton);
@@ -220,7 +224,7 @@ namespace evd{
       //now get the actual data
       for(size_t imod = 0; imod < recoOpt->fTrackLabels.size(); ++imod) {
          //Get Track collection
-          art::InputTag which = recoOpt->fTrackLabels[imod];
+         art::InputTag which = recoOpt->fTrackLabels[imod];
          art::Handle<std::vector<recob::Track> > trackListHandle;
          evt.getByLabel(which,trackListHandle);
          std::vector<art::Ptr<recob::Track> > tracklist;
@@ -242,6 +246,7 @@ namespace evd{
 
                //Loop over Tracks
                for(size_t trkIter = 0; trkIter<tracklist.size(); ++trkIter){
+                 if (anaOpt->fTrackID >=0 and tracklist[trkIter]->ID() != anaOpt->fTrackID) continue;
 		 int color = tracklist[trkIter].key()%evd::kNCOLS;
 
 		 std::vector<const anab::Calorimetry*> calos = fmcal.at(trkIter);

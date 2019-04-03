@@ -32,6 +32,7 @@ namespace evd {
     fDrawParticleID    	       = pset.get< int >("DrawParticleID"   	  );
     fDrawShowerCalor           = pset.get< int >("DrawShowerCalor"        );
     fCaloPlane                 = pset.get< int >("CaloPlane"              );
+    fTrackID                   = pset.get< int >("TrackID"                );
     fCalorimetryLabels         = pset.get< std::vector<std::string> >("CalorimetryModuleLabels" );
     fParticleIDLabels          = pset.get< std::vector<std::string> >("ParticleIDModuleLabels"  );
 

@@ -95,6 +95,7 @@ void DrawWireHist::Fill(evdb::View2D&     view2D,
     fMinimum = std::numeric_limits<float>::max();
     fMaximum = std::numeric_limits<float>::lowest();
 
+    int nWireLabels = 0;
     for (size_t imod = 0; imod < recoOpt->fWireLabels.size(); ++imod)
     {
         // Step one is to recover the hits for this label that match the input channel
@@ -102,7 +103,8 @@ void DrawWireHist::Fill(evdb::View2D&     view2D,
         
         art::Handle< std::vector<recob::Wire> > wireVecHandle;
         if (!event->getByLabel(which, wireVecHandle)) continue;
-        
+        ++nWireLabels;
+
         for(size_t wireIdx = 0; wireIdx < wireVecHandle->size(); wireIdx++)
         {
             art::Ptr<recob::Wire> wire(wireVecHandle, wireIdx);
@@ -121,7 +123,7 @@ void DrawWireHist::Fill(evdb::View2D&     view2D,
                 fMaximum  = std::max(fMaximum,signalVec[idx]);
             }
             
-            histPtr->SetLineColor(fColorMap.at(imod % recoOpt->fWireLabels.size()));
+            histPtr->SetLineColor(fColorMap.at((nWireLabels-1) % recoOpt->fWireLabels.size()));
             
             // There is only one channel displayed so if here we are done
             break;

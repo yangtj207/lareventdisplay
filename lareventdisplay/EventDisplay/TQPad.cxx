@@ -141,10 +141,13 @@ void TQPad::Draw()
         // Vertical limits set for the enclosing histogram, then draw it with axes only
         float maxLowVal = 1.1*std::min(fRawDigitDrawerTool->getMinimum(), fWireDrawerTool->getMinimum());
         float maxHiVal  = 1.1*std::max(fRawDigitDrawerTool->getMaximum(), fWireDrawerTool->getMaximum());
-        
+        if (drawopt->fDrawRawDataOrCalibWires == kCALIB){
+          maxLowVal = 1.1*fWireDrawerTool->getMinimum();
+          maxHiVal  = 1.1*fWireDrawerTool->getMaximum();
+        }
         if (!(maxLowVal < std::numeric_limits<float>::max()))    maxLowVal = -10.;
         if (!(maxHiVal  > std::numeric_limits<float>::lowest())) maxHiVal  =  10.;
-        
+
         fFrameHist->SetMaximum(maxHiVal);
         fFrameHist->SetMinimum(maxLowVal);
         fFrameHist->Draw("AXIS");

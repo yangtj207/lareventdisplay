@@ -156,7 +156,7 @@ void RecoBaseDrawer::Wire2D(const art::Event& evt,
       art::PtrVector<recob::Wire> wires;
       this->GetWires(evt, which, wires);
 
-      if(wires.size() < 1) return;
+      if(wires.size() < 1) continue;
       
       for(size_t i = 0; i < wires.size(); ++i) {
       

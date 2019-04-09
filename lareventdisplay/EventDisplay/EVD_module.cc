@@ -5,11 +5,6 @@
 
 // Framework includes
 #include "art/Framework/Core/ModuleMacros.h"
-
-#ifndef EVD_EVD_H
-#define EVD_EVD_H
-
-// Framework Includes
 #include "art/Framework/Core/EDAnalyzer.h"
 
 #include <string>
@@ -173,6 +168,3 @@ namespace evd {
 #if defined __clang__
   #pragma clang diagnostic pop
 #endif
-
-#endif // EVD
-////////////////////////////////////////////////////////////////////////

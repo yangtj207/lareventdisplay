@@ -3,8 +3,6 @@
 /// \brief   Calorimetric view display window
 /// \author  msoderbe@syr.edu
 ///
-#include <iostream>
-#include <sstream>
 #include <cmath>
 
 #include "TCanvas.h"
@@ -22,7 +20,7 @@
 evd::CalorView::CalorView(TGMainFrame* mf) : evdb::Canvas(mf)
 {
 
-  art::ServiceHandle<evd::AnalysisDrawingOptions> anaOpt;
+  art::ServiceHandle<evd::AnalysisDrawingOptions const> anaOpt;
   
   evdb::Canvas::fCanvas->cd();
   if (anaOpt->fDrawShowerCalor){

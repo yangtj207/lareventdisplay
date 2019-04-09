@@ -86,9 +86,9 @@ namespace evd{
 //......................................................................
 RecoBaseDrawer::RecoBaseDrawer()
 {
-    art::ServiceHandle<geo::Geometry>            geo;
-    art::ServiceHandle<evd::RawDrawingOptions>   rawOptions;
-    art::ServiceHandle<evd::RecoDrawingOptions>  recoOptions;
+    art::ServiceHandle<geo::Geometry const>            geo;
+    art::ServiceHandle<evd::RawDrawingOptions const>   rawOptions;
+    art::ServiceHandle<evd::RecoDrawingOptions const>  recoOptions;
 
     fWireMin.resize(0);   
     fWireMax.resize(0);    
@@ -130,15 +130,15 @@ void RecoBaseDrawer::Wire2D(const art::Event& evt,
                             evdb::View2D*     view,
                             unsigned int      plane)
 {
-    art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
-    art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
-    art::ServiceHandle<geo::Geometry>            geo;
-    art::ServiceHandle<evd::ColorDrawingOptions> cst;
+    art::ServiceHandle<evd::RawDrawingOptions const>   rawOpt;
+    art::ServiceHandle<evd::RecoDrawingOptions const>  recoOpt;
+    art::ServiceHandle<geo::Geometry const>            geo;
+    art::ServiceHandle<evd::ColorDrawingOptions const> cst;
     
     if(rawOpt->fDrawRawDataOrCalibWires < 1)    return;
     
     lariov::ChannelStatusProvider const& channelStatus
-      = art::ServiceHandle<lariov::ChannelStatusService>()->GetProvider();
+      = art::ServiceHandle<lariov::ChannelStatusService const>()->GetProvider();
     
     int ticksPerPoint = rawOpt->fTicksPerPoint;
     
@@ -272,9 +272,9 @@ int RecoBaseDrawer::Hit2D(const art::Event& evt,
                           evdb::View2D*     view,
                           unsigned int      plane)
 {
-    art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
-    art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
-    art::ServiceHandle<geo::Geometry>            geo;
+    art::ServiceHandle<evd::RawDrawingOptions const>   rawOpt;
+    art::ServiceHandle<evd::RecoDrawingOptions const>  recoOpt;
+    art::ServiceHandle<geo::Geometry const>            geo;
     detinfo::DetectorProperties const* detp = lar::providerFrom<detinfo::DetectorPropertiesService>();
     
     int nHitsDrawn(0);
@@ -327,9 +327,9 @@ int RecoBaseDrawer::Hit2D(std::vector<const recob::Hit*> hits,
                           bool                           drawConnectingLines,
                           int                            lineWidth)
 {
-    art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
-    art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
-    art::ServiceHandle<geo::Geometry>            geo;
+    art::ServiceHandle<evd::RawDrawingOptions const>   rawOpt;
+    art::ServiceHandle<evd::RecoDrawingOptions const>  recoOpt;
+    art::ServiceHandle<geo::Geometry const>            geo;
 
     unsigned int w  = 0;
     unsigned int wold = 0;
@@ -409,9 +409,9 @@ int RecoBaseDrawer::Hit2D(std::vector<const recob::Hit*> hits,
                           evdb::View2D*                  view,
                           float                          cosmicscore)
 {
-    art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
-    art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
-    art::ServiceHandle<geo::Geometry>            geo;
+    art::ServiceHandle<evd::RawDrawingOptions const>   rawOpt;
+    art::ServiceHandle<evd::RecoDrawingOptions const>  recoOpt;
+    art::ServiceHandle<geo::Geometry const>            geo;
 
     unsigned int w(0);
     unsigned int wold(0);
@@ -468,8 +468,8 @@ int RecoBaseDrawer::GetRegionOfInterest(int plane,
                                         int& mint,
                                         int& maxt)
 {
-    art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
-    art::ServiceHandle<geo::Geometry>            geo;
+    art::ServiceHandle<evd::RawDrawingOptions const>   rawOpt;
+    art::ServiceHandle<geo::Geometry const>            geo;
 
     if((unsigned int)plane > fWireMin.size()){
         mf::LogWarning  ("RecoBaseDrawer") << " Requested plane "
@@ -511,9 +511,9 @@ void RecoBaseDrawer::EndPoint2D(const art::Event& evt,
                                 evdb::View2D*     view,
                                 unsigned int      plane)
 {
-    art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
-    art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
-    art::ServiceHandle<geo::Geometry>            geo;
+    art::ServiceHandle<evd::RawDrawingOptions const>   rawOpt;
+    art::ServiceHandle<evd::RecoDrawingOptions const>  recoOpt;
+    art::ServiceHandle<geo::Geometry const>            geo;
     
     if (rawOpt->fDrawRawDataOrCalibWires < 1) return;
     if (recoOpt->fDraw2DEndPoints == 0)       return;
@@ -567,13 +567,13 @@ void RecoBaseDrawer::OpFlash2D(const art::Event& evt,
                                evdb::View2D*     view,
                                unsigned int      plane)
 {
-    art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
-    art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
+    art::ServiceHandle<evd::RawDrawingOptions const>   rawOpt;
+    art::ServiceHandle<evd::RecoDrawingOptions const>  recoOpt;
 
     if (rawOpt->fDrawRawDataOrCalibWires < 1) return;
     if (recoOpt->fDrawOpFlashes == 0)         return;
 
-    art::ServiceHandle<geo::Geometry>            geo;
+    art::ServiceHandle<geo::Geometry const>            geo;
     detinfo::DetectorProperties const* det = lar::providerFrom<detinfo::DetectorPropertiesService>();
     geo::PlaneID pid(rawOpt->fCryostat, rawOpt->fTPC, plane);
 
@@ -651,9 +651,9 @@ void RecoBaseDrawer::Seed2D(const art::Event& evt,
                             evdb::View2D*     view,
                             unsigned int      plane)
 {
-    art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
-    art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
-    art::ServiceHandle<geo::Geometry>            geo;
+    art::ServiceHandle<evd::RawDrawingOptions const>   rawOpt;
+    art::ServiceHandle<evd::RecoDrawingOptions const>  recoOpt;
+    art::ServiceHandle<geo::Geometry const>            geo;
     detinfo::DetectorProperties const* det = lar::providerFrom<detinfo::DetectorPropertiesService>();
 
     if (rawOpt->fDrawRawDataOrCalibWires < 1) return;
@@ -745,9 +745,9 @@ void RecoBaseDrawer::BezierTrack2D(const art::Event& evt,
                                    evdb::View2D*     view,
                                    unsigned int      plane)
 {
-    art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
-    art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
-    art::ServiceHandle<geo::Geometry>            geo;
+    art::ServiceHandle<evd::RawDrawingOptions const>   rawOpt;
+    art::ServiceHandle<evd::RecoDrawingOptions const>  recoOpt;
+    art::ServiceHandle<geo::Geometry const>            geo;
 
     if (rawOpt->fDrawRawDataOrCalibWires < 1) return;
     if (recoOpt->fDrawBezierTracks == 0)      return;
@@ -803,9 +803,9 @@ void RecoBaseDrawer::BezierTrack2D(const art::Event& evt,
 void RecoBaseDrawer::BezierTrack3D(const art::Event& evt,
                                    evdb::View3D*       view)
 {
-    art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
-    art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
-    art::ServiceHandle<geo::Geometry>            geo;
+    art::ServiceHandle<evd::RawDrawingOptions const>   rawOpt;
+    art::ServiceHandle<evd::RecoDrawingOptions const>  recoOpt;
+    art::ServiceHandle<geo::Geometry const>            geo;
 
     if (rawOpt->fDrawRawDataOrCalibWires < 1) return;
     if (recoOpt->fDrawBezierTracks == 0)      return;
@@ -850,12 +850,12 @@ void RecoBaseDrawer::BezierTrack3D(const art::Event& evt,
   void RecoBaseDrawer::Slice2D(const art::Event& evt, evdb::View2D* view, unsigned int plane)
   {
     // Color code hits associated with Slices
-    art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
-    art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;    
+    art::ServiceHandle<evd::RawDrawingOptions const>   rawOpt;
+    art::ServiceHandle<evd::RecoDrawingOptions const>  recoOpt;    
     if (rawOpt->fDrawRawDataOrCalibWires < 1) return;
     if (recoOpt->fDrawSlices == 0) return;
     
-    art::ServiceHandle<geo::Geometry> geo;
+    art::ServiceHandle<geo::Geometry const> geo;
     detinfo::DetectorProperties const* detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
 //    geo::View_t gview = geo->TPC(rawOpt->fTPC).Plane(plane).View();
     
@@ -931,9 +931,9 @@ void RecoBaseDrawer::Cluster2D(const art::Event& evt,
                                evdb::View2D*     view,
                                unsigned int      plane)
 {
-    art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
-    art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
-    art::ServiceHandle<geo::Geometry>            geo;
+    art::ServiceHandle<evd::RawDrawingOptions const>   rawOpt;
+    art::ServiceHandle<evd::RecoDrawingOptions const>  recoOpt;
+    art::ServiceHandle<geo::Geometry const>            geo;
     detinfo::DetectorProperties const* detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
     
     if (rawOpt->fDrawRawDataOrCalibWires < 1) return;
@@ -1158,8 +1158,8 @@ void RecoBaseDrawer::Draw2DSlopeEndPoints(double        xStart,
                                           int           color,
                                           evdb::View2D* view)
 {
-    art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
-    art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
+    art::ServiceHandle<evd::RawDrawingOptions const>   rawOpt;
+    art::ServiceHandle<evd::RecoDrawingOptions const>  recoOpt;
     
     if(recoOpt->fDraw2DSlopeEndPoints < 1) return;
 
@@ -1200,8 +1200,8 @@ void RecoBaseDrawer::Draw2DSlopeEndPoints(double        x,
                                           int           color,
                                           evdb::View2D* view)
 {
-    art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
-    art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
+    art::ServiceHandle<evd::RawDrawingOptions const>   rawOpt;
+    art::ServiceHandle<evd::RecoDrawingOptions const>  recoOpt;
     
     if(recoOpt->fDraw2DSlopeEndPoints < 1) return;
     
@@ -1238,8 +1238,8 @@ void RecoBaseDrawer::Draw2DSlopeEndPoints(double        x,
                                           int           color,
                                           evdb::View2D* view)
 {
-    art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
-    art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
+    art::ServiceHandle<evd::RawDrawingOptions const>   rawOpt;
+    art::ServiceHandle<evd::RecoDrawingOptions const>  recoOpt;
     
     if(recoOpt->fDraw2DSlopeEndPoints < 1) return;
     
@@ -1283,7 +1283,7 @@ void RecoBaseDrawer::GetClusterOutlines(std::vector<const recob::Hit*>& hits,
                                         std::vector<double>&      	  tpts,
                                         unsigned int              	  plane)
 {
-    art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
+    art::ServiceHandle<evd::RawDrawingOptions const>   rawOpt;
       
     // Map wire numbers to highest and lowest in the plane
     std::map<unsigned int, double> wlo, whi;
@@ -1347,9 +1347,9 @@ void RecoBaseDrawer::DrawProng2D(std::vector<const recob::Hit*>&     hits,
                                  int                                 id,
                                  float                               cscore)
 {
-    art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
-    art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
-    art::ServiceHandle<geo::Geometry>            geo;
+    art::ServiceHandle<evd::RawDrawingOptions const>   rawOpt;
+    art::ServiceHandle<evd::RecoDrawingOptions const>  recoOpt;
+    art::ServiceHandle<geo::Geometry const>            geo;
     detinfo::DetectorProperties const* detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
     
     unsigned int c = rawOpt->fCryostat;
@@ -1403,9 +1403,9 @@ void RecoBaseDrawer::DrawTrack2D(std::vector<const recob::Hit*>& hits,
                                  int                             color,
 				                 int                             lineWidth)
 {
-    art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
-    art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
-    art::ServiceHandle<geo::Geometry>            geo;
+    art::ServiceHandle<evd::RawDrawingOptions const>   rawOpt;
+    art::ServiceHandle<evd::RecoDrawingOptions const>  recoOpt;
+    art::ServiceHandle<geo::Geometry const>            geo;
     detinfo::DetectorProperties const* detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
     unsigned int c = rawOpt->fCryostat;
     unsigned int t = rawOpt->fTPC;
@@ -1487,9 +1487,9 @@ void RecoBaseDrawer::Prong2D(const art::Event& evt,
                              evdb::View2D*     view,
                              unsigned int      plane)
 {
-    art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
-    art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
-    art::ServiceHandle<geo::Geometry>            geo;
+    art::ServiceHandle<evd::RawDrawingOptions const>   rawOpt;
+    art::ServiceHandle<evd::RecoDrawingOptions const>  recoOpt;
+    art::ServiceHandle<geo::Geometry const>            geo;
     auto const* detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
     
     if(rawOpt->fDrawRawDataOrCalibWires < 1) return;
@@ -1697,9 +1697,9 @@ void RecoBaseDrawer::DrawTrackVertexAssns2D(const art::Event& evt,
                                             evdb::View2D*     view,
                                             unsigned int      plane)
 {    
-    art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
-    art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
-    art::ServiceHandle<geo::Geometry>            geo;
+    art::ServiceHandle<evd::RawDrawingOptions const>   rawOpt;
+    art::ServiceHandle<evd::RecoDrawingOptions const>  recoOpt;
+    art::ServiceHandle<geo::Geometry const>            geo;
     detinfo::DetectorProperties const* detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
 
     if(!recoOpt->fDrawTrackVertexAssns) return;
@@ -1844,9 +1844,9 @@ void RecoBaseDrawer::Vertex2D(const art::Event& evt,
                               evdb::View2D*     view,
                               unsigned int      plane)
   {    
-    art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
-    art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
-    art::ServiceHandle<geo::Geometry>            geo;
+    art::ServiceHandle<evd::RawDrawingOptions const>   rawOpt;
+    art::ServiceHandle<evd::RecoDrawingOptions const>  recoOpt;
+    art::ServiceHandle<geo::Geometry const>            geo;
     detinfo::DetectorProperties const* detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
     
     if(rawOpt->fDrawRawDataOrCalibWires < 1) return;
@@ -1913,9 +1913,9 @@ void RecoBaseDrawer::Event2D(const art::Event& evt,
                              evdb::View2D*     view,
                              unsigned int      plane)
 {    
-    art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
-    art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
-    art::ServiceHandle<geo::Geometry>            geo;
+    art::ServiceHandle<evd::RawDrawingOptions const>   rawOpt;
+    art::ServiceHandle<evd::RecoDrawingOptions const>  recoOpt;
+    art::ServiceHandle<geo::Geometry const>            geo;
 
     if(rawOpt->fDrawRawDataOrCalibWires < 1) return;
  
@@ -1956,8 +1956,8 @@ void RecoBaseDrawer::Event2D(const art::Event& evt,
 void RecoBaseDrawer::Seed3D(const art::Event&   evt,
                             evdb::View3D*       view)
 {
-    art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
-    art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
+    art::ServiceHandle<evd::RawDrawingOptions const>   rawOpt;
+    art::ServiceHandle<evd::RecoDrawingOptions const>  recoOpt;
   
     std::vector<art::InputTag> labels;
     if(recoOpt->fDrawSeeds != 0)
@@ -2003,8 +2003,8 @@ void RecoBaseDrawer::SeedOrtho(const art::Event&   evt,
                                evd::OrthoProj_t    proj,
                                evdb::View2D*       view)
 {
-    art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
-    art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
+    art::ServiceHandle<evd::RawDrawingOptions const>   rawOpt;
+    art::ServiceHandle<evd::RecoDrawingOptions const>  recoOpt;
   
     std::vector<art::InputTag> labels;
     if(recoOpt->fDrawSeeds != 0)
@@ -2062,8 +2062,8 @@ void RecoBaseDrawer::SeedOrtho(const art::Event&   evt,
 void RecoBaseDrawer::SpacePoint3D(const art::Event& evt,
                                   evdb::View3D*     view)
 {
-    art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
-    art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
+    art::ServiceHandle<evd::RawDrawingOptions const>   rawOpt;
+    art::ServiceHandle<evd::RecoDrawingOptions const>  recoOpt;
 
     if(rawOpt->fDrawRawDataOrCalibWires < 1) return;
 
@@ -2102,8 +2102,8 @@ void RecoBaseDrawer::SpacePoint3D(const art::Event& evt,
 void RecoBaseDrawer::PFParticle3D(const art::Event& evt,
                                   evdb::View3D*     view)
 {
-    art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
-    art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
+    art::ServiceHandle<evd::RawDrawingOptions const>   rawOpt;
+    art::ServiceHandle<evd::RecoDrawingOptions const>  recoOpt;
 
     if (rawOpt->fDrawRawDataOrCalibWires < 1) return;
     if (recoOpt->fDrawPFParticles        < 1) return;
@@ -2234,8 +2234,8 @@ void RecoBaseDrawer::DrawPFParticle3D(const art::Ptr<recob::PFParticle>&        
                                       int                                             depth,
                                       evdb::View3D*                                   view)
 {
-    art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
-    art::ServiceHandle<evd::ColorDrawingOptions> cst;
+    art::ServiceHandle<evd::RecoDrawingOptions const>  recoOpt;
+    art::ServiceHandle<evd::ColorDrawingOptions const> cst;
     
     // First let's draw the hits associated to this cluster
     const std::vector<art::Ptr<recob::SpacePoint>>& hitsVec(spacePointAssnVec.at(pfPart.key()));
@@ -2510,7 +2510,7 @@ void RecoBaseDrawer::DrawPFParticle3D(const art::Ptr<recob::PFParticle>&        
 //......................................................................
 void RecoBaseDrawer::Edge3D(const art::Event& evt, evdb::View3D* view)
 {
-    art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
+    art::ServiceHandle<evd::RecoDrawingOptions const>  recoOpt;
     
     if (recoOpt->fDrawEdges < 1) return;
     
@@ -2610,8 +2610,8 @@ void RecoBaseDrawer::Edge3D(const art::Event& evt, evdb::View3D* view)
 void RecoBaseDrawer::Prong3D(const art::Event& evt,
                              evdb::View3D*     view)
 {
-    art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
-    art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
+    art::ServiceHandle<evd::RawDrawingOptions const>   rawOpt;
+    art::ServiceHandle<evd::RecoDrawingOptions const>  recoOpt;
 
     if(rawOpt->fDrawRawDataOrCalibWires < 1) return;
 
@@ -2695,7 +2695,7 @@ void RecoBaseDrawer::DrawTrack3D(const recob::Track& track,
                                  float               size)
 {
     // Get options.
-    art::ServiceHandle<evd::RecoDrawingOptions> recoOpt;
+    art::ServiceHandle<evd::RecoDrawingOptions const> recoOpt;
 
     if(recoOpt->fDrawTrackSpacePoints)
     {
@@ -2914,8 +2914,8 @@ void RecoBaseDrawer::DrawShower3D(const recob::Shower& shower,
 void RecoBaseDrawer::Vertex3D(const art::Event& evt,
 				evdb::View3D*     view)
 {
-  art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
-  art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
+  art::ServiceHandle<evd::RawDrawingOptions const>   rawOpt;
+  art::ServiceHandle<evd::RecoDrawingOptions const>  recoOpt;
  
   if(rawOpt->fDrawRawDataOrCalibWires < 1) return;
 
@@ -2966,8 +2966,8 @@ void RecoBaseDrawer::Vertex3D(const art::Event& evt,
 void RecoBaseDrawer::Event3D(const art::Event& evt,
 			       evdb::View3D*     view) 
 {    
-  art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
-  art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
+  art::ServiceHandle<evd::RawDrawingOptions const>   rawOpt;
+  art::ServiceHandle<evd::RecoDrawingOptions const>  recoOpt;
   
   if(rawOpt->fDrawRawDataOrCalibWires < 1) return;
   if(recoOpt->fDrawEvents != 0){
@@ -3026,8 +3026,8 @@ void RecoBaseDrawer::Event3D(const art::Event& evt,
 void RecoBaseDrawer::Slice3D(const art::Event& evt,
                              evdb::View3D*     view) 
 {    
-  art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
-  art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
+  art::ServiceHandle<evd::RawDrawingOptions const>   rawOpt;
+  art::ServiceHandle<evd::RecoDrawingOptions const>  recoOpt;
   
   if(rawOpt->fDrawRawDataOrCalibWires < 1) return;
   if(recoOpt->fDrawSlices < 1 ) return;
@@ -3050,9 +3050,9 @@ void RecoBaseDrawer::Slice3D(const art::Event& evt,
 void RecoBaseDrawer::OpFlashOrtho(const art::Event& evt,
 				  evd::OrthoProj_t  proj,
 				  evdb::View2D*     view) {
-  art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
-  art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
-  art::ServiceHandle<geo::Geometry>            geo;
+  art::ServiceHandle<evd::RawDrawingOptions const>   rawOpt;
+  art::ServiceHandle<evd::RecoDrawingOptions const>  recoOpt;
+  art::ServiceHandle<geo::Geometry const>            geo;
 
   if (rawOpt->fDrawRawDataOrCalibWires < 1) return;
   if (recoOpt->fDrawOpFlashes == 0)         return;
@@ -3154,9 +3154,9 @@ void RecoBaseDrawer::VertexOrtho(const art::PtrVector<recob::Vertex>& vertex,
 void RecoBaseDrawer::VertexOrtho(const art::Event& evt,
 				  evd::OrthoProj_t  proj,
 				  evdb::View2D*     view) {
-  art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
-  art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
-  art::ServiceHandle<geo::Geometry>            geo;
+  art::ServiceHandle<evd::RawDrawingOptions const>   rawOpt;
+  art::ServiceHandle<evd::RecoDrawingOptions const>  recoOpt;
+  art::ServiceHandle<geo::Geometry const>            geo;
   
   if (rawOpt->fDrawRawDataOrCalibWires < 1) return;
   if (recoOpt->fDrawVertices == 0)         return;
@@ -3183,8 +3183,8 @@ void RecoBaseDrawer::SpacePointOrtho(const art::Event& evt,
 				       double            msize,
 				       evdb::View2D*     view)
 {
-  art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
-  art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
+  art::ServiceHandle<evd::RawDrawingOptions const>   rawOpt;
+  art::ServiceHandle<evd::RecoDrawingOptions const>  recoOpt;
 
   if(rawOpt->fDrawRawDataOrCalibWires < 1) return;
 
@@ -3213,8 +3213,8 @@ void RecoBaseDrawer::PFParticleOrtho(const art::Event& evt,
                                      double            msize,
                                      evdb::View2D*     view)
 {
-    art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
-    art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
+    art::ServiceHandle<evd::RawDrawingOptions const>   rawOpt;
+    art::ServiceHandle<evd::RecoDrawingOptions const>  recoOpt;
     
     if (rawOpt->fDrawRawDataOrCalibWires < 1) return;
     if (recoOpt->fDrawPFParticles        < 1) return;
@@ -3268,7 +3268,7 @@ void RecoBaseDrawer::DrawPFParticleOrtho(const art::Ptr<recob::PFParticle>&     
                                          evd::OrthoProj_t                         proj,
                                          evdb::View2D*                            view)
 {
-    art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
+    art::ServiceHandle<evd::RecoDrawingOptions const>  recoOpt;
     
     // First let's draw the hits associated to this cluster
     const std::vector<const recob::SpacePoint*>& hitsVec(spacePointAssnVec.at(pfPart->Self()));
@@ -3516,8 +3516,8 @@ void RecoBaseDrawer::ProngOrtho(const art::Event& evt,
 				  double            msize,
 				  evdb::View2D*     view)
 {
-  art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
-  art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
+  art::ServiceHandle<evd::RawDrawingOptions const>   rawOpt;
+  art::ServiceHandle<evd::RecoDrawingOptions const>  recoOpt;
 
   if(rawOpt->fDrawRawDataOrCalibWires < 1) return;
 
@@ -3574,7 +3574,7 @@ void RecoBaseDrawer::ProngOrtho(const art::Event& evt,
 {
   // Get services.
 
-  art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
+  art::ServiceHandle<evd::RecoDrawingOptions const>  recoOpt;
 
   // Organize space points into separate collections according to the color 
   // we want them to be.
@@ -3649,7 +3649,7 @@ void RecoBaseDrawer::DrawTrackOrtho(const recob::Track& track,
 {
   // Get options.
 
-  art::ServiceHandle<evd::RecoDrawingOptions> recoOpt;
+  art::ServiceHandle<evd::RecoDrawingOptions const> recoOpt;
 
   if(recoOpt->fDrawTrackSpacePoints) {
 
@@ -3820,8 +3820,8 @@ int RecoBaseDrawer::GetHits(const art::Event&               evt,
                             std::vector<const recob::Hit*>& hits,
                             unsigned int                    plane) 
 {
-    art::ServiceHandle<evd::RawDrawingOptions> rawOpt;
-    art::ServiceHandle<geo::Geometry>          geo;
+    art::ServiceHandle<evd::RawDrawingOptions const> rawOpt;
+    art::ServiceHandle<geo::Geometry const>          geo;
 
     hits.clear();
 
@@ -4178,9 +4178,9 @@ void RecoBaseDrawer::FillTQHisto(const art::Event& evt,
                                  unsigned int      wire,
                                  TH1F*             histo)
 {
-    art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
-    art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
-    art::ServiceHandle<geo::Geometry>            geo;
+    art::ServiceHandle<evd::RawDrawingOptions const>   rawOpt;
+    art::ServiceHandle<evd::RecoDrawingOptions const>  recoOpt;
+    art::ServiceHandle<geo::Geometry const>            geo;
     
     float minSig(std::numeric_limits<float>::max());
     float maxSig(std::numeric_limits<float>::lowest());
@@ -4239,9 +4239,9 @@ void RecoBaseDrawer::FillQHisto(const art::Event& evt,
 				  unsigned int      plane,
 				  TH1F*             histo)
 {
-    art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
-    art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
-    art::ServiceHandle<geo::Geometry>            geo;
+    art::ServiceHandle<evd::RawDrawingOptions const>   rawOpt;
+    art::ServiceHandle<evd::RecoDrawingOptions const>  recoOpt;
+    art::ServiceHandle<geo::Geometry const>            geo;
 
     // Check if we're supposed to draw raw hits at all
     if(rawOpt->fDrawRawDataOrCalibWires==0) return;
@@ -4292,9 +4292,9 @@ void RecoBaseDrawer::FillTQHistoDP(const art::Event&    evt,
                                    std::vector<int>&    hNMultiHit,
 				   std::vector<int>&    hLocalHitIndex)
 {
-    art::ServiceHandle<evd::RawDrawingOptions>   rawOpt;
-    art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
-    art::ServiceHandle<geo::Geometry>            geo;
+    art::ServiceHandle<evd::RawDrawingOptions const>   rawOpt;
+    art::ServiceHandle<evd::RecoDrawingOptions const>  recoOpt;
+    art::ServiceHandle<geo::Geometry const>            geo;
 
     // Check if we're supposed to draw raw hits at all
     if(rawOpt->fDrawRawDataOrCalibWires==0) return;

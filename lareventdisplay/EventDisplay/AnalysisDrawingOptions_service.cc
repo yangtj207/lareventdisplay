@@ -8,23 +8,16 @@
 /// LArSoft includes
 #include "lareventdisplay/EventDisplay/AnalysisDrawingOptions.h"
 
-#include <iostream>
 
 namespace evd {
 
   //......................................................................
-  AnalysisDrawingOptions::AnalysisDrawingOptions(fhicl::ParameterSet const& pset, 
-					 art::ActivityRegistry& /* reg */) 
+  AnalysisDrawingOptions::AnalysisDrawingOptions(fhicl::ParameterSet const& pset)
   : evdb::Reconfigurable{pset}
   {
     this->reconfigure(pset);
   }
   
-  //......................................................................
-  AnalysisDrawingOptions::~AnalysisDrawingOptions() 
-  {
-  }
-
   //......................................................................
   void AnalysisDrawingOptions::reconfigure(fhicl::ParameterSet const& pset)
   {

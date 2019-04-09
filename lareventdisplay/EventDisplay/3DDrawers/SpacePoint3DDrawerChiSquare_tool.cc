@@ -74,7 +74,7 @@ void SpacePoint3DDrawerChiSquare::Draw(const std::vector<art::Ptr<recob::SpacePo
                                        const art::FindManyP<recob::Hit>*               hitAssns) const
 {
     // Get services.
-    art::ServiceHandle<evd::ColorDrawingOptions> cst;
+    art::ServiceHandle<evd::ColorDrawingOptions const> cst;
 
     using HitPosition = std::array<double,6>;
     std::map<int,std::vector<HitPosition>> colorToHitMap;

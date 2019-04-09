@@ -8,21 +8,14 @@
 /// LArSoft includes
 #include "lareventdisplay/EventDisplay/RecoDrawingOptions.h"
 
-#include <iostream>
 
 namespace evd {
 
 //......................................................................
-RecoDrawingOptions::RecoDrawingOptions(fhicl::ParameterSet const& pset, 
-                                       art::ActivityRegistry& /* reg */)
+RecoDrawingOptions::RecoDrawingOptions(fhicl::ParameterSet const& pset)
   : evdb::Reconfigurable{pset}
 {
     this->reconfigure(pset);
-}
-
-//......................................................................
-RecoDrawingOptions::~RecoDrawingOptions() 
-{
 }
 
 //......................................................................

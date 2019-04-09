@@ -75,7 +75,7 @@ void ICARUSDrawer::configure(const fhicl::ParameterSet& pset)
 //......................................................................
 void ICARUSDrawer::DetOutline3D(evdb::View3D* view)
 {
-    art::ServiceHandle<geo::Geometry> geo;
+    art::ServiceHandle<geo::Geometry const> geo;
     
     bool axesNotDrawn(true);
     
@@ -275,11 +275,11 @@ void ICARUSDrawer::DrawAxes(evdb::View3D* view, double* coordsLo, double* coords
 
 void ICARUSDrawer::DrawBadChannels(evdb::View3D* view, double* coords, int color, int width, int style)
 {
-    art::ServiceHandle<geo::Geometry>          geo;
-    art::ServiceHandle<evd::RawDrawingOptions> rawOpt;
+    art::ServiceHandle<geo::Geometry const>          geo;
+    art::ServiceHandle<evd::RawDrawingOptions const> rawOpt;
     
     lariov::ChannelStatusProvider const& channelStatus
-    = art::ServiceHandle<lariov::ChannelStatusService>()->GetProvider();
+    = art::ServiceHandle<lariov::ChannelStatusService const>()->GetProvider();
     
     // We want to translate the wire position to the opposite side of the TPC...
     for(size_t viewNo = 0; viewNo < geo->Nviews(); viewNo++)

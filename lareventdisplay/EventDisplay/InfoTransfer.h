@@ -48,24 +48,24 @@ namespace evd {
 
 
     void reconfigure(fhicl::ParameterSet const& pset) ;
-    void SetTestFlag(int value){ testflag = value;  };
-    int GetTestFlag(){return testflag; };
-    void SetRunNumber(int value){ fRun = value; };
-    int GetRunNumber(){return fRun; };
-    void SetSubRunNumber(int value){ fSubRun = value; };
-    int GetSubRunNumber(){return fSubRun; };
-    void SetEvtNumber(int value){ fEvt = value; };
-    int GetEvtNumber(){return fEvt; };
+    void SetTestFlag(int value){ testflag = value;  }
+    int GetTestFlag() const { return testflag; }
+    void SetRunNumber(int value){ fRun = value; }
+    int GetRunNumber() const { return fRun; }
+    void SetSubRunNumber(int value){ fSubRun = value; }
+    int GetSubRunNumber() const { return fSubRun; }
+    void SetEvtNumber(int value){ fEvt = value; }
+    int GetEvtNumber() const { return fEvt; }
 
 
     void SetHitList(unsigned int p,std::vector<art::Ptr < recob::Hit> > hits_to_save)
-  { fSelectedHitlist[p].clear(); fSelectedHitlist[p]=hits_to_save; };
+    { fSelectedHitlist[p].clear(); fSelectedHitlist[p]=hits_to_save; }
 
-    std::vector < art::Ptr < recob::Hit> > GetHitList(unsigned int plane)
-  { return fRefinedHitlist[plane];  };
+    std::vector < art::Ptr < recob::Hit> > const& GetHitList(unsigned int plane) const
+    { return fRefinedHitlist[plane];  }
 
-    std::vector< art::Ptr < recob::Hit> > GetSelectedHitList(unsigned int plane)
-  { return fSelectedHitlist[plane];  };
+    std::vector< art::Ptr < recob::Hit> > const& GetSelectedHitList(unsigned int plane) const
+    { return fSelectedHitlist[plane];  }
 
     void ClearSelectedHitList(int plane)
   {
@@ -79,38 +79,41 @@ namespace evd {
    }
 
     void SetStartHit(unsigned int p,  recob::Hit * starthit)
-  { fStartHit[p]=starthit; };
+    { fStartHit[p]=starthit; }
 
-    recob::Hit *  GetStartHit(unsigned int plane)
-  {return fRefStartHit[plane];};
+    recob::Hit *  GetStartHit(unsigned int plane) const
+    {return fRefStartHit[plane];}
 
     void SetEndHit(unsigned int p,  recob::Hit * endhit)
-  { fEndHit[p]=endhit;  };
+    { fEndHit[p]=endhit;  }
 
-    recob::Hit *  GetEndHit(unsigned int plane)
-  { return fRefEndHit[plane];  };
+    recob::Hit *  GetEndHit(unsigned int plane) const
+    { return fRefEndHit[plane];  }
 
-    std::vector< double >  GetStartHitCoords(unsigned int plane)
-  { return refstarthitout[plane];  };
-    std::vector< double >  GetEndHitCoords(unsigned int plane)
-        { return refendhitout[plane];  };
+    std::vector< double >  const& GetStartHitCoords(unsigned int plane) const
+    { return refstarthitout[plane];  }
+
+    std::vector< double >  const& GetEndHitCoords(unsigned int plane) const
+    { return refendhitout[plane];  }
 
     void  SetStartHitCoords(unsigned int plane, std::vector< double > starthitin)
-  { starthitout[plane].clear();
+    {
+      starthitout[plane].clear();
     starthitout[plane].resize(2);
-    starthitout[plane]=starthitin;  };
-    void  SetEndHitCoords(unsigned int plane, std::vector< double > endhitin)
-        { endhitout[plane].clear();
-    endhitout[plane].resize(2);
-    endhitout[plane]=endhitin;  };
+      starthitout[plane]=starthitin;
+    }
 
+    void  SetEndHitCoords(unsigned int plane, std::vector< double > endhitin)
+    {
+      endhitout[plane].clear();
+    endhitout[plane].resize(2);
+      endhitout[plane]=endhitin;
+    }
 
     void SetSeedList(std::vector < util::PxLine > seedlines);
 
 
-    std::vector < util::PxLine > GetSeedList();
-
-
+    std::vector < util::PxLine > const& GetSeedList() const;
 
   private:
 

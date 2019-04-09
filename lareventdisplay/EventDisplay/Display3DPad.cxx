@@ -49,7 +49,7 @@ Display3DPad::Display3DPad(const char* nm, const char* ti,
     fView = new evdb::View3D();
     
     // Set up the 3D drawing tools
-    art::ServiceHandle<evd::SimulationDrawingOptions> simDrawOpt;
+    art::ServiceHandle<evd::SimulationDrawingOptions const> simDrawOpt;
 
     // Implement the tools for handling the responses
     const fhicl::ParameterSet& draw3DTools = simDrawOpt->f3DDrawerParams;
@@ -77,7 +77,7 @@ void Display3DPad::Draw()
 {
     fView->Clear();
 
-    art::ServiceHandle<geo::Geometry> geo;
+    art::ServiceHandle<geo::Geometry const> geo;
 
     // grab the event from the singleton
     const art::Event *evt = evdb::EventHolder::Instance()->GetEvent();
@@ -96,7 +96,7 @@ void Display3DPad::Draw()
         
         for(auto& draw3D : fSim3DDrawerVec) draw3D->Draw(*evt, fView);
         
-        art::ServiceHandle<evd::EvdLayoutOptions> evdlayoutoptions;
+        art::ServiceHandle<evd::EvdLayoutOptions const> evdlayoutoptions;
         if(evdlayoutoptions->fMakeSeeds) UpdateSeedCurve();
     }
 

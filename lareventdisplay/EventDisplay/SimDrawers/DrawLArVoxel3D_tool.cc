@@ -66,7 +66,7 @@ DrawLArVoxel3D::~DrawLArVoxel3D()
 
 void DrawLArVoxel3D::Draw(const art::Event& evt, evdb::View3D* view) const
 {
-    art::ServiceHandle<evd::SimulationDrawingOptions> drawOpt;
+    art::ServiceHandle<evd::SimulationDrawingOptions const> drawOpt;
     
     // If the option is turned off, there's nothing to do
     if (!drawOpt->fShowSimChannelInfo) return;
@@ -77,7 +77,7 @@ void DrawLArVoxel3D::Draw(const art::Event& evt, evdb::View3D* view) const
     //  geo::GeometryCore const* geom = lar::providerFrom<geo::Geometry>();
     detinfo::DetectorProperties const* theDetector = lar::providerFrom<detinfo::DetectorPropertiesService>();
     detinfo::DetectorClocks     const* detClocks   = lar::providerFrom<detinfo::DetectorClocksService>();
-    art::ServiceHandle<geo::Geometry>  geom;
+    art::ServiceHandle<geo::Geometry const>  geom;
     
     // Recover a handle to the collection of MCParticles
     art::Handle< std::vector<simb::MCParticle>> mcParticleHandle;

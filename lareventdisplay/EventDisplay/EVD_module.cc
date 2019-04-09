@@ -7,7 +7,6 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Core/EDAnalyzer.h"
 
-#include <string>
 #include "TH1D.h"
 
 extern "C" {

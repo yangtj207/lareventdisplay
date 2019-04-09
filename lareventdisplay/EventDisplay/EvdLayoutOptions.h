@@ -8,11 +8,8 @@
 #define EVDLAYOUTOPTIONS_H
 #ifndef __CINT__
 #include <string>
-#include <vector>
 
 #include "fhiclcpp/ParameterSet.h"
-#include "art/Framework/Services/Registry/ActivityRegistry.h"
-#include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Services/Registry/ServiceMacros.h"
 #include "nutools/EventDisplayBase/Reconfigurable.h"
 
@@ -20,12 +17,11 @@ namespace evd {
   class EvdLayoutOptions : public evdb::Reconfigurable
   {
   public:
-    explicit EvdLayoutOptions(fhicl::ParameterSet const& pset, art::ActivityRegistry& reg);
-    ~EvdLayoutOptions();
+    explicit EvdLayoutOptions(fhicl::ParameterSet const& pset);
 
-    void reconfigure(fhicl::ParameterSet const& pset) ;
+    void reconfigure(fhicl::ParameterSet const& pset) override;
       
-      const fhicl::ParameterSet& fParameterSet;
+    fhicl::ParameterSet const& fParameterSet;
       
       int         fShowSideBar;		           ///< 1 to show, 0 don't show
       int         fAutoZoomInterest;           ///< Set the automatic zoom to the interest region
@@ -49,4 +45,3 @@ namespace evd {
 #endif // __CINT__
 DECLARE_ART_SERVICE(evd::EvdLayoutOptions, LEGACY)
 #endif
-

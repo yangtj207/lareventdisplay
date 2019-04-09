@@ -84,7 +84,7 @@ void SpacePoint3DDrawerHitCharge::Draw(const std::vector<art::Ptr<recob::SpacePo
     if (hitsVec.empty() || !hitAssnVec) return;
     
     // Get services.
-    art::ServiceHandle<evd::ColorDrawingOptions> cst;
+    art::ServiceHandle<evd::ColorDrawingOptions const> cst;
     
     using HitPosition = std::array<double,6>;
     std::map<int,std::vector<HitPosition>> colorToHitMap;

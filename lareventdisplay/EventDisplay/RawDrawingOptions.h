@@ -40,10 +40,9 @@ namespace evd {
   class RawDrawingOptions : public evdb::Reconfigurable
   {
   public:
-      explicit RawDrawingOptions(fhicl::ParameterSet const& pset, art::ActivityRegistry& reg);
-      ~RawDrawingOptions();
+      explicit RawDrawingOptions(fhicl::ParameterSet const& pset);
       
-      void reconfigure(fhicl::ParameterSet const& pset) ;
+      void reconfigure(fhicl::ParameterSet const& pset) override;
       
       int                 fDrawRawDataOrCalibWires;                 ///< 0 for raw
       int    	          fTicksPerPoint;                           ///< number of ticks to include in one point
@@ -86,4 +85,3 @@ namespace evd {
 #endif // __CINT__
 DECLARE_ART_SERVICE(evd::RawDrawingOptions, LEGACY)
 #endif
-

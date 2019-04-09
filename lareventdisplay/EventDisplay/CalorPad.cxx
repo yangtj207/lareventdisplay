@@ -4,7 +4,6 @@
 /// \author  msoderbe@syr.edu
 ///
 
-#include <iostream>
 #include "lareventdisplay/EventDisplay/CalorPad.h"
 #include "lareventdisplay/EventDisplay/Style.h"
 #include "lareventdisplay/EventDisplay/AnalysisBaseDrawer.h"
@@ -117,12 +116,12 @@ void evd::CalorPad::Draw(const char* /*opt*/)
    
   // grab the event from the singleton
   const art::Event *evt = evdb::EventHolder::Instance()->GetEvent();
-  art::ServiceHandle<evd::EvdLayoutOptions>        evdlayoutopt;
+  art::ServiceHandle<evd::EvdLayoutOptions const>        evdlayoutopt;
 
   // Insert graphic objects into fView collection.
   if(evt){
     if(evdlayoutopt->fMakeSeeds){
-      art::ServiceHandle<evd::RecoDrawingOptions> recoopt;
+      art::ServiceHandle<evd::RecoDrawingOptions const> recoopt;
       if(recoopt->fUseHitSelector){
 	if(HitSelectorGet()->SeedVector().size()==0){
 	  mf::LogWarning("CalorPad::Draw") << " Cannot draw calorimetry view in interactive mode"
@@ -221,7 +220,7 @@ void evd::CalorPad::DrawRefCurves()
     h->GetYaxis()->SetTitle("T (MeV)");
   }
 
-  art::ServiceHandle<evd::AnalysisDrawingOptions> anaOpt;
+  art::ServiceHandle<evd::AnalysisDrawingOptions const> anaOpt;
 
   cet::search_path sp("FW_SEARCH_PATH");
   if( !sp.find_file(anaOpt->fCalorTemplateFileName + ".root", fROOTfile) )  

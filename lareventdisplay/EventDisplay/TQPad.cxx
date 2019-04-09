@@ -56,7 +56,7 @@ TQPad::TQPad(const char* nm, const char* ti,
     fPlane(plane),
     fFrameHist(0)
 {
-    art::ServiceHandle<geo::Geometry> geo;
+    art::ServiceHandle<geo::Geometry const> geo;
     unsigned int planes = geo->Nplanes();
 
     this->Pad()->cd();
@@ -98,8 +98,8 @@ TQPad::TQPad(const char* nm, const char* ti,
     this->BookHistogram();
     fView = new evdb::View2D();
     
-    art::ServiceHandle<evd::RawDrawingOptions>  rawOptions;
-    art::ServiceHandle<evd::RecoDrawingOptions> recoOptions;
+    art::ServiceHandle<evd::RawDrawingOptions const>  rawOptions;
+    art::ServiceHandle<evd::RecoDrawingOptions const> recoOptions;
 
     fHitDrawerTool      = art::make_tool<evdb_tool::IWFHitDrawer>(recoOptions->fHitDrawerParams);
     fRawDigitDrawerTool = art::make_tool<evdb_tool::IWaveformDrawer>(rawOptions->fRawDigitDrawerParams);
@@ -117,13 +117,13 @@ TQPad::~TQPad()
 //......................................................................
 void TQPad::Draw()
 {
-    art::ServiceHandle<evd::RawDrawingOptions> drawopt;
+    art::ServiceHandle<evd::RawDrawingOptions const> drawopt;
 
     //grab the singleton with the event
     const art::Event* evt = evdb::EventHolder::Instance()->GetEvent();
     if(!evt) return;
 
-    art::ServiceHandle<geo::Geometry> geoSvc;
+    art::ServiceHandle<geo::Geometry const> geoSvc;
     
     fPad->Clear();
     fPad->cd();
@@ -180,7 +180,7 @@ void TQPad::Draw()
 //        geo::PlaneID planeid(drawopt->CurrentTPC(), fPlane);
 //        geo::SigType_t sigType = geoSvc->SignalType(planeid);
 //
-//        art::ServiceHandle<evd::ColorDrawingOptions> cst;
+//        art::ServiceHandle<evd::ColorDrawingOptions const> cst;
 //
 //        TH1F *hist;
 //
@@ -245,13 +245,13 @@ void TQPad::BookHistogram()
         fFrameHist = 0;
     }
   
-    art::ServiceHandle<evd::ColorDrawingOptions> cst;
-    art::ServiceHandle<evd::RawDrawingOptions> drawopt;
+    art::ServiceHandle<evd::ColorDrawingOptions const> cst;
+    art::ServiceHandle<evd::RawDrawingOptions const> drawopt;
 
     // figure out the signal type for this plane, assume that
     // plane n in each TPC/cryostat has the same type
     geo::PlaneID planeid(drawopt->CurrentTPC(), fPlane);
-    art::ServiceHandle<geo::Geometry> geo;
+    art::ServiceHandle<geo::Geometry const> geo;
     geo::SigType_t sigType = geo->SignalType(planeid);
   
     /// \todo decide if ndivraw and ndivreco are useful

@@ -65,7 +65,7 @@ evd::Ortho3DPad::Ortho3DPad(const char* name, const char* title,
 {
   // Get services.
 
-  art::ServiceHandle<geo::Geometry> geo;
+  art::ServiceHandle<geo::Geometry const> geo;
 
   // Set up pad.
 

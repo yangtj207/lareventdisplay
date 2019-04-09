@@ -9,18 +9,14 @@
 #include <vector>
 #include <map>
 
-namespace art  { class Event;  }
 namespace evdb { class View2D; }
 
 namespace evd {
   class HeaderDrawer {
   public:
-    HeaderDrawer();
-    ~HeaderDrawer();
     
     void Header(evdb::View2D* view);
     
-  public:
   };
 }
 

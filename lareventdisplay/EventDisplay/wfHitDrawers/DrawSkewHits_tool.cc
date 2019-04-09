@@ -73,9 +73,9 @@ void DrawSkewHits::configure(const fhicl::ParameterSet& pset)
 void DrawSkewHits::Draw(evdb::View2D&     view2D,
                         raw::ChannelID_t& channel) const
 {
-    art::ServiceHandle<evd::RawDrawingOptions>  rawOpt;
-    art::ServiceHandle<evd::RecoDrawingOptions> recoOpt;
-    art::ServiceHandle<geo::Geometry>            geo;
+    art::ServiceHandle<evd::RawDrawingOptions const>  rawOpt;
+    art::ServiceHandle<evd::RecoDrawingOptions const> recoOpt;
+    art::ServiceHandle<geo::Geometry const>            geo;
     
     //grab the singleton with the event
     const art::Event* event = evdb::EventHolder::Instance()->GetEvent();

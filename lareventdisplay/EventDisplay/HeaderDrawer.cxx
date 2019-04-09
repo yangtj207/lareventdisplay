@@ -11,21 +11,16 @@
 #include "TTimeStamp.h"
 
 #include "art/Framework/Principal/Event.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "lareventdisplay/EventDisplay/EvdLayoutOptions.h"
 
 namespace evd{
-
-HeaderDrawer::HeaderDrawer() { }
-
-//......................................................................
-
-HeaderDrawer::~HeaderDrawer() { }
 
 //......................................................................
 
 void HeaderDrawer::Header(evdb::View2D* view)
 {
-    art::ServiceHandle<evd::EvdLayoutOptions> layoutopt;
+    art::ServiceHandle<evd::EvdLayoutOptions const> layoutopt;
       
     TText& titlet = view->AddText(0.03,0.80,layoutopt->fDisplayName.c_str());
     titlet.SetTextSize(0.13);

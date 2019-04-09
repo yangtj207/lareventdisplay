@@ -11,8 +11,6 @@
 #include <vector>
 
 #include "fhiclcpp/ParameterSet.h"
-#include "art/Framework/Services/Registry/ActivityRegistry.h"
-#include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Services/Registry/ServiceMacros.h"
 #include "canvas/Utilities/InputTag.h"
 #include "nutools/EventDisplayBase/Reconfigurable.h"
@@ -22,8 +20,7 @@ namespace evd {
 class SimulationDrawingOptions : public evdb::Reconfigurable
 {
 public:
-    explicit SimulationDrawingOptions(fhicl::ParameterSet const& pset, art::ActivityRegistry& reg);
-    ~SimulationDrawingOptions();
+    explicit SimulationDrawingOptions(fhicl::ParameterSet const& pset);
     
     void reconfigure(fhicl::ParameterSet const& pset) ;
   
@@ -47,4 +44,3 @@ public:
 #endif // __CINT__
 DECLARE_ART_SERVICE(evd::SimulationDrawingOptions, LEGACY)
 #endif
-

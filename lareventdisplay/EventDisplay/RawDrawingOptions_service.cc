@@ -9,23 +9,15 @@
 #include "lareventdisplay/EventDisplay/RawDrawingOptions.h"
 #include "larevt/Filters/ChannelFilter.h"
 
-#include <iostream>
-
 namespace evd {
 
   //......................................................................
-  RawDrawingOptions::RawDrawingOptions(fhicl::ParameterSet const& pset, 
-                                       art::ActivityRegistry& /* reg */) 
+  RawDrawingOptions::RawDrawingOptions(fhicl::ParameterSet const& pset)
   : evdb::Reconfigurable{pset}
   {
     this->reconfigure(pset);
   }
   
-  //......................................................................
-  RawDrawingOptions::~RawDrawingOptions() 
-  {
-  }
-
   //......................................................................
   void RawDrawingOptions::reconfigure(fhicl::ParameterSet const& pset)
   {
@@ -52,9 +44,4 @@ namespace evd {
   }
 }
 
-namespace evd {
-
-  DEFINE_ART_SERVICE(RawDrawingOptions)
-
-} // namespace evd
-////////////////////////////////////////////////////////////////////////
+DEFINE_ART_SERVICE(evd::RawDrawingOptions)

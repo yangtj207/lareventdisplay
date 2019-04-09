@@ -62,7 +62,7 @@ namespace evd{
     : evdb::Canvas(mf)
   {  
     
-    art::ServiceHandle<geo::Geometry> geo;
+    art::ServiceHandle<geo::Geometry const> geo;
 
     // first make pads for things that don't depend on the number of 
     // planes in the detector
@@ -154,9 +154,9 @@ namespace evd{
 				    TGNumberFormat::kNELLimitMinMax, 
 				    0 , geo->Nwires(0)-1 );
     // Initial value
-    art::ServiceHandle<evd::ColorDrawingOptions>      cst;
-    art::ServiceHandle<evd::SimulationDrawingOptions> sdo;
-    art::ServiceHandle<evd::RawDrawingOptions>        rawopt;
+    art::ServiceHandle<evd::ColorDrawingOptions const>      cst;
+    art::ServiceHandle<evd::SimulationDrawingOptions const> sdo;
+    art::ServiceHandle<evd::RawDrawingOptions const>        rawopt;
     art::ServiceHandle<evd::EvdLayoutOptions>         evdlayoutopt;
 
 
@@ -319,7 +319,7 @@ namespace evd{
   //......................................................................
   void TWQMultiTPCProjectionView::Draw(const char* opt) 
   {  
-    art::ServiceHandle<geo::Geometry> geo;
+    art::ServiceHandle<geo::Geometry const> geo;
 
     fPrevZoomOpt.clear();
   
@@ -329,7 +329,7 @@ namespace evd{
     fMC       ->Draw(); 
     fWireQ->Draw();
   
-    art::ServiceHandle<evd::EvdLayoutOptions> evdlayoutopt;
+    art::ServiceHandle<evd::EvdLayoutOptions const> evdlayoutopt;
 
     if(evdlayoutopt->fPrintTotalCharge) PrintCharge();
   
@@ -409,8 +409,8 @@ namespace evd{
   void 	TWQMultiTPCProjectionView::PrintCharge()
   {
 
-    art::ServiceHandle<geo::Geometry> geo;
-    art::ServiceHandle<evd::RawDrawingOptions> rawopt;
+    art::ServiceHandle<geo::Geometry const> geo;
+    art::ServiceHandle<evd::RawDrawingOptions const> rawopt;
     
     geo::TPCID tpcid = rawopt->CurrentTPC();
 
@@ -440,7 +440,7 @@ namespace evd{
     //initial check for a mouse click on a TBox object
     int event = gPad->GetEvent();
     evd::TWQMultiTPCProjectionView *wqpp = (evd::TWQMultiTPCProjectionView*)wqpv;
-    art::ServiceHandle<evd::EvdLayoutOptions>   evdlayoutopt;
+    art::ServiceHandle<evd::EvdLayoutOptions const>   evdlayoutopt;
 
     switch (event){
 	
@@ -496,7 +496,7 @@ namespace evd{
 
     if(event!=7) return;
 
-    art::ServiceHandle<evd::EvdLayoutOptions>   evdlayoutopt;
+    art::ServiceHandle<evd::EvdLayoutOptions const>   evdlayoutopt;
     if(evdlayoutopt->fShowEndPointSection!=1)
       return;
     //struct planepoint;
@@ -590,9 +590,9 @@ namespace evd{
 
       double y,z;
 
-      art::ServiceHandle<geo::Geometry> geom;
+      art::ServiceHandle<geo::Geometry const> geom;
       const detinfo::DetectorProperties* detp = lar::providerFrom<detinfo::DetectorPropertiesService>();
-      art::ServiceHandle<evd::RawDrawingOptions> rawOpt;
+      art::ServiceHandle<evd::RawDrawingOptions const> rawOpt;
       double ftimetick = detp->SamplingRate()/1000.;
       double larv = detp->DriftVelocity(detp->Efield(), detp->Temperature());
 		
@@ -721,9 +721,9 @@ namespace evd{
       double y = 0.;
       double z = 0.;
 
-      art::ServiceHandle<geo::Geometry> geom;
+      art::ServiceHandle<geo::Geometry const> geom;
       const detinfo::DetectorProperties* detp = lar::providerFrom<detinfo::DetectorPropertiesService>();
-      art::ServiceHandle<evd::RawDrawingOptions> rawOpt;
+      art::ServiceHandle<evd::RawDrawingOptions const> rawOpt;
       double ftimetick = detp->SamplingRate()/1000.;
       double larv = detp->DriftVelocity(detp->Efield(), detp->Temperature());
 		
@@ -776,7 +776,7 @@ namespace evd{
 	
 	unsigned int wplane = 0;
 	unsigned int wirevertex = 0;
-	art::ServiceHandle<evd::EvdLayoutOptions> evdlayoutopt;
+        art::ServiceHandle<evd::EvdLayoutOptions const> evdlayoutopt;
 	
 	for(size_t xx = 0; xx < fPlanes.size(); ++xx){
 	  wplane = 0;
@@ -955,8 +955,8 @@ namespace evd{
     if(flag==true) zoom_opt="1";
     else zoom_opt="0";
   
-    art::ServiceHandle<geo::Geometry> geo;
-    art::ServiceHandle<evd::RawDrawingOptions> rawopt; 
+    art::ServiceHandle<geo::Geometry const> geo;
+    art::ServiceHandle<evd::RawDrawingOptions const> rawopt;
  
     ZoomOptionsMultiTPC zo;
     //  mf::LogVerbatim("TWQMultiTPCProjectionView") <<"Zoom interest pushing back zoom options"<<std::endl;
@@ -1018,7 +1018,7 @@ namespace evd{
   void TWQMultiTPCProjectionView::SetUpZoomButtons()
   {
     // enter zoom buttons
-    art::ServiceHandle<evd::EvdLayoutOptions>        evdlayoutopt;  
+    art::ServiceHandle<evd::EvdLayoutOptions const>        evdlayoutopt;
 
     fZoomInterest=new TGTextButton(fVFrame,"&Zoom Interest",150);
     fZoomInterest->Connect("Clicked()", "evd::TWQMultiTPCProjectionView", this, "ZoomInterest()");
@@ -1049,7 +1049,6 @@ namespace evd{
   //----------------------------------------------------------------------------
   void	TWQMultiTPCProjectionView::RadioButtonsDispatch(int parameter)
   {
-    art::ServiceHandle<evd::EvdLayoutOptions>        evdlayoutopt; 
     if(parameter==1 || parameter == 2){
       fToggleZoom->SetState(kButtonUp); 	 
     }
@@ -1060,7 +1059,7 @@ namespace evd{
   void TWQMultiTPCProjectionView::SetUpPositionFind()
   {
     // enter zoom buttons
-    art::ServiceHandle<evd::EvdLayoutOptions>        evdlayoutopt;  
+    art::ServiceHandle<evd::EvdLayoutOptions const>        evdlayoutopt;
     if(!evdlayoutopt->fShowEndPointSection)            
       return;
 

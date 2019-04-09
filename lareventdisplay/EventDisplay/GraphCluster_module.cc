@@ -8,7 +8,6 @@
 ////////////////////////////////////////////////////////////////////////
 
 #include <vector>
-#include <string>
 #include "art/Framework/Core/ModuleMacros.h" 
 
 #ifdef __ROOTCLING__
@@ -33,7 +32,6 @@ namespace recob {
 #include "art/Framework/Core/EDProducer.h" 
 #include "canvas/Persistency/Common/PtrVector.h"
 #include "canvas/Persistency/Common/Ptr.h"
-#include "art/Framework/Services/Registry/ActivityRegistry.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "lareventdisplay/EventDisplay/InfoTransfer.h"
 #include "larcore/Geometry/Geometry.h"
@@ -56,7 +54,6 @@ extern "C" {
 #include <sys/types.h>
 #include <sys/stat.h>
 }
-#include <sstream>
 #include <math.h>
 #include <algorithm>
 
@@ -121,8 +118,8 @@ namespace evd {
 
     GraphClusterAlg fGClAlg;
 
-  //  art::ServiceHandle<evd::InfoTransfer> intr;
-  //  art::ServiceHandle<geo::Geometry>  geo;
+  //  art::ServiceHandle<evd::InfoTransfer const> intr;
+  //  art::ServiceHandle<geo::Geometry const>  geo;
     
     void GetStartEndHits(unsigned int plane, recob::Hit * starthit,recob::Hit * endhit);
     void GetStartEndHits(unsigned int plane);
@@ -168,7 +165,7 @@ namespace evd {
     EDProducer{pset},
   fGClAlg(pset.get< fhicl::ParameterSet >("GraphClusterAlg"))
   {
-    art::ServiceHandle<geo::Geometry>  geo;
+    art::ServiceHandle<geo::Geometry const>  geo;
 	
 	
     produces< std::vector<recob::Cluster>                >();
@@ -204,7 +201,7 @@ namespace evd {
 	
 	
 	 
-    art::ServiceHandle<geo::Geometry>  geo;
+    art::ServiceHandle<geo::Geometry const>  geo;
 
     // check if evt and run numbers check out, etc...
     if(fGClAlg.CheckValidity(  evt ) == -1)

@@ -4,8 +4,6 @@
 /// \author  messier@indiana.edu
 ///
 #include "lareventdisplay/EventDisplay/DrawingPad.h"
-#include <iostream>
-#include <vector>
 #include "TPad.h"
 #include "nutools/EventDisplayBase/evdb.h"
 #include "lareventdisplay/EventDisplay/HeaderDrawer.h"
@@ -85,7 +83,7 @@ namespace evd{
   {
     if (fGeometryDraw==0)
     {
-        art::ServiceHandle<evd::EvdLayoutOptions> layoutOptions;
+        art::ServiceHandle<evd::EvdLayoutOptions const> layoutOptions;
         const fhicl::ParameterSet&                pset = layoutOptions->fParameterSet;
         
         fGeometryDraw = art::make_tool<evd_tool::IExperimentDrawer>(pset.get<fhicl::ParameterSet>("Experiment3DDrawer"));

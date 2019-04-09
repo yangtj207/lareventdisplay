@@ -84,7 +84,7 @@ void DrawGausHits::configure(const fhicl::ParameterSet& pset)
 void DrawGausHits::Draw(evdb::View2D&     view2D,
                         raw::ChannelID_t& channel) const
 {
-    art::ServiceHandle<evd::RecoDrawingOptions> recoOpt;
+    art::ServiceHandle<evd::RecoDrawingOptions const> recoOpt;
     
     //grab the singleton with the event
     const art::Event* event = evdb::EventHolder::Instance()->GetEvent();

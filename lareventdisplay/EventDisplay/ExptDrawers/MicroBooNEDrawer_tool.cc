@@ -77,7 +77,7 @@ void MicroBooNEDrawer::configure(const fhicl::ParameterSet& pset)
 //......................................................................
 void MicroBooNEDrawer::DetOutline3D(evdb::View3D* view)
 {
-    art::ServiceHandle<geo::Geometry>         geo;
+    art::ServiceHandle<geo::Geometry const>         geo;
     
     // If requested, draw the outer three window volume first
     if (fThreeWindow)
@@ -249,11 +249,11 @@ void MicroBooNEDrawer::DrawAxes(evdb::View3D* view, double* coordsLo, double* co
 
 void MicroBooNEDrawer::DrawBadChannels(evdb::View3D* view, double* coords, int color, int width, int style)
 {
-    art::ServiceHandle<geo::Geometry>          geo;
-    art::ServiceHandle<evd::RawDrawingOptions> rawOpt;
+    art::ServiceHandle<geo::Geometry const>          geo;
+    art::ServiceHandle<evd::RawDrawingOptions const> rawOpt;
     
     lariov::ChannelStatusProvider const& channelStatus
-    = art::ServiceHandle<lariov::ChannelStatusService>()->GetProvider();
+    = art::ServiceHandle<lariov::ChannelStatusService const>()->GetProvider();
     
     // We want to translate the wire position to the opposite side of the TPC...
     for(size_t viewNo = 0; viewNo < geo->Nviews(); viewNo++)

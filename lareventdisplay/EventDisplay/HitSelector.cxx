@@ -60,8 +60,8 @@ namespace evd{
 				    ) 
   {
     art::ServiceHandle<evd::InfoTransfer>   infot;
-    art::ServiceHandle<geo::Geometry>       geom;
-    art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
+    art::ServiceHandle<geo::Geometry const>       geom;
+    art::ServiceHandle<evd::RecoDrawingOptions const>  recoOpt;
     std::map<int, std::vector < art::Ptr < recob::Hit> > > hits_to_save;
 
     double KineticEnergy=0;
@@ -74,7 +74,7 @@ namespace evd{
       evt.getByLabel(which,HitListHandle);
 
 
-      art::ServiceHandle<evd::EvdLayoutOptions> evdlayoutoptions;
+      art::ServiceHandle<evd::EvdLayoutOptions const> evdlayoutoptions;
       if(evdlayoutoptions->fMakeSeeds)
 	{
 	  // Code to collect hits around curve
@@ -137,7 +137,7 @@ namespace evd{
 	      hits_to_save[HitVec.at(ih)->WireID().Plane].push_back(HitVec.at(ih));
 	    } 
 	  }
-	  art::ServiceHandle<evd::RecoDrawingOptions> recoOpt;
+          art::ServiceHandle<evd::RecoDrawingOptions const> recoOpt;
 	  calo::CalorimetryAlg calalg(recoOpt->fCaloPSet);
 	  for(std::map<int, std::vector<art::Ptr<recob::Hit> > >::iterator it=hits_to_save.begin(); it!=hits_to_save.end(); ++it){
 	    KineticEnergy += BTrack.GetCalorimetryObject(it->second, geo::kCollection,calalg).KineticEnergy();
@@ -177,8 +177,8 @@ namespace evd{
 			     ) 
   {
     // unsigned int w  = 0;
-    art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
-    art::ServiceHandle<geo::Geometry>  geo;
+    art::ServiceHandle<evd::RecoDrawingOptions const>  recoOpt;
+    art::ServiceHandle<geo::Geometry const>  geo;
     util::GeometryUtilities  gser;
     std::vector < art::Ptr < recob::Hit> > hits_to_save; //std::vector < azart::Ptr >
 
@@ -306,8 +306,8 @@ namespace evd{
 			      double xin,  double yin
 			      ) 
   {
-    art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
-    art::ServiceHandle<geo::Geometry>  geo;
+    art::ServiceHandle<evd::RecoDrawingOptions const>  recoOpt;
+    art::ServiceHandle<geo::Geometry const>  geo;
     util::GeometryUtilities  gser;
     
     
@@ -401,7 +401,7 @@ namespace evd{
   
   trkf::HitPtrVec  HitSelector::GetSelectedHitPtrs(unsigned int plane)
   {
-    art::ServiceHandle<evd::InfoTransfer>   infot;
+    art::ServiceHandle<evd::InfoTransfer const>   infot;
     trkf::HitPtrVec ToReturn;
     ToReturn.Hits = infot->GetSelectedHitList(plane);
     return ToReturn;
@@ -415,7 +415,7 @@ namespace evd{
     //std::vector < recob::Hit> hits_to_point; //needed to convert art::Ptr<recob:: Hit> to Hit* to pass to Hit2D
     std::vector< const recob::Hit*> hits_to_draw; //draw selected hits in a different color
     
-    art::ServiceHandle<evd::InfoTransfer>   infot;
+    art::ServiceHandle<evd::InfoTransfer const>   infot;
     hits_saved=infot->GetSelectedHitList(plane);
 	
     // if(hits_saved.size()!=0){

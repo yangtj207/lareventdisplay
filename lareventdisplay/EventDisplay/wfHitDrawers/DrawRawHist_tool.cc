@@ -72,7 +72,7 @@ void DrawRawHist::Fill(evdb::View2D&     view2D,
                        float             lowBin,
                        float             numTicks)
 {
-    art::ServiceHandle<evd::RawDrawingOptions>  rawOpt;
+    art::ServiceHandle<evd::RawDrawingOptions const>  rawOpt;
     
     //grab the singleton with the event
     const art::Event* event = evdb::EventHolder::Instance()->GetEvent();
@@ -99,7 +99,7 @@ void DrawRawHist::Fill(evdb::View2D&     view2D,
         if (rawDigit->Channel() != channel) continue;
         
         // We will need the pedestal service...
-        const lariov::DetPedestalProvider& pedestalRetrievalAlg = art::ServiceHandle<lariov::DetPedestalService>()->GetPedestalProvider();
+        const lariov::DetPedestalProvider& pedestalRetrievalAlg = art::ServiceHandle<lariov::DetPedestalService const>()->GetPedestalProvider();
         
         // recover the pedestal
         float  pedestal = 0;
@@ -160,8 +160,8 @@ void DrawRawHist::Draw(const std::string& options, float maxLowVal, float maxHiV
 //......................................................................
 void DrawRawHist::BookHistogram(raw::ChannelID_t& channel, float startTick, float numTicks)
 {
-    art::ServiceHandle<evd::ColorDrawingOptions> cst;
-    art::ServiceHandle<geo::Geometry>            geo;
+    art::ServiceHandle<evd::ColorDrawingOptions const> cst;
+    art::ServiceHandle<geo::Geometry const>            geo;
 
     // Get rid of the previous histograms
     if (fRawDigitHist.get()) fRawDigitHist.reset();

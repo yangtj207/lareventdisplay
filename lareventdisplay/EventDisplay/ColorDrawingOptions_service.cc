@@ -4,19 +4,16 @@
 /// \author  brebel@fnal.gov
 
 // Framework includes
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 /// LArSoft includes
 #include "lareventdisplay/EventDisplay/ColorDrawingOptions.h"
 #include "lareventdisplay/EventDisplay/RawDrawingOptions.h"
 
-#include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Principal/Event.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
-
 namespace evd{
   
   //......................................................................
-  ColorDrawingOptions::ColorDrawingOptions(fhicl::ParameterSet const& pset, art::ActivityRegistry& /* reg */)
+  ColorDrawingOptions::ColorDrawingOptions(fhicl::ParameterSet const& pset)
     : evdb::Reconfigurable{pset}
     , fColorOrGray(pset.get< int                 >("ColorOrGrayScale"))
     , fRawDiv     (pset.get< std::vector<int>    >("RawDiv")          )
@@ -56,13 +53,6 @@ namespace evd{
 						270.0, 0.0,
 						0.5, 0.5));
     }
-
-    return;
-  }
-
-  //......................................................................
-  ColorDrawingOptions::~ColorDrawingOptions()
-  {
   }
 
   //......................................................................

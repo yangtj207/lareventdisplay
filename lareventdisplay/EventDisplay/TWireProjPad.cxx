@@ -117,7 +117,7 @@ namespace evd{
     
     fCurrentZoom.resize(4);
     
-    art::ServiceHandle<geo::Geometry> geo;
+    art::ServiceHandle<geo::Geometry const> geo;
     
     // this->Pad()->SetBit(kCannotPick); // workaround for issue #16169
     // this->Pad()->SetBit(TPad::kCannotMove);
@@ -154,7 +154,7 @@ namespace evd{
     planeNo += fPlane;
     
     // picking the information from the current TPC
-    art::ServiceHandle<evd::RawDrawingOptions> rawopt;
+    art::ServiceHandle<evd::RawDrawingOptions const> rawopt;
     auto const signalType = geo->SignalType({ rawopt->CurrentTPC(), fPlane });
     TString xtitle = ";Induction Wire;t (tdc)";
     if(signalType == geo::kCollection) xtitle = ";Collection Wire;t (tdc)";
@@ -219,7 +219,7 @@ namespace evd{
     // grab the singleton holding the art::Event
     const art::Event *evt = evdb::EventHolder::Instance()->GetEvent();
     if(evt){
-      art::ServiceHandle<evd::RecoDrawingOptions> recoOpt;
+      art::ServiceHandle<evd::RecoDrawingOptions const> recoOpt;
 
       this->SimulationDraw()->MCTruthVectors2D(*evt, fView, fPlane);
       
@@ -259,7 +259,7 @@ namespace evd{
     // DumpPadsInCanvas(fPad, "TWireProjPad", "After ClearandUpdatePad()");
        
     // check if we need to swap the axis ranges
-    art::ServiceHandle<evd::RawDrawingOptions> rawopt;
+    art::ServiceHandle<evd::RawDrawingOptions const> rawopt;
     if(fOri != rawopt->fAxisOrientation){
       fOri = rawopt->fAxisOrientation;
       double max = fXHi;
@@ -299,7 +299,7 @@ namespace evd{
   //......................................................................
   void TWireProjPad::ClearHitList()
   {
-    art::ServiceHandle<evd::RecoDrawingOptions> recoOpt;
+    art::ServiceHandle<evd::RecoDrawingOptions const> recoOpt;
     if(recoOpt->fUseHitSelector){
       this->HitSelectorGet()->ClearHitList(fPlane);
       this->Draw();
@@ -345,7 +345,7 @@ namespace evd{
 
   void TWireProjPad::ShowFull(int override)
   {
-    art::ServiceHandle<geo::Geometry> g;
+    art::ServiceHandle<geo::Geometry const> g;
     
     // x values are wire numbers, y values are ticks of the clock
     int xmin = fXLo;
@@ -353,8 +353,8 @@ namespace evd{
     int ymax = fYHi;
     int ymin = fYLo;
     
-    art::ServiceHandle<evd::EvdLayoutOptions> evdlayoutopt;
-    art::ServiceHandle<evd::RawDrawingOptions> rawopt;
+    art::ServiceHandle<evd::EvdLayoutOptions const> evdlayoutopt;
+    art::ServiceHandle<evd::RawDrawingOptions const> rawopt;
     
     if(GetDrawOptions().bZoom2DdrawToRoI && !override){
       int test=0;
@@ -444,7 +444,7 @@ namespace evd{
   {  
     const art::Event *evt = evdb::EventHolder::Instance()->GetEvent();
     if(evt){
-      art::ServiceHandle<evd::RecoDrawingOptions> recoopt;
+      art::ServiceHandle<evd::RecoDrawingOptions const> recoopt;
       if(recoopt->fUseHitSelector){
 	this->HitSelectorGet()->SaveHits(*evt, fView, fPlane, i1, i2, y1, y2, distance, good_plane);
 	this->Draw(zoom_opt);
@@ -463,7 +463,7 @@ namespace evd{
     double KineticEnergy = util::kBogusD;
     const art::Event *evt = evdb::EventHolder::Instance()->GetEvent();
     if(evt){
-      art::ServiceHandle<evd::RecoDrawingOptions> recoopt;
+      art::ServiceHandle<evd::RecoDrawingOptions const> recoopt;
       if(recoopt->fUseHitSelector)
 	KineticEnergy = this->HitSelectorGet()->SaveSeedLines(*evt, fView,seedlines, distance);
     }
@@ -478,7 +478,7 @@ namespace evd{
   
     const art::Event *evt = evdb::EventHolder::Instance()->GetEvent();
     if(evt){
-      art::ServiceHandle<evd::RecoDrawingOptions> recoopt;
+      art::ServiceHandle<evd::RecoDrawingOptions const> recoopt;
       if(recoopt->fUseHitSelector){
 	this->HitSelectorGet()->ChangeHit(*evt, fView, fPlane,x,y);
 	this->Draw(zoom_opt);
@@ -514,7 +514,7 @@ namespace evd{
 				     const char * zoom_opt)
   {
 
-    art::ServiceHandle<evd::EvdLayoutOptions>    evdlayoutopt;
+    art::ServiceHandle<evd::EvdLayoutOptions const>    evdlayoutopt;
     detinfo::DetectorProperties const* det = lar::providerFrom<detinfo::DetectorPropertiesService>();
 
     fPad->cd();

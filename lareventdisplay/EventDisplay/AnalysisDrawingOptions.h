@@ -14,8 +14,7 @@ namespace evd {
   class AnalysisDrawingOptions : public evdb::Reconfigurable
   {
   public:
-    explicit AnalysisDrawingOptions(fhicl::ParameterSet const& pset, art::ActivityRegistry& reg);
-    ~AnalysisDrawingOptions();
+    explicit AnalysisDrawingOptions(fhicl::ParameterSet const& pset);
     
     void reconfigure(fhicl::ParameterSet const& pset) ;
 
@@ -35,4 +34,3 @@ namespace evd {
 #endif // __CINT__
 DECLARE_ART_SERVICE(evd::AnalysisDrawingOptions, LEGACY)
 #endif
-

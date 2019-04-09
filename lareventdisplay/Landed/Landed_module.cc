@@ -80,7 +80,7 @@ public:
 private:
 
   // Declare member data here.
-  art::ServiceHandle<geo::Geometry>  geom_;
+  art::ServiceHandle<geo::Geometry const>  geom_;
   art::ServiceHandle<LandedSocket> sock_;
   //string containing gdml having ben simplified through root
   std::string vrml_;
@@ -94,7 +94,7 @@ private:
 evd::Landed::Landed(fhicl::ParameterSet const & p):
   EDAnalyzer(p),
  // More initializers here.
-  geom_(art::ServiceHandle<geo::Geometry>()),
+  geom_(art::ServiceHandle<geo::Geometry const>()),
   sock_(art::ServiceHandle<LandedSocket>()),
   outputFilename_(p.get<std::string>("outputFilename", "")),
   which_(p.get<std::string>("which", "truth")),

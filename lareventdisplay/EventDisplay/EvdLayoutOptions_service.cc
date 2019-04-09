@@ -3,28 +3,18 @@
 ///
 /// \author  andrzejs@fnal.gov
 
-// Framework includes
-
 /// LArSoft includes
 #include "lareventdisplay/EventDisplay/EvdLayoutOptions.h"
-
-#include <iostream>
 
 namespace evd {
 
   //......................................................................
-  EvdLayoutOptions::EvdLayoutOptions(fhicl::ParameterSet const& pset, 
-                                     art::ActivityRegistry& /* reg */) :
+  EvdLayoutOptions::EvdLayoutOptions(fhicl::ParameterSet const& pset) :
                                      evdb::Reconfigurable{pset}, fParameterSet(pset)
   {
     this->reconfigure(pset);
   }
   
-  //......................................................................
-  EvdLayoutOptions::~EvdLayoutOptions() 
-  {
-  }
-
   //......................................................................
   void EvdLayoutOptions::reconfigure(fhicl::ParameterSet const& pset){
       
@@ -48,9 +38,4 @@ namespace evd {
   }
 }
 
-namespace evd {
-
-  DEFINE_ART_SERVICE(EvdLayoutOptions)
-
-} // namespace evd
-////////////////////////////////////////////////////////////////////////
+DEFINE_ART_SERVICE(evd::EvdLayoutOptions)

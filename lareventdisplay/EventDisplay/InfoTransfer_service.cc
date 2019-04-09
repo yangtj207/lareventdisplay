@@ -6,7 +6,6 @@
 // \author andrzej.szelc@yale.edu
 // ellen.klein@yale.edu
 ////////////////////////////////////////////////////////////////////////
-#include <iostream>
 
 // Framework includes
 #include "messagefacility/MessageLogger/MessageLogger.h"
@@ -36,7 +35,7 @@ namespace evd {
     fRun=-1;
     fSubRun=-1;
     reg.sPreProcessEvent.watch(this, &InfoTransfer::Rebuild);
-    art::ServiceHandle<geo::Geometry>  geo;
+    art::ServiceHandle<geo::Geometry const>  geo;
     unsigned int nplanes = geo->Nplanes();
     
     fSelectedHitlist.resize(nplanes);
@@ -65,7 +64,7 @@ namespace evd {
   //......................................................................
   void InfoTransfer::reconfigure(fhicl::ParameterSet const& pset)
   {
-    art::ServiceHandle<geo::Geometry>  geo;
+    art::ServiceHandle<geo::Geometry const>  geo;
     unsigned int nplanes = geo->Nplanes();
     //clear everything
     fRefinedHitlist.resize(nplanes);
@@ -82,7 +81,7 @@ namespace evd {
   //......................................................................
   void InfoTransfer::Rebuild(const art::Event& evt, art::ScheduleContext)
   {
-    art::ServiceHandle<geo::Geometry>  geo;
+    art::ServiceHandle<geo::Geometry const>  geo;
     unsigned int nplanes = geo->Nplanes();
     unsigned int which_call=evdb::NavState::Which();	  
     if(which_call!=2){
@@ -197,7 +196,7 @@ namespace evd {
       
     
   //......................................................................
-  std::vector < util::PxLine > InfoTransfer::GetSeedList()
+  std::vector < util::PxLine > const& InfoTransfer::GetSeedList() const
   { 
     return fSeedList;     
   }
@@ -207,7 +206,7 @@ namespace evd {
   void InfoTransfer::FillStartEndHitCoords(unsigned int plane)
   {
     
-    art::ServiceHandle<geo::Geometry>  geo;
+    art::ServiceHandle<geo::Geometry const>  geo;
     // std::vector <double> sthitout(2);
     if(fRefStartHit[plane]){
       starthitout[plane][1] = fRefStartHit[plane]->PeakTime() ;  

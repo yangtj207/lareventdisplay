@@ -75,7 +75,7 @@ DrawSimEnergyDeposit3D::~DrawSimEnergyDeposit3D()
     
 void DrawSimEnergyDeposit3D::Draw(const art::Event& evt, evdb::View3D* view) const
 {
-    art::ServiceHandle<evd::SimulationDrawingOptions> drawOpt;
+    art::ServiceHandle<evd::SimulationDrawingOptions const> drawOpt;
     
     // If the option is turned off, there's nothing to do
     if (!drawOpt->fShowSimEnergyInfo) return;
@@ -107,7 +107,7 @@ void DrawSimEnergyDeposit3D::Draw(const art::Event& evt, evdb::View3D* view) con
         // Get the detector properties, clocks...
         detinfo::DetectorProperties const* theDetector = lar::providerFrom<detinfo::DetectorPropertiesService>();
         detinfo::DetectorClocks     const* detClocks   = lar::providerFrom<detinfo::DetectorClocksService>();
-        art::ServiceHandle<geo::Geometry>  geom;
+        art::ServiceHandle<geo::Geometry const>  geom;
         
         // First step is to create a map between MCParticle and SimEnergyDeposit objects...
         using MCPartToSimEnergyMap = std::map<const simb::MCParticle*, std::vector<const sim::SimEnergyDeposit*>>;

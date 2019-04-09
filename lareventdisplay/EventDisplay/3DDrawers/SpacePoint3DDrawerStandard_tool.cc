@@ -74,7 +74,7 @@ void SpacePoint3DDrawerStandard::Draw(const std::vector<art::Ptr<recob::SpacePoi
 {
     // Get services.
     
-    art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
+    art::ServiceHandle<evd::RecoDrawingOptions const>  recoOpt;
     
     // Organize space points into separate collections according to the color
     // we want them to be.

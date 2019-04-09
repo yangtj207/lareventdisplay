@@ -19,7 +19,7 @@
   evd::GraphClusterAlg::GraphClusterAlg(fhicl::ParameterSet const& pset) 
   {
     this->reconfigure(pset);
-    art::ServiceHandle<geo::Geometry>  geo;
+    art::ServiceHandle<geo::Geometry const>  geo;
 	
 	
     
@@ -62,7 +62,7 @@
   {
     std::vector < double > starthit;
     std::vector < double > endhit;
-    art::ServiceHandle<evd::InfoTransfer> intr;
+    art::ServiceHandle<evd::InfoTransfer const> intr;
     starthit=intr->GetStartHitCoords(plane);
     endhit=intr->GetEndHitCoords(plane);
   
@@ -80,7 +80,7 @@
 //   {
 //     std::vector < double > starthit;
 //     std::vector < double > endhit;
-//     art::ServiceHandle<evd::InfoTransfer> intr;
+//     art::ServiceHandle<evd::InfoTransfer const> intr;
 //     starthit=intr->GetStartHitCoords(plane);
 //     endhit=intr->GetEndHitCoords(plane);
 //   
@@ -100,8 +100,8 @@
 // 				     recob::Hit *endhit) 
 //   {
 //    
-//     art::ServiceHandle<evd::InfoTransfer> intr;
-//     art::ServiceHandle<geo::Geometry>  geo;
+//     art::ServiceHandle<evd::InfoTransfer const> intr;
+//     art::ServiceHandle<geo::Geometry const>  geo;
 //    
 //     starthit=intr->GetStartHit(plane);
 //     endhit=intr->GetEndHit(plane);
@@ -145,7 +145,7 @@
   //---------------------------------------------------------------------------- 
   //  void evd::GraphClusterAlg::GetHitList(unsigned int plane,std::vector< art::Ptr <recob::Hit> > ptrhitlist)
   //  {
-  //   art::ServiceHandle<evd::InfoTransfer> intr;
+  //   art::ServiceHandle<evd::InfoTransfer const> intr;
   //    
   //   
   //   ptrhitlist=intr->GetHitList(plane);
@@ -171,7 +171,7 @@
   //----------------------------------------------------------------------------
   void evd::GraphClusterAlg::GetHitList(unsigned int plane, art::PtrVector <recob::Hit>  &ptrhitlist)
   {
-    art::ServiceHandle<evd::InfoTransfer> intr;
+    art::ServiceHandle<evd::InfoTransfer const> intr;
    
     std::vector< art::Ptr <recob::Hit> > ptlist=intr->GetHitList(plane);
   
@@ -197,7 +197,7 @@
   std::vector < util::PxLine > evd::GraphClusterAlg::GetSeedLines()
   {
    
-    art::ServiceHandle<evd::InfoTransfer> intr;
+    art::ServiceHandle<evd::InfoTransfer const> intr;
     //////////////////////////////////////////////////
     //this is where you could create Bezier Tracks if you wanted to do it inside a producer	 
     //////////////////////////////////////////////////
@@ -210,7 +210,7 @@
 
 
  int evd::GraphClusterAlg::CheckValidity(art::Event& evt){
-    art::ServiceHandle<evd::InfoTransfer> intr;
+    art::ServiceHandle<evd::InfoTransfer const> intr;
     TestFlag=intr->GetTestFlag();
   
     fEvent=intr->GetEvtNumber();

@@ -65,11 +65,11 @@ namespace evd{
     , fRedraw(nullptr)
     , fCryoInput(nullptr), fTPCInput(nullptr), fTotalTPCLabel(nullptr)
     , isZoomAutomatic
-        (art::ServiceHandle<evd::EvdLayoutOptions>()->fAutoZoomInterest)
+        (art::ServiceHandle<evd::EvdLayoutOptions const>()->fAutoZoomInterest)
     , fLastEvent(new util::DataProductChangeTracker_t)
   {  
     
-    art::ServiceHandle<geo::Geometry> geo;
+    art::ServiceHandle<geo::Geometry const> geo;
 
     // first make pads for things that don't depend on the number of 
     // planes in the detector
@@ -171,9 +171,9 @@ namespace evd{
 				    TGNumberFormat::kNELLimitMinMax, 
 				    0 , geo->Nwires(0)-1 );
     // Initial value
-    art::ServiceHandle<evd::ColorDrawingOptions>      cst;
+    art::ServiceHandle<evd::ColorDrawingOptions const> cst;
     art::ServiceHandle<evd::SimulationDrawingOptions> sdo;
-    art::ServiceHandle<evd::RawDrawingOptions>        rawopt;
+    art::ServiceHandle<evd::RawDrawingOptions const>   rawopt;
     art::ServiceHandle<evd::EvdLayoutOptions>         evdlayoutopt;
 
 
@@ -344,7 +344,7 @@ namespace evd{
     
     OnNewEvent(); // if the current event is a new one, we need some resetting
     
-    art::ServiceHandle<geo::Geometry> geo;
+    art::ServiceHandle<geo::Geometry const> geo;
 
     ClearAllSeeds();
     fPrevZoomOpt.clear();
@@ -356,7 +356,7 @@ namespace evd{
     fMC       ->Draw(); 
     fWireQ    ->Draw();
   
-    art::ServiceHandle<evd::EvdLayoutOptions> evdlayoutopt;
+    art::ServiceHandle<evd::EvdLayoutOptions const> evdlayoutopt;
     if(evdlayoutopt->fPrintTotalCharge)
       PrintCharge();
   
@@ -479,8 +479,8 @@ namespace evd{
   void 	TWQProjectionView::PrintCharge()
   {
 
-    art::ServiceHandle<geo::Geometry> geo;
-    art::ServiceHandle<evd::RawDrawingOptions> rawopt;
+    art::ServiceHandle<geo::Geometry const> geo;
+    art::ServiceHandle<evd::RawDrawingOptions const> rawopt;
     
     for(size_t iplane = 0; iplane < fPlanes.size(); ++iplane){
       geo::PlaneID planeid(rawopt->CurrentTPC(), iplane);
@@ -509,7 +509,7 @@ namespace evd{
     //initial check for a mouse click on a TBox object
     int event = gPad->GetEvent();
     evd::TWQProjectionView *wqpp = (evd::TWQProjectionView*)wqpv;
-    art::ServiceHandle<evd::EvdLayoutOptions>   evdlayoutopt;
+    art::ServiceHandle<evd::EvdLayoutOptions const>   evdlayoutopt;
 
     switch (event){
 	
@@ -565,7 +565,7 @@ namespace evd{
 
     if(event!=7) return;
 
-    art::ServiceHandle<evd::EvdLayoutOptions>   evdlayoutopt;
+    art::ServiceHandle<evd::EvdLayoutOptions const>   evdlayoutopt;
     if(evdlayoutopt->fShowEndPointSection!=1)
       return;
     //struct planepoint;
@@ -659,9 +659,9 @@ namespace evd{
 
       double y,z;
 
-      art::ServiceHandle<geo::Geometry> geom;
+      art::ServiceHandle<geo::Geometry const> geom;
       const detinfo::DetectorProperties* detp = lar::providerFrom<detinfo::DetectorPropertiesService>();
-      art::ServiceHandle<evd::RawDrawingOptions> rawOpt;
+      art::ServiceHandle<evd::RawDrawingOptions const> rawOpt;
       double ftimetick = detp->SamplingRate()/1000.;
       double larv = detp->DriftVelocity(detp->Efield(), detp->Temperature());
 		
@@ -800,9 +800,9 @@ namespace evd{
       double y = 0.;
       double z = 0.;
 
-      art::ServiceHandle<geo::Geometry> geom;
+      art::ServiceHandle<geo::Geometry const> geom;
       const detinfo::DetectorProperties* detp = lar::providerFrom<detinfo::DetectorPropertiesService>();
-      art::ServiceHandle<evd::RawDrawingOptions> rawOpt;
+      art::ServiceHandle<evd::RawDrawingOptions const> rawOpt;
       //double ftimetick = detp->SamplingRate()/1000.;
       //double larv = detp->DriftVelocity(detp->Efield(), detp->Temperature());
 		
@@ -864,7 +864,7 @@ namespace evd{
 	
 	unsigned int wplane = 0;
 	unsigned int wirevertex = 0;
-	art::ServiceHandle<evd::EvdLayoutOptions> evdlayoutopt;
+        art::ServiceHandle<evd::EvdLayoutOptions const> evdlayoutopt;
 	
 	for(size_t xx = 0; xx < fPlanes.size(); ++xx){
 	  wplane = 0;
@@ -929,7 +929,7 @@ namespace evd{
   {
     util::GeometryUtilities gser;
 	
-    art::ServiceHandle<evd::EvdLayoutOptions> evdlayoutoptions;
+    art::ServiceHandle<evd::EvdLayoutOptions const> evdlayoutoptions;
     if(evdlayoutoptions->fMakeSeeds){
       double KineticEnergy = fPlanes[0]->SaveSeedList( seedlines, kDistance);
       std::stringstream ss;
@@ -1020,7 +1020,7 @@ namespace evd{
   //.......................................................................
   void TWQProjectionView::ClearSelection()
   {
-    art::ServiceHandle<evd::EvdLayoutOptions> evdlayoutopt;
+    art::ServiceHandle<evd::EvdLayoutOptions const> evdlayoutopt;
   
     if(!evdlayoutopt->fMakeSeeds && !evdlayoutopt->fMakeClusters)
       ppoints.clear();
@@ -1040,7 +1040,7 @@ namespace evd{
   //.......................................................................
   void TWQProjectionView::ClearAllSeeds()
   {
-    art::ServiceHandle<evd::RecoDrawingOptions> recoopt;
+    art::ServiceHandle<evd::RecoDrawingOptions const> recoopt;
     if(!recoopt->fUseHitSelector) return;
 
     if(this->seedlines.size()==0) return;
@@ -1064,7 +1064,7 @@ namespace evd{
   //
   void TWQProjectionView::ClearLastSeed()
   {
-    art::ServiceHandle<evd::RecoDrawingOptions> recoopt;
+    art::ServiceHandle<evd::RecoDrawingOptions const> recoopt;
     if(!recoopt->fUseHitSelector) return;
 
     if(this->seedlines.size()==0) return;
@@ -1220,7 +1220,7 @@ namespace evd{
   //......................................................................
   int TWQProjectionView::DrawLine(int plane,util::PxLine &pline)
   {
-    art::ServiceHandle<evd::EvdLayoutOptions>     evdlayoutopt;
+    art::ServiceHandle<evd::EvdLayoutOptions const>     evdlayoutopt;
     const detinfo::DetectorProperties* det = lar::providerFrom<detinfo::DetectorPropertiesService>();
   
     static Float_t w0=-1, t0=-1, w1=-1, t1=-1;
@@ -1450,7 +1450,7 @@ namespace evd{
   //.......................................................................
   void TWQProjectionView::SetSeeds(int plane)
   {
-    art::ServiceHandle<evd::RecoDrawingOptions> recoopt;
+    art::ServiceHandle<evd::RecoDrawingOptions const> recoopt;
     if(!recoopt->fUseHitSelector) return;
 
     TObject *select = gPad->GetSelected();
@@ -1605,7 +1605,7 @@ namespace evd{
       
       fXYZPosition->SetText(tt);
       
-      art::ServiceHandle<geo::Geometry> geo;
+      art::ServiceHandle<geo::Geometry const> geo;
       
       TVector3 TPCHighBoundary = TVector3(2 * geo->DetHalfWidth(),
 					  geo->DetHalfHeight(),
@@ -1651,7 +1651,7 @@ namespace evd{
   //......................................................................
   void TWQProjectionView::SelectHit(int plane)
   {
-    art::ServiceHandle<evd::RecoDrawingOptions> recoopt;
+    art::ServiceHandle<evd::RecoDrawingOptions const> recoopt;
     if(!recoopt->fUseHitSelector) return;
 
     //initial check for a mouse click on a TBox object
@@ -1660,7 +1660,7 @@ namespace evd{
     ///\todo What the heck is this all about???
     if(event!=7) return;
 
-    art::ServiceHandle<evd::EvdLayoutOptions>   evdlayoutopt;
+    art::ServiceHandle<evd::EvdLayoutOptions const>   evdlayoutopt;
     if(evdlayoutopt->fMakeClusters != 1)
       return;
     //struct planepoint;
@@ -1687,8 +1687,8 @@ namespace evd{
     if(flag==true) zoom_opt="1";
     else zoom_opt="0";
   
-    art::ServiceHandle<geo::Geometry> geo;
-    art::ServiceHandle<evd::RawDrawingOptions> rawopt; 
+    art::ServiceHandle<geo::Geometry const> geo;
+    art::ServiceHandle<evd::RawDrawingOptions const> rawopt;
  
     ZoomOptions zo;
     //  mf::LogVerbatim("TWQProjectionView") <<"Zoom interest pushing back zoom options"<<std::endl;
@@ -1790,7 +1790,7 @@ namespace evd{
   void TWQProjectionView::SetUpZoomButtons()
   {
     // enter zoom buttons
-    art::ServiceHandle<evd::EvdLayoutOptions>        evdlayoutopt;  
+    art::ServiceHandle<evd::EvdLayoutOptions const>        evdlayoutopt;
 
     fZoomInterest=new TGTextButton(fVFrame,"&Zoom Interest",150);
     fZoomInterest->Connect("Clicked()", "evd::TWQProjectionView", this, "ZoomInterest()");
@@ -1820,7 +1820,7 @@ namespace evd{
   //......................................................................
   void TWQProjectionView::SetUpClusterButtons()
   {
-    art::ServiceHandle<evd::EvdLayoutOptions>        evdlayoutopt;  
+    art::ServiceHandle<evd::EvdLayoutOptions const>        evdlayoutopt;
     if(!evdlayoutopt->fShowClusterSection)            
       return;
     // enter zoom buttons
@@ -1907,7 +1907,7 @@ namespace evd{
   void TWQProjectionView::SetUpDrawingButtons()
   {
     // enter zoom buttons
-  //  art::ServiceHandle<evd::EvdLayoutOptions>        evdlayoutopt;  
+  //  art::ServiceHandle<evd::EvdLayoutOptions const>        evdlayoutopt;
 
     fRedraw = new TGTextButton(fVFrame, "&Redraw", 120);
     fRedraw->Connect("Clicked()", "evd::TWQProjectionView", this, "ForceRedraw()");
@@ -1923,8 +1923,8 @@ namespace evd{
   
   void TWQProjectionView::SetUpTPCselection()
   {
-    geo::GeometryCore const& geom = *(art::ServiceHandle<geo::Geometry>());
-    art::ServiceHandle<evd::RawDrawingOptions> rawOpt;
+    geo::GeometryCore const& geom = *(art::ServiceHandle<geo::Geometry const>());
+    art::ServiceHandle<evd::RawDrawingOptions const> rawOpt;
     
     TGHorizontalFrame* pRow = nullptr;
     //
@@ -2032,7 +2032,7 @@ namespace evd{
      *
      */
     evd::RawDrawingOptions& rawOpt = *(art::ServiceHandle<evd::RawDrawingOptions>());
-    geo::GeometryCore const& geom = *(art::ServiceHandle<geo::Geometry>());
+    geo::GeometryCore const& geom = *(art::ServiceHandle<geo::Geometry const>());
     
     geo::TPCID CurrentTPC(rawOpt.fCryostat, rawOpt.fTPC);
     geo::TPCID RequestedTPC(
@@ -2138,7 +2138,7 @@ namespace evd{
   void TWQProjectionView::SetUpPositionFind()
   {
     // enter zoom buttons
-    art::ServiceHandle<evd::EvdLayoutOptions>        evdlayoutopt;  
+    art::ServiceHandle<evd::EvdLayoutOptions const>        evdlayoutopt;
     if(!evdlayoutopt->fShowEndPointSection)            
       return;
 
@@ -2292,7 +2292,7 @@ namespace evd{
   //-----------------------------------------------------------------
   void TWQProjectionView::SetWire()
   {
-    art::ServiceHandle<geo::Geometry> geo;
+    art::ServiceHandle<geo::Geometry const> geo;
     kWire = (geo->Nwires(kPlane)-1 > (unsigned int)fWireEntry->GetNumberEntry()->GetNumber() ) ?  (unsigned int)fWireEntry->GetNumberEntry()->GetNumber() : geo->Nwires(kPlane)-1;
 
     this->SetPlaneWire();
@@ -2427,7 +2427,7 @@ namespace evd{
   {
     double BezLength = util::kBogusD;
 
-    art::ServiceHandle<evd::RecoDrawingOptions> recoopt;
+    art::ServiceHandle<evd::RecoDrawingOptions const> recoopt;
     if(!recoopt->fUseHitSelector) return BezLength;
 
     std::vector<recob::Seed> SeedVec=fPlanes[0]->HitSelectorGet()->SeedVector();
@@ -2460,13 +2460,13 @@ namespace evd{
     
     // do we have a new event?
     if (!fLastEvent->update
-      ({*pEvent, art::ServiceHandle<evd::RawDrawingOptions>()->fRawDataLabel})
+      ({*pEvent, art::ServiceHandle<evd::RawDrawingOptions const>()->fRawDataLabel})
       )
       return false;
     
     MF_LOG_DEBUG("TWQProjectionView") << "New event or product: " << *fLastEvent;
     
-    art::ServiceHandle<evd::EvdLayoutOptions> drawopt;
+    art::ServiceHandle<evd::EvdLayoutOptions const> drawopt;
     SetAutomaticZoomMode(drawopt->fAutoZoomInterest == 1);
     
     return true; // yes, a new event is here

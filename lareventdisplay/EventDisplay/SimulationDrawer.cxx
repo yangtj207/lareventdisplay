@@ -56,7 +56,7 @@ namespace evd{
 SimulationDrawer::SimulationDrawer()
 {
     // For now only draw cryostat=0.
-    art::ServiceHandle<geo::Geometry> geom;
+    art::ServiceHandle<geo::Geometry const> geom;
     minx = 1e9;
     maxx = -1e9;
     miny = 1e9;
@@ -109,7 +109,7 @@ void SimulationDrawer::MCTruthShortText(const art::Event& evt,
 
     if( evt.isRealData() ) return;
   
-    art::ServiceHandle<evd::SimulationDrawingOptions> drawopt;
+    art::ServiceHandle<evd::SimulationDrawingOptions const> drawopt;
     // Skip drawing if option is turned off
     if (!drawopt->fShowMCTruthText) return;
   
@@ -170,7 +170,7 @@ void SimulationDrawer::MCTruthLongText(const art::Event& evt,
 {
     if( evt.isRealData() ) return;
 
-    art::ServiceHandle<evd::SimulationDrawingOptions> drawopt;
+    art::ServiceHandle<evd::SimulationDrawingOptions const> drawopt;
     // Skip drawing if option is turned off
     if (!drawopt->fShowMCTruthText) return;
 
@@ -212,7 +212,7 @@ void SimulationDrawer::MCTruthVectors2D(const art::Event& evt,
     
     const spacecharge::SpaceCharge* sce = lar::providerFrom<spacecharge::SpaceChargeService>();
 
-    art::ServiceHandle<evd::SimulationDrawingOptions> drawopt;
+    art::ServiceHandle<evd::SimulationDrawingOptions const> drawopt;
     // If the option is turned off, there's nothing to do
     if (drawopt->fShowMCTruthVectors > 3) {
       std::cout<<"Unsupported ShowMCTruthVectors option (> 2)\n";
@@ -221,8 +221,8 @@ void SimulationDrawer::MCTruthVectors2D(const art::Event& evt,
 
     detinfo::DetectorProperties const* detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
   
-    art::ServiceHandle<geo::Geometry>          geo;
-    art::ServiceHandle<evd::RawDrawingOptions> rawopt;
+    art::ServiceHandle<geo::Geometry const>          geo;
+    art::ServiceHandle<evd::RawDrawingOptions const> rawopt;
     // get the x position of the plane in question
     double xyz1[3]  = {0.};
     double xyz2[3] = {0.};
@@ -297,7 +297,7 @@ void SimulationDrawer::MCTruthVectors2D(const art::Event& evt,
     
     if(showPhotons) {
       // draw pizero photons with T > 30 MeV
-      art::ServiceHandle<cheat::ParticleInventoryService> pi_serv;
+      art::ServiceHandle<cheat::ParticleInventoryService const> pi_serv;
       sim::ParticleList const& plist = pi_serv->ParticleList();
       if(plist.empty()) return;
       // photon interaction length approximate 
@@ -350,7 +350,7 @@ void SimulationDrawer::MCTruth3D(const art::Event& evt,
 {
     if( evt.isRealData() ) return;
 
-    art::ServiceHandle<evd::SimulationDrawingOptions> drawopt;
+    art::ServiceHandle<evd::SimulationDrawingOptions const> drawopt;
     // If the option is turned off, there's nothing to do
     if (!drawopt->fShowMCTruthTrajectories) return;
     
@@ -365,7 +365,7 @@ void SimulationDrawer::MCTruth3D(const art::Event& evt,
     //  geo::GeometryCore const* geom = lar::providerFrom<geo::Geometry>();
     detinfo::DetectorProperties const* theDetector = lar::providerFrom<detinfo::DetectorPropertiesService>();
     detinfo::DetectorClocks     const* detClocks   = lar::providerFrom<detinfo::DetectorClocksService>();
-    art::ServiceHandle<geo::Geometry>  geom;
+    art::ServiceHandle<geo::Geometry const>  geom;
 
     // get the particles from the Geant4 step
     std::vector<const simb::MCParticle*> plist;
@@ -653,7 +653,7 @@ void SimulationDrawer::MCTruthOrtho(const art::Event& evt,
 {
     if( evt.isRealData() ) return;
 
-    art::ServiceHandle<evd::SimulationDrawingOptions> drawopt;
+    art::ServiceHandle<evd::SimulationDrawingOptions const> drawopt;
       
     // If the option is turned off, there's nothing to do
     if (!drawopt->fShowMCTruthTrajectories) return;
@@ -931,7 +931,7 @@ void SimulationDrawer::MCTruthOrtho(const art::Event& evt,
 
     if( evt.isRealData() ) return 0;
 
-    art::ServiceHandle<evd::SimulationDrawingOptions> drawopt;
+    art::ServiceHandle<evd::SimulationDrawingOptions const> drawopt;
 
     std::vector<const simb::MCParticle*> temp;
 

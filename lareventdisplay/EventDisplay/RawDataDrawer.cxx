@@ -543,7 +543,7 @@ namespace evd {
       
       void update(geo::PlaneID const& pid)
         {
-          art::ServiceHandle<geo::Geometry> geo;
+          art::ServiceHandle<geo::Geometry const> geo;
           wirePitch = geo->WirePitch(pid);
 
           detinfo::DetectorProperties const* detp = lar::providerFrom<detinfo::DetectorPropertiesService>();
@@ -571,9 +571,9 @@ namespace evd {
     , fCacheID(new details::CacheID_t)
     , fDrawingRange(new details::CellGridClass)
   { 
-    art::ServiceHandle<geo::Geometry> geo;
+    art::ServiceHandle<geo::Geometry const> geo;
 
-    art::ServiceHandle<evd::RawDrawingOptions> rawopt;
+    art::ServiceHandle<evd::RawDrawingOptions const> rawopt;
     geo::TPCID tpcid(rawopt->fCryostat, rawopt->fTPC);
     
     fStartTick = rawopt->fStartTick;
@@ -812,7 +812,7 @@ namespace evd {
   {
     geo::PlaneID const& pid = operation->PlaneID();
     
-    art::ServiceHandle<evd::RawDrawingOptions> rawopt;
+    art::ServiceHandle<evd::RawDrawingOptions const> rawopt;
     details::CacheID_t NewCacheID(evt, rawopt->fRawDataLabel, pid);
     GetRawDigits(evt, NewCacheID);
     
@@ -826,7 +826,7 @@ namespace evd {
     if (!operation->Initialize()) return false;
     
     lariov::ChannelStatusProvider const& channelStatus
-      = art::ServiceHandle<lariov::ChannelStatusService>()->GetProvider();
+      = art::ServiceHandle<lariov::ChannelStatusService const>()->GetProvider();
     
     //get pedestal conditions
     const lariov::DetPedestalProvider& pedestalRetrievalAlg = *(lar::providerFrom<lariov::DetPedestalService>());
@@ -940,7 +940,7 @@ namespace evd {
     
     virtual bool Initialize() override
       {
-        art::ServiceHandle<evd::RawDrawingOptions> rawopt;
+        art::ServiceHandle<evd::RawDrawingOptions const> rawopt;
         
         // set up the size of the grid to be visualized;
         // the information on the size has to be already there:
@@ -1018,7 +1018,7 @@ namespace evd {
     // Make boxes out of it.
     //
     evd::RawDrawingOptions const& rawopt
-      = *art::ServiceHandle<evd::RawDrawingOptions>();
+      = *art::ServiceHandle<evd::RawDrawingOptions const>();
     
     MF_LOG_DEBUG("RawDataDrawer")
       << "Filling " << BoxInfo.size() << " boxes to be rendered";
@@ -1027,9 +1027,9 @@ namespace evd {
     float const MinSignal = rawopt.fMinSignal;
     bool const bScaleDigitsByCharge = rawopt.fScaleDigitsByCharge;
 
-    art::ServiceHandle<evd::ColorDrawingOptions> cst;
+    art::ServiceHandle<evd::ColorDrawingOptions const> cst;
     
-    geo::GeometryCore const& geom = *art::ServiceHandle<geo::Geometry>();
+    geo::GeometryCore const& geom = *art::ServiceHandle<geo::Geometry const>();
     geo::SigType_t const sigType = geom.SignalType(pid);
     evdb::ColorScale const& ColorSet = cst->RawQ(sigType);
     size_t const nBoxes = BoxInfo.size();
@@ -1099,7 +1099,7 @@ namespace evd {
   {
     
     // Check if we're supposed to draw raw hits at all
-    art::ServiceHandle<evd::RawDrawingOptions> rawopt;
+    art::ServiceHandle<evd::RawDrawingOptions const> rawopt;
     if (rawopt->fDrawRawDataOrCalibWires == 1) return;
     
     geo::PlaneID const pid(rawopt->CurrentTPC(), plane);
@@ -1124,7 +1124,7 @@ namespace evd {
     RoIextractorClass(geo::PlaneID const& pid, RawDataDrawer* data_drawer)
       : OperationBaseClass(pid, data_drawer)
       , RoIthreshold
-        (art::ServiceHandle<evd::RawDrawingOptions>()->RoIthreshold(PlaneID()))
+        (art::ServiceHandle<evd::RawDrawingOptions const>()->RoIthreshold(PlaneID()))
       {}
     
     virtual bool Operate
@@ -1145,7 +1145,7 @@ namespace evd {
         int& TimeMax = pRawDataDrawer->fTimeMax[plane];
         
         if ((WireMin == WireMax) && WireRange.has_data()) {
-          geo::GeometryCore const& geom = *art::ServiceHandle<geo::Geometry>();
+          geo::GeometryCore const& geom = *art::ServiceHandle<geo::Geometry const>();
           mf::LogInfo("RawDataDrawer") << "Region of interest for "
             << std::string(PlaneID()) << " detected to be within wires "
             << WireRange.min() << " to " << WireRange.max()
@@ -1171,7 +1171,7 @@ namespace evd {
   void RawDataDrawer::RunRoIextractor
     (art::Event const& evt, unsigned int plane)
   {
-    art::ServiceHandle<evd::RawDrawingOptions> rawopt;
+    art::ServiceHandle<evd::RawDrawingOptions const> rawopt;
     geo::PlaneID const pid(rawopt->CurrentTPC(), plane);
     
     // if we have no region of interest, prepare to extract it
@@ -1198,7 +1198,7 @@ namespace evd {
     )
   {
     
-    art::ServiceHandle<evd::RawDrawingOptions> rawopt;
+    art::ServiceHandle<evd::RawDrawingOptions const> rawopt;
     geo::PlaneID const pid(rawopt->CurrentTPC(), plane);
     
     bool const bDraw = (rawopt->fDrawRawDataOrCalibWires != 1);
@@ -1288,7 +1288,7 @@ namespace evd {
   //........................................................................
   int RawDataDrawer::GetRegionOfInterest(int plane,int& minw,int& maxw,int& mint,int& maxt)
   {
-    art::ServiceHandle<geo::Geometry> geo;
+    art::ServiceHandle<geo::Geometry const> geo;
  
     if((unsigned int)plane>=fWireMin.size())
       {mf::LogWarning  ("RawDataDrawer") << " Requested plane " << plane <<" is larger than those available " << std::endl;
@@ -1327,20 +1327,20 @@ namespace evd {
   {
 
     // Check if we're supposed to draw raw hits at all
-    art::ServiceHandle<evd::RawDrawingOptions> rawopt;
+    art::ServiceHandle<evd::RawDrawingOptions const> rawopt;
     if (rawopt->fDrawRawDataOrCalibWires==1) return;
 
-    art::ServiceHandle<geo::Geometry> geo;
+    art::ServiceHandle<geo::Geometry const> geo;
     
     geo::PlaneID const pid(rawopt->CurrentTPC(), plane);
     details::CacheID_t NewCacheID(evt, rawopt->fRawDataLabel, pid);
     GetRawDigits(evt, NewCacheID);
       
     lariov::ChannelStatusProvider const& channelStatus
-      = art::ServiceHandle<lariov::ChannelStatusService>()->GetProvider();
+      = art::ServiceHandle<lariov::ChannelStatusService const>()->GetProvider();
     
     //get pedestal conditions
-    const lariov::DetPedestalProvider& pedestalRetrievalAlg = art::ServiceHandle<lariov::DetPedestalService>()->GetPedestalProvider();
+    const lariov::DetPedestalProvider& pedestalRetrievalAlg = art::ServiceHandle<lariov::DetPedestalService const>()->GetPedestalProvider();
 
     for (evd::details::RawDigitInfo_t const& digit_info: *digit_cache) {
       raw::RawDigit const& hit = digit_info.Digit();
@@ -1400,7 +1400,7 @@ namespace evd {
   {
 
     // Check if we're supposed to draw raw hits at all
-    art::ServiceHandle<evd::RawDrawingOptions> rawopt;
+    art::ServiceHandle<evd::RawDrawingOptions const> rawopt;
     if (rawopt->fDrawRawDataOrCalibWires==1) return;
     
     // make sure we have the raw digits cached
@@ -1413,7 +1413,7 @@ namespace evd {
     geo::WireID const wireid(pid, wire);
     
     // find the channel
-    art::ServiceHandle<geo::Geometry> geom;
+    art::ServiceHandle<geo::Geometry const> geom;
     raw::ChannelID_t const channel = geom->PlaneWireToChannel(wireid);
     if (!raw::isValidChannelID(channel)) { // no channel, empty histogram
       mf::LogError("RawDataDrawer") << __func__ << ": no channel associated to "
@@ -1423,7 +1423,7 @@ namespace evd {
     
     // check the channel status; bad channels are still ok.
     lariov::ChannelStatusProvider const& channelStatus
-      = art::ServiceHandle<lariov::ChannelStatusService>()->GetProvider();
+      = art::ServiceHandle<lariov::ChannelStatusService const>()->GetProvider();
     
     if (!channelStatus.IsPresent(channel)) return;
     
@@ -1435,7 +1435,7 @@ namespace evd {
     if (!rawopt->fSeeBadChannels && channelStatus.IsBad(channel)) return;
     
     //get pedestal conditions
-    const lariov::DetPedestalProvider& pedestalRetrievalAlg = art::ServiceHandle<lariov::DetPedestalService>()->GetPedestalProvider();
+    const lariov::DetPedestalProvider& pedestalRetrievalAlg = art::ServiceHandle<lariov::DetPedestalService const>()->GetPedestalProvider();
     
     // find the raw digit
     // (iDigit is an iterator to a evd::details::RawDigitInfo_t)
@@ -1481,11 +1481,11 @@ namespace evd {
   // 				 evdb::View3D*     view)
   //   {
   //     // Check if we're supposed to draw raw hits at all
-  //     art::ServiceHandle<evd::RawDrawingOptions> rawopt;
+  //     art::ServiceHandle<evd::RawDrawingOptions const> rawopt;
   //     if (rawopt->fDrawRawOrCalibHits!=0) return;
 
 
-  //     art::ServiceHandle<geo::Geometry> geom;
+  //     art::ServiceHandle<geo::Geometry const> geom;
 
   //     HitTower tower;
   //     tower.fQscale = 0.01;
@@ -1618,7 +1618,7 @@ namespace evd {
       return true;
     
     // is the status "too bad"?
-    art::ServiceHandle<evd::RawDrawingOptions> drawopt;
+    art::ServiceHandle<evd::RawDrawingOptions const> drawopt;
     if (channel_status > drawopt->fMaxChannelStatus) return false;
     if (channel_status < drawopt->fMinChannelStatus) return false;
     
@@ -1655,7 +1655,7 @@ namespace evd {
       
       if (!digit) return; // no original data, can't do anything
 
-      art::ServiceHandle<evd::RawDrawingOptions> drawopt;      
+      art::ServiceHandle<evd::RawDrawingOptions const> drawopt;      
 
       if (digit->Compression() == kNone) {
         // no compression, we can refer to the original data directly

@@ -79,8 +79,8 @@ void DrawWireHist::Fill(evdb::View2D&     view2D,
                         float             lowBin,
                         float             numTicks)
 {
-    art::ServiceHandle<evd::RawDrawingOptions>  rawOpt;
-    art::ServiceHandle<evd::RecoDrawingOptions> recoOpt;
+    art::ServiceHandle<evd::RawDrawingOptions const>  rawOpt;
+    art::ServiceHandle<evd::RecoDrawingOptions const> recoOpt;
 
     // Check if we're supposed to draw raw hits at all
     if(rawOpt->fDrawRawDataOrCalibWires == 0) return;
@@ -152,10 +152,10 @@ void DrawWireHist::Draw(const std::string& options, float maxLowVal, float maxHi
 //......................................................................
 void DrawWireHist::BookHistogram(raw::ChannelID_t& channel, float startTick, float numTicks)
 {
-    art::ServiceHandle<evd::RecoDrawingOptions>  recoOpt;
-    art::ServiceHandle<evd::ColorDrawingOptions> cst;
-    art::ServiceHandle<evd::RawDrawingOptions>   drawopt;
-    art::ServiceHandle<geo::Geometry>            geo;
+    art::ServiceHandle<evd::RecoDrawingOptions const>  recoOpt;
+    art::ServiceHandle<evd::ColorDrawingOptions const> cst;
+    art::ServiceHandle<evd::RawDrawingOptions const>   drawopt;
+    art::ServiceHandle<geo::Geometry const>            geo;
 
     // Get rid of the previous histograms
     fRecoHistMap.clear();

@@ -8,7 +8,6 @@
 #include "TPolyLine3D.h"
 #include "TPolyMarker.h"
 #include "TPolyMarker3D.h"
-#include "TVector3.h"
 #include "TLatex.h"
 
 #include "nutools/EventDisplayBase/View2D.h"
@@ -65,9 +64,9 @@ namespace evd{
    void AnalysisBaseDrawer::DrawDeDx(const art::Event& evt,
                                   evdb::View2D* view)
    {
-      art::ServiceHandle<evd::RecoDrawingOptions>     recoOpt;
-      art::ServiceHandle<evd::AnalysisDrawingOptions> anaOpt;
-      art::ServiceHandle<geo::Geometry>               geom;
+      art::ServiceHandle<evd::RecoDrawingOptions const>     recoOpt;
+      art::ServiceHandle<evd::AnalysisDrawingOptions const> anaOpt;
+      art::ServiceHandle<geo::Geometry const>               geom;
 
       for(size_t imod = 0; imod < recoOpt->fTrackLabels.size(); ++imod) {
        
@@ -196,9 +195,9 @@ namespace evd{
    void AnalysisBaseDrawer::DrawKineticEnergy(const art::Event& evt,
                                               evdb::View2D* view)
    {
-      art::ServiceHandle<evd::RecoDrawingOptions>     recoOpt;
-      art::ServiceHandle<evd::AnalysisDrawingOptions> anaOpt;
-      art::ServiceHandle<geo::Geometry>               geom;
+      art::ServiceHandle<evd::RecoDrawingOptions const>     recoOpt;
+      art::ServiceHandle<evd::AnalysisDrawingOptions const> anaOpt;
+      art::ServiceHandle<geo::Geometry const>               geom;
       //add some legend-like labels with appropriate grayscale
       char proton[80];
       char kaon[80];
@@ -286,8 +285,8 @@ namespace evd{
    void AnalysisBaseDrawer::CalorShower(const art::Event& evt,
 					     evdb::View2D* view)
    {
-     art::ServiceHandle<evd::RecoDrawingOptions>     recoOpt;
-     art::ServiceHandle<evd::AnalysisDrawingOptions> anaOpt;
+     art::ServiceHandle<evd::RecoDrawingOptions const>     recoOpt;
+     art::ServiceHandle<evd::AnalysisDrawingOptions const> anaOpt;
 
       for(size_t imod = 0; imod < recoOpt->fShowerLabels.size(); ++imod) {
        
@@ -355,9 +354,9 @@ namespace evd{
      // slightly dirty workaround to get the hits passed on
      std::vector<art::Ptr<recob::Hit> > hits = HitHider.Hits;
      
-     art::ServiceHandle<evd::RecoDrawingOptions>     recoOpt;
-     art::ServiceHandle<evd::AnalysisDrawingOptions> anaOpt;
-     art::ServiceHandle<geo::Geometry>               geom;
+     art::ServiceHandle<evd::RecoDrawingOptions const>     recoOpt;
+     art::ServiceHandle<evd::AnalysisDrawingOptions const> anaOpt;
+     art::ServiceHandle<geo::Geometry const>               geom;
      
      
 

@@ -32,6 +32,7 @@ public:
     bool                fShowMCTruthTrajectories;
     bool                fShowSimChannelInfo;
     bool                fShowSimEnergyInfo;
+    bool                fShowSimPhotonInfo;              ///< Display SimPhoton info in 3D display
     bool                fShowMCTruthColors;
     bool                fShowMCTruthFullSize;
     bool                fShowScintillationLight = false; ///< Whether to draw low energy light (default: no).
@@ -39,6 +40,7 @@ public:
     art::InputTag       fG4ModuleLabel;                  ///< module label producing sim::SimChannel objects
     art::InputTag       fSimChannelLabel;                ///< SimChannels may be independent of MC stuff
     art::InputTag       fSimEnergyLabel;                 ///< Also for SimEnergyDeposits
+    art::InputTag       fSimPhotonLabel;                 ///< and for SimPhotons
     
     fhicl::ParameterSet f3DDrawerParams;                  ///< FHICL paramegers for the 3D drawers
 };

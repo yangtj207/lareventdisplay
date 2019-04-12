@@ -39,6 +39,7 @@ namespace evd {
     fShowMCTruthTrajectories = pset.get< bool          >      ("ShowMCTruthTrajectories",  true);
     fShowSimChannelInfo      = pset.get< bool          >      ("ShowSimChannelInfo",       true);
     fShowSimEnergyInfo       = pset.get< bool          >      ("ShowSimEnergyInfo",        true);
+    fShowSimPhotonInfo       = pset.get< bool          >      ("ShowSimPhotonInfo",        true);
     fShowMCTruthColors       = pset.get< bool          >      ("ShowMCTruthColors",        true);
     fShowMCTruthFullSize     = pset.get< bool          >      ("ShowMCTruthFullSize",      true);
     fShowScintillationLight  = pset.get< bool          >      ("ShowScintillationLight",  false);
@@ -46,6 +47,7 @@ namespace evd {
     fG4ModuleLabel           = pset.get< art::InputTag >      ("G4ModuleLabel"                 );
     fSimChannelLabel         = pset.get< art::InputTag >      ("SimChannelLabel"               );
     fSimEnergyLabel          = pset.get< art::InputTag >      ("SimEnergyLabel"                );
+    fSimPhotonLabel          = pset.get< art::InputTag >      ("SimPhotonLabel"                );
 
     f3DDrawerParams          = pset.get< fhicl::ParameterSet >("Draw3DTools"                   );
   }

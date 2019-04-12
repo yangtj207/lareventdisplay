@@ -56,7 +56,7 @@ TQPad::TQPad(const char* nm, const char* ti,
     fPlane(plane),
     fFrameHist(0)
 {
-    art::ServiceHandle<geo::Geometry> geo;
+    art::ServiceHandle<geo::Geometry const> geo;
     unsigned int planes = geo->Nplanes();
 
     this->Pad()->cd();
@@ -97,9 +97,9 @@ TQPad::TQPad(const char* nm, const char* ti,
 
     this->BookHistogram();
     fView = new evdb::View2D();
-    
-    art::ServiceHandle<evd::RawDrawingOptions>  rawOptions;
-    art::ServiceHandle<evd::RecoDrawingOptions> recoOptions;
+
+    art::ServiceHandle<evd::RawDrawingOptions const>  rawOptions;
+    art::ServiceHandle<evd::RecoDrawingOptions const> recoOptions;
 
     fHitDrawerTool      = art::make_tool<evdb_tool::IWFHitDrawer>(recoOptions->fHitDrawerParams);
     fRawDigitDrawerTool = art::make_tool<evdb_tool::IWaveformDrawer>(rawOptions->fRawDigitDrawerParams);
@@ -117,14 +117,14 @@ TQPad::~TQPad()
 //......................................................................
 void TQPad::Draw()
 {
-    art::ServiceHandle<evd::RawDrawingOptions> drawopt;
+    art::ServiceHandle<evd::RawDrawingOptions const> drawopt;
 
     //grab the singleton with the event
     const art::Event* evt = evdb::EventHolder::Instance()->GetEvent();
     if(!evt) return;
 
-    art::ServiceHandle<geo::Geometry> geoSvc;
-    
+    art::ServiceHandle<geo::Geometry const> geoSvc;
+
     fPad->Clear();
     fPad->cd();
 
@@ -133,18 +133,21 @@ void TQPad::Draw()
     {
         // Recover a channel number from current information
         raw::ChannelID_t channel = geoSvc->PlaneWireToChannel(fPlane,fWire,drawopt->fTPC,drawopt->fCryostat);
-        
+
         // Call the tools to fill the histograms for RawDigits and Wire data
         fRawDigitDrawerTool->Fill(*fView, channel, this->RawDataDraw()->StartTick(), this->RawDataDraw()->TotalClockTicks());
         fWireDrawerTool->Fill(*fView, channel, this->RawDataDraw()->StartTick(), this->RawDataDraw()->TotalClockTicks());
-        
+
         // Vertical limits set for the enclosing histogram, then draw it with axes only
         float maxLowVal = 1.1*std::min(fRawDigitDrawerTool->getMinimum(), fWireDrawerTool->getMinimum());
         float maxHiVal  = 1.1*std::max(fRawDigitDrawerTool->getMaximum(), fWireDrawerTool->getMaximum());
-        
+        if (drawopt->fDrawRawDataOrCalibWires == kCALIB){
+          maxLowVal = 1.1*fWireDrawerTool->getMinimum();
+          maxHiVal  = 1.1*fWireDrawerTool->getMaximum();
+        }
         if (!(maxLowVal < std::numeric_limits<float>::max()))    maxLowVal = -10.;
         if (!(maxHiVal  > std::numeric_limits<float>::lowest())) maxHiVal  =  10.;
-        
+
         fFrameHist->SetMaximum(maxHiVal);
         fFrameHist->SetMinimum(maxLowVal);
         fFrameHist->Draw("AXIS");
@@ -157,7 +160,7 @@ void TQPad::Draw()
         if (drawopt->fDrawRawDataOrCalibWires != kRAW)
         {
             fWireDrawerTool->Draw(defaultDrawOptions.c_str(),maxLowVal,maxHiVal);
-            
+
             fHitDrawerTool->Draw(*fView, channel);
         }
 
@@ -167,7 +170,7 @@ void TQPad::Draw()
         // This is a remnant from a time long past...
         fFrameHist->SetTitleOffset(0.2, "Y");
     } // end if fTQ == kTQ
- 
+
     // I am not sure what the block below is trying to do... I don't see where the hists are actually filled.
     // ** remove this for now until someone can explain what it is **
 //    else if(fTQ == kQ && fTQ == -1)
@@ -177,7 +180,7 @@ void TQPad::Draw()
 //        geo::PlaneID planeid(drawopt->CurrentTPC(), fPlane);
 //        geo::SigType_t sigType = geoSvc->SignalType(planeid);
 //
-//        art::ServiceHandle<evd::ColorDrawingOptions> cst;
+//        art::ServiceHandle<evd::ColorDrawingOptions const> cst;
 //
 //        TH1F *hist;
 //
@@ -228,7 +231,7 @@ void TQPad::Draw()
 //
 //        hist->Draw("same");
 //    } // end if fTQ == kQ
-    
+
     return;
 }
 
@@ -241,22 +244,22 @@ void TQPad::BookHistogram()
         delete fFrameHist;
         fFrameHist = 0;
     }
-  
-    art::ServiceHandle<evd::ColorDrawingOptions> cst;
-    art::ServiceHandle<evd::RawDrawingOptions> drawopt;
+
+    art::ServiceHandle<evd::ColorDrawingOptions const> cst;
+    art::ServiceHandle<evd::RawDrawingOptions const> drawopt;
 
     // figure out the signal type for this plane, assume that
     // plane n in each TPC/cryostat has the same type
     geo::PlaneID planeid(drawopt->CurrentTPC(), fPlane);
-    art::ServiceHandle<geo::Geometry> geo;
+    art::ServiceHandle<geo::Geometry const> geo;
     geo::SigType_t sigType = geo->SignalType(planeid);
-  
+
     /// \todo decide if ndivraw and ndivreco are useful
     double qxloraw   = cst->fRawQLow[(size_t)sigType];
     double qxhiraw   = cst->fRawQHigh[(size_t)sigType];
     double tqxlo     = 1.*this->RawDataDraw()->StartTick();
     double tqxhi     = 1.*this->RawDataDraw()->TotalClockTicks();
-  
+
     switch (fTQ) {
         case kQ:
             fFrameHist = new TH1F("fFrameHist", ";t [ticks];[ADC]", 2,0.,1.);
@@ -276,7 +279,7 @@ void TQPad::BookHistogram()
     fFrameHist->GetXaxis()->SetLabelOffset(0.00);
     fFrameHist->GetXaxis()->SetTitleSize  (0.10);
     fFrameHist->GetXaxis()->SetTitleOffset(0.80);
-    
+
     fFrameHist->GetYaxis()->SetLabelSize  (0.10);
     fFrameHist->GetYaxis()->SetLabelOffset(0.01);
     fFrameHist->GetYaxis()->SetTitleSize  (0.10);

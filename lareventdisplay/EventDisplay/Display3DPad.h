@@ -14,7 +14,7 @@ namespace evdb_tool { class ISim3DDrawer; class I3DDrawer;}
 
 
 namespace evd {
-    
+
 class RawDataDrawer;
 class RecoBaseDrawer;
 
@@ -26,15 +26,15 @@ public:
                  double x2, double y2,
                  const char* opt);
     ~Display3DPad();
-  
-  
-  
+
+
+
     void Draw();
-  
+
     void UpdateSeedCurve();
 private:
     evdb::View3D* fView;  ///< Collection of graphics objects to render
-    
+
     std::vector<std::unique_ptr<evdb_tool::ISim3DDrawer>> fSim3DDrawerVec;
     std::vector<std::unique_ptr<evdb_tool::I3DDrawer>>    fReco3DDrawerVec;
 };

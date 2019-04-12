@@ -5,14 +5,8 @@
 
 // Framework includes
 #include "art/Framework/Core/ModuleMacros.h"
-
-#ifndef EVD_EVD_H
-#define EVD_EVD_H
-
-// Framework Includes
 #include "art/Framework/Core/EDAnalyzer.h"
 
-#include <string>
 #include "TH1D.h"
 
 extern "C" {
@@ -46,7 +40,7 @@ extern "C" {
 namespace evd{
 
   /// a class for transporting photons in a roughly realistic way
-  class EVD : public art::EDAnalyzer 
+  class EVD : public art::EDAnalyzer
   {
    public:
      explicit EVD(fhicl::ParameterSet const &pset);
@@ -56,7 +50,7 @@ namespace evd{
      void beginJob();
 
   private:
-    
+
     bool fWindowsDrawn; ///< flag for whether windows are already drawn
 
    };
@@ -129,33 +123,33 @@ namespace evd{
 				  700,
 				  700,
 				  mk_twqmtpcprojectionview_canvas);
-    
+
     evdb::DisplayWindow::Register("Display3D",
 				  "Display3D",
 				  700,
 				  700,
 				  mk_display3d_canvas);
-    
+
     evdb::DisplayWindow::Register("Ortho3D",
 				  "Ortho3D",
 				  700,
 				  700,
 				  mk_ortho3d_canvas);
-    
+
     evdb::DisplayWindow::Register("Calorimetry",
 				  "Calorimetry",
 				  700,
 				  700,
 				  mk_calor_canvas);
-    
+
     //     evdb::ListWindow::Register("MC Particle List",
     // 			       "MC Particle List",
     // 			       400,
     // 			       800,
     // 			       mk_mctrue_canvas);
-    
+
     // Open up the main display window and run
-    evdb::DisplayWindow::OpenWindow(0);      
+    evdb::DisplayWindow::OpenWindow(0);
   }
 
   //----------------------------------------------------
@@ -173,6 +167,3 @@ namespace evd {
 #if defined __clang__
   #pragma clang diagnostic pop
 #endif
-
-#endif // EVD
-////////////////////////////////////////////////////////////////////////

@@ -24,7 +24,7 @@ namespace evdb_tool
     {
     public:
         virtual ~ISpacePoints3D() noexcept = default;
-        
+
         virtual void Draw(const std::vector<art::Ptr<recob::SpacePoint>>&,   // Space points
                           evdb::View3D*,                                     // 3D display
                           int = 1,                                           // Color

@@ -4,7 +4,6 @@
 /// \author  msoderbe@syr.edu
 ///
 
-#include <iostream>
 #include "lareventdisplay/EventDisplay/CalorPad.h"
 #include "lareventdisplay/EventDisplay/Style.h"
 #include "lareventdisplay/EventDisplay/AnalysisBaseDrawer.h"
@@ -25,9 +24,9 @@
 
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Principal/Event.h"
-#include "art/Framework/Services/Optional/TFileService.h" 
-#include "art/Framework/Services/Optional/TFileDirectory.h" 
-#include "messagefacility/MessageLogger/MessageLogger.h" 
+#include "art/Framework/Services/Optional/TFileService.h"
+#include "art/Framework/Services/Optional/TFileDirectory.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 #include "cetlib/search_path.h"
 ///
 /// Create a pad to show calorimety/PID info. for reconstructed tracks.
@@ -58,7 +57,7 @@ evd::CalorPad::CalorPad(const char* name, const char* title,
   : DrawingPad(name, title, x1, y1, x2, y2)
     , fcurvetype(curvetype)
 {
-   
+
    // Set up pad.
    this->Pad()->cd();
    this->Pad()->SetBit(kCannotPick);
@@ -78,14 +77,14 @@ evd::CalorPad::CalorPad(const char* name, const char* title,
    ke_range_ka = 0;
    ke_range_pi = 0;
    ke_range_mu = 0;
-   
-   fView = new evdb::View2D();  
-   
+
+   fView = new evdb::View2D();
+
 }
 
 //......................................................................
 // Destructor.
-evd::CalorPad::~CalorPad() 
+evd::CalorPad::~CalorPad()
 {
   if(dedx_range_pro) {delete dedx_range_pro; dedx_range_pro = 0;}
   if(dedx_range_ka)  {delete dedx_range_ka;  dedx_range_ka  = 0;}
@@ -105,24 +104,24 @@ void evd::CalorPad::Draw(const char* /*opt*/)
 {
 
   this->Pad()->cd();
-  
+
   //Remove all previous objects from Pad's primitive list
   this->Pad()->Clear();
-  
+
   //Remove all previous TPolyMarkers, TLatexs, etc... from list of such objects
   fView->Clear();
 
   //Draw coordinate axis and also GEANT based dE/dx vs. Range, or KE vs. Range, curves.
   DrawRefCurves();
-   
+
   // grab the event from the singleton
   const art::Event *evt = evdb::EventHolder::Instance()->GetEvent();
-  art::ServiceHandle<evd::EvdLayoutOptions>        evdlayoutopt;
+  art::ServiceHandle<evd::EvdLayoutOptions const>        evdlayoutopt;
 
   // Insert graphic objects into fView collection.
   if(evt){
     if(evdlayoutopt->fMakeSeeds){
-      art::ServiceHandle<evd::RecoDrawingOptions> recoopt;
+      art::ServiceHandle<evd::RecoDrawingOptions const> recoopt;
       if(recoopt->fUseHitSelector){
 	if(HitSelectorGet()->SeedVector().size()==0){
 	  mf::LogWarning("CalorPad::Draw") << " Cannot draw calorimetry view in interactive mode"
@@ -132,7 +131,7 @@ void evd::CalorPad::Draw(const char* /*opt*/)
 	trkf::BezierTrack BTrack(HitSelectorGet()->SeedVector());
 	trkf::HitPtrVec HitVec;
 	HitVec = HitSelectorGet()->GetSelectedHitPtrs(2);
-	AnalysisBaseDraw()->CalorInteractive(*evt, fView, BTrack, HitVec);  
+	AnalysisBaseDraw()->CalorInteractive(*evt, fView, BTrack, HitVec);
       }
     }
     else {
@@ -152,7 +151,7 @@ void evd::CalorPad::Draw(const char* /*opt*/)
 //      catch (cet::exception e){
 //        writeErrMsg("Draw->CalorShower",e);
 //      }
-       
+
     }
   }
 
@@ -168,7 +167,7 @@ void evd::CalorPad::Draw(const char* /*opt*/)
 
 void evd::CalorPad::DrawRefCurves()
 {
- 
+
   if(dedx_range_pro){
     delete dedx_range_pro;
     dedx_range_pro = 0;
@@ -201,7 +200,7 @@ void evd::CalorPad::DrawRefCurves()
     delete ke_range_mu;
     ke_range_mu = 0;
   }
-  
+
   double ymax;
   if(fcurvetype==1)  ymax=50.0;
   else ymax = 200.0;
@@ -212,7 +211,7 @@ void evd::CalorPad::DrawRefCurves()
   h->GetYaxis()->SetLabelSize(0.04);
   h->GetYaxis()->SetTitleSize(0.04);
   h->GetYaxis()->CenterTitle();
-  
+
   if(fcurvetype==1){
     h->GetXaxis()->SetTitle("Residual Range (cm)");
     h->GetYaxis()->SetTitle("dE/dx (MeV/cm)");
@@ -221,31 +220,31 @@ void evd::CalorPad::DrawRefCurves()
     h->GetYaxis()->SetTitle("T (MeV)");
   }
 
-  art::ServiceHandle<evd::AnalysisDrawingOptions> anaOpt;
+  art::ServiceHandle<evd::AnalysisDrawingOptions const> anaOpt;
 
   cet::search_path sp("FW_SEARCH_PATH");
-  if( !sp.find_file(anaOpt->fCalorTemplateFileName + ".root", fROOTfile) )  
-    throw cet::exception("Chi2ParticleID") << "cannot find the root template file: \n" 
+  if( !sp.find_file(anaOpt->fCalorTemplateFileName + ".root", fROOTfile) )
+    throw cet::exception("Chi2ParticleID") << "cannot find the root template file: \n"
                                            << anaOpt->fCalorTemplateFileName
                                            << "\n bail ungracefully.\n";
- 
+
   TFile *file = TFile::Open(fROOTfile.c_str());
   if(fcurvetype==1){
     dedx_range_pro = (TGraph*)file->Get("dedx_range_pro");
     dedx_range_ka  = (TGraph*)file->Get("dedx_range_ka");
     dedx_range_pi  = (TGraph*)file->Get("dedx_range_pi");
     dedx_range_mu  = (TGraph*)file->Get("dedx_range_mu");
-    
+
     dedx_range_pro->SetMarkerStyle(7);
     dedx_range_ka->SetMarkerStyle(7);
     dedx_range_pi->SetMarkerStyle(7);
     dedx_range_mu->SetMarkerStyle(7);
-    
+
     dedx_range_pro->SetMarkerColor(kBlack);
     dedx_range_ka->SetMarkerColor(kGray+2);
     dedx_range_pi->SetMarkerColor(kGray+1);
     dedx_range_mu->SetMarkerColor(kGray);
-    
+
     dedx_range_mu->Draw("P,same");
     dedx_range_pi->Draw("P,same");
     dedx_range_ka->Draw("P,same");
@@ -260,12 +259,12 @@ void evd::CalorPad::DrawRefCurves()
     ke_range_ka->SetMarkerStyle(7);
     ke_range_pi->SetMarkerStyle(7);
     ke_range_mu->SetMarkerStyle(7);
-    
+
     ke_range_pro->SetMarkerColor(kBlack);
     ke_range_ka->SetMarkerColor(kGray+2);
     ke_range_pi->SetMarkerColor(kGray+1);
     ke_range_mu->SetMarkerColor(kGray);
-    
+
     ke_range_mu->Draw("P,same");
     ke_range_pi->Draw("P,same");
     ke_range_ka->Draw("P,same");
@@ -273,8 +272,8 @@ void evd::CalorPad::DrawRefCurves()
   }
   file->Close();
 
-  
-  
+
+
 }
 
 ////////////////////////////////////////////////////////////////////////

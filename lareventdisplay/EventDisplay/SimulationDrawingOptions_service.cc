@@ -3,26 +3,16 @@
 ///
 /// \author  brebel@fnal.gov
 
-// Framework includes
-
 /// LArSoft includes
 #include "lareventdisplay/EventDisplay/SimulationDrawingOptions.h"
-
-#include <iostream>
 
 namespace evd {
 
   //......................................................................
-  SimulationDrawingOptions::SimulationDrawingOptions(fhicl::ParameterSet const& pset, 
-						     art::ActivityRegistry& /* reg */)
+  SimulationDrawingOptions::SimulationDrawingOptions(fhicl::ParameterSet const& pset)
   : evdb::Reconfigurable{pset}
   {
     this->reconfigure(pset);
-  }
-  
-  //......................................................................
-  SimulationDrawingOptions::~SimulationDrawingOptions() 
-  {
   }
 
   //......................................................................
@@ -51,12 +41,7 @@ namespace evd {
 
     f3DDrawerParams          = pset.get< fhicl::ParameterSet >("Draw3DTools"                   );
   }
-  
+
 }
 
-namespace evd {
-
-  DEFINE_ART_SERVICE(SimulationDrawingOptions)
-
-} // namespace evd
-////////////////////////////////////////////////////////////////////////
+DEFINE_ART_SERVICE(evd::SimulationDrawingOptions)

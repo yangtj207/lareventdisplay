@@ -34,7 +34,7 @@ namespace evd {
     struct DrawOptions_t {
       bool bZoom2DdrawToRoI = false; ///< whether to force zoom to RoI or not
     }; // DrawOptions_t
-    
+
     TWireProjPad(const char* nm, const char* ti,
 		 double x1, double y1,
 		 double x2, double y2,
@@ -45,42 +45,42 @@ namespace evd {
     void SetWireRange(int i1, int i2);
 
     void SetZoomRange(int i1, int i2,int y1, int y2);
-    
+
     /// Return the current draw options
     DrawOptions_t const& GetDrawOptions() const { return fDrawOpts; }
     /// Receive the full set of draw options
     void SetDrawOptions(DrawOptions_t const& opt) { fDrawOpts = opt; }
-    
+
     /// Sets the draw option about zooming to the region of interest
     void SetZoomToRoI(bool bZoomToRoI)
       { fDrawOpts.bZoom2DdrawToRoI = bZoomToRoI; }
-    
+
     /// Sets the zoom parameters from the current histogram view
     void SetZoomFromView();
-    
+
     void SaveHitList(double i1, double i2,double y1, double y2, double distance, const char* zoom_opt,bool good_plane=true);
-			
+
     double SaveSeedList(std::vector < util::PxLine > seedlines, double distance);
-			
+
     void ClearHitList();
     void SelectOneHit(double x, double y, const char* zoom_opt);
-    
+
     unsigned int GetPlane() const { return fPlane; }
 
     void ClearandUpdatePad();
     void UpdatePad();
     void DrawLinesinView(std::vector< util::PxLine > lines,bool deleting=false,const char * zoom_opt=0);
-			
+
     void ShowFull(int override=0);
 
     double UpdateSeedCurve(std::vector<recob::Seed> SeedVec, int plane);
     evdb::View2D*  View() const { return fView; }
 
     std::vector<double> const& GetCurrentZoom() const {return fCurrentZoom;}
-    
+
   private:
     /*     void AutoZoom(); */
-   
+
 
   private:
 

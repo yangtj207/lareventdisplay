@@ -16,13 +16,13 @@ namespace evd {
   class Display3DView : public evdb::Canvas {
 
   public:
-    
+
     RQ_OBJECT("evd::Display3DView")
 
   public:
     Display3DView(TGMainFrame* mf);
     ~Display3DView();
-    
+
     const char* Description() const { return "3D Detector Display"; }
     const char* PrintTag()    const { return "lar3d";               }
     void Draw(const char* opt="");

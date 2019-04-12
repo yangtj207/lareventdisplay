@@ -127,6 +127,7 @@ standard_analysisdrawingopt:
  DrawParticleID:           1
  DrawShowerCalor:          0
  CaloPlane:                -1
+ TrackID:                  -1
  CalorimetryModuleLabels:  ["calo"]
  ParticleIDModuleLabels:   ["pid"]
  CalorTemplateFileName:    "dEdxKinErestemplate" # without .root

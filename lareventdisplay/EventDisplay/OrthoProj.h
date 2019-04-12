@@ -10,7 +10,7 @@
 namespace evd {
 
   enum OrthoProj_t {kNoProj, kXY, kXZ, kYZ};
-  
+
 }
 
 #endif

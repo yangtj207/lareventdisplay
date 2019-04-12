@@ -15,7 +15,7 @@ class TGraph;
 namespace evdb { class View2D; }
 
 namespace evd {
-  
+
   /// A drawing pad showing calorimetric particle ID information
 
   class CalorPad : public DrawingPad {
@@ -32,7 +32,7 @@ namespace evd {
     void DrawRefCurves();
 
   private:
-    
+
     std::string fROOTfile;
     TGraph   *dedx_range_pro;   ///< proton template
     TGraph   *dedx_range_ka;    ///< kaon template
@@ -44,9 +44,9 @@ namespace evd {
     TGraph   *ke_range_pi;    ///< pion template
     TGraph   *ke_range_mu;    ///< muon template
     int fcurvetype; //dEdx vs. Res. range, or Kinetic Energy vs. range
-    
+
     evdb::View2D* fView;      ///< Collection of graphics objects to render; text labels
-    
+
   };
 }
 

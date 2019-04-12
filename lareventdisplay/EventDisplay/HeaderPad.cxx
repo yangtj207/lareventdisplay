@@ -26,20 +26,20 @@ namespace evd{
 		       double x2, double y2,
 		       const char* /*opt*/) :
     DrawingPad(nm, ti, x1, y1, x2, y2)
-  { 
+  {
     fView = new evdb::View2D();
   }
 
   //......................................................................
 
-  HeaderPad::~HeaderPad() 
+  HeaderPad::~HeaderPad()
   {
     if (fView!=0) { delete fView; fView = 0; }
   }
 
   //......................................................................
 
-  void HeaderPad::Draw(const char* /* opt */) 
+  void HeaderPad::Draw(const char* /* opt */)
   {
     fView->Clear();
 

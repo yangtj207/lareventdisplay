@@ -7,7 +7,7 @@
 
 #include "canvas/Persistency/Common/PtrVector.h"
 
-namespace art { 
+namespace art {
   class Event;
 }
 
@@ -42,16 +42,16 @@ namespace evd {
                            evdb::View2D* view);
 
     void CalorShower(const art::Event& evt,
-					     evdb::View2D* view   ); 
-    
+					     evdb::View2D* view   );
+
     void CalorInteractive(const art::Event& evt,
 			  evdb::View2D* view,
 			  trkf::BezierTrack BTrack,
 			  trkf::HitPtrVec Hits );
 
-    
+
   private:
-    
+
   };
 }
 

@@ -8,21 +8,14 @@
 /// LArSoft includes
 #include "lareventdisplay/EventDisplay/AnalysisDrawingOptions.h"
 
-#include <iostream>
 
 namespace evd {
 
   //......................................................................
-  AnalysisDrawingOptions::AnalysisDrawingOptions(fhicl::ParameterSet const& pset, 
-					 art::ActivityRegistry& /* reg */) 
+  AnalysisDrawingOptions::AnalysisDrawingOptions(fhicl::ParameterSet const& pset)
   : evdb::Reconfigurable{pset}
   {
     this->reconfigure(pset);
-  }
-  
-  //......................................................................
-  AnalysisDrawingOptions::~AnalysisDrawingOptions() 
-  {
   }
 
   //......................................................................
@@ -32,12 +25,13 @@ namespace evd {
     fDrawParticleID    	       = pset.get< int >("DrawParticleID"   	  );
     fDrawShowerCalor           = pset.get< int >("DrawShowerCalor"        );
     fCaloPlane                 = pset.get< int >("CaloPlane"              );
+    fTrackID                   = pset.get< int >("TrackID"                );
     fCalorimetryLabels         = pset.get< std::vector<std::string> >("CalorimetryModuleLabels" );
     fParticleIDLabels          = pset.get< std::vector<std::string> >("ParticleIDModuleLabels"  );
 
     fCalorTemplateFileName     = pset.get< std::string >("CalorTemplateFileName"  );
   }
-  
+
 }
 
 namespace evd {

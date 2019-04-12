@@ -22,10 +22,10 @@
 namespace evd {
   /**
    * @brief Display parameters for the raw data
-   * 
+   *
    * Configuration parameters
    * -------------------------
-   * 
+   *
    * This is an incomplete list of the supported parameters:
    * - *RoIthresholds* (list of real numbers, default: empty): threshold in ADC
    *   counts for a tick on a wire to be "interesting", thus extending the
@@ -35,16 +35,15 @@ namespace evd {
    *   apply the same threshold to all planes). If no threshold is specified
    *   at all, the value of 'MinSignal' parameter is used as threshold for all
    *   planes
-   * 
+   *
    */
   class RawDrawingOptions : public evdb::Reconfigurable
   {
   public:
-      explicit RawDrawingOptions(fhicl::ParameterSet const& pset, art::ActivityRegistry& reg);
-      ~RawDrawingOptions();
-      
-      void reconfigure(fhicl::ParameterSet const& pset) ;
-      
+      explicit RawDrawingOptions(fhicl::ParameterSet const& pset);
+
+      void reconfigure(fhicl::ParameterSet const& pset) override;
+
       int                 fDrawRawDataOrCalibWires;                 ///< 0 for raw
       int    	          fTicksPerPoint;                           ///< number of ticks to include in one point
       int    	          fScaleDigitsByCharge;                     ///< scale the size of the digit by the charge
@@ -57,23 +56,23 @@ namespace evd {
       unsigned int        fMinChannelStatus;                        ///< Display channels with this status and above
       unsigned int        fMaxChannelStatus;                        ///< Display channels with this status and below
       art::InputTag       fRawDataLabel;                            ///< module label that made the raw digits, default is daq
-      
+
       bool                fUncompressWithPed;                       ///< Option to uncompress with pedestal. Turned off by default
       bool                fSeeBadChannels;                          ///< Allow "bad" channels to be viewed
-      
+
       std::vector<float>  fRoIthresholds;                           ///< region of interest thresholds, per plane
-      
+
       int                 fPedestalOption;                          ///< 0: use DetPedestalService;   1:  Use pedestal in raw::RawDigt;   2:  no ped subtraction
-      
+
       fhicl::ParameterSet fRawDigitDrawerParams;                    ///< FHICL parameters for the RawDigit waveform display
-      
+
       /// Returns the current TPC as a TPCID
       geo::TPCID   CurrentTPC() const { return geo::TPCID(fCryostat, fTPC); }
-      
+
       /// Returns the region of interest threshold for the specified wire plane
       double RoIthreshold(geo::PlaneID const& planeID) const
       { return RoIthreshold(planeID.Plane); }
-      
+
       /// Returns the region of interest threshold for the specified wire plane
       double RoIthreshold(geo::PlaneID::PlaneID_t plane) const
       {
@@ -86,4 +85,3 @@ namespace evd {
 #endif // __CINT__
 DECLARE_ART_SERVICE(evd::RawDrawingOptions, LEGACY)
 #endif
-

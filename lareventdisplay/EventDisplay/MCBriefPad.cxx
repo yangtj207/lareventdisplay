@@ -29,18 +29,18 @@ namespace evd{
 
   //......................................................................
 
-  MCBriefPad::~MCBriefPad() 
+  MCBriefPad::~MCBriefPad()
   {
     if (fView) { delete fView; fView = 0; }
   }
 
   //......................................................................
 
-  void MCBriefPad::Draw() 
+  void MCBriefPad::Draw()
   {
     fView->Clear();
     this->Pad()->Clear();
- 
+
     const art::Event *evt = evdb::EventHolder::Instance()->GetEvent();
     if(evt){
       this->SimulationDraw()->MCTruthShortText(*evt, fView);

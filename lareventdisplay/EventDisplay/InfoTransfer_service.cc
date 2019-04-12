@@ -6,7 +6,6 @@
 // \author andrzej.szelc@yale.edu
 // ellen.klein@yale.edu
 ////////////////////////////////////////////////////////////////////////
-#include <iostream>
 
 // Framework includes
 #include "messagefacility/MessageLogger/MessageLogger.h"
@@ -26,8 +25,8 @@ namespace{
 namespace evd {
 
   //......................................................................
-  InfoTransfer::InfoTransfer(fhicl::ParameterSet const& pset, 
-			     art::ActivityRegistry& reg) 
+  InfoTransfer::InfoTransfer(fhicl::ParameterSet const& pset,
+			     art::ActivityRegistry& reg)
   : evdb::Reconfigurable{pset}
   {
     this->reconfigure(pset);
@@ -36,9 +35,9 @@ namespace evd {
     fRun=-1;
     fSubRun=-1;
     reg.sPreProcessEvent.watch(this, &InfoTransfer::Rebuild);
-    art::ServiceHandle<geo::Geometry>  geo;
+    art::ServiceHandle<geo::Geometry const>  geo;
     unsigned int nplanes = geo->Nplanes();
-    
+
     fSelectedHitlist.resize(nplanes);
     fStartHit.resize(nplanes);
     fRefStartHit.resize(nplanes);
@@ -56,16 +55,16 @@ namespace evd {
     }
    // hitlist=NULL;
   }
-  
+
   //......................................................................
-  InfoTransfer::~InfoTransfer() 
+  InfoTransfer::~InfoTransfer()
   {
   }
 
   //......................................................................
   void InfoTransfer::reconfigure(fhicl::ParameterSet const& pset)
   {
-    art::ServiceHandle<geo::Geometry>  geo;
+    art::ServiceHandle<geo::Geometry const>  geo;
     unsigned int nplanes = geo->Nplanes();
     //clear everything
     fRefinedHitlist.resize(nplanes);
@@ -74,17 +73,17 @@ namespace evd {
       fRefinedHitlist[i].clear();
       fSelectedHitlist[i].clear();
     }
-    fHitModuleLabel  = pset.get<std::string>("HitModuleLabel",  "ffthit");   
+    fHitModuleLabel  = pset.get<std::string>("HitModuleLabel",  "ffthit");
   }
-  
-  
-  
+
+
+
   //......................................................................
   void InfoTransfer::Rebuild(const art::Event& evt, art::ScheduleContext)
   {
-    art::ServiceHandle<geo::Geometry>  geo;
+    art::ServiceHandle<geo::Geometry const>  geo;
     unsigned int nplanes = geo->Nplanes();
-    unsigned int which_call=evdb::NavState::Which();	  
+    unsigned int which_call=evdb::NavState::Which();
     if(which_call!=2){
       //unless we're reloading we want to clear all the selected and refined hits
       fRefinedHitlist.resize(nplanes);
@@ -107,60 +106,60 @@ namespace evd {
       fFullHitlist.clear();
     }
     art::Handle< std::vector<recob::Hit> > hHandle;
-    
+
     fEvt=evt.id().event();
     fRun=evt.id().run();
     fSubRun=evt.id().subRun();
     evt.getByLabel(fHitModuleLabel, hHandle);
-    
+
     if(hHandle.failedToGet()){
 //      mf::LogWarning("InfoTransfer") << "failed to get handle to std::vector<recob::Hit> from "<< fHitModuleLabel;
       return;
     }
 
     // Clear out anything remaining from previous calls to Rebuild
-    
+
     fRefinedHitlist.resize(nplanes);
-    
+
     for(unsigned int i=0;i<nplanes;i++){
       fRefinedHitlist[i].clear(); ///< the refined hitlist after rebuild
     }
-    
-    
-    fFullHitlist.clear(); 
+
+
+    fFullHitlist.clear();
     for(unsigned int i=0; i<fRefStartHit.size(); i++){
       fRefStartHit[i]=NULL;
       fRefEndHit[i]=NULL;
     }
-    
+
     /////Store start and end hits in new lists and clear the old ones:
     for(unsigned int i=0;i<nplanes;i++ )
       {    refstarthitout[i].clear();
 	refendhitout[i].clear();
 	refstarthitout[i].resize(2);
 	refendhitout[i].resize(2);
-	
+
 	refstarthitout[i]=starthitout[i];
 	refendhitout[i]=endhitout[i];
-	
+
 	starthitout[i].clear();
 	endhitout[i].clear();
 	starthitout[i].resize(2);
 	endhitout[i].resize(2);
-      }    
-    
+      }
+
     for(size_t p = 0; p < hHandle->size(); ++p){
       art::Ptr<recob::Hit> hit(hHandle, p);
       fFullHitlist.push_back(hit);
     }
-    
+
     // fill the selected Hits into the fRefinedHitList from the fSelectedHitList
     char buf[200];
     for(unsigned int j=0; j<nplanes; j++){
       sprintf(buf," ++++rebuilding with %lu selected hits in plane %u \n", fSelectedHitlist[j].size(),j);
       WriteMsg(buf);
     }
-    
+
     for(size_t t = 0; t < fFullHitlist.size(); ++t){
       for(unsigned int ip=0;ip<nplanes;ip++)	{
 	for(size_t xx = 0; xx < fSelectedHitlist[ip].size(); ++xx){
@@ -168,49 +167,49 @@ namespace evd {
 	    fRefinedHitlist[ip].push_back(fFullHitlist[t]);
 	    break;
 	  }
-	}	
-	
-	if(fStartHit[ip] && fFullHitlist[t].get()==fStartHit[ip]){				  
+	}
+
+	if(fStartHit[ip] && fFullHitlist[t].get()==fStartHit[ip]){
 	  fRefStartHit[ip]=const_cast<recob::Hit *>(fFullHitlist[t].get());
 	}
-	
+
 	if(fEndHit[ip] && fFullHitlist[t].get()==fEndHit[ip]){
 	  fRefEndHit[ip]=const_cast<recob::Hit *>(fFullHitlist[t].get());
 	}
-	
+
       }
     }
     //for(int ip=0;ip<nplanes;ip++)
     //  FillStartEndHitCoords(ip);
-    
+
     fSelectedHitlist.clear();
     fSelectedHitlist=fRefinedHitlist;
 
     return;
   }
-  
+
   //......................................................................
   void InfoTransfer::SetSeedList(std::vector < util::PxLine > seedlines)
-  {	
-    fSeedList=seedlines; 
+  {
+    fSeedList=seedlines;
   }
-      
-    
+
+
   //......................................................................
-  std::vector < util::PxLine > InfoTransfer::GetSeedList()
-  { 
-    return fSeedList;     
+  std::vector < util::PxLine > const& InfoTransfer::GetSeedList() const
+  {
+    return fSeedList;
   }
-  
-  
+
+
   //......................................................................
   void InfoTransfer::FillStartEndHitCoords(unsigned int plane)
   {
-    
-    art::ServiceHandle<geo::Geometry>  geo;
+
+    art::ServiceHandle<geo::Geometry const>  geo;
     // std::vector <double> sthitout(2);
     if(fRefStartHit[plane]){
-      starthitout[plane][1] = fRefStartHit[plane]->PeakTime() ;  
+      starthitout[plane][1] = fRefStartHit[plane]->PeakTime() ;
       try{
 	if(fRefStartHit[plane]->WireID().isValid){
 	  starthitout[plane][0] = fRefStartHit[plane]->WireID().Wire;
@@ -222,17 +221,17 @@ namespace evd {
       catch(cet::exception e) {
 	mf::LogWarning("GraphCluster") << "caught exception \n"
 				       << e;
-	starthitout[plane][0]=0;			   
+	starthitout[plane][0]=0;
       }
     }
     else{
       starthitout[plane][1]=0.;
       starthitout[plane][0]=0.;
-    } 
-    
-    
+    }
+
+
     if(fRefEndHit[plane]){
-      endhitout[plane][1] = fRefEndHit[plane]->PeakTime() ;  
+      endhitout[plane][1] = fRefEndHit[plane]->PeakTime() ;
       try{
 	if(fRefEndHit[plane]->WireID().isValid){
 	  endhitout[plane][0] = fRefEndHit[plane]->WireID().Wire;
@@ -244,17 +243,17 @@ namespace evd {
       catch(cet::exception e) {
 	mf::LogWarning("GraphCluster") << "caught exception \n"
 				       << e;
-	endhitout[plane][0]=0;			   
+	endhitout[plane][0]=0;
       }
     }
     else{
       endhitout[plane][1]=0.;
       endhitout[plane][0]=0.;
-    } 
-    
-    
+    }
+
+
   }
-  
+
 }//namespace
 
 namespace evd {

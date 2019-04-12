@@ -9,7 +9,7 @@
 namespace evd{
 
   /// Convert PDG code to a latex string (root-style)
-  const char* Style::LatexName(int pdgcode) 
+  const char* Style::LatexName(int pdgcode)
   {
     switch (pdgcode) {
     case  22:   return "#gamma";
@@ -136,7 +136,7 @@ namespace evd{
 
   //............................................................
 
-  void Style::FromPDG(TLine& line, int pdgcode) 
+  void Style::FromPDG(TLine& line, int pdgcode)
   {
     // Many cases handled here for most common particles. Extend list as
     // needed
@@ -145,7 +145,7 @@ namespace evd{
     int s = kDotted;
     int w = 1;
 
-    switch (pdgcode) {    
+    switch (pdgcode) {
     case  11:  c=kRed;       s=kSolid;  w=2; break; // e-
     case -11:  c=kRed;       s=kSolid;  w=2; break; // e+
     case  12:  c=kRed;       s=kDotted; w=2; break; // nue
@@ -160,7 +160,7 @@ namespace evd{
     case -17:  c=kGreen;     s=kDotted; w=2; break; // nutau-bar
     case  22:  c=kYellow-1;  s=kDotted; w=2; break; // gamma
     case  111: c=kMagenta-3; s=kDashed; w=3; break; // pi0
-    case  211: c=kMagenta-3; s=kSolid;  w=3; break; // pi+  
+    case  211: c=kMagenta-3; s=kSolid;  w=3; break; // pi+
     case -211: c=kMagenta-3; s=kSolid;  w=3; break; // pi-
     case 2212: c=kMagenta+3; s=kSolid;  w=4; break; // proton
     case 2112: c=kMagenta+3; s=kDotted; w=4; break; // neutron

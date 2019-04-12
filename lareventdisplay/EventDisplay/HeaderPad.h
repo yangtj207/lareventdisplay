@@ -18,7 +18,7 @@ namespace evd {
 	      const char* opt);
     ~HeaderPad();
     void Draw(const char* opt="");
-    
+
   private:
     evdb::View2D* fView; ///< Collection of drawn objects
   };

@@ -23,7 +23,7 @@ namespace evdb_tool
     {
     public:
         virtual ~IWFHitDrawer() noexcept = default;
-        
+
         virtual void configure(const fhicl::ParameterSet& pset)       = 0;
         virtual void Draw(evdb::View2D&,
                           raw::ChannelID_t&)                    const = 0;

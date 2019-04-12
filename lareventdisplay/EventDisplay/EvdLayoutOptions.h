@@ -8,11 +8,8 @@
 #define EVDLAYOUTOPTIONS_H
 #ifndef __CINT__
 #include <string>
-#include <vector>
 
 #include "fhiclcpp/ParameterSet.h"
-#include "art/Framework/Services/Registry/ActivityRegistry.h"
-#include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Services/Registry/ServiceMacros.h"
 #include "nutools/EventDisplayBase/Reconfigurable.h"
 
@@ -20,13 +17,12 @@ namespace evd {
   class EvdLayoutOptions : public evdb::Reconfigurable
   {
   public:
-    explicit EvdLayoutOptions(fhicl::ParameterSet const& pset, art::ActivityRegistry& reg);
-    ~EvdLayoutOptions();
+    explicit EvdLayoutOptions(fhicl::ParameterSet const& pset);
 
-    void reconfigure(fhicl::ParameterSet const& pset) ;
-      
-      const fhicl::ParameterSet& fParameterSet;
-      
+    void reconfigure(fhicl::ParameterSet const& pset) override;
+
+    fhicl::ParameterSet const& fParameterSet;
+
       int         fShowSideBar;		           ///< 1 to show, 0 don't show
       int         fAutoZoomInterest;           ///< Set the automatic zoom to the interest region
       int         fPrintTotalCharge;           ///< Print out the total charge in an event
@@ -37,16 +33,15 @@ namespace evd {
       int	      fMakeSeeds;		           ///< Draw two lines to make clusters if clicked
       int 	      fChangeWire; 		           ///< 1 to click mouse and change wire, 0 don't
       int         fEnableMCTruthCheckBox;      ///< 1 to have the check box appear, 0 otherwise
-      
+
       bool        fThreeWindow;                ///< true to draw rectangular box representing 3 windows
       bool        fDrawGrid;                   ///< true to draw backing grid
       bool        fDrawAxes;                   ///< true to draw coordinate axes
       bool        fDrawBadChannels;            ///< true to draw bad channels
-      
+
       std::string fDisplayName;                ///< Name to apply to 2D display
   };
 }//namespace
 #endif // __CINT__
 DECLARE_ART_SERVICE(evd::EvdLayoutOptions, LEGACY)
 #endif
-

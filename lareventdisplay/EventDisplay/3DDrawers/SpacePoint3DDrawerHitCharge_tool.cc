@@ -37,9 +37,9 @@ class SpacePoint3DDrawerHitCharge : public ISpacePoints3D
 {
 public:
     explicit SpacePoint3DDrawerHitCharge(const fhicl::ParameterSet&);
-    
+
     ~SpacePoint3DDrawerHitCharge();
-    
+
     void Draw(const std::vector<art::Ptr<recob::SpacePoint>>&,  // Space points
               evdb::View3D*,                                    // 3D display
               int,                                              // Color
@@ -47,14 +47,14 @@ public:
               float,                                            // Size) const override;
               const art::FindManyP<recob::Hit>*                 // pointer to associated hits
              ) const;
-    
+
 private:
     double chargeIntegral(double,double,double,double,int,int) const;
-    
+
     float          fMinHitCharge;
     float          fMaxHitCharge;
 };
-    
+
 //----------------------------------------------------------------------
 // Constructor.
 SpacePoint3DDrawerHitCharge::SpacePoint3DDrawerHitCharge(const fhicl::ParameterSet& pset)
@@ -82,64 +82,64 @@ void SpacePoint3DDrawerHitCharge::Draw(const std::vector<art::Ptr<recob::SpacePo
 {
     // Let's not crash
     if (hitsVec.empty() || !hitAssnVec) return;
-    
+
     // Get services.
-    art::ServiceHandle<evd::ColorDrawingOptions> cst;
-    
+    art::ServiceHandle<evd::ColorDrawingOptions const> cst;
+
     using HitPosition = std::array<double,6>;
     std::map<int,std::vector<HitPosition>> colorToHitMap;
-    
+
     float hitChiSqScale((cst->fRecoQHigh[geo::kCollection] - cst->fRecoQLow[geo::kCollection]) / (fMaxHitCharge - fMinHitCharge));
-    
+
     for(const auto& spacePoint : hitsVec)
     {
         const double* pos = spacePoint->XYZ();
         const double* err = spacePoint->ErrXYZ();
-        
+
         // Need to recover the integrated charge from the collection plane, so need to loop through associated hits
         const std::vector<art::Ptr<recob::Hit>>& hit2DVec(hitAssnVec->at(spacePoint.key()));
-        
+
         float hitCharge(0.);
         int   lowIndex(std::numeric_limits<int>::min());
         int   hiIndex(std::numeric_limits<int>::max());
-        
+
         for(const auto& hit2D : hit2DVec)
         {
             int hitStart = hit2D->PeakTime() - 2. * hit2D->RMS() - 0.5;
             int hitStop  = hit2D->PeakTime() + 2. * hit2D->RMS() + 0.5;
-            
+
             lowIndex = std::max(hitStart,    lowIndex);
             hiIndex  = std::min(hitStop + 1, hiIndex);
-            
+
             hitCharge += hit2D->Integral();
         }
-        
+
         if (!hit2DVec.empty()) hitCharge /= float(hit2DVec.size());
-        
+
         if (hitCharge > 0.)
         {
             int   chargeColorIdx(0);
             float integral(0.);
-            
+
             if (hiIndex > lowIndex)
             {
                 for(const auto& hit2D : hit2DVec)
                     integral += chargeIntegral(hit2D->PeakTime(),hit2D->PeakAmplitude(),hit2D->RMS(),1.,lowIndex,hiIndex);
-                
+
                 integral /= float(hit2DVec.size());
             }
-            
+
 //            hitCharge = std::min(hitCharge, fMaxHitCharge);
             integral = std::min(integral, fMaxHitCharge);
-        
+
             float chgFactor = cst->fRecoQLow[geo::kCollection] + hitChiSqScale * integral;
-        
+
             chargeColorIdx = cst->CalQ(geo::kCollection).GetColor(chgFactor);
-        
+
             colorToHitMap[chargeColorIdx].push_back(HitPosition()={{pos[0],pos[1],pos[2],err[3],err[3],err[5]}});
         }
     }
-    
+
     for(auto& hitPair : colorToHitMap)
     {
         TPolyMarker3D& pm = view->AddPolyMarker3D(hitPair.second.size(), hitPair.first, kFullDotLarge, 0.25);
@@ -157,11 +157,11 @@ double SpacePoint3DDrawerHitCharge::chargeIntegral(double peakMean,
                                                    int    hi) const
 {
     double integral(0);
-    
+
     for(int sigPos = low; sigPos < hi; sigPos++) integral += peakAmp * TMath::Gaus(double(sigPos)+0.5,peakMean,peakWidth);
-    
+
     return integral;
 }
-    
+
 DEFINE_ART_CLASS_TOOL(SpacePoint3DDrawerHitCharge)
 }

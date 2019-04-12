@@ -4,8 +4,6 @@
 /// \author  messier@indiana.edu
 ///
 #include "lareventdisplay/EventDisplay/DrawingPad.h"
-#include <iostream>
-#include <vector>
 #include "TPad.h"
 #include "nutools/EventDisplayBase/evdb.h"
 #include "lareventdisplay/EventDisplay/HeaderDrawer.h"
@@ -24,7 +22,7 @@
 namespace evd{
 
   // Declare singleton HitSelector
- 
+
   HitSelector * gTheHitSelector;
 
   /// Create a drawing pad for the event display
@@ -37,7 +35,7 @@ namespace evd{
   /// @param y2 : Relative y position (0-1) of upper right corner
   ///
   DrawingPad::DrawingPad(const char* nm,
-			 const char* ti, 
+			 const char* ti,
 			 double x1, double y1,
 			 double x2, double y2)
     : fPad(0)
@@ -54,7 +52,7 @@ namespace evd{
 
   //......................................................................
 
-  DrawingPad::~DrawingPad() 
+  DrawingPad::~DrawingPad()
   {
     if (fHeaderDraw)       { delete fHeaderDraw;       fHeaderDraw       = 0; }
     if (fSimulationDraw)   { delete fSimulationDraw;   fSimulationDraw   = 0; }
@@ -72,7 +70,7 @@ namespace evd{
   ///
   /// Provide access to the drawer for the detector geometry
   ///
-  HeaderDrawer* DrawingPad::HeaderDraw() 
+  HeaderDrawer* DrawingPad::HeaderDraw()
   {
     if (fHeaderDraw==0) fHeaderDraw = new HeaderDrawer();
     return fHeaderDraw;
@@ -85,9 +83,9 @@ namespace evd{
   {
     if (fGeometryDraw==0)
     {
-        art::ServiceHandle<evd::EvdLayoutOptions> layoutOptions;
+        art::ServiceHandle<evd::EvdLayoutOptions const> layoutOptions;
         const fhicl::ParameterSet&                pset = layoutOptions->fParameterSet;
-        
+
         fGeometryDraw = art::make_tool<evd_tool::IExperimentDrawer>(pset.get<fhicl::ParameterSet>("Experiment3DDrawer"));
     }
     return fGeometryDraw.get();
@@ -96,17 +94,17 @@ namespace evd{
   ///
   /// Provide access to the drawer for the Simulation classes
   ///
-  SimulationDrawer* DrawingPad::SimulationDraw() 
+  SimulationDrawer* DrawingPad::SimulationDraw()
   {
     if (fSimulationDraw==0) fSimulationDraw = new SimulationDrawer();
     return fSimulationDraw;
-   
+
   }
 
   ///
   /// Provide access to the drawer for the RawData classes
   ///
-  RawDataDrawer* DrawingPad::RawDataDraw() 
+  RawDataDrawer* DrawingPad::RawDataDraw()
   {
     if (fRawDataDraw==0) fRawDataDraw = new RawDataDrawer();
     return fRawDataDraw;
@@ -117,7 +115,7 @@ namespace evd{
   ///
   /// Provide access to the drawer for RecoBase classes
   ///
-  RecoBaseDrawer* DrawingPad::RecoBaseDraw() 
+  RecoBaseDrawer* DrawingPad::RecoBaseDraw()
   {
     if (fRecoBaseDraw==0) fRecoBaseDraw = new RecoBaseDrawer();
     return fRecoBaseDraw;
@@ -129,7 +127,7 @@ namespace evd{
   ///
   /// Provide access to the drawer for AnalysisBase classes
   ///
-  AnalysisBaseDrawer* DrawingPad::AnalysisBaseDraw() 
+  AnalysisBaseDrawer* DrawingPad::AnalysisBaseDraw()
   {
     if (fAnalysisBaseDraw==0) fAnalysisBaseDraw = new AnalysisBaseDrawer();
     return fAnalysisBaseDraw;
@@ -139,9 +137,9 @@ namespace evd{
   //......................................................................
 
   ///
-  /// Provide access to the HitSelector 
+  /// Provide access to the HitSelector
   ///
-  HitSelector* DrawingPad::HitSelectorGet() 
+  HitSelector* DrawingPad::HitSelectorGet()
   {
     if (gTheHitSelector==0) gTheHitSelector = new HitSelector();
     return gTheHitSelector;

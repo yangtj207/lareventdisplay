@@ -22,7 +22,7 @@ namespace evdb_tool
     {
     public:
         virtual ~ISim3DDrawer() noexcept = default;
-        
+
         virtual void Draw(const art::Event&, evdb::View3D*) const = 0;
     };
 }

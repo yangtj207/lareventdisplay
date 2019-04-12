@@ -24,7 +24,7 @@ namespace evd_tool
     {
     public:
         virtual ~IExperimentDrawer() noexcept = default;
-        
+
         virtual void DetOutline3D(evdb::View3D* view) = 0;
     };
 }

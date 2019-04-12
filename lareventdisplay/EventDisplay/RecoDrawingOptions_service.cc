@@ -8,21 +8,14 @@
 /// LArSoft includes
 #include "lareventdisplay/EventDisplay/RecoDrawingOptions.h"
 
-#include <iostream>
 
 namespace evd {
 
 //......................................................................
-RecoDrawingOptions::RecoDrawingOptions(fhicl::ParameterSet const& pset, 
-                                       art::ActivityRegistry& /* reg */)
+RecoDrawingOptions::RecoDrawingOptions(fhicl::ParameterSet const& pset)
   : evdb::Reconfigurable{pset}
 {
     this->reconfigure(pset);
-}
-
-//......................................................................
-RecoDrawingOptions::~RecoDrawingOptions() 
-{
 }
 
 //......................................................................
@@ -85,13 +78,13 @@ void RecoDrawingOptions::reconfigure(fhicl::ParameterSet const& pset)
     fColorSpacePointsByChisq   = pset.get< int                        >("ColorSpacePointsByChisq"  );
     fCaloPSet                  = pset.get< fhicl::ParameterSet        >("CalorimetryAlgorithm"     );
     //   fSeedPSet = pset.get< fhicl::ParameterSet >("SeedAlgorithm");
-    
+
     fCosmicTagLabels           = pset.get< std::vector<art::InputTag> >("CosmicTagLabels", std::vector<art::InputTag>() );
     fDrawCosmicTags            = pset.get< int                        >("DrawCosmicTags"           );
     fFlashMinPE                = pset.get< double                     >("FlashMinPE", 0.0          );
     fFlashTMin                 = pset.get< double                     >("FlashTMin", -1e9          );
     fFlashTMax                 = pset.get< double                     >("FlashTMax", 1e9           );
-    
+
     fHitDrawerParams           = pset.get< fhicl::ParameterSet        >("HitDrawer"                );
     fWireDrawerParams          = pset.get< fhicl::ParameterSet        >("WireDrawer"               );
 

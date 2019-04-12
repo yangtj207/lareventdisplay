@@ -18,7 +18,7 @@
 
 class TVector3;
 class TH1F;
-namespace evdb { 
+namespace evdb {
     class View2D;
     class View3D;
 }
@@ -250,7 +250,7 @@ public:
 		            unsigned int      plane,
 		            TH1F*             histo);
 
-    void FillTQHistoDP(const art::Event&    evt, 
+    void FillTQHistoDP(const art::Event&    evt,
 		       unsigned int         plane,
                        unsigned int         wire,
 		       TH1F*                histo,
@@ -268,7 +268,7 @@ public:
                             int& maxw,
 			                int& mint,
 			                int& maxt);
-    
+
     void GetChargeSum(int     plane,
 		              double& charge,
 		              double& convcharge);
@@ -286,7 +286,7 @@ public:
 	//		    std::vector<double> tau2,
 	//		    std::vector<double> amplitude,
 	//		    std::vector<double> peaktime);
-    
+
   private:
     void GetClusterOutlines(std::vector<const recob::Hit*>& hits,
 			                std::vector<double>&            tpts,
@@ -306,7 +306,7 @@ public:
     int GetPFParticles(const art::Event&                  evt,
 		               const art::InputTag&               which,
 		               art::PtrVector<recob::PFParticle>& pfpart);
-    int GetEndPoint2D(const art::Event&                  evt, 
+    int GetEndPoint2D(const art::Event&                  evt,
 		              const art::InputTag&               which,
 		              art::PtrVector<recob::EndPoint2D>& ep2d);
     int GetSpacePoints(const art::Event&                  evt,
@@ -344,7 +344,7 @@ public:
     int GetEvents(const art::Event&             evt,
 		          const art::InputTag&          which,
 		          art::PtrVector<recob::Event>& event);
-    
+
     float SpacePointChiSq(const std::vector<art::Ptr<recob::Hit>>&) const;
 
     std::vector<std::array<double, 3>> Circle3D(const TVector3& pos, const TVector3& axisDir, const double& radius);
@@ -355,10 +355,10 @@ public:
 			      unsigned int         tpc,
 			      unsigned int         plane);
 
-        
+
   private:
     using ISpacePointDrawerPtr = std::unique_ptr<evdb_tool::ISpacePoints3D>;
-    
+
     ISpacePointDrawerPtr      fAllSpacePointDrawer;
     ISpacePointDrawerPtr      fSpacePointDrawer;
 
@@ -366,10 +366,10 @@ public:
     std::vector<int>          fWireMax;         ///< highest wire in interesting region for each plane
     std::vector<int>          fTimeMin;         ///< lowest time in interesting region for each plane
     std::vector<int>          fTimeMax;         ///< highest time in interesting region for each plane
-    
+
     std::vector<double>       fRawCharge;       ///< Sum of Raw Charge
     std::vector<double>       fConvertedCharge; ///< Sum of Charge Converted using Birks' formula
-    
+
   };
 }
 

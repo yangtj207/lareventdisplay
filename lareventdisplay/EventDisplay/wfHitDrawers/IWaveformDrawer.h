@@ -23,11 +23,11 @@ namespace evdb_tool
     {
     public:
         virtual ~IWaveformDrawer() noexcept = default;
-        
+
         virtual void configure(const fhicl::ParameterSet& pset)           = 0;
         virtual void Fill(evdb::View2D&, raw::ChannelID_t&, float, float) = 0;
         virtual void Draw(const std::string&,float,float)                 = 0;
-        
+
         virtual float getMaximum() const                                  = 0;
         virtual float getMinimum() const                                  = 0;
     };

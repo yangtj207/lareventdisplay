@@ -14,8 +14,8 @@ namespace art  { class Event;       }
 namespace evdb { class View2D;      }
 namespace evdb { class View3D;      }
 namespace geo  { class Geometry;    }
-namespace simb { 
-  class MCTruth;     
+namespace simb {
+  class MCTruth;
   class MCParticle;
 }
 

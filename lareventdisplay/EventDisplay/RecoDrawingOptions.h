@@ -18,12 +18,12 @@
 #include "canvas/Utilities/InputTag.h"
 
 namespace evd {
-  
+
   class RecoDrawingOptions : public evdb::Reconfigurable
 {
 public:
     explicit RecoDrawingOptions(fhicl::ParameterSet const& pset);
-    
+
     void reconfigure(fhicl::ParameterSet const& pset) ;
 
     int  fDrawHits;
@@ -57,7 +57,7 @@ public:
     bool fDraw3DEdges;
     bool fDraw3DPCAAxes;
     bool fDrawAllWireIDs;
-    
+
     std::vector<art::InputTag> fWireLabels;                 ///< module labels that produced wires
     std::vector<art::InputTag> fHitLabels;                  ///< module labels that produced hits
     std::vector<art::InputTag> fSliceLabels;                ///< module labels that produced slices
@@ -83,17 +83,17 @@ public:
     ///\todo Why are calorimetry related drawing options in RecoDrawingOptions instead of a separate service?
     fhicl::ParameterSet        fCaloPSet;                   /// < parameterset for calorimetry algorithm
     fhicl::ParameterSet        fSeedPSet;                   /// < parameterset for seed algorithm
-   
+
     int                        fColorProngsByLabel;         ///< Generate prong colors by label or id?
     int                        fColorSpacePointsByChisq;    ///< Generate space point colors by chisquare?
-   
+
     double                     fFlashMinPE;                 ///< Minimal PE for a flash to be displayed.
     double                     fFlashTMin;                  ///< Minimal time for a flash to be displayed.
     double                     fFlashTMax;                  ///< Maximum time for a flash to be displayed.
-    
+
     fhicl::ParameterSet        fHitDrawerParams;            ///< FHICL parameters for the hit drawing
     fhicl::ParameterSet        fWireDrawerParams;           ///< FHICL parameters for the wire drawing
-    
+
     fhicl::ParameterSet        fSpacePointDrawerParams;     ///< FHILL parameters for SpacePoint drawing
     fhicl::ParameterSet        fAllSpacePointDrawerParams;  ///< FHILL parameters for SpacePoint drawing
   };

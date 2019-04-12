@@ -28,7 +28,7 @@ namespace evd {
     virtual ~Ortho3DView();
 
     // Required methods.
-    
+
     const char* Description() const { return "Orthographic 3D Detector Display"; }
     const char* PrintTag()    const { return "larortho3d";               }
     void Draw(const char* opt="");

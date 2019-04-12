@@ -64,8 +64,8 @@
 #include "art/Utilities/make_tool.h"
 #include "canvas/Persistency/Common/Ptr.h"
 #include "canvas/Persistency/Common/PtrVector.h"
-#include "art/Framework/Principal/Handle.h" 
-#include "canvas/Persistency/Common/FindMany.h" 
+#include "art/Framework/Principal/Handle.h"
+#include "canvas/Persistency/Common/FindMany.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "lardata/RecoBaseProxy/Track.h"
@@ -90,13 +90,13 @@ RecoBaseDrawer::RecoBaseDrawer()
     art::ServiceHandle<evd::RawDrawingOptions const>   rawOptions;
     art::ServiceHandle<evd::RecoDrawingOptions const>  recoOptions;
 
-    fWireMin.resize(0);   
-    fWireMax.resize(0);    
-    fTimeMin.resize(0);    
-    fTimeMax.resize(0);    
-    fRawCharge.resize(0);   
+    fWireMin.resize(0);
+    fWireMax.resize(0);
+    fTimeMin.resize(0);
+    fTimeMax.resize(0);
+    fRawCharge.resize(0);
     fConvertedCharge.resize(0);
-    
+
     // set the list of channels in this detector
     for(size_t t = 0; t < geo->NTPC(); ++t)
     {
@@ -114,13 +114,13 @@ RecoBaseDrawer::RecoBaseDrawer()
             fTimeMax[p] = rawOptions->fTicks;
         }// end loop over planes
     }// end loop over TPCs
-    
+
     fAllSpacePointDrawer = art::make_tool<evdb_tool::ISpacePoints3D>(recoOptions->fAllSpacePointDrawerParams);
     fSpacePointDrawer    = art::make_tool<evdb_tool::ISpacePoints3D>(recoOptions->fSpacePointDrawerParams);
 }
 
 //......................................................................
-RecoBaseDrawer::~RecoBaseDrawer() 
+RecoBaseDrawer::~RecoBaseDrawer()
 {
 
 }
@@ -134,38 +134,38 @@ void RecoBaseDrawer::Wire2D(const art::Event& evt,
     art::ServiceHandle<evd::RecoDrawingOptions const>  recoOpt;
     art::ServiceHandle<geo::Geometry const>            geo;
     art::ServiceHandle<evd::ColorDrawingOptions const> cst;
-    
+
     if(rawOpt->fDrawRawDataOrCalibWires < 1)    return;
-    
+
     lariov::ChannelStatusProvider const& channelStatus
       = art::ServiceHandle<lariov::ChannelStatusService const>()->GetProvider();
-    
+
     int ticksPerPoint = rawOpt->fTicksPerPoint;
-    
+
     // to make det independent later:
     double mint = 5000;
     double maxt = 0;
     double minw = 5000;
     double maxw = 0;
-    
+
     geo::PlaneID pid(rawOpt->fCryostat, rawOpt->fTPC, plane);
-    
+
     for(size_t imod = 0; imod < recoOpt->fWireLabels.size(); ++imod) {
         art::InputTag const which = recoOpt->fWireLabels[imod];
-    
+
       art::PtrVector<recob::Wire> wires;
       this->GetWires(evt, which, wires);
 
       if(wires.size() < 1) continue;
-      
+
       for(size_t i = 0; i < wires.size(); ++i) {
-      
+
         uint32_t channel = wires[i]->Channel();
-          
+
 	    if (!rawOpt->fSeeBadChannels && channelStatus.IsBad(channel)) continue;
-	
+
         std::vector<geo::WireID> wireids = geo->ChannelToWire(channel);
-      
+
         geo::SigType_t sigType = geo->SignalType(channel);
 
         for (auto const& wid : wireids){
@@ -191,25 +191,25 @@ void RecoBaseDrawer::Wire2D(const art::Event& evt,
             }
             double adc = adcsum/ticksPerPoint;
             double tdc = tdcsum/ticksPerPoint;
-            
+
             if(TMath::Abs(adc) < rawOpt->fMinSignal) continue;
             if(tdc > rawOpt->fTicks) continue;
-            
+
             int    co = 0;
             double sf = 1.;
             double q0 = 1000.0;
-            
+
             co = cst->CalQ(sigType).GetColor(adc);
             if (rawOpt->fScaleDigitsByCharge) {
               sf = sqrt(adc/q0);
               if (sf>1.0) sf = 1.0;
             }
-            
+
             if(wire < minw) minw = wire;
-            if(wire > maxw) maxw = wire;  
+            if(wire > maxw) maxw = wire;
             if(tdc  < mint) mint = tdc;
             if(tdc  > maxt) maxt = tdc;
-            
+
             if(rawOpt->fAxisOrientation < 1){
               TBox& b1 = view->AddBox(wire-sf*0.5,
                                       tdc-sf*0.5*ticksPerPoint,
@@ -228,24 +228,24 @@ void RecoBaseDrawer::Wire2D(const art::Event& evt,
               b1.SetFillColor(co);
               b1.SetBit(kCannotPick);
             }
-          }// end loop over samples 
+          }// end loop over samples
         }//end loop over wire segments
       }//end loop over wires
     }// end loop over wire module labels
-    
+
     fWireMin[plane] = minw;
     fWireMax[plane] = maxw;
     fTimeMin[plane] = mint;
     fTimeMax[plane] = maxt;
-    
+
     // Add a loop to draw dead wires in 2D display
     double startTick(50.);
     double endTick((rawOpt->fTicks - 50.) * ticksPerPoint);
-    
+
     for(size_t wireNo = 0; wireNo < geo->Nwires(pid); wireNo++)
     {
         raw::ChannelID_t channel = geo->PlaneWireToChannel(geo::WireID(rawOpt->fCryostat, rawOpt->fTPC, plane, wireNo));
-        
+
         if (!rawOpt->fSeeBadChannels && channelStatus.IsBad(channel))
         {
             double wire = 1.*wireNo;
@@ -255,8 +255,8 @@ void RecoBaseDrawer::Wire2D(const art::Event& evt,
             line.SetBit(kCannotPick);
         }
     }
-   
-    
+
+
     return;
 }
 
@@ -276,18 +276,18 @@ int RecoBaseDrawer::Hit2D(const art::Event& evt,
     art::ServiceHandle<evd::RecoDrawingOptions const>  recoOpt;
     art::ServiceHandle<geo::Geometry const>            geo;
     detinfo::DetectorProperties const* detp = lar::providerFrom<detinfo::DetectorPropertiesService>();
-    
+
     int nHitsDrawn(0);
-  
+
     if (recoOpt->fDrawHits == 0)                return nHitsDrawn;
     if (rawOpt->fDrawRawDataOrCalibWires < 1)   return nHitsDrawn;
-  
+
     fRawCharge[plane]       = 0;
     fConvertedCharge[plane] = 0;
 
     for (size_t imod = 0; imod < recoOpt->fHitLabels.size(); ++imod) {
         art::InputTag const which = recoOpt->fHitLabels[imod];
-  
+
       std::vector<const recob::Hit*> hits;
       this->GetHits(evt, which, hits, plane);
 
@@ -307,7 +307,7 @@ int RecoBaseDrawer::Hit2D(const art::Event& evt,
       nHitsDrawn = this->Hit2D(hits, kBlack, view, recoOpt->fDrawAllWireIDs);
 
     } // loop on imod folders
-    
+
     return nHitsDrawn;
 }
 
@@ -334,12 +334,12 @@ int RecoBaseDrawer::Hit2D(std::vector<const recob::Hit*> hits,
     unsigned int w  = 0;
     unsigned int wold = 0;
     float timeold = 0.;
-  
+
     if(color==-1)
         color=recoOpt->fSelectedHitColor;
-    
+
     int nHitsDrawn(0);
-  
+
     for(const auto& hit : hits)
     {
         // Note that the WireID in the hit object is useless for those detectors where a channel can correspond to
@@ -347,29 +347,29 @@ int RecoBaseDrawer::Hit2D(std::vector<const recob::Hit*> hits,
         // loop over those (if there are any)
         // However, we need to preserve the option for drawing hits only associated to the wireID it contains
         std::vector<geo::WireID> wireIDs;
-        
+
         if (allWireIDs) wireIDs = geo->ChannelToWire(hit->Channel());
         else            wireIDs.push_back(hit->WireID());
-        
+
         // Loop to find match
         for(const auto& wireID : wireIDs)
         {
             if (wireID.TPC != rawOpt->fTPC || wireID.Cryostat != rawOpt->fCryostat) continue;
-        
+
             if (std::isnan(hit->PeakTime()) || std::isnan(hit->Integral()))
             {
                 std::cout << "====>> Found hit with a NAN, channel: " << hit->Channel() << ", start/end: " << hit->StartTick() << "/" << hit->EndTick() << ", chisquare: " <<   hit->GoodnessOfFit() << std::endl;
             }
-    
+
             if (hit->PeakTime() > rawOpt->fTicks) continue;
-            
+
             w = wireID.Wire;
-    
+
             // Try to get the "best" charge measurement, ie. the one last in
             // the calibration chain
             float time = hit->PeakTime();
             float rms  = 0.5 * hit->RMS();
-    
+
             if(rawOpt->fAxisOrientation < 1){
                 TBox& b1 = view->AddBox(w-0.5, time-rms, w+0.5, time+rms);
                 if(drawConnectingLines && nHitsDrawn > 0) {
@@ -400,7 +400,7 @@ int RecoBaseDrawer::Hit2D(std::vector<const recob::Hit*> hits,
             nHitsDrawn++;
         }
     } // loop on hits
-  
+
     return nHitsDrawn;
 }
 
@@ -417,14 +417,14 @@ int RecoBaseDrawer::Hit2D(std::vector<const recob::Hit*> hits,
     unsigned int wold(0);
     float        timeold(0.);
     int          nHitsDrawn(0);
-    
+
     for(const auto& hit : hits)
     {
         // check that we are in the correct TPC
         // the view should tell use we are in the correct plane
         if(hit->WireID().TPC      != rawOpt->fTPC ||
            hit->WireID().Cryostat != rawOpt->fCryostat) continue;
-      
+
         w = hit->WireID().Wire;
 
         // Try to get the "best" charge measurement, ie. the one last in
@@ -452,12 +452,12 @@ int RecoBaseDrawer::Hit2D(std::vector<const recob::Hit*> hits,
                 l.SetBit(kCannotPick);
             }
         }
-      
+
         wold = w;
         timeold = time;
         nHitsDrawn++;
     } // loop on hits
-    
+
     return nHitsDrawn;
 }
 
@@ -473,7 +473,7 @@ int RecoBaseDrawer::GetRegionOfInterest(int plane,
 
     if((unsigned int)plane > fWireMin.size()){
         mf::LogWarning  ("RecoBaseDrawer") << " Requested plane "
-					 << plane 
+					 << plane
 					 << " is larger than those available ";
         return -1;
     }
@@ -491,7 +491,7 @@ int RecoBaseDrawer::GetRegionOfInterest(int plane,
 
     maxw = (maxw+10 > (int)geo->Nwires(plane)) ? geo->Nwires(plane) : maxw+10;
     maxt = (maxt+10 > fTicks) ? fTicks : maxt+10;
-  
+
     return 0;
 }
 
@@ -502,7 +502,7 @@ void RecoBaseDrawer::GetChargeSum(int plane,
 {
     charge     = fRawCharge[plane];
     convcharge = fConvertedCharge[plane];
- 
+
     return;
 }
 
@@ -514,37 +514,37 @@ void RecoBaseDrawer::EndPoint2D(const art::Event& evt,
     art::ServiceHandle<evd::RawDrawingOptions const>   rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions const>  recoOpt;
     art::ServiceHandle<geo::Geometry const>            geo;
-    
+
     if (rawOpt->fDrawRawDataOrCalibWires < 1) return;
     if (recoOpt->fDraw2DEndPoints == 0)       return;
-    
+
     geo::View_t gview = geo->TPC(rawOpt->fTPC).Plane(plane).View();
-    
+
     for(size_t imod = 0; imod < recoOpt->fEndPoint2DLabels.size(); ++imod) {
         art::InputTag const which = recoOpt->fEndPoint2DLabels[imod];
-        
+
         art::PtrVector<recob::EndPoint2D> ep2d;
         this->GetEndPoint2D(evt, which, ep2d);
-        
+
         for (size_t iep = 0; iep < ep2d.size(); ++iep) {
             // only worry about end points with the correct view
             if(ep2d[iep]->View() != gview) continue;
-            
+
             ///\todo - have to verify that we are in the right TPC, but to do that we
             // need to be sure that all EndPoint2D objects have filled the required information
-            
+
             // draw cluster with unique marker
             // Place this cluster's unique marker at the hit's location
             int color  = evd::kColor[ep2d[iep]->ID()%evd::kNCOLS];
-            
+
             double x = ep2d[iep]->WireID().Wire;
             double y = ep2d[iep]->DriftTime();
-            
+
             if(rawOpt->fAxisOrientation > 0){
                 x = ep2d[iep]->DriftTime();
                 y = ep2d[iep]->WireID().Wire;
             }
-            
+
             TMarker& strt = view->AddMarker(x, y, color, 30, 2.0);
             strt.SetMarkerColor(color);
           // BB: draw the ID
@@ -555,10 +555,10 @@ void RecoBaseDrawer::EndPoint2D(const art::Event& evt,
             vtxID.SetTextColor(color);
             vtxID.SetTextSize(0.05);
           }
-            
+
         } // loop on iep end points
     } // loop on imod folders
-    
+
     return;
 }
 
@@ -641,11 +641,11 @@ void RecoBaseDrawer::OpFlash2D(const art::Event& evt,
             }
         } // loop on opflashes
     } // loop on imod folders
-  
+
     return;
 }
-  
-  
+
+
 //......................................................................
 void RecoBaseDrawer::Seed2D(const art::Event& evt,
                             evdb::View2D*     view,
@@ -661,12 +661,12 @@ void RecoBaseDrawer::Seed2D(const art::Event& evt,
 
     for(size_t imod = 0; imod < recoOpt->fSeedLabels.size(); ++imod) {
         art::InputTag const which = recoOpt->fSeedLabels[imod];
-  
+
         art::PtrVector<recob::Seed> seeds;
         this->GetSeeds(evt, which, seeds);
 
         if(seeds.size() < 1) continue;
-	
+
         // project each seed into this view
         for (size_t isd = 0; isd < seeds.size(); ++isd) {
             double SeedPoint[3];
@@ -678,7 +678,7 @@ void RecoBaseDrawer::Seed2D(const art::Event& evt,
 
             seeds[isd]->GetPoint( SeedPoint,  SeedPointErr);
             seeds[isd]->GetDirection( SeedDir, SeedDirErr);
-	
+
             SeedEnd1[0] = SeedPoint[0] + SeedDir[0];
             SeedEnd1[1] = SeedPoint[1] + SeedDir[1];
             SeedEnd1[2] = SeedPoint[2] + SeedDir[2];
@@ -686,7 +686,7 @@ void RecoBaseDrawer::Seed2D(const art::Event& evt,
             SeedEnd2[0] = SeedPoint[0] - SeedDir[0] ;
             SeedEnd2[1] = SeedPoint[1] - SeedDir[1] ;
             SeedEnd2[2] = SeedPoint[2] - SeedDir[2] ;
-	
+
             // Draw seed on evd
             // int color  = kColor[seeds[isd]->ID()%kNCOLS];
             int color  = evd::kColor[0];
@@ -770,7 +770,7 @@ void RecoBaseDrawer::BezierTrack2D(const art::Event& evt,
 
             double projpt[3], ticks[3];
             int c=0, t=0;
-      
+
             for(int i = 0; i != N; ++i){
                 try{
                     BTrack.GetProjectedPointUVWT(float(i)/N,projpt,ticks,c,t );
@@ -785,7 +785,7 @@ void RecoBaseDrawer::BezierTrack2D(const art::Event& evt,
             }
 
             TPolyLine& pl = view->AddPolyLine(ProjPtUVWs[plane].size(),kColor[ibtb%kNCOLS],1,0);
-	
+
             for(size_t i = 0; i != ProjPtUVWs[plane].size(); ++i){
                 double x = ProjPtUVWs[plane][i];
                 double y = ProjTimes[plane][i];
@@ -831,11 +831,11 @@ void RecoBaseDrawer::BezierTrack3D(const art::Event& evt,
                 double x = xyzpt[0];
                 double y = xyzpt[1];
                 double z = xyzpt[2];
-	  
+
                 pl.SetPoint(i,x,y,z);
             }
         }
-    
+
         // Draw bezier track vertices
         TPolyMarker3D&  pmrk = view->AddPolyMarker3D(btrackvertices.size(), kYellow, 4, 1);
         for(size_t ivtx = 0; ivtx < btrackvertices.size(); ++ivtx){
@@ -851,14 +851,14 @@ void RecoBaseDrawer::BezierTrack3D(const art::Event& evt,
   {
     // Color code hits associated with Slices
     art::ServiceHandle<evd::RawDrawingOptions const>   rawOpt;
-    art::ServiceHandle<evd::RecoDrawingOptions const>  recoOpt;    
+    art::ServiceHandle<evd::RecoDrawingOptions const>  recoOpt;
     if (rawOpt->fDrawRawDataOrCalibWires < 1) return;
     if (recoOpt->fDrawSlices == 0) return;
-    
+
     art::ServiceHandle<geo::Geometry const> geo;
     detinfo::DetectorProperties const* detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
 //    geo::View_t gview = geo->TPC(rawOpt->fTPC).Plane(plane).View();
-    
+
     static bool first = true;
     if(first) {
       std::cout<<"******** DrawSlices: 0 = none, 1 = color coded, 2 = color coded + ID at slice center\n";
@@ -868,7 +868,7 @@ void RecoBaseDrawer::BezierTrack3D(const art::Event& evt,
     }
     unsigned int c = rawOpt->fCryostat;
     unsigned int t = rawOpt->fTPC;
-    
+
     for(size_t imod = 0; imod < recoOpt->fSliceLabels.size(); ++imod) {
       art::InputTag const which = recoOpt->fSliceLabels[imod];
       art::PtrVector<recob::Slice> slices;
@@ -922,7 +922,7 @@ void RecoBaseDrawer::BezierTrack3D(const art::Event& evt,
           pline.SetPoint(1, wire, tick);
         }
       } // isl
-      
+
     } // imod
 
   } // Slice2D
@@ -935,20 +935,20 @@ void RecoBaseDrawer::Cluster2D(const art::Event& evt,
     art::ServiceHandle<evd::RecoDrawingOptions const>  recoOpt;
     art::ServiceHandle<geo::Geometry const>            geo;
     detinfo::DetectorProperties const* detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
-    
+
     if (rawOpt->fDrawRawDataOrCalibWires < 1) return;
     if (recoOpt->fDrawClusters == 0)          return;
-    
+
     geo::View_t gview = geo->TPC(rawOpt->fTPC).Plane(plane).View();
 
     // if user sets "DrawClusters" to 2, draw the clusters differently:
     //    bool drawAsMarkers = (recoOpt->fDrawClusters == 1 ||
     //                          recoOpt->fDrawClusters == 3);
     bool drawAsMarkers = recoOpt->fDrawClusters != 2;
-    
+
     // draw connecting lines between cluster hits?
     bool drawConnectingLines = (recoOpt->fDrawClusters >= 3);
-    
+
     static bool first = true;
     if(first) {
       std::cout<<"******** DrawClusters: 0 = none, 1 = cluster hits, 2 = unique marker, 3 = cluster hits with connecting lines.\n";
@@ -956,34 +956,34 @@ void RecoBaseDrawer::Cluster2D(const art::Event& evt,
       std::cout<<" Color scheme: By cluster ID in each plane or by PFParticle ID (Self) if a PFParticle - Cluster association exists.\n";
       first = false;
     }
-    
+
     for(size_t imod = 0; imod < recoOpt->fClusterLabels.size(); ++imod)
     {
         art::InputTag const which = recoOpt->fClusterLabels[imod];
-    
+
         art::PtrVector<recob::Cluster> clust;
         this->GetClusters(evt, which, clust);
 
         if(clust.size() < 1) continue;
-        
+
         // We want to draw the hits that are associated to "free" space points (non clustered)
         // This is done here, before drawing the hits on clusters so they will be "under" the cluster
         // hits (since spacepoints could be made from a used 2D hit but then not used themselves)
         // Get the space points created by the PFParticle producer
         std::vector<art::Ptr<recob::SpacePoint>> spacePointVec;
         this->GetSpacePoints(evt, which, spacePointVec);
-        
+
         // No space points no continue
         if (spacePointVec.size() > 0)
         {
             // Add the relations to recover associations cluster hits
             art::FindManyP<recob::Hit> spHitAssnVec(spacePointVec, evt, which);
-        
+
             if (spHitAssnVec.isValid())
             {
                 // Create a local hit vector...
                 std::vector<const recob::Hit*> freeHitVec;
-        
+
                 // loop through space points looking for those that are free
                 for(const auto& spacePointPtr : spacePointVec)
                 {
@@ -991,21 +991,21 @@ void RecoBaseDrawer::Cluster2D(const art::Event& evt,
                     {
                         // Recover associated hits
                         const std::vector<art::Ptr<recob::Hit>>& hitVec = spHitAssnVec.at(spacePointPtr.key());
-                
+
                         for(const auto& hitPtr : hitVec)
                         {
                             if(hitPtr.get()->WireID().Plane != plane) continue;
-                    
+
                             freeHitVec.push_back(hitPtr.get());
                         }
                     }
                 }
-        
+
                 // Draw the free hits in gray
                 this->Hit2D(freeHitVec, kGray, view, false, false, false);
             }
         }
-        
+
         // Ok, now proceed with our normal processing of hits on clusters
         art::FindMany<recob::Hit> fmh(clust, evt, which);
         art::FindManyP<recob::PFParticle> fmc(clust, evt, which);
@@ -1015,14 +1015,14 @@ void RecoBaseDrawer::Cluster2D(const art::Event& evt,
             // only worry about clusters with the correct view
 //            if(clust[ic]->View() != gview) continue;
             if (clust[ic]->Plane().Plane != plane) continue;
-            
+
             // see if we can set the color index in a sensible fashion
             int clusterIdx(std::abs(clust[ic]->ID()));
             int colorIdx(clusterIdx%evd::kNCOLS);
             bool pfpAssociation = false;
             int pfpIndex = INT_MAX;
             float cosmicscore = FLT_MIN;
-            
+
             if (fmc.isValid())
             {
                 std::vector<art::Ptr<recob::PFParticle>> pfplist = fmc.at(ic);
@@ -1057,11 +1057,11 @@ void RecoBaseDrawer::Cluster2D(const art::Event& evt,
                 // draw cluster with unique marker
                 // Place this cluster's unique marker at the hit's location
                 int color = evd::kColor[colorIdx];
-                
+
                 // If there are no hits in this cryostat/TPC then we skip the rest
                 // That no hits were drawn is the sign for this
                 if (this->Hit2D(hits, color, view, false, drawConnectingLines) < 1) continue;
-                
+
                 if (recoOpt->fDrawCosmicTags&&cosmicscore!=FLT_MIN)
                     this->Hit2D(hits, view, cosmicscore);
 
@@ -1090,9 +1090,9 @@ void RecoBaseDrawer::Cluster2D(const art::Event& evt,
 
                 // default "outline" method:
                 std::vector<double> tpts, wpts;
-      
+
                 this->GetClusterOutlines(hits, tpts, wpts, plane);
-      
+
                 int lcolor = 9; // line color
                 int fcolor = 9; // fill color
                 int width  = 2; // line width
@@ -1145,7 +1145,7 @@ void RecoBaseDrawer::Cluster2D(const art::Event& evt,
 
         } // loop on ic clusters
     } // loop on imod folders
-    
+
     return;
   }
 
@@ -1160,7 +1160,7 @@ void RecoBaseDrawer::Draw2DSlopeEndPoints(double        xStart,
 {
     art::ServiceHandle<evd::RawDrawingOptions const>   rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions const>  recoOpt;
-    
+
     if(recoOpt->fDraw2DSlopeEndPoints < 1) return;
 
     double x1 = xStart;
@@ -1175,8 +1175,8 @@ void RecoBaseDrawer::Draw2DSlopeEndPoints(double        xStart,
       x2 = yEnd;
       if(std::abs(slope) > 0.) slope1 = 1./slope;
       else slope1 = 1.e6;
-    }		
-    
+    }
+
     double deltaX = 0.5 * (x2 - x1);
     double xm     = x1 + deltaX;
     double ym     = y1 + deltaX * slope;
@@ -1192,7 +1192,7 @@ void RecoBaseDrawer::Draw2DSlopeEndPoints(double        xStart,
 
     return;
 }
-    
+
 //......................................................................
 void RecoBaseDrawer::Draw2DSlopeEndPoints(double        x,
                                           double        y,
@@ -1202,13 +1202,13 @@ void RecoBaseDrawer::Draw2DSlopeEndPoints(double        x,
 {
     art::ServiceHandle<evd::RawDrawingOptions const>   rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions const>  recoOpt;
-    
+
     if(recoOpt->fDraw2DSlopeEndPoints < 1) return;
-    
+
     double x1 = x;
     double y1 = y;
     double slope1 = slope;
-    
+
     if(rawOpt->fDrawRawDataOrCalibWires < 1) return;
     if(rawOpt->fAxisOrientation > 0){
         x1 = y;
@@ -1216,17 +1216,17 @@ void RecoBaseDrawer::Draw2DSlopeEndPoints(double        x,
         if(std::abs(slope) > 0.) slope1 = 1./slope;
         else slope1 = 1.e6;
     }
-    
+
     TMarker& strt = view->AddMarker(x1, y1, color, kFullStar, 2.0);
     strt.SetMarkerColor(color); // stupid line to shut up compiler warning
-    
+
     //    double stublen = 50.0 ;
     double stublen = 300.0;
     TLine& l = view->AddLine(x1, y1, x1+stublen, y1 + slope1*stublen);
     l.SetLineColor(color);
     l.SetLineWidth(2);
     l.SetLineStyle(2);
-    
+
     return;
 }
 
@@ -1240,14 +1240,14 @@ void RecoBaseDrawer::Draw2DSlopeEndPoints(double        x,
 {
     art::ServiceHandle<evd::RawDrawingOptions const>   rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions const>  recoOpt;
-    
+
     if(recoOpt->fDraw2DSlopeEndPoints < 1) return;
-    
+
     double x1 = x;
     double y1 = y;
     double cosx1 = cosx;
     double cosy1 = cosy;
-    
+
     if(rawOpt->fDrawRawDataOrCalibWires < 1) return;
     if(rawOpt->fAxisOrientation > 0){
         x1 = y;
@@ -1255,17 +1255,17 @@ void RecoBaseDrawer::Draw2DSlopeEndPoints(double        x,
 	cosx1 = cosy;
 	cosy1 = cosx;
     }
-    
+
     TMarker& strt = view->AddMarker(x1, y1, color, kFullStar, 2.0);
     strt.SetMarkerColor(color); // stupid line to shut up compiler warning
-    
+
     //    double stublen = 50.0 ;
     double stublen = 300.0;
     TLine& l = view->AddLine(x1, y1, x1+stublen*cosx1, y1 + stublen*cosy1);
     l.SetLineColor(color);
     l.SetLineWidth(2);
     l.SetLineStyle(2);
-    
+
     return;
 }
 
@@ -1276,7 +1276,7 @@ void RecoBaseDrawer::Draw2DSlopeEndPoints(double        x,
 /// @param c      : Reco base cluster to outline
 /// @param wpts   : wire values of the outlines
 /// @param tpts   : tdc values of the outlines
-/// @param plane  : plane number 
+/// @param plane  : plane number
 ///
 void RecoBaseDrawer::GetClusterOutlines(std::vector<const recob::Hit*>& hits,
                                         std::vector<double>&            wpts,
@@ -1284,7 +1284,7 @@ void RecoBaseDrawer::GetClusterOutlines(std::vector<const recob::Hit*>& hits,
                                         unsigned int              	  plane)
 {
     art::ServiceHandle<evd::RawDrawingOptions const>   rawOpt;
-      
+
     // Map wire numbers to highest and lowest in the plane
     std::map<unsigned int, double> wlo, whi;
     // On first pass, initialize
@@ -1307,7 +1307,7 @@ void RecoBaseDrawer::GetClusterOutlines(std::vector<const recob::Hit*>& hits,
         if (t < wlo[hits[j]->WireID().Wire]) wlo[hits[j]->WireID().Wire] = t;
         if (t > whi[hits[j]->WireID().Wire]) whi[hits[j]->WireID().Wire] = t;
     }
-  
+
     // Loop over wires and low times to make lines along bottom
     // edge. Work from upstream edge to downstream edge
     std::map<unsigned int, double>::iterator itr   (wlo.begin());
@@ -1315,11 +1315,11 @@ void RecoBaseDrawer::GetClusterOutlines(std::vector<const recob::Hit*>& hits,
     for (; itr != itrEnd; ++itr) {
         unsigned int w = itr->first;
         t = itr->second;
-    
+
         wpts.push_back(1.*w-0.1); tpts.push_back(t-0.1);
         wpts.push_back(1.*w+0.1); tpts.push_back(t-0.1);
     }
-  
+
     // Loop over planes and high cells to make lines along top
     // edge. Work from downstream edge toward upstream edge
     std::map<unsigned int, double>::reverse_iterator ritr   (whi.rbegin());
@@ -1327,17 +1327,17 @@ void RecoBaseDrawer::GetClusterOutlines(std::vector<const recob::Hit*>& hits,
     for (; ritr != ritrEnd; ++ritr) {
         unsigned int w = ritr->first;
         t = ritr->second;
-    
+
         wpts.push_back(1.*w+0.1); tpts.push_back(t+0.1);
         wpts.push_back(1.*w-0.1); tpts.push_back(t+0.1);
     }
-  
+
     // Add link to starting point to close the box
     wpts.push_back(wpts[0]); tpts.push_back(tpts[0]);
 
     return;
 }
-  
+
 //......................................................................
 void RecoBaseDrawer::DrawProng2D(std::vector<const recob::Hit*>&     hits,
                                  evdb::View2D*                       view,
@@ -1351,13 +1351,13 @@ void RecoBaseDrawer::DrawProng2D(std::vector<const recob::Hit*>&     hits,
     art::ServiceHandle<evd::RecoDrawingOptions const>  recoOpt;
     art::ServiceHandle<geo::Geometry const>            geo;
     detinfo::DetectorProperties const* detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
-    
+
     unsigned int c = rawOpt->fCryostat;
     unsigned int t = rawOpt->fTPC;
-      
+
     int          color(evd::kColor2[id%evd::kNCOLS]);
     int          lineWidth(1);
-      
+
     if(cscore>0.1 && recoOpt->fDrawCosmicTags)
     {
         color = kRed;
@@ -1409,20 +1409,20 @@ void RecoBaseDrawer::DrawTrack2D(std::vector<const recob::Hit*>& hits,
     detinfo::DetectorProperties const* detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
     unsigned int c = rawOpt->fCryostat;
     unsigned int t = rawOpt->fTPC;
-    
+
     // first draw the hits
     this->Hit2D(hits, color, view, false, true, lineWidth);
-    
+
     const auto& startPos = track->Vertex();
     const auto& startDir = track->VertexDirection();
-    
+
     // prepare to draw prongs
     double local[3] = {0.};
     double world[3] = {0.};
     geo->Cryostat(c).TPC(t).Plane(plane).LocalToWorld(local, world);
     world[1] = startPos.Y();
     world[2] = startPos.Z();
-    
+
     // convert the starting position and direction from 3D to 2D coordinates
     double tick = detprop->ConvertXToTicks(startPos.X(), plane, t, c);
     double wire = 0.;
@@ -1432,7 +1432,7 @@ void RecoBaseDrawer::DrawTrack2D(std::vector<const recob::Hit*>& hits,
     catch(cet::exception &e){
         wire = 1.*atoi(e.explain_self().substr(e.explain_self().find("#")+1,5).c_str());
     }
-    
+
     // thetawire is the angle measured CW from +z axis to wire
     double thetawire = geo->TPC(t).Plane(plane).Wire(0).ThetaZ();
     double wirePitch = geo->WirePitch(hits[0]->View());
@@ -1448,23 +1448,23 @@ void RecoBaseDrawer::DrawTrack2D(std::vector<const recob::Hit*>& hits,
     double yprime = std::cos(rotang)*startDir.Y()
       +std::sin(rotang)*startDir.Z();
     double dTdW = startDir.X()*wirePitch/driftvelocity/timetick/yprime;
-    
+
     this->Draw2DSlopeEndPoints(wire, tick, dTdW, color, view);
-    
+
     // Draw a line to the hit positions, starting from the vertex
     size_t     nTrackHits = track->NumberTrajectoryPoints();
     TPolyLine& pl         = view->AddPolyLine(track->CountValidPoints(),1,1,0); //kColor[id%evd::kNCOLS],1,0);
-    
+
     size_t vidx = 0;
     for(size_t idx = 0; idx < nTrackHits; idx++)
     {
         if (track->HasValidPoint(idx)==0) continue;
         const auto& hitPos = track->LocationAtPoint(idx);
-        
+
         // Use "world" from above
         world[1] = hitPos.Y();
         world[2] = hitPos.Z();
-        
+
         // convert the starting position and direction from 3D to 2D coordinates
         double tickHit = detprop->ConvertXToTicks(hitPos.X(), plane, t, c);
         double wireHit = 0.;
@@ -1477,11 +1477,11 @@ void RecoBaseDrawer::DrawTrack2D(std::vector<const recob::Hit*>& hits,
 
         pl.SetPoint(vidx++,wireHit,tickHit);
     }
-    
+
     return;
 }
-    
-    
+
+
 //......................................................................
 void RecoBaseDrawer::Prong2D(const art::Event& evt,
                              evdb::View2D*     view,
@@ -1491,32 +1491,32 @@ void RecoBaseDrawer::Prong2D(const art::Event& evt,
     art::ServiceHandle<evd::RecoDrawingOptions const>  recoOpt;
     art::ServiceHandle<geo::Geometry const>            geo;
     auto const* detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
-    
+
     if(rawOpt->fDrawRawDataOrCalibWires < 1) return;
-    
+
     geo::View_t gview = geo->TPC(rawOpt->fTPC).Plane(plane).View();
-    
+
     // annoying for now, but have to have multiple copies of basically the
     // same code to draw prongs, showers and tracks so that we can use
     // the art::Assns to get the hits and clusters.
-    
+
     unsigned int cstat = rawOpt->fCryostat;
     unsigned int tpc   = rawOpt->fTPC;
     int          tid   = 0;
-    
+
     if(recoOpt->fDrawTracks != 0)
     {
         for(size_t imod = 0; imod < recoOpt->fTrackLabels.size(); ++imod)
         {
             art::InputTag const which = recoOpt->fTrackLabels[imod];
-            
+
             art::View<recob::Track> track;
             this->GetTracks(evt, which, track);
-            
+
             if(track.vals().size() < 1) continue;
-            
+
             art::FindMany<recob::Hit> fmh(track, evt, which);
-            
+
             art::InputTag const whichTag( recoOpt->fCosmicTagLabels.size() > imod ? recoOpt->fCosmicTagLabels[imod] : "");
             art::FindManyP<anab::CosmicTag> cosmicTrackTags( track, evt, whichTag );
 
@@ -1556,7 +1556,7 @@ void RecoBaseDrawer::Prong2D(const art::Event& evt,
                         Score = currentTag->CosmicScore();
                     }
                 }
-        
+
 		std::vector<const recob::Hit*> hits;
 		if (track.vals().at(t)->NumberTrajectoryPoints() == fmh.at(t).size()) {
 		  auto tp = tracksProxy[t];
@@ -1573,11 +1573,11 @@ void RecoBaseDrawer::Prong2D(const art::Event& evt,
 		    if((*itr)->View() != gview) hits.erase(itr);
 		    else itr++;
 		}
-        
+
                 const recob::Track* aTrack(track.vals().at(t));
                 int   color(evd::kColor[(aTrack->ID()&65535)%evd::kNCOLS]);
                 int   lineWidth(1);
-        
+
                 if(Score>0.1 && recoOpt->fDrawCosmicTags)
                 {
                     color = kRed;
@@ -1587,17 +1587,17 @@ void RecoBaseDrawer::Prong2D(const art::Event& evt,
                 else if (Score<-10000){ //shower hits
                     lineWidth = 3;
                 }
-        
+
                 this->DrawTrack2D(hits, view, plane,
                                   aTrack,
                                   color, lineWidth);
             }// end loop over prongs
         }// end loop over labels
     }// end draw tracks
-    
+
     if(recoOpt->fDrawShowers != 0){
         static bool first = true;
-    
+
         if(first) {
             std::cout<<"DrawShower options: \n";
             std::cout<<" 1 = Hits in shower color-coded by the shower ID\n";
@@ -1614,13 +1614,13 @@ void RecoBaseDrawer::Prong2D(const art::Event& evt,
             art::View<recob::Shower> shower;
             this->GetShowers(evt, which, shower);
             if(shower.vals().size() < 1) continue;
-    
+
             art::FindMany<recob::Hit>     fmh(shower, evt, which);
 
             // loop over the prongs and get the clusters and hits associated with
             // them.  only keep those that are in this view
             for(size_t s = 0; s < shower.vals().size(); ++s){
-      
+
                 std::vector<const recob::Hit*> hits = fmh.at(s);
                 // only get the hits for the current view
                 std::vector<const recob::Hit*>::iterator itr = hits.begin();
@@ -1633,12 +1633,12 @@ void RecoBaseDrawer::Prong2D(const art::Event& evt,
                     // the shower cone angle at the end point
                     if(!shower.vals().at(s)->has_length()) continue;
                     if(!shower.vals().at(s)->has_open_angle()) continue;
-        
+
                     TVector3 startPos = shower.vals().at(s)->ShowerStart();
                     TVector3 dir = shower.vals().at(s)->Direction();
                     double length = shower.vals().at(s)->Length();
                     double openAngle = shower.vals().at(s)->OpenAngle();
-        
+
                     // Find the center of the cone base
                     TVector3 endPos = startPos + length * dir;
 
@@ -1688,7 +1688,7 @@ void RecoBaseDrawer::Prong2D(const art::Event& evt,
             }// end loop over prongs
         }// end loop over labels
     }// end draw showers
-    
+
     return;
   }
 
@@ -1696,7 +1696,7 @@ void RecoBaseDrawer::Prong2D(const art::Event& evt,
 void RecoBaseDrawer::DrawTrackVertexAssns2D(const art::Event& evt,
                                             evdb::View2D*     view,
                                             unsigned int      plane)
-{    
+{
     art::ServiceHandle<evd::RawDrawingOptions const>   rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions const>  recoOpt;
     art::ServiceHandle<geo::Geometry const>            geo;
@@ -1709,7 +1709,7 @@ void RecoBaseDrawer::DrawTrackVertexAssns2D(const art::Event& evt,
     // annoying for now, but have to have multiple copies of basically the
     // same code to draw prongs, showers and tracks so that we can use
     // the art::Assns to get the hits and clusters.
-    
+
     unsigned int cstat = rawOpt->fCryostat;
     unsigned int tpc   = rawOpt->fTPC;
     int          tid   = 0;
@@ -1725,15 +1725,15 @@ void RecoBaseDrawer::DrawTrackVertexAssns2D(const art::Event& evt,
 
         // Recover associations output from the filter
         std::unique_ptr<art::Assns<recob::Vertex, recob::Track> > vertexTrackAssociations(new art::Assns<recob::Vertex, recob::Track>);
-        
+
         // Recover a handle to the collection of associations between vertices and tracks
         // This is a bit non-standard way to do this but trying to avoid complications
         art::Handle< art::Assns<recob::Vertex, recob::Track> > vertexTrackAssnsHandle;
-        
+
         evt.getByLabel(recoOpt->fTrkVtxFilterLabels[imod], vertexTrackAssnsHandle);
-        
+
         if (vertexTrackAssnsHandle->size() < 1) continue;
-        
+
         // Get the rest of the associations in the standard way
         art::FindMany<recob::Hit> fmh(trackCol, evt, which);
 
@@ -1744,51 +1744,51 @@ void RecoBaseDrawer::DrawTrackVertexAssns2D(const art::Event& evt,
         // Need to keep track of vertices unfortunately
         int lastVtxIdx(-1);
         int color(kRed);
-        
+
         std::cout << "==> Neutrino Candidate drawing for tagger " << recoOpt->fTrkVtxFilterLabels[imod] << std::endl;
-        
+
         // Now we can iterate over the vertex/track associations and do some drawing
         for(const auto& vertexTrackAssn : *vertexTrackAssnsHandle)
         {
             // Start by drawing the vertex
             art::Ptr<recob::Vertex> vertex = vertexTrackAssn.first;
-            
+
             if (vertex->ID() != lastVtxIdx)
             {
                 // BB: draw polymarker at the vertex position in this plane
                 double xyz[3];
-            
+
                 vertex->XYZ(xyz);
-            
+
                 double wire  = geo->WireCoordinate(xyz[1], xyz[2], plane, rawOpt->fTPC, rawOpt->fCryostat);
                 double time  = detprop->ConvertXToTicks(xyz[0], plane, rawOpt->fTPC, rawOpt->fCryostat);
-                
+
 //                color = evd::kColor[vertex->ID()%evd::kNCOLS];
-            
+
                 TMarker& strt = view->AddMarker(wire, time, color, 24, 3.0);
                 strt.SetMarkerColor(color);
-                
+
                 std::cout << "    --> Drawing vertex id: " << vertex->ID() << std::endl;
             }
-            
+
             lastVtxIdx = vertex->ID();
-            
+
             const art::Ptr<recob::Track>& track = vertexTrackAssn.second;
-            
+
             // BB: draw the track ID at the end of the track
             double x    = track->End().X();
             double y    = track->End().Y();
             double z    = track->End().Z();
             double tick = 30 + detprop->ConvertXToTicks(x, plane, tpc, cstat);
             double wire = geo->WireCoordinate(y, z, plane, tpc, cstat);
-            
+
             tid = track->ID()&65535;
-            
+
             std::cout << "        --> Drawing Track id: " << tid << std::endl;
-            
+
             std::string s   = std::to_string(tid);
             char const* txt = s.c_str();
-            
+
             TText& trkID = view->AddText(wire, tick, txt);
             trkID.SetTextColor(color);
             trkID.SetTextSize(0.1);
@@ -1800,7 +1800,7 @@ void RecoBaseDrawer::DrawTrackVertexAssns2D(const art::Event& evt,
                     cosmicScore = currentTag->CosmicScore();
 	      }
             }
-            
+
 	    std::vector<const recob::Hit*> hits;
 	    if (track->NumberTrajectoryPoints() == fmh.at(track.key()).size()) {
 	      auto tp = tracksProxy[track.key()];
@@ -1817,9 +1817,9 @@ void RecoBaseDrawer::DrawTrackVertexAssns2D(const art::Event& evt,
                 if((*itr)->View() != gview) hits.erase(itr);
                 else itr++;
             }
-            
+
             int lineWidth(1);
-            
+
             if(cosmicScore>0.1)
             {
                 color = kRed;
@@ -1831,9 +1831,9 @@ void RecoBaseDrawer::DrawTrackVertexAssns2D(const art::Event& evt,
             }
 
             this->DrawTrack2D(hits, view, plane, track.get(), color, lineWidth);
-            
+
         }// end loop over vertex/track associations
-        
+
     }// end loop over labels
 
     return;
@@ -1843,29 +1843,29 @@ void RecoBaseDrawer::DrawTrackVertexAssns2D(const art::Event& evt,
 void RecoBaseDrawer::Vertex2D(const art::Event& evt,
                               evdb::View2D*     view,
                               unsigned int      plane)
-  {    
+  {
     art::ServiceHandle<evd::RawDrawingOptions const>   rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions const>  recoOpt;
     art::ServiceHandle<geo::Geometry const>            geo;
     detinfo::DetectorProperties const* detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
-    
+
     if(rawOpt->fDrawRawDataOrCalibWires < 1) return;
-    
+
     if(recoOpt->fDrawVertices == 0) return;
-    
+
     static bool first = true;
-    
+
     if(first) {
       std::cout<<"******** DrawVertices: Open circles color coded across all planes. Set DrawVertices > 1 to display the vertex ID\n";
       first = false;
     }
-    
+
     for(size_t imod = 0; imod < recoOpt->fVertexLabels.size(); ++imod) {
       art::InputTag const which = recoOpt->fVertexLabels[imod];
 
       art::PtrVector<recob::Vertex> vertex;
       this->GetVertices(evt, which, vertex);
-      
+
       if(vertex.size() < 1) continue;
 
       double local[3] = {0.,0.,0.};
@@ -1893,7 +1893,7 @@ void RecoBaseDrawer::Vertex2D(const art::Event& evt,
         int color  = evd::kColor[vertex[v]->ID()%evd::kNCOLS];
         TMarker& strt = view->AddMarker(wire, time, color, 24, 1.0);
         strt.SetMarkerColor(color);
-        
+
         // BB: draw the vertex ID
         if(recoOpt->fDrawVertices > 1) {
           std::string s = "3V" + std::to_string(vertex[v]->ID());
@@ -1904,7 +1904,7 @@ void RecoBaseDrawer::Vertex2D(const art::Event& evt,
         }
       } // end loop over vertices to draw from this label
     } // end loop over vertex module lables
-    
+
     return;
   }
 
@@ -1912,13 +1912,13 @@ void RecoBaseDrawer::Vertex2D(const art::Event& evt,
 void RecoBaseDrawer::Event2D(const art::Event& evt,
                              evdb::View2D*     view,
                              unsigned int      plane)
-{    
+{
     art::ServiceHandle<evd::RawDrawingOptions const>   rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions const>  recoOpt;
     art::ServiceHandle<geo::Geometry const>            geo;
 
     if(rawOpt->fDrawRawDataOrCalibWires < 1) return;
- 
+
     if(recoOpt->fDrawEvents != 0){
         geo::View_t gview = geo->TPC(rawOpt->fTPC).Plane(plane).View();
 
@@ -1936,14 +1936,14 @@ void RecoBaseDrawer::Event2D(const art::Event& evt,
                 std::vector<const recob::Hit*> hits;
 
                 hits = fmh.at(e);
-	  
+
                 // only get the hits for the current view
                 std::vector<const recob::Hit*>::iterator itr = hits.begin();
                 while(itr < hits.end()){
                     if((*itr)->View() != gview) hits.erase(itr);
                     else itr++;
                 }
-	  
+
                 this->Hit2D(hits, evd::kColor[event[e]->ID()%evd::kNCOLS], view, false, true);
             }// end loop over events
         } // end loop over event module lables
@@ -1958,43 +1958,43 @@ void RecoBaseDrawer::Seed3D(const art::Event&   evt,
 {
     art::ServiceHandle<evd::RawDrawingOptions const>   rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions const>  recoOpt;
-  
+
     std::vector<art::InputTag> labels;
     if(recoOpt->fDrawSeeds != 0)
         for(size_t imod = 0; imod < recoOpt->fSeedLabels.size(); ++imod)
             labels.push_back(recoOpt->fSeedLabels[imod]);
-  
+
     for(size_t imod = 0; imod < labels.size(); ++imod) {
         art::InputTag const which = labels[imod];
 
         art::PtrVector<recob::Seed> seeds;
         this->GetSeeds(evt, which, seeds);
-    
+
         int color=0;
-    
+
         if(seeds.size() < 1) continue;
 
         TPolyMarker3D&  pmrk = view->AddPolyMarker3D(seeds.size(), color, 4, 1);
-    
+
         for(size_t iseed = 0; iseed != seeds.size(); ++iseed){
             double pt[3], pterr[3], dir[3], direrr[3];
             seeds.at(iseed)->GetPoint(pt, pterr);
             seeds.at(iseed)->GetDirection(dir, direrr);
-	
+
             double end1[3], end2[3];
             for(int i = 0; i != 3; ++i){
                 end1[i] = pt[i] + dir[i] ;
                 end2[i] = pt[i] - dir[i] ;
             }
-	
+
             TPolyLine3D& pline = view->AddPolyLine3D(2, color, 2, 0);
-	
+
             pmrk.SetPoint(iseed, pt[0], pt[1], pt[2]);
             pline.SetPoint(0, end1[0], end1[1], end1[2]);
             pline.SetPoint(1, end2[0], end2[1], end2[2]);
         }// end loop over seeds
     }// end loop over module labels
-  
+
     return;
 }
 
@@ -2005,31 +2005,31 @@ void RecoBaseDrawer::SeedOrtho(const art::Event&   evt,
 {
     art::ServiceHandle<evd::RawDrawingOptions const>   rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions const>  recoOpt;
-  
+
     std::vector<art::InputTag> labels;
     if(recoOpt->fDrawSeeds != 0)
         for(size_t imod = 0; imod < recoOpt->fSeedLabels.size(); ++imod)
             labels.push_back(recoOpt->fSeedLabels[imod]);
-  
+
     for(size_t imod = 0; imod < labels.size(); ++imod) {
         art::InputTag const which = labels[imod];
 
         art::PtrVector<recob::Seed> seeds;
         this->GetSeeds(evt, which, seeds);
-    
+
         int color=0;
-    
+
         for(size_t iseed = 0; iseed != seeds.size(); ++iseed){
             double pt[3], pterr[3], dir[3], direrr[3];
             seeds.at(iseed)->GetPoint(pt, pterr);
             seeds.at(iseed)->GetDirection(dir, direrr);
-	
+
             double end1[3], end2[3];
             for(int i = 0; i != 3; ++i){
                 end1[i] = pt[i] + dir[i] ;
                 end2[i] = pt[i] - dir[i] ;
             }
-	
+
             if(proj == evd::kXY){
                 TMarker& strt = view->AddMarker(pt[1], pt[0], color, 4, 1.5);
                 TLine&   line = view->AddLine(end1[1], end1[0], end2[1], end2[0]);
@@ -2077,15 +2077,15 @@ void RecoBaseDrawer::SpacePoint3D(const art::Event& evt,
     for(size_t imod = 0; imod < labels.size(); ++imod)
     {
         art::InputTag const which = labels[imod];
-    
+
         std::vector<art::Ptr<recob::SpacePoint>> spts;
         this->GetSpacePoints(evt, which, spts);
         int color = 10*imod + 11;
-        
+
         color = 0;
-        
+
 //        std::vector<const recob::SpacePoint*> sptsVec;
-//        
+//
 //        sptsVec.resize(spts.size());
 //        for(const auto& spt : spts){
 //          std::cout<<spt<<" "<<*spt<<" "<<&*spt<<std::endl;
@@ -2112,45 +2112,45 @@ void RecoBaseDrawer::PFParticle3D(const art::Event& evt,
     for(size_t imod = 0; imod < recoOpt->fPFParticleLabels.size(); ++imod)
     {
         art::InputTag const which = recoOpt->fPFParticleLabels[imod];
-    
+
         // Start off by recovering our 3D Clusters for this label
         art::PtrVector<recob::PFParticle> pfParticleVec;
         this->GetPFParticles(evt, which, pfParticleVec);
-        
+
         mf::LogDebug("RecoBaseDrawer") << "RecoBaseDrawer: number PFParticles to draw: " << pfParticleVec.size() << std::endl;
 
         // Make sure we have some clusters
         if (pfParticleVec.size() < 1) continue;
-        
+
         // Get the space points created by the PFParticle producer
         std::vector<art::Ptr<recob::SpacePoint>> spacePointVec;
         this->GetSpacePoints(evt, which, spacePointVec);
-        
+
         // Recover the edges
 //        art::PtrVector<recob::Edge> edgeVec;
 //        this->GetEdges(evt, which, edgeVec);
-        
+
         // No space points no continue
         if (spacePointVec.size() < 1) continue;
-        
+
         // Add the relations to recover associations cluster hits
         art::FindManyP<recob::SpacePoint> spacePointAssnVec(pfParticleVec, evt, which);
         art::FindManyP<recob::Hit>        spHitAssnVec(spacePointVec, evt, which);
-        
+
         art::FindManyP<recob::Edge>       edgeAssnsVec(pfParticleVec, evt, which);
-        
+
         // If no valid space point associations then nothing to do
         if (!spacePointAssnVec.isValid()) continue;
-        
+
         // Need the PCA info as well
         art::FindMany<recob::PCAxis> pcAxisAssnVec(pfParticleVec, evt, which);
-        
+
         // Want CR tagging info
         // Note the cosmic tags come from a different producer - we assume that the producers are
         // matched in the fcl label vectors!
         art::InputTag cosmicTagLabel = imod < recoOpt->fCosmicTagLabels.size() ? recoOpt->fCosmicTagLabels[imod] : "";
         art::FindMany<anab::CosmicTag> pfCosmicAssns(pfParticleVec, evt, cosmicTagLabel);
-        
+
         // We also want to drive display of tracks but have the same issue with production... so follow the
         // same prescription.
         art::InputTag trackTagLabel = imod < recoOpt->fTrackLabels.size() ? recoOpt->fTrackLabels[imod] : "";
@@ -2161,11 +2161,11 @@ void RecoBaseDrawer::PFParticle3D(const art::Event& evt,
         {
             // Recover cluster
             const art::Ptr<recob::PFParticle> pfParticle(pfParticleVec.at(idx));
-            
+
             // Drawing will be done recursively down the chain of hieirarchy... so we want to begin
             // with only "primary" particles, if we find one that isn't then we skip
             if (!pfParticle->IsPrimary()) continue;
-            
+
             // Call the recursive drawing routine
             DrawPFParticle3D(pfParticle, pfParticleVec, spacePointVec, edgeAssnsVec, spacePointAssnVec, spHitAssnVec, pfTrackAssns, pcAxisAssnVec, pfCosmicAssns, 0, view);
         }
@@ -2173,20 +2173,20 @@ void RecoBaseDrawer::PFParticle3D(const art::Event& evt,
 
     return;
 }
-    
+
 float RecoBaseDrawer::SpacePointChiSq(const std::vector<art::Ptr<recob::Hit>>& hitVec) const
 {
     float hitChiSq(0.);
-    
+
     bool  usePlane[]     = {false,false,false};
     float peakTimeVec[]  = {0.,0.,0.};
     float peakSigmaVec[] = {0.,0.,0.};
     float aveSum(0.);
     float weightSum(0.);
-    
+
     // Temp ad hoc correction to investigate...
     std::map<size_t,double> planeOffsetMap;
-    
+
     planeOffsetMap[0] = 0.;
     planeOffsetMap[1] = 4.;
     planeOffsetMap[2] = 8.;
@@ -2194,27 +2194,27 @@ float RecoBaseDrawer::SpacePointChiSq(const std::vector<art::Ptr<recob::Hit>>& h
     for(const auto& hit : hitVec)
     {
         if (!hit) continue;
-        
+
         float peakTime = hit->PeakTime() - planeOffsetMap[hit->WireID().Plane];
         float peakRMS  = hit->RMS();
-        
+
         aveSum    += peakTime / (peakRMS * peakRMS);
         weightSum += 1. / (peakRMS * peakRMS);
-        
+
         peakTimeVec[hit->WireID().Plane]  = peakTime;
         peakSigmaVec[hit->WireID().Plane] = peakRMS;
         usePlane[hit->WireID().Plane]     = true;
     }
-    
+
     aveSum /= weightSum;
-    
+
     for(int idx = 0; idx < 3; idx++)
     {
         if (usePlane[idx])
         {
             float deltaTime       = peakTimeVec[idx] - aveSum;
             float sigmaPeakTimeSq = peakSigmaVec[idx]*peakSigmaVec[idx];
-            
+
             hitChiSq += deltaTime * deltaTime / sigmaPeakTimeSq;
         }
     }
@@ -2236,32 +2236,32 @@ void RecoBaseDrawer::DrawPFParticle3D(const art::Ptr<recob::PFParticle>&        
 {
     art::ServiceHandle<evd::RecoDrawingOptions const>  recoOpt;
     art::ServiceHandle<evd::ColorDrawingOptions const> cst;
-    
+
     // First let's draw the hits associated to this cluster
     const std::vector<art::Ptr<recob::SpacePoint>>& hitsVec(spacePointAssnVec.at(pfPart.key()));
-    
+
     // Use the particle ID to determine the color to draw the points
     // Ok, this is what we would like to do eventually but currently all particles are the same...
     bool isCosmic(false);
     int  colorIdx(evd::kColor[pfPart->Self() % evd::kNCOLS]);
-    
+
     // Recover cosmic tag info if any
     if (cosmicTagAssnVec.isValid() && recoOpt->fDrawPFParticles > 3)
     {
         std::vector<const anab::CosmicTag*> pfCosmicTagVec = cosmicTagAssnVec.at(pfPart.key());
-        
+
         if (!pfCosmicTagVec.empty())
         {
             const anab::CosmicTag* cosmicTag = pfCosmicTagVec.front();
-            
+
             if (cosmicTag->CosmicScore() > 0.6) isCosmic = true;
         }
-        
+
     }
-    
+
     // Reset color index if a cosmic
     if (isCosmic) colorIdx = 12;
-    
+
     if (!hitsVec.empty() && recoOpt->fDraw3DSpacePoints) fSpacePointDrawer->Draw(hitsVec, view, 1, kFullDotLarge, 0.25, &spHitAssnVec);
 /*
     {
@@ -2271,16 +2271,16 @@ void RecoBaseDrawer::DrawPFParticle3D(const art::Ptr<recob::PFParticle>&        
         float minHitChiSquare(0.);
         float maxHitChiSquare(2.);
         float hitChiSqScale((cst->fRecoQHigh[geo::kCollection] - cst->fRecoQLow[geo::kCollection]) / (maxHitChiSquare - minHitChiSquare));
-        
+
         for(const auto& spacePoint : hitsVec)
         {
             const double* pos = spacePoint->XYZ();
             const double* err = spacePoint->ErrXYZ();
-            
+
             bool  storeHit(false);
             int   chargeColorIdx(0);
             float spacePointChiSq(spacePoint->Chisq());
-            
+
             if (recoOpt->fDraw3DSpacePointHeatMap)
             {
                 storeHit = true;
@@ -2323,31 +2323,31 @@ void RecoBaseDrawer::DrawPFParticle3D(const art::Ptr<recob::PFParticle>&        
                     chargeColorIdx = 15;
                     storeHit       = true;
                 }
-            
+
                 if (chargeColorIdx < 0) chargeColorIdx = 0;
             }
-            
+
             if (storeHit) colorToHitMap[chargeColorIdx].push_back(HitPosition()={{pos[0],pos[1],pos[2],err[3],err[3],err[5]}});
         }
-        
+
         size_t nHitsDrawn(0);
-        
+
         for(auto& hitPair : colorToHitMap)
         {
             //TPolyMarker3D& pm = view->AddPolyMarker3D(hitPair.second.size(), hitPair.first, kFullDotMedium, 3);
             TPolyMarker3D& pm = view->AddPolyMarker3D(hitPair.second.size(), hitPair.first, kFullDotLarge, 0.25); //kFullDotLarge, 0.3);
             for (const auto& hit : hitPair.second) pm.SetNextPoint(hit[0],hit[1],hit[2]);
-            
+
             nHitsDrawn += hitPair.second.size();
         }
     }
 */
-    
+
     // Now try to draw any associated edges
     if (edgeAssnsVec.isValid() && recoOpt->fDraw3DEdges)
     {
         const std::vector<art::Ptr<recob::Edge>>& edgeVec(edgeAssnsVec.at(pfPart->Self()));
-    
+
         if (!edgeVec.empty())
         {
             TPolyMarker3D& pm = view->AddPolyMarker3D(2*edgeVec.size(), colorIdx, kFullDotLarge, 0.5);
@@ -2356,65 +2356,65 @@ void RecoBaseDrawer::DrawPFParticle3D(const art::Ptr<recob::PFParticle>&        
             {
                 art::Ptr<recob::SpacePoint> firstSP  = spacePointVec.at(edge->FirstPointID());
                 art::Ptr<recob::SpacePoint> secondSP = spacePointVec.at(edge->SecondPointID());
-                
+
                 if (firstSP->ID() != edge->FirstPointID() || secondSP->ID() != edge->SecondPointID())
                 {
                     std::cout << "Space point index mismatch, first: " << firstSP->ID() << ", " << edge->FirstPointID() << ", second: " << secondSP->ID() << ", " << edge->SecondPointID() << std::endl;
                     continue;
                 }
-            
+
 //                if (edge->SecondPointID() == 0) continue;
-            
+
                 TVector3 startPoint(firstSP->XYZ()[0],firstSP->XYZ()[1],firstSP->XYZ()[2]);
                 TVector3 endPoint(secondSP->XYZ()[0],secondSP->XYZ()[1],secondSP->XYZ()[2]);
                 TVector3 lineVec(endPoint - startPoint);
-                
+
                 pm.SetNextPoint(startPoint[0],startPoint[1],startPoint[2]);
                 pm.SetNextPoint(endPoint[0],  endPoint[1],  endPoint[2]);
 
                 double length = lineVec.Mag();
-                
+
                 if (length == 0.)
                 {
                     std::cout << "Edge length is zero, index 1: " << edge->FirstPointID() << ", index 2: " << edge->SecondPointID() << std::endl;
                     continue;
                 }
-            
+
                 double minLen = std::max(2.01,length);
-            
+
                 if (minLen > length)
                 {
                     lineVec.SetMag(1.);
-                    
+
                     startPoint += -0.5 * (minLen - length) * lineVec;
                     endPoint   +=  0.5 * (minLen - length) * lineVec;
                 }
-            
+
                 // Get a polyline object to draw from the first to the second space point
                 TPolyLine3D& pl = view->AddPolyLine3D(2, colorIdx, 4, 1);
-            
+
                 pl.SetPoint(0, startPoint[0], startPoint[1], startPoint[2]);
                 pl.SetPoint(1, endPoint[0],   endPoint[1],   endPoint[2]);
             }
         }
     }
-    
+
     // Draw associated tracks
     if (trackAssnVec.isValid())
     {
         std::vector<const recob::Track*> trackVec(trackAssnVec.at(pfPart.key()));
-        
+
         if (!trackVec.empty())
         {
             for(const auto& track : trackVec) DrawTrack3D(*track, view, colorIdx, kFullDotLarge, 0.5);
         }
     }
-    
+
     // Look up the PCA info
     if (pcAxisAssnVec.isValid() && recoOpt->fDraw3DPCAAxes)
     {
         std::vector<const recob::PCAxis*> pcaVec(pcAxisAssnVec.at(pfPart.key()));
-    
+
         if (!pcaVec.empty())
         {
             // For each axis we are going to draw a solid line between two points
@@ -2429,7 +2429,7 @@ void RecoBaseDrawer::DrawPFParticle3D(const art::Ptr<recob::PFParticle>&        
             int pcaIdx(0);
 
             if (!isCosmic) lineColor[1] = colorIdx;
-            
+
             // The order of axes in the returned association vector is arbitrary... the "first" axis is
             // better and we can divine that by looking at the axis id's (the best will have been made first)
             if (pcaVec.size() > 1 && pcaVec.front()->getID() > pcaVec.back()->getID()) std::reverse(pcaVec.begin(), pcaVec.end());
@@ -2438,44 +2438,44 @@ void RecoBaseDrawer::DrawPFParticle3D(const art::Ptr<recob::PFParticle>&        
             {
                 // We need the mean position
                 const double* avePosition = pca->getAvePosition();
-        
+
                 // Let's draw a marker at the interesting points
                 int             pmrkIdx(0);
                 TPolyMarker3D&  pmrk = view->AddPolyMarker3D(7, lineColor[pcaIdx], markStyle[pcaIdx], markSize[pcaIdx]);
-        
+
                 pmrk.SetPoint(pmrkIdx++, avePosition[0], avePosition[1], avePosition[2]);
-        
+
                 // Loop over pca dimensions
                 for(int dimIdx = 0; dimIdx < 3; dimIdx++)
                 {
                     // Oh please oh please give me an instance of a poly line...
                     TPolyLine3D& pl = view->AddPolyLine3D(numPoints, lineColor[pcaIdx], lineWidth[pcaIdx], lineStyle[pcaIdx]);
-            
+
                     // We will use the eigen value to give the length of the line we're going to plot
                     double eigenValue = pca->getEigenValues()[dimIdx];
-            
+
                     // Make sure a valid eigenvalue
                     if (eigenValue > 0)
                     {
                         // Really want the root of the eigen value
                         eigenValue = 3.*sqrt(eigenValue);
-                
+
                         // Recover the eigenvector
                         const std::vector<double>& eigenVector = pca->getEigenVectors()[dimIdx];
-                
+
                         // Set the first point
                         double xl = avePosition[0] - 0.5 * eigenValue * eigenVector[0];
                         double yl = avePosition[1] - 0.5 * eigenValue * eigenVector[1];
                         double zl = avePosition[2] - 0.5 * eigenValue * eigenVector[2];
-                
+
                         pl.SetPoint(0, xl, yl, zl);
                         pmrk.SetPoint(pmrkIdx++, xl, yl, zl);
-                
+
                         // Set the second point
                         double xu = avePosition[0] + 0.5 * eigenValue * eigenVector[0];
                         double yu = avePosition[1] + 0.5 * eigenValue * eigenVector[1];
                         double zu = avePosition[2] + 0.5 * eigenValue * eigenVector[2];
-                
+
                         pl.SetPoint(1, xu, yu, zu);
                         pmrk.SetPoint(pmrkIdx++, xu, yu, zu);
                     }
@@ -2483,27 +2483,27 @@ void RecoBaseDrawer::DrawPFParticle3D(const art::Ptr<recob::PFParticle>&        
 
                 // By convention we will have drawn the "best" axis first
                 if (recoOpt->fBestPCAAxisOnly) break;
-                
+
                 pcaIdx++;
             }
         }
     }
-    
+
     // Now let's loop over daughters and call drawing routine for them
     if (pfPart->NumDaughters() > 0)
     {
         depth++;
-        
+
 //        std::string indent(depth, ' ');
-        
+
 //        std::cout << indent << "-drawPFParticle3D--> pfPart idx: " << pfPart->Self() << ", daughter list size: " << pfPart->Daughters().size() << std::endl;
-        
+
         for(const auto& daughterIdx : pfPart->Daughters())
         {
             DrawPFParticle3D(pfParticleVec.at(daughterIdx), pfParticleVec, spacePointVec, edgeAssnsVec, spacePointAssnVec, spHitAssnVec, trackAssnVec, pcAxisAssnVec, cosmicTagAssnVec, depth, view);
         }
     }
-    
+
     return;
 }
 
@@ -2511,93 +2511,93 @@ void RecoBaseDrawer::DrawPFParticle3D(const art::Ptr<recob::PFParticle>&        
 void RecoBaseDrawer::Edge3D(const art::Event& evt, evdb::View3D* view)
 {
     art::ServiceHandle<evd::RecoDrawingOptions const>  recoOpt;
-    
+
     if (recoOpt->fDrawEdges < 1) return;
-    
+
     // The plan is to loop over the list of possible particles
     for(size_t imod = 0; imod < recoOpt->fEdgeLabels.size(); ++imod)
     {
         art::InputTag const which = recoOpt->fEdgeLabels[imod];
-        
+
         // Start off by recovering our 3D Clusters for this label
         art::PtrVector<recob::Edge> edgeVec;
         this->GetEdges(evt, which, edgeVec);
-        
+
         mf::LogDebug("RecoBaseDrawer") << "RecoBaseDrawer: number Edges to draw: " << edgeVec.size() << std::endl;
-        
+
         if (!edgeVec.empty())
         {
             // Get the space points created by the PFParticle producer
             std::vector<art::Ptr<recob::SpacePoint>> spacePointVec;
             this->GetSpacePoints(evt, which, spacePointVec);
-            
+
             // First draw the space points (all of them), then circle back on the edges...
             int colorIdx(41); //2);
-            
+
             TPolyMarker3D& pm = view->AddPolyMarker3D(spacePointVec.size(), colorIdx, kFullDotMedium, 0.5); //kFullDotLarge, 0.5);
-            
+
             for(const auto& spacePoint : spacePointVec)
             {
                 TVector3 spPosition(spacePoint->XYZ()[0],spacePoint->XYZ()[1],spacePoint->XYZ()[2]);
-                
+
                 pm.SetNextPoint(spPosition[0],spPosition[1],spPosition[2]);
             }
-            
+
             // Now draw the edges
             for (const auto& edge : edgeVec)
             {
                 art::Ptr<recob::SpacePoint> firstSP  = spacePointVec.at(edge->FirstPointID());
                 art::Ptr<recob::SpacePoint> secondSP = spacePointVec.at(edge->SecondPointID());
-                
+
                 if (firstSP->ID() != edge->FirstPointID() || secondSP->ID() != edge->SecondPointID())
                 {
                     mf::LogDebug("RecoBaseDrawer") << "Edge: Space point index mismatch, first: " << firstSP->ID() << ", " << edge->FirstPointID() << ", second: " << secondSP->ID() << ", " << edge->SecondPointID() << std::endl;
                     continue;
                 }
-                
+
                 TVector3 startPoint(firstSP->XYZ()[0],firstSP->XYZ()[1],firstSP->XYZ()[2]);
                 TVector3 endPoint(secondSP->XYZ()[0],secondSP->XYZ()[1],secondSP->XYZ()[2]);
                 TVector3 lineVec(endPoint - startPoint);
-                
+
                 double length = lineVec.Mag();
-                
+
                 if (length == 0.)
                 {
 //                    std::cout << "Edge length is zero, index 1: " << edge->FirstPointID() << ", index 2: " << edge->SecondPointID() << std::endl;
                     continue;
                 }
-                
+
                 // Get a polyline object to draw from the first to the second space point
                 TPolyLine3D& pl = view->AddPolyLine3D(2, colorIdx, 1, 1); //4, 1);
-                
+
                 pl.SetPoint(0, startPoint[0], startPoint[1], startPoint[2]);
                 pl.SetPoint(1, endPoint[0],   endPoint[1],   endPoint[2]);
             }
         }
     }
-    
+
     // Draw any associated Extreme Points
     for(size_t imod = 0; imod < recoOpt->fExtremePointLabels.size(); ++imod)
     {
         art::InputTag const which = recoOpt->fExtremePointLabels[imod];
-        
+
         // Start off by recovering our 3D Clusters for this label
         std::vector<art::Ptr<recob::SpacePoint>> spacePointVec;
         this->GetSpacePoints(evt, which, spacePointVec);
 
         mf::LogDebug("RecoBaseDrawer") << "RecoBaseDrawer: number Extreme points to draw: " << spacePointVec.size() << std::endl;
-        
+
         if (!spacePointVec.empty())
         {
             // First draw the space points (all of them), then circle back on the edges...
-            int colorIdx(kYellow); 
-            
+            int colorIdx(kYellow);
+
             TPolyMarker3D& pm = view->AddPolyMarker3D(spacePointVec.size(), colorIdx, kFullDotLarge, 1.0); //kFullDotLarge, 0.5);
-            
+
             for(const auto& spacePoint : spacePointVec)
             {
                 TVector3 spPosition(spacePoint->XYZ()[0],spacePoint->XYZ()[1],spacePoint->XYZ()[2]);
-                
+
                 pm.SetNextPoint(spPosition[0],spPosition[1],spPosition[2]);
             }
         }
@@ -2627,11 +2627,11 @@ void RecoBaseDrawer::Prong3D(const art::Event& evt,
             art::View<recob::Track> trackView;
             this->GetTracks(evt, which, trackView);
             if(!trackView.isValid()) continue; //Prevent potential segmentation fault if no tracks found. aoliv23@lsu.edu
- 
+
             art::PtrVector<recob::Track> trackVec;
-            
+
             trackView.fill(trackVec);
-            
+
             art::InputTag const cosmicTagLabel(recoOpt->fCosmicTagLabels.size() > imod ? recoOpt->fCosmicTagLabels[imod] : "");
             art::FindMany<anab::CosmicTag> cosmicTagAssnVec(trackVec, evt, cosmicTagLabel);
 
@@ -2640,18 +2640,18 @@ void RecoBaseDrawer::Prong3D(const art::Event& evt,
                 int   color  = evd::kColor[track.key()%evd::kNCOLS];
                 int   marker = kFullDotLarge;
                 float size   = 2.0;
-                
+
                 // Check if a CosmicTag object is available
-                
+
                 // Recover cosmic tag info if any
                 if (cosmicTagAssnVec.isValid())
                 {
                     std::vector<const anab::CosmicTag*> tkCosmicTagVec = cosmicTagAssnVec.at(track.key());
-                    
+
                     if (!tkCosmicTagVec.empty())
                     {
                         const anab::CosmicTag* cosmicTag = tkCosmicTagVec.front();
-                        
+
                         // If tagged as Cosmic then neutralize the color
                         if (cosmicTag->CosmicScore() > 0.6)
                         {
@@ -2705,21 +2705,21 @@ void RecoBaseDrawer::DrawTrack3D(const recob::Track& track,
         const art::Event *evt = evdb::EventHolder::Instance()->GetEvent();
         std::vector<art::Handle<std::vector<recob::Track> > > handles;
         evt->getManyByType(handles);
-    
+
         for(auto ih : handles)
         {
 	        const art::Handle<std::vector<recob::Track> > handle = ih;
-	
+
 	        if(handle.isValid())
             {
 	            const std::string& which = handle.provenance()->moduleLabel();
 	            art::FindManyP<recob::SpacePoint> fmsp(handle, *evt, which);
-                
+
                 if (fmsp.isValid() && fmsp.size() > 0)
                 {
                     int n = handle->size();
                     float spSize = 0.5 * size;
-                    
+
                     for(int i=0; i<n; ++i)
                     {
                         art::Ptr<recob::Track> p(handle, i);
@@ -2733,70 +2733,70 @@ void RecoBaseDrawer::DrawTrack3D(const recob::Track& track,
             }
         }
     }
-    
+
     if(recoOpt->fDrawTrackTrajectoryPoints)
     {
         // Draw trajectory points.
         int np = track.NumberTrajectoryPoints();
-        
+
         int lineSize = size;
-        
+
         if (lineSize < 1) lineSize = 1;
-      
+
         // Make and fill a special polymarker for the head of the track
         //TPolyMarker3D& pmStart = view->AddPolyMarker3D(1, color, 4, 3);
         TPolyMarker3D& pmStart = view->AddPolyMarker3D(1, 0, marker, 2.*size);
-      
+
         const auto& firstPos = track.LocationAtPoint(0);
         pmStart.SetPoint(0, firstPos.X(), firstPos.Y(), firstPos.Z());
-      
+
         // Make and fill a polymarker.
         TPolyMarker3D& pm = view->AddPolyMarker3D(track.CountValidPoints(), color, 1, 3);
-      
+
         for(int p = 0; p < np; ++p)
         {
 	    	if (!track.HasValidPoint(p)) continue;
-            
+
             const auto& pos = track.LocationAtPoint(p);
             pm.SetPoint(p, pos.X(), pos.Y(), pos.Z());
         }
-      
+
         // As we are a track, should we not be drawing a line here?
         TPolyLine3D& pl = view->AddPolyLine3D(track.CountValidPoints(), color, lineSize, 7);
-      
+
         for(int p = 0; p < np; ++p)
         {
 	        if (!track.HasValidPoint(p)) continue;
-            
+
             const auto pos = track.LocationAtPoint(p);
-          
+
             pl.SetPoint(p, pos.X(), pos.Y(), pos.Z());
         }
-      
+
         if(recoOpt->fDrawTrackTrajectoryPoints > 4)
         {
             // Can we add the track direction at each point?
             // This won't work for the last point... but let's try
             auto startPos = track.LocationAtPoint(0);
             auto startDir = track.DirectionAtPoint(0);
-      
+
             for(int p = 1; p < np; ++p)
             {
                 if (!track.HasValidPoint(p)) continue;
-            
+
                 TPolyLine3D& pl = view->AddPolyLine3D(2, (color+1)%evd::kNCOLS, size, 7); //1, 3);
-          
+
                 auto nextPos = track.LocationAtPoint(p);
                 auto deltaPos = nextPos - startPos;
                 double   arcLen   = deltaPos.Dot(startDir); // arc len to plane containing next point perpendicular to current point dir
 
                 if (arcLen < 0.) arcLen = 3.;
-          
+
                 auto endPoint = startPos + arcLen * startDir;
-          
+
                 pl.SetPoint(0, startPos.X(), startPos.Y(), startPos.Z());
                 pl.SetPoint(1, endPoint.X(), endPoint.Y(), endPoint.Z());
-          
+
                 startPos = nextPos;
                 startDir = track.DirectionAtPoint(p);
             }
@@ -2808,28 +2808,28 @@ void RecoBaseDrawer::DrawTrack3D(const recob::Track& track,
 
 //......................................................................
 void RecoBaseDrawer::DrawShower3D(const recob::Shower& shower,
-				    int                 color, 
+				    int                 color,
 				    evdb::View3D*       view)
   {
     // Use brute force to find the module label and index of this
     // shower, so that we can find associated space points and draw
     // them.
     // B. Baller: Catch an exception if there are no space points and draw a cone instead.
-    
+
     const art::Event *evt = evdb::EventHolder::Instance()->GetEvent();
     std::vector<art::Handle<std::vector<recob::Shower> > > handles;
     evt->getManyByType(handles);
-    
+
     bool noSpts = false;
-    
+
     for(auto ih : handles) {
       const art::Handle<std::vector<recob::Shower> > handle = ih;
-      
+
       if(handle.isValid()) {
-        
+
         const std::string& which = handle.provenance()->moduleLabel();
         art::FindManyP<recob::SpacePoint> fmsp(handle, *evt, which);
-        
+
         int n = handle->size();
         for(int i=0; i<n; ++i) {
           art::Ptr<recob::Shower> p(handle, i);
@@ -2848,7 +2848,7 @@ void RecoBaseDrawer::DrawShower3D(const recob::Shower& shower,
         } // i
       } // ih
     }
-    
+
     if(noSpts && shower.has_length() && shower.has_open_angle()) {
       std::cout<<"No space points associated with the shower. Drawing a cone instead\n";
       color = kRed;
@@ -2879,15 +2879,15 @@ void RecoBaseDrawer::DrawShower3D(const recob::Shower& shower,
       } //  ipt
 
     } // no space points
-    
+
     return;
   }
 
   //......................................................................
   std::vector<std::array<double, 3>> RecoBaseDrawer::Circle3D(const TVector3& centerPos, const TVector3& axisDir, const double& radius)
   {
-    // B. Baller Create a polyline circle in 3D 
-    
+    // B. Baller Create a polyline circle in 3D
+
     // Make the rotation matrix to transform into the circle coordinate system
     TRotation r;
     r.RotateX(axisDir.X());
@@ -2916,37 +2916,37 @@ void RecoBaseDrawer::Vertex3D(const art::Event& evt,
 {
   art::ServiceHandle<evd::RawDrawingOptions const>   rawOpt;
   art::ServiceHandle<evd::RecoDrawingOptions const>  recoOpt;
- 
+
   if(rawOpt->fDrawRawDataOrCalibWires < 1) return;
 
   if(recoOpt->fDrawVertices != 0){
 
     for (size_t imod = 0; imod < recoOpt->fVertexLabels.size(); ++imod) {
 	art::InputTag const which = recoOpt->fVertexLabels[imod];
-	
+
 	art::PtrVector<recob::Vertex> vertex;
 	this->GetVertices(evt, which, vertex);
 
 	art::FindManyP<recob::Track>  fmt(vertex, evt, which);
 	art::FindManyP<recob::Shower> fms(vertex, evt, which);
-	
+
 	for(size_t v = 0; v < vertex.size(); ++v){
-	  
+
 	  if (fmt.isValid()){
 	    std::vector< art::Ptr<recob::Track> >  tracks  = fmt.at(v);
-	    
+
 	    // grab the Prongs from the vertex and draw those
 	    for(size_t t = 0; t < tracks.size(); ++t)
 	      this->DrawTrack3D(*(tracks[t]), view, vertex[v]->ID());
-	    
+
 	  }
-	  
+
 	  if (fms.isValid()){
 	    std::vector< art::Ptr<recob::Shower> > showers = fms.at(v);
-	    
+
 	    for(size_t s = 0; s < showers.size(); ++s)
 	      this->DrawShower3D(*(showers[s]), vertex[v]->ID(), view);
-	    
+
 	  }
 
 	  double xyz[3] = {0.};
@@ -2954,7 +2954,7 @@ void RecoBaseDrawer::Vertex3D(const art::Event& evt,
 	  TPolyMarker3D& pm = view->AddPolyMarker3D(1, evd::kColor[vertex[v]->ID()%evd::kNCOLS], 29, 6);
 	  pm.SetPoint(0, xyz[0], xyz[1], xyz[2]);
 
-	  
+
 	} // end loop over vertices to draw from this label
     } // end loop over vertex module lables
   } // end if we are drawing vertices
@@ -2964,11 +2964,11 @@ void RecoBaseDrawer::Vertex3D(const art::Event& evt,
 
 //......................................................................
 void RecoBaseDrawer::Event3D(const art::Event& evt,
-			       evdb::View3D*     view) 
-{    
+			       evdb::View3D*     view)
+{
   art::ServiceHandle<evd::RawDrawingOptions const>   rawOpt;
   art::ServiceHandle<evd::RecoDrawingOptions const>  recoOpt;
-  
+
   if(rawOpt->fDrawRawDataOrCalibWires < 1) return;
   if(recoOpt->fDrawEvents != 0){
 
@@ -2994,8 +2994,8 @@ void RecoBaseDrawer::Event3D(const art::Event& evt,
 	  art::FindManyP<recob::Shower> fms(vertex, evt, recoOpt->fVertexLabels[0]);
 
 	  for(size_t v = 0; v < vertex.size(); ++v){
-	    
-	    /// \todo need a better way to grab the vertex module labels, 
+
+	    /// \todo need a better way to grab the vertex module labels,
 	    // right now assume there is only 1 in the list
 	    std::vector< art::Ptr<recob::Track>  > tracks  = fmt.at(v);
 	    std::vector< art::Ptr<recob::Shower> > showers = fms.at(v);
@@ -3016,7 +3016,7 @@ void RecoBaseDrawer::Event3D(const art::Event& evt,
 	  TPolyMarker3D& pm = view->AddPolyMarker3D(1, evd::kColor[event[e]->ID()%evd::kNCOLS], 29, 6);
 	  pm.SetPoint(0, xyz[0], xyz[1], xyz[2]);
 
-	} // end loop over events 
+	} // end loop over events
     } // end loop over event module lables
   } // end if we are drawing events
 
@@ -3024,11 +3024,11 @@ void RecoBaseDrawer::Event3D(const art::Event& evt,
 }
 //......................................................................
 void RecoBaseDrawer::Slice3D(const art::Event& evt,
-                             evdb::View3D*     view) 
-{    
+                             evdb::View3D*     view)
+{
   art::ServiceHandle<evd::RawDrawingOptions const>   rawOpt;
   art::ServiceHandle<evd::RecoDrawingOptions const>  recoOpt;
-  
+
   if(rawOpt->fDrawRawDataOrCalibWires < 1) return;
   if(recoOpt->fDrawSlices < 1 ) return;
   if(recoOpt->fDrawSliceSpacePoints < 1 ) return;
@@ -3059,7 +3059,7 @@ void RecoBaseDrawer::OpFlashOrtho(const art::Event& evt,
 
   detinfo::DetectorProperties const* det = lar::providerFrom<detinfo::DetectorPropertiesService>();
   geo::PlaneID pid(rawOpt->fCryostat, rawOpt->fTPC, 0);
- 
+
   double minx = 1e9;
   double maxx = -1e9;
   for (size_t i = 0; i<geo->NTPC(); ++i){
@@ -3072,15 +3072,15 @@ void RecoBaseDrawer::OpFlashOrtho(const art::Event& evt,
     if (maxx<world[0]+geo->DetHalfWidth(i))
       maxx = world[0]+geo->DetHalfWidth(i);
   }
-  
+
   for(size_t imod = 0; imod < recoOpt->fOpFlashLabels.size(); ++imod) {
     const art::InputTag which = recoOpt->fOpFlashLabels[imod];
-    
+
     art::PtrVector<recob::OpFlash> opflashes;
     this->GetOpFlashes(evt, which, opflashes);
-    
+
     if(opflashes.size() < 1) continue;
-    
+
     int NFlashes = opflashes.size();
 
     // project each seed into this view
@@ -3114,7 +3114,7 @@ void RecoBaseDrawer::OpFlashOrtho(const art::Event& evt,
         TLine& line = view->AddLine(ZCentre-ZHalfWidth, xflash, ZCentre+ZHalfWidth, xflash);
         line.SetLineWidth(2);
         line.SetLineStyle(2);
-        line.SetLineColor(Colour);        
+        line.SetLineColor(Colour);
       }
       else if(proj == evd::kYZ){
 	TBox& b1      = view->AddBox(ZCentre-ZHalfWidth, YCentre-YHalfWidth, ZCentre+ZHalfWidth, YCentre+YHalfWidth);
@@ -3131,23 +3131,23 @@ void RecoBaseDrawer::VertexOrtho(const art::PtrVector<recob::Vertex>& vertex,
 				  evd::OrthoProj_t proj, evdb::View2D* view, int marker)
 {
   for(size_t v = 0; v < vertex.size(); ++v){
-      
+
     double xyz[3] = {0.};
     vertex[v]->XYZ(xyz);
-      
+
     int color = evd::kColor[vertex[v]->ID()%evd::kNCOLS];
 
     if(proj == evd::kXY){
 	  TMarker& strt = view->AddMarker(xyz[1], xyz[0], color, marker, 1.0);
-      strt.SetMarkerColor(color);	
+      strt.SetMarkerColor(color);
     }
     else if(proj == evd::kXZ){
 	  TMarker& strt = view->AddMarker(xyz[2], xyz[0], color, marker, 1.0);
-      strt.SetMarkerColor(color);	
+      strt.SetMarkerColor(color);
     }
     else if(proj == evd::kYZ){
 	  TMarker& strt = view->AddMarker(xyz[2], xyz[1], color, marker, 1.0);
-      strt.SetMarkerColor(color);	
+      strt.SetMarkerColor(color);
     }
   }
 }
@@ -3157,13 +3157,13 @@ void RecoBaseDrawer::VertexOrtho(const art::Event& evt,
   art::ServiceHandle<evd::RawDrawingOptions const>   rawOpt;
   art::ServiceHandle<evd::RecoDrawingOptions const>  recoOpt;
   art::ServiceHandle<geo::Geometry const>            geo;
-  
+
   if (rawOpt->fDrawRawDataOrCalibWires < 1) return;
   if (recoOpt->fDrawVertices == 0)         return;
-  
+
   for(size_t imod = 0; imod < recoOpt->fVertexLabels.size(); ++imod) {
     art::InputTag const which = recoOpt->fVertexLabels[imod];
-    
+
     art::PtrVector<recob::Vertex> vertex;
     this->GetVertices(evt, which, vertex);
 	this->VertexOrtho(vertex, proj, view, 24);
@@ -3190,23 +3190,23 @@ void RecoBaseDrawer::SpacePointOrtho(const art::Event& evt,
 
   std::vector<art::InputTag> labels;
   if(recoOpt->fDrawSpacePoints != 0){
-    for(size_t imod = 0; imod < recoOpt->fSpacePointLabels.size(); ++imod) 
+    for(size_t imod = 0; imod < recoOpt->fSpacePointLabels.size(); ++imod)
 	labels.push_back(recoOpt->fSpacePointLabels[imod]);
   }
 
   for(size_t imod = 0; imod < labels.size(); ++imod) {
     art::InputTag const which = labels[imod];
-      
+
     std::vector<art::Ptr<recob::SpacePoint>> spts;
     this->GetSpacePoints(evt, which, spts);
     int color = imod;
-      
+
     this->DrawSpacePointOrtho(spts, color, proj, msize, view);
   }
-    
+
   return;
 }
-  
+
 //......................................................................
 void RecoBaseDrawer::PFParticleOrtho(const art::Event& evt,
                                      evd::OrthoProj_t  proj,
@@ -3215,51 +3215,51 @@ void RecoBaseDrawer::PFParticleOrtho(const art::Event& evt,
 {
     art::ServiceHandle<evd::RawDrawingOptions const>   rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions const>  recoOpt;
-    
+
     if (rawOpt->fDrawRawDataOrCalibWires < 1) return;
     if (recoOpt->fDrawPFParticles        < 1) return;
-      
+
     // The plan is to loop over the list of possible particles
     for(size_t imod = 0; imod < recoOpt->fPFParticleLabels.size(); ++imod)
     {
         art::InputTag const which = recoOpt->fPFParticleLabels[imod];
-          
+
         // Start off by recovering our 3D Clusters for this label
         art::PtrVector<recob::PFParticle> pfParticleVec;
         this->GetPFParticles(evt, which, pfParticleVec);
-        
+
         // Make sure we have some clusters
         if (pfParticleVec.size() < 1) continue;
-          
+
         // Add the relations to recover associations cluster hits
         art::FindMany<recob::SpacePoint> spacePointAssnVec(pfParticleVec, evt, which);
-          
+
         // If no valid space point associations then nothing to do
         if (!spacePointAssnVec.isValid()) continue;
-          
+
         // Need the PCA info as well
         art::FindMany<recob::PCAxis> pcAxisAssnVec(pfParticleVec, evt, which);
-          
+
         if (!pcAxisAssnVec.isValid()) continue;
-          
+
         // Commence looping over possible clusters
         for(size_t idx = 0; idx < pfParticleVec.size(); idx++)
         {
             // Recover cluster
             const art::Ptr<recob::PFParticle> pfParticle(pfParticleVec.at(idx));
-              
+
             // Drawing will be done recursively down the chain of hieirarchy... so we want to begin
             // with only "primary" particles, if we find one that isn't then we skip
             if (!pfParticle->IsPrimary()) continue;
-              
+
             // Call the recursive drawing routine
             DrawPFParticleOrtho(pfParticle, pfParticleVec, spacePointAssnVec, pcAxisAssnVec, 0, proj, view);
         }
     }
-      
+
     return;
 }
-    
+
 void RecoBaseDrawer::DrawPFParticleOrtho(const art::Ptr<recob::PFParticle>&       pfPart,
                                          const art::PtrVector<recob::PFParticle>& pfParticleVec,
                                          const art::FindMany<recob::SpacePoint>&  spacePointAssnVec,
@@ -3269,7 +3269,7 @@ void RecoBaseDrawer::DrawPFParticleOrtho(const art::Ptr<recob::PFParticle>&     
                                          evdb::View2D*                            view)
 {
     art::ServiceHandle<evd::RecoDrawingOptions const>  recoOpt;
-    
+
     // First let's draw the hits associated to this cluster
     const std::vector<const recob::SpacePoint*>& hitsVec(spacePointAssnVec.at(pfPart->Self()));
 
@@ -3277,7 +3277,7 @@ void RecoBaseDrawer::DrawPFParticleOrtho(const art::Ptr<recob::PFParticle>&     
     // Ok, this is what we would like to do eventually but currently all particles are the same...
     //        int colorIdx = evd::Style::ColorFromPDG(pfPart->PdgCode());
     int colorIdx = evd::kColor[pfPart->Self() % evd::kNCOLS];
-    
+
     if (!hitsVec.empty())
     {
         std::vector<const recob::SpacePoint*> hitPosVec;
@@ -3286,7 +3286,7 @@ void RecoBaseDrawer::DrawPFParticleOrtho(const art::Ptr<recob::PFParticle>&     
         std::vector<const recob::SpacePoint*> edgePosVec;
         std::vector<const recob::SpacePoint*> seedPosVec;
         std::vector<const recob::SpacePoint*> pairPosVec;
-        
+
         for(const auto& spacePoint : hitsVec)
         {
             if      (spacePoint->Chisq() >   0.) hitPosVec.push_back(spacePoint);
@@ -3296,16 +3296,16 @@ void RecoBaseDrawer::DrawPFParticleOrtho(const art::Ptr<recob::PFParticle>&     
             else if (spacePoint->Chisq() > -10.) edgePosVec.push_back(spacePoint);
             else                                 pairPosVec.push_back(spacePoint);
         }
-        
+
         int hitIdx(0);
-        
+
         if (!recoOpt->fSkeletonOnly)
         {
             TPolyMarker& pm1 = view->AddPolyMarker(hitPosVec.size(), colorIdx, kFullDotMedium, 1);
             for(const auto* spacePoint : hitPosVec)
             {
                 const double* pos = spacePoint->XYZ();
-                
+
                 if(proj == evd::kXY)
                     pm1.SetPoint(hitIdx++, pos[0], pos[1]);
                 else if(proj == evd::kXZ)
@@ -3313,14 +3313,14 @@ void RecoBaseDrawer::DrawPFParticleOrtho(const art::Ptr<recob::PFParticle>&     
                 else if(proj == evd::kYZ)
                     pm1.SetPoint(hitIdx++, pos[2], pos[1]);
             }
-            
+
             hitIdx = 0;
-            
+
             TPolyMarker& pm2 = view->AddPolyMarker(edgePosVec.size(), 28, kFullDotMedium, 1);
             for(const auto* spacePoint : edgePosVec)
             {
                 const double* pos = spacePoint->XYZ();
-                
+
                 if(proj == evd::kXY)
                     pm2.SetPoint(hitIdx++, pos[0], pos[1]);
                 else if(proj == evd::kXZ)
@@ -3328,14 +3328,14 @@ void RecoBaseDrawer::DrawPFParticleOrtho(const art::Ptr<recob::PFParticle>&     
                 else if(proj == evd::kYZ)
                     pm2.SetPoint(hitIdx++, pos[2], pos[1]);
             }
-            
+
             hitIdx = 0;
-            
+
             TPolyMarker& pm3 = view->AddPolyMarker(pairPosVec.size(), 2, kFullDotMedium, 1);
             for(const auto* spacePoint : pairPosVec)
             {
                 const double* pos = spacePoint->XYZ();
-                
+
                 if(proj == evd::kXY)
                     pm3.SetPoint(hitIdx++, pos[0], pos[1]);
                 else if(proj == evd::kXZ)
@@ -3344,14 +3344,14 @@ void RecoBaseDrawer::DrawPFParticleOrtho(const art::Ptr<recob::PFParticle>&     
                     pm3.SetPoint(hitIdx++, pos[2], pos[1]);
             }
         }
-        
+
         hitIdx = 0;
-        
+
         TPolyMarker& pm4 = view->AddPolyMarker(skeletonPosVec.size(), 1, kFullDotMedium, 1);
         for(const auto* spacePoint : skeletonPosVec)
         {
             const double* pos = spacePoint->XYZ();
-            
+
             if(proj == evd::kXY)
                 pm4.SetPoint(hitIdx++, pos[0], pos[1]);
             else if(proj == evd::kXZ)
@@ -3359,14 +3359,14 @@ void RecoBaseDrawer::DrawPFParticleOrtho(const art::Ptr<recob::PFParticle>&     
             else if(proj == evd::kYZ)
                 pm4.SetPoint(hitIdx++, pos[2], pos[1]);
         }
-        
+
         hitIdx = 0;
-        
+
         TPolyMarker& pm5 = view->AddPolyMarker(skelEdgePosVec.size(), 3, kFullDotMedium, 1);
         for(const auto* spacePoint : skelEdgePosVec)
         {
             const double* pos = spacePoint->XYZ();
-            
+
             if(proj == evd::kXY)
                 pm5.SetPoint(hitIdx++, pos[0], pos[1]);
             else if(proj == evd::kXZ)
@@ -3374,14 +3374,14 @@ void RecoBaseDrawer::DrawPFParticleOrtho(const art::Ptr<recob::PFParticle>&     
             else if(proj == evd::kYZ)
                 pm5.SetPoint(hitIdx++, pos[2], pos[1]);
         }
-        
+
         hitIdx = 0;
-        
+
         TPolyMarker& pm6 = view->AddPolyMarker(seedPosVec.size(), 6, kFullDotMedium, 1);
         for(const auto* spacePoint : seedPosVec)
         {
             const double* pos = spacePoint->XYZ();
-            
+
             if(proj == evd::kXY)
                 pm6.SetPoint(hitIdx++, pos[0], pos[1]);
             else if(proj == evd::kXZ)
@@ -3390,12 +3390,12 @@ void RecoBaseDrawer::DrawPFParticleOrtho(const art::Ptr<recob::PFParticle>&     
                 pm6.SetPoint(hitIdx++, pos[2], pos[1]);
         }
     }
-    
+
     // Look up the PCA info
     if (pcAxisAssnVec.isValid())
     {
         std::vector<const recob::PCAxis*> pcaVec(pcAxisAssnVec.at(pfPart->Self()));
-        
+
         if (!pcaVec.empty())
         {
             // For each axis we are going to draw a solid line between two points
@@ -3405,50 +3405,50 @@ void RecoBaseDrawer::DrawPFParticleOrtho(const art::Ptr<recob::PFParticle>&     
             int lineColor[2] = {colorIdx, 18};
             int markStyle[2] = {       4,  4};
             int pcaIdx(0);
-            
+
             // The order of axes in the returned association vector is arbitrary... the "first" axis is
             // better and we can divine that by looking at the axis id's (the best will have been made first)
             if (pcaVec.size() > 1 && pcaVec.front()->getID() > pcaVec.back()->getID()) std::reverse(pcaVec.begin(), pcaVec.end());
-            
+
             for(const auto& pca : pcaVec)
             {
                 // We need the mean position
                 const double* avePosition = pca->getAvePosition();
-                
+
                 // Let's draw a marker at the interesting points
                 int           pmrkIdx(0);
                 TPolyMarker&  pmrk = view->AddPolyMarker(7, lineColor[pcaIdx], markStyle[pcaIdx], 1);
-                
+
                 if(proj == evd::kXY)
                     pmrk.SetPoint(pmrkIdx++, avePosition[0], avePosition[1]);
                 else if(proj == evd::kXZ)
                     pmrk.SetPoint(pmrkIdx++, avePosition[2], avePosition[0]);
                 else if(proj == evd::kYZ)
                     pmrk.SetPoint(pmrkIdx++, avePosition[2], avePosition[1]);
-                
+
                 // Loop over pca dimensions
                 for(int dimIdx = 0; dimIdx < 3; dimIdx++)
                 {
                     // Oh please oh please give me an instance of a poly line...
                     TPolyLine& pl = view->AddPolyLine(numPoints, lineColor[pcaIdx], lineWidth[pcaIdx], lineStyle[pcaIdx]);
-                    
+
                     // We will use the eigen value to give the length of the line we're going to plot
                     double eigenValue = pca->getEigenValues()[dimIdx];
-                    
+
                     // Make sure a valid eigenvalue
                     if (eigenValue > 0)
                     {
                         // Really want the root of the eigen value
                         eigenValue = 3.*sqrt(eigenValue);
-                        
+
                         // Recover the eigenvector
                         const std::vector<double>& eigenVector = pca->getEigenVectors()[dimIdx];
-                        
+
                         // Set the first point
                         double xl = avePosition[0] - 0.5 * eigenValue * eigenVector[0];
                         double yl = avePosition[1] - 0.5 * eigenValue * eigenVector[1];
                         double zl = avePosition[2] - 0.5 * eigenValue * eigenVector[2];
-                        
+
                         if(proj == evd::kXY)
                         {
                             pl.SetPoint(0, xl, yl);
@@ -3464,12 +3464,12 @@ void RecoBaseDrawer::DrawPFParticleOrtho(const art::Ptr<recob::PFParticle>&     
                             pl.SetPoint(0, zl, yl);
                             pmrk.SetPoint(pmrkIdx++, zl, yl);
                         }
-                        
+
                         // Set the second point
                         double xu = avePosition[0] + 0.5 * eigenValue * eigenVector[0];
                         double yu = avePosition[1] + 0.5 * eigenValue * eigenVector[1];
                         double zu = avePosition[2] + 0.5 * eigenValue * eigenVector[2];
-                        
+
                         if(proj == evd::kXY)
                         {
                             pl.SetPoint(1, xu, yu);
@@ -3487,26 +3487,26 @@ void RecoBaseDrawer::DrawPFParticleOrtho(const art::Ptr<recob::PFParticle>&     
                         }
                     }
                 }
-                
+
                 // By convention we will have drawn the "best" axis first
                 if (recoOpt->fBestPCAAxisOnly) break;
-                
+
                 pcaIdx++;
             }
         }
     }
-    
+
     // Now let's loop over daughters and call drawing routine for them
     if (pfPart->NumDaughters() > 0)
     {
         depth++;
-        
+
         for(const auto& daughterIdx : pfPart->Daughters())
         {
             DrawPFParticleOrtho(pfParticleVec.at(daughterIdx), pfParticleVec, spacePointAssnVec, pcAxisAssnVec, depth, proj, view);
         }
     }
-    
+
     return;
 }
 
@@ -3566,7 +3566,7 @@ void RecoBaseDrawer::ProngOrtho(const art::Event& evt,
 
 //......................................................................
  void RecoBaseDrawer::DrawSpacePointOrtho(std::vector<art::Ptr<recob::SpacePoint>>& spts,
-					   int                 color, 
+					   int                 color,
 					   evd::OrthoProj_t    proj,
 					   double              msize,
 					   evdb::View2D*       view,
@@ -3576,7 +3576,7 @@ void RecoBaseDrawer::ProngOrtho(const art::Event& evt,
 
   art::ServiceHandle<evd::RecoDrawingOptions const>  recoOpt;
 
-  // Organize space points into separate collections according to the color 
+  // Organize space points into separate collections according to the color
   // we want them to be.
   // If option If option fColorSpacePointsByChisq is false, this means
   // having a single collection with color inherited from the prong
@@ -3636,13 +3636,13 @@ void RecoBaseDrawer::ProngOrtho(const art::Event& evt,
 	} // switch
     }
   }
-  
+
   return;
 }
 
 //......................................................................
 void RecoBaseDrawer::DrawTrackOrtho(const recob::Track& track,
-				      int                 color, 
+				      int                 color,
 				      evd::OrthoProj_t    proj,
 				      double              msize,
 				      evdb::View2D*       view)
@@ -3676,7 +3676,7 @@ void RecoBaseDrawer::DrawTrackOrtho(const recob::Track& track,
 	  }
 	}
     }
-    
+
   }
   if(recoOpt->fDrawTrackTrajectoryPoints) {
 
@@ -3739,7 +3739,7 @@ void RecoBaseDrawer::DrawTrackOrtho(const recob::Track& track,
 
 //......................................................................
 void RecoBaseDrawer::DrawShowerOrtho(const recob::Shower& shower,
-				       int                 color, 
+				       int                 color,
 				       evd::OrthoProj_t    proj,
 				       double              msize,
 				       evdb::View2D*       view)
@@ -3784,14 +3784,14 @@ void RecoBaseDrawer::DrawShowerOrtho(const recob::Shower& shower,
             }
         }
     }
-    
+
     return;
 }
 
 //......................................................................
 int RecoBaseDrawer::GetWires(const art::Event&            evt,
                              const art::InputTag&         which,
-                             art::PtrVector<recob::Wire>& wires) 
+                             art::PtrVector<recob::Wire>& wires)
 {
     wires.clear();
 
@@ -3800,7 +3800,7 @@ int RecoBaseDrawer::GetWires(const art::Event&            evt,
 
     try{
         evt.getByLabel(which, wcol);
-    
+
         for(unsigned int i = 0; i < wcol->size(); ++i){
             art::Ptr<recob::Wire> w(wcol, i);
             temp.push_back(w);
@@ -3818,7 +3818,7 @@ int RecoBaseDrawer::GetWires(const art::Event&            evt,
 int RecoBaseDrawer::GetHits(const art::Event&               evt,
                             const art::InputTag&            which,
                             std::vector<const recob::Hit*>& hits,
-                            unsigned int                    plane) 
+                            unsigned int                    plane)
 {
     art::ServiceHandle<evd::RawDrawingOptions const> rawOpt;
     art::ServiceHandle<geo::Geometry const>          geo;
@@ -3835,7 +3835,7 @@ int RecoBaseDrawer::GetHits(const art::Event&               evt,
             // more than one plane/wire. So our plan is to recover the list of wire IDs from the channel number and
             // loop over those (if there are any)
             const std::vector<geo::WireID>& wireIDs = geo->ChannelToWire(hit->Channel());
-            
+
             // Loop to find match
             for(const auto& wireID : wireIDs)
             {
@@ -3858,9 +3858,9 @@ int RecoBaseDrawer::GetHits(const art::Event&               evt,
   {
     slices.clear();
     art::PtrVector<recob::Slice> temp;
-    
+
     art::Handle< std::vector<recob::Slice> > slcCol;
-    
+
     try{
       evt.getByLabel(which, slcCol);
       temp.reserve(slcCol->size());
@@ -3873,12 +3873,12 @@ int RecoBaseDrawer::GetHits(const art::Event&               evt,
     catch(cet::exception& e){
       writeErrMsg("GetSlices", e);
     }
-    
+
     return slices.size();
   }
 
 //......................................................................
-int RecoBaseDrawer::GetClusters(const art::Event&               evt, 
+int RecoBaseDrawer::GetClusters(const art::Event&               evt,
                                 const art::InputTag&            which,
                                 art::PtrVector<recob::Cluster>& clust)
 {
@@ -3931,15 +3931,15 @@ int RecoBaseDrawer::GetPFParticles(const art::Event&                  evt,
 }
 
 //......................................................................
-int RecoBaseDrawer::GetEndPoint2D(const art::Event&                  evt, 
+int RecoBaseDrawer::GetEndPoint2D(const art::Event&                  evt,
                                   const art::InputTag&               which,
                                   art::PtrVector<recob::EndPoint2D>& ep2d)
 {
     ep2d.clear();
     art::PtrVector<recob::EndPoint2D> temp;
- 
+
     art::Handle< std::vector<recob::EndPoint2D> > epcol;
-  
+
     try{
         evt.getByLabel(which, epcol);
         for(unsigned int i = 0; i < epcol->size(); ++i){
@@ -3951,7 +3951,7 @@ int RecoBaseDrawer::GetEndPoint2D(const art::Event&                  evt,
     catch(cet::exception& e){
         writeErrMsg("GetEndPoint2D", e);
     }
-  
+
     return ep2d.size();
 }
 
@@ -3983,7 +3983,7 @@ int RecoBaseDrawer::GetOpFlashes(const art::Event&               evt,
 
 //......................................................................
 
-int RecoBaseDrawer::GetSeeds(const art::Event&            evt, 
+int RecoBaseDrawer::GetSeeds(const art::Event&            evt,
                              const art::InputTag&         which,
                              art::PtrVector<recob::Seed>& seeds)
 {
@@ -4017,7 +4017,7 @@ int RecoBaseDrawer::GetBezierTracks(const art::Event&              evt,
     art::PtrVector<recob::Track> temp;
 
     art::Handle< std::vector<recob::Track> > btbcol;
-  
+
     try{
         evt.getByLabel(which.encode(), "bezierformat", btbcol);
         for(unsigned int i = 0; i < btbcol->size(); ++i){
@@ -4029,10 +4029,10 @@ int RecoBaseDrawer::GetBezierTracks(const art::Event&              evt,
     catch(cet::exception& e){
         writeErrMsg("GetBezierTracks", e);
     }
-  
+
     return btbs.size();
 }
-    
+
 //......................................................................
 int RecoBaseDrawer::GetSpacePoints(const art::Event&                  evt,
                                    const art::InputTag&               which,
@@ -4042,7 +4042,7 @@ int RecoBaseDrawer::GetSpacePoints(const art::Event&                  evt,
     art::Handle< std::vector<recob::SpacePoint> > spcol;
     if (evt.getByLabel(which,spcol))
       art::fill_ptr_vector(spts, spcol);
-    
+
     return spts.size();
 }
 
@@ -4053,9 +4053,9 @@ int RecoBaseDrawer::GetEdges(const art::Event&            evt,
 {
     edges.clear();
     art::PtrVector<recob::Edge> temp;
-    
+
     art::Handle< std::vector<recob::Edge> > edgeCol;
-    
+
     try
     {
         evt.getByLabel(which, edgeCol);
@@ -4071,12 +4071,12 @@ int RecoBaseDrawer::GetEdges(const art::Event&            evt,
     {
         writeErrMsg("GetEdges", e);
     }
-    
+
     return edges.size();
 }
-  
+
 //......................................................................
-int RecoBaseDrawer::GetTracks(const art::Event&        evt, 
+int RecoBaseDrawer::GetTracks(const art::Event&        evt,
                               const art::InputTag&     which,
                               art::View<recob::Track>& track)
 {
@@ -4106,7 +4106,7 @@ int RecoBaseDrawer::GetShowers(const art::Event&         evt,
 }
 
 //......................................................................
-int RecoBaseDrawer::GetVertices(const art::Event&              evt, 
+int RecoBaseDrawer::GetVertices(const art::Event&              evt,
                                 const art::InputTag&           which,
                                 art::PtrVector<recob::Vertex>& vertex)
 {
@@ -4131,7 +4131,7 @@ int RecoBaseDrawer::GetVertices(const art::Event&              evt,
 }
 
 //......................................................................
-int RecoBaseDrawer::GetEvents(const art::Event&             evt, 
+int RecoBaseDrawer::GetEvents(const art::Event&             evt,
                               const art::InputTag&          which,
                               art::PtrVector<recob::Event>& event)
 {
@@ -4181,26 +4181,26 @@ void RecoBaseDrawer::FillTQHisto(const art::Event& evt,
     art::ServiceHandle<evd::RawDrawingOptions const>   rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions const>  recoOpt;
     art::ServiceHandle<geo::Geometry const>            geo;
-    
+
     float minSig(std::numeric_limits<float>::max());
     float maxSig(std::numeric_limits<float>::lowest());
     bool  setLimits(false);
 
     // Check if we're supposed to draw raw hits at all
     if(rawOpt->fDrawRawDataOrCalibWires==0) return;
-    
+
     for (size_t imod = 0; imod < recoOpt->fWireLabels.size(); ++imod)
     {
         art::InputTag const which = recoOpt->fWireLabels[imod];
-        
+
         art::PtrVector<recob::Wire> wires;
         this->GetWires(evt, which, wires);
-        
+
         for (size_t i = 0; i < wires.size(); ++i)
         {
-            
+
             std::vector<geo::WireID> wireids = geo->ChannelToWire(wires[i]->Channel());
-            
+
             bool goodWID = false;
             for( auto const& wid : wireids )
             {
@@ -4211,7 +4211,7 @@ void RecoBaseDrawer::FillTQHisto(const art::Event& evt,
                    wid.Cryostat == rawOpt->fCryostat) goodWID = true;
             }
             if(!goodWID) continue;
-            
+
             std::vector<float> wirSig = wires[i]->Signal();
             for(unsigned int ii = 0; ii < wirSig.size(); ++ii)
             {
@@ -4220,17 +4220,17 @@ void RecoBaseDrawer::FillTQHisto(const art::Event& evt,
                 minSig = std::min(minSig,wirSig[ii]);
                 maxSig = std::max(maxSig,wirSig[ii]);
             }
-            
+
             setLimits = true;
         }//end loop over wires
     }//end loop over wire modules
-    
+
     if (setLimits)
     {
         histo->SetMaximum(1.2 * maxSig);
         histo->SetMinimum(1.2 * minSig);
     }
-    
+
     return;
 }
 
@@ -4308,7 +4308,7 @@ void RecoBaseDrawer::FillTQHistoDP(const art::Event&    evt,
         for (size_t i = 0; i < wires.size(); ++i) {
 
             std::vector<geo::WireID> wireids = geo->ChannelToWire(wires[i]->Channel());
-	
+
             bool goodWID = false;
             for( auto const& wid : wireids ){
                 if(wid.Plane    == plane        &&

@@ -40,14 +40,14 @@
 #include "lardata/Utilities/GeometryUtilities.h"
 
 namespace {
-  
+
   template <typename Stream>
   void DumpPad(Stream&& log, TVirtualPad* pPad) {
     if (!pPad) {
       log << "pad not available";
       return;
     }
-    
+
     log << pPad->IsA()->GetName() << "[" << ((void*) pPad) << "](\"" << pPad->GetName() << "\")";
     TFrame const* pFrame = pPad->GetFrame();
     if (pFrame) {
@@ -64,8 +64,8 @@ namespace {
     }
 
   } // DumpPad()
-  
-  
+
+
   [[gnu::unused]] void DumpPadsInCanvas
     (TVirtualPad* pPad, std::string caller, std::string msg = "")
   {
@@ -75,9 +75,9 @@ namespace {
       log << "pad not available";
       return;
     }
-    
+
     DumpPad(log, pPad);
-    
+
     TCanvas const* pCanvas = pPad->GetCanvas();
     log << "\nCanvas is: (TCanvas*) (" << ((void*)pPad->GetCanvas())
        << ") with " << pCanvas->GetListOfPrimitives()->GetSize() << " primitives and the following pads:";
@@ -114,25 +114,25 @@ namespace evd{
     : DrawingPad(nm, ti, x1, x2, y1, y2)
     , fPlane(plane)
   {
-    
+
     fCurrentZoom.resize(4);
-    
+
     art::ServiceHandle<geo::Geometry const> geo;
-    
+
     // this->Pad()->SetBit(kCannotPick); // workaround for issue #16169
     // this->Pad()->SetBit(TPad::kCannotMove);
     this->Pad()->cd();
-    
+
     this->Pad()->SetLeftMargin  (0.070);
     this->Pad()->SetRightMargin (0.010);
-    
-    // how many planes in the detector and 
+
+    // how many planes in the detector and
     // which plane is this one?
-    
+
     unsigned int planes = geo->Nplanes();
     this->Pad()->SetTopMargin   (0.005);
     this->Pad()->SetBottomMargin(0.110);
-    
+
     // there has to be a better way of doing this that does
     // not have a case for each number of planes in a detector
     if(planes == 2 && fPlane > 0){
@@ -149,24 +149,24 @@ namespace evd{
 	this->Pad()->SetBottomMargin(0.005);
       }
     }
-    
+
     TString planeNo = "fTWirePlane";
     planeNo += fPlane;
-    
+
     // picking the information from the current TPC
     art::ServiceHandle<evd::RawDrawingOptions const> rawopt;
     auto const signalType = geo->SignalType({ rawopt->CurrentTPC(), fPlane });
     TString xtitle = ";Induction Wire;t (tdc)";
     if(signalType == geo::kCollection) xtitle = ";Collection Wire;t (tdc)";
-    
+
     unsigned int const nWires = geo->Nwires(fPlane);
     unsigned int const nTicks = RawDataDraw()->TotalClockTicks();
-    
+
     fXLo = -0.005 * (nWires - 1);
     fXHi =  1.005 * (nWires - 1);
     fYLo =  0.990*(unsigned int)(this->RawDataDraw()->StartTick());
     fYHi =  1.005*std::min((unsigned int)(this->RawDataDraw()->StartTick()+nTicks), nTicks);
-    
+
     fOri = rawopt->fAxisOrientation;
     if(fOri > 0){
       fYLo = -0.005 * (nWires - 1);
@@ -177,16 +177,16 @@ namespace evd{
       fXHi =  1.010 * nTicks;
       xtitle = ";t (tdc);InductionWire";
       if(signalType == geo::kCollection) xtitle = ";t (tdc);Collection Wire";
-    }      
-    
-    // make the range of the histogram be the biggest extent 
+    }
+
+    // make the range of the histogram be the biggest extent
     // in both directions and then use SetRangeUser() to shrink it down
     // that will allow us to change the axes on the fly
     double min = std::min(fXLo, fYLo);
     double max = std::max(fXHi, fYHi);
-    
+
     fHisto = new TH1F(*(fPad->DrawFrame(min, min, max, max)));
-    
+
     fHisto->SetTitleOffset(0.5,"Y");
     fHisto->SetTitleOffset(0.75,"X");
     SetZoomRange(fXLo, fXHi, fYLo, fYHi);
@@ -195,49 +195,49 @@ namespace evd{
     fHisto->GetXaxis()->SetLabelSize(0.05);
     fHisto->GetXaxis()->CenterTitle();
     fHisto->Draw("AB");
-    
+
     fView = new evdb::View2D();
   }
-  
+
   //......................................................................
-  TWireProjPad::~TWireProjPad() 
+  TWireProjPad::~TWireProjPad()
   {
     if (fHisto) { delete fHisto; fHisto = 0; }
     if (fView)  { delete fView;  fView  = 0; }
   }
-  
+
   //......................................................................
-  void TWireProjPad::Draw(const char* opt) 
+  void TWireProjPad::Draw(const char* opt)
   {
     // DumpPadsInCanvas(fPad, "TWireProjPad", "Draw()");
     MF_LOG_DEBUG("TWireProjPad") << "Started to draw plane " << fPlane;
-    
+
     ///\todo: Why is kSelectedColor hard coded?
     int kSelectedColor = 4;
     fView->Clear();
-    
+
     // grab the singleton holding the art::Event
     const art::Event *evt = evdb::EventHolder::Instance()->GetEvent();
     if(evt){
       art::ServiceHandle<evd::RecoDrawingOptions const> recoOpt;
 
       this->SimulationDraw()->MCTruthVectors2D(*evt, fView, fPlane);
-      
+
       // the 2D pads have too much detail to be rendered on screen;
       // to act smarter, RawDataDrawer needs to know the range being plotted
       this->RawDataDraw()->   ExtractRange    (fPad, &GetCurrentZoom());
       this->RawDataDraw()->   RawDigit2D
         (*evt, fView, fPlane, GetDrawOptions().bZoom2DdrawToRoI);
-      
+
       this->RecoBaseDraw()->  Wire2D          (*evt, fView, fPlane);
       this->RecoBaseDraw()->  Hit2D           (*evt, fView, fPlane);
-      
+
       if(recoOpt->fUseHitSelector)
         this->RecoBaseDraw()->Hit2D(this->HitSelectorGet()->GetSelectedHits(fPlane),
                                     kSelectedColor,
                                     fView,
                                     true);
-   
+
       this->RecoBaseDraw()->  Slice2D               (*evt, fView, fPlane);
       this->RecoBaseDraw()->  Cluster2D             (*evt, fView, fPlane);
       this->RecoBaseDraw()->  EndPoint2D            (*evt, fView, fPlane);
@@ -248,16 +248,16 @@ namespace evd{
       this->RecoBaseDraw()->  OpFlash2D             (*evt, fView, fPlane);
       this->RecoBaseDraw()->  Event2D               (*evt, fView, fPlane);
       this->RecoBaseDraw()->  DrawTrackVertexAssns2D(*evt, fView, fPlane);
-      
+
     //  DumpPadsInCanvas(fPad, "TWireProjPad", "Before UpdatePad()");
       UpdatePad();
     } // if (evt)
 
     // DumpPadsInCanvas(fPad, "TWireProjPad", "Before ClearandUpdatePad()");
     ClearandUpdatePad();
-    
+
     // DumpPadsInCanvas(fPad, "TWireProjPad", "After ClearandUpdatePad()");
-       
+
     // check if we need to swap the axis ranges
     art::ServiceHandle<evd::RawDrawingOptions const> rawopt;
     if(fOri != rawopt->fAxisOrientation){
@@ -268,9 +268,9 @@ namespace evd{
       fXLo = fYLo;
       fYHi = max;
       fYLo = min;
-      
+
       SetZoomRange(fXLo, fXHi, fYLo, fYHi);
-      
+
       TString xtitle = fHisto->GetXaxis()->GetTitle();
       fHisto->GetXaxis()->SetTitle(fHisto->GetYaxis()->GetTitle());
       fHisto->GetYaxis()->SetTitle(xtitle);
@@ -279,7 +279,7 @@ namespace evd{
     if (fPlane > 0) fHisto->Draw("X+");
     else            fHisto->Draw("");
 
-      
+
     // Check if we should zoom the displays;
     // if there is no event, we have no clue about the region of interest
     // and therefore we don't touch anything
@@ -288,9 +288,9 @@ namespace evd{
       //       else                    this->ShowFull();
       this->ShowFull();
     }
-    
+
     MF_LOG_DEBUG("TWireProjPad") << "Started rendering plane " << fPlane;
-    
+
     fView->Draw();
 
     MF_LOG_DEBUG("TWireProjPad") << "Drawing of plane " << fPlane << " completed";
@@ -319,13 +319,13 @@ namespace evd{
   //   {
   //     double xmin, ymin, zmin;
   //     double xmax, ymax, zmax;
-  //     this->RawDataDraw()->GetLimits(&xmin, &xmax, 
-  // 				   &ymin, &ymax, 
+  //     this->RawDataDraw()->GetLimits(&xmin, &xmax,
+  // 				   &ymin, &ymax,
   // 				   &zmin, &zmax);
   //     double dx = xmax-xmin;
   //     double dy = ymax-ymin;
   //     double dz = zmax-zmin;
-  
+
   //     if (dx<dy) dx = dy;
   //     else       dy = dx;
   //     xmin = 0.5*(xmin+xmax)-0.6*dx;
@@ -334,45 +334,45 @@ namespace evd{
   //     ymax = 0.5*(ymin+ymax)+0.6*dy;
   //     zmin -= 0.1*dz;
   //     zmax += 0.1*dz;
-  
+
   //     fHisto->GetXaxis()->SetRangeUser(zmin,zmax);
   //     if (fXorY==kX) fHisto->GetYaxis()->SetRangeUser(xmin,xmax);
   //     else           fHisto->GetYaxis()->SetRangeUser(ymin,ymax);
   //   }
 
   //......................................................................
-  // the override parameter is needed to unzoom to full range when the fAutoZoomInterest is on. 
+  // the override parameter is needed to unzoom to full range when the fAutoZoomInterest is on.
 
   void TWireProjPad::ShowFull(int override)
   {
     art::ServiceHandle<geo::Geometry const> g;
-    
+
     // x values are wire numbers, y values are ticks of the clock
     int xmin = fXLo;
     int xmax = fXHi;
     int ymax = fYHi;
     int ymin = fYLo;
-    
+
     art::ServiceHandle<evd::EvdLayoutOptions const> evdlayoutopt;
     art::ServiceHandle<evd::RawDrawingOptions const> rawopt;
-    
+
     if(GetDrawOptions().bZoom2DdrawToRoI && !override){
       int test=0;
       if(rawopt->fDrawRawDataOrCalibWires == 0)
 	test=RawDataDraw()->GetRegionOfInterest((int)fPlane,xmin,xmax,ymin,ymax);
       else
 	test=RecoBaseDraw()->GetRegionOfInterest((int)fPlane,xmin,xmax,ymin,ymax);
-    
-      if(test != 0) return;     
+
+      if(test != 0) return;
     }
-	
+
     SetZoomRange(xmin, xmax, ymin, ymax);
 
     return;
   }
 
   //......................................................................
-  void TWireProjPad::GetWireRange(int* i1, int* i2) const 
+  void TWireProjPad::GetWireRange(int* i1, int* i2) const
   {
     if(fOri < 1){
       *i1 = fHisto->GetXaxis()->GetFirst();
@@ -382,7 +382,7 @@ namespace evd{
       *i1 = fHisto->GetYaxis()->GetFirst();
       *i2 = fHisto->GetYaxis()->GetLast();
     }
-    
+
     return;
   }
 
@@ -411,7 +411,7 @@ namespace evd{
     MF_LOG_DEBUG("TWireProjPad")
       << "SetZoomRange(" << i1 << ", " << i2 << ", " << y1 << ", " << y2
       << ") on plane #" << fPlane;
-    
+
     fHisto->GetXaxis()->SetRangeUser(i1,i2);
     fHisto->GetYaxis()->SetRangeUser(y1,y2);
     fCurrentZoom[0]=i1;
@@ -434,14 +434,14 @@ namespace evd{
       << fPlane;
   } // TWireProjPad::SetZoomFromView()
   //......................................................................
-  void TWireProjPad::SaveHitList(double i1, 
+  void TWireProjPad::SaveHitList(double i1,
 				 double i2,
-				 double y1, 
-				 double y2, 
-				 double distance, 
+				 double y1,
+				 double y2,
+				 double distance,
 				 const char* zoom_opt,
 				 bool good_plane)
-  {  
+  {
     const art::Event *evt = evdb::EventHolder::Instance()->GetEvent();
     if(evt){
       art::ServiceHandle<evd::RecoDrawingOptions const> recoopt;
@@ -457,7 +457,7 @@ namespace evd{
   /////////////////////////////////////////////////
   // Pass the seed list onwards to InfoTransfer
   //
-  double TWireProjPad::SaveSeedList(std::vector< util::PxLine > seedlines, 
+  double TWireProjPad::SaveSeedList(std::vector< util::PxLine > seedlines,
 				    double distance)
   {
     double KineticEnergy = util::kBogusD;
@@ -471,11 +471,11 @@ namespace evd{
   }
 
   //......................................................................
-  void TWireProjPad::SelectOneHit(double x, 
-				  double y, 
+  void TWireProjPad::SelectOneHit(double x,
+				  double y,
 				  const char* zoom_opt)
   {
-  
+
     const art::Event *evt = evdb::EventHolder::Instance()->GetEvent();
     if(evt){
       art::ServiceHandle<evd::RecoDrawingOptions const> recoopt;
@@ -484,15 +484,15 @@ namespace evd{
 	this->Draw(zoom_opt);
       }
     }
-    
+
     return;
   }
-  
+
   //......................................................................
   void TWireProjPad::ClearandUpdatePad()
   {
-    fPad->Clear(); 
-    this->UpdatePad(); 
+    fPad->Clear();
+    this->UpdatePad();
 
     return;
   }
@@ -507,10 +507,10 @@ namespace evd{
 
     return;
   }
-  
+
   //......................................................................
   void TWireProjPad::DrawLinesinView(std::vector< util::PxLine > lines,
-				     bool deleting, 
+				     bool deleting,
 				     const char * zoom_opt)
   {
 
@@ -526,76 +526,76 @@ namespace evd{
       fView->Clear();
       fView->Draw();
     }
-  
+
     mf::LogVerbatim("TWireProjPad") << "Drawing " << lines.size() <<" lines";
-  
+
     for(size_t is = 0; is < lines.size(); ++is){
       if(fPlane!=lines[is].plane)
 	continue;
-      
+
       TLine& l = fView->AddLine(lines[is].w0,lines[is].t0,lines[is].w1,lines[is].t1);
-      
+
       fView->Draw();
       evd::Style::FromPDG(l,11);
-     
+
       // In Seed mode, colour of "sealed" seeds to green
       if(evdlayoutopt->fMakeSeeds){
 	if( ( (lines.size()%3)==0 ) ||
 	    ( is < ( lines.size()-(lines.size()%3) )  )) {
-	  l.SetLineColor(kGreen);	      
-	}	  
+	  l.SetLineColor(kGreen);
+	}
 	else
 	  l.SetLineColor(kRed);
       }
-    } 
-  
+    }
+
     // Seed mode guide lines
-  
+
     if(evdlayoutopt->fMakeSeeds){
       TLine &lg1 = fView->AddLine(0,0,0,0);
       fView->Draw();
       TLine &lg0 = fView->AddLine(0,0,0,0);
       fView->Draw();
       lg1.SetLineStyle(kDashed);
-      lg0.SetLineStyle(kDashed);      
+      lg0.SetLineStyle(kDashed);
       lg0.SetLineWidth(1);
       lg1.SetLineWidth(1);
       lg0.SetLineColor(kGray);
       lg1.SetLineColor(kGray);
       lg0.SetBit(kCannotPick);
       lg1.SetBit(kCannotPick);
-	
+
       if((lines.size()%3)==1){
 	mf::LogVerbatim("TWireProjPad") << "adding guide lines";
 	util::PxLine TopLine = lines.at(lines.size()-1);
 	lg0.SetX1(1);
 	lg0.SetX2(5000);
 
-	double TopT0 = det->ConvertXToTicks(det->ConvertTicksToX(TopLine.t0,TopLine.plane,0,0),fPlane,0,0); 
-	double TopT1 = det->ConvertXToTicks(det->ConvertTicksToX(TopLine.t1,TopLine.plane,0,0),fPlane,0,0); 
+	double TopT0 = det->ConvertXToTicks(det->ConvertTicksToX(TopLine.t0,TopLine.plane,0,0),fPlane,0,0);
+	double TopT1 = det->ConvertXToTicks(det->ConvertTicksToX(TopLine.t1,TopLine.plane,0,0),fPlane,0,0);
 
 	lg0.SetY1(TopT0);
 	lg0.SetY2(TopT0);
 
 	lg1.SetX1(1);
 	lg1.SetX2(5000);
-	  
+
 	lg1.SetY1(TopT1);
 	lg1.SetY2(TopT1);
-	  
-	
+
+
       }
     }
     fView->Draw();
     UpdatePad();
     fView->Draw();
-  
+
     return;
   }
 
   ////////////////////////////////////////////
   //
-  // This method creates and draws a curve on 
+  // This method creates and draws a curve on
   // each view, given the seeds selected by
   // the user in the HitSelector.
   //
@@ -610,23 +610,23 @@ namespace evd{
     int N=100;
 
     double ReturnVal=0;
-  
+
     // For some reason, this line is needed to prevent lines being drawn twice
     //  TPolyLine& pldummy1 = fView->AddPolyLine(2,kBlue,1,0);
     // pldummy1.SetPoint(0,0,0);
     // pldummy1.SetPoint(1,0,0);
- 
+
     int c=0; int t=0;
     int LastGoodValue=0;
     double ticks[3];
-    double projpt[3]; 
+    double projpt[3];
 
     if(SeedVec.size() > 1){
       TPolyLine& pl = fView->AddPolyLine(N,kOrange+9,2,0);
       fView->Draw();
-        
+
       trkf::BezierTrack BTrack(SeedVec);
-      
+
       for(int i = 0; i != N; ++i){
 	try{
 	  BTrack.GetProjectedPointUVWT(float(i)/N,projpt,ticks,c,t );
@@ -636,11 +636,11 @@ namespace evd{
 	catch(cet::exception excp){
 	  BTrack.GetProjectedPointUVWT(float(LastGoodValue)/N, projpt, ticks, c, t);
 	}
-	  
+
 	double x = projpt[plane];
 	double y = ticks[plane];
 	pl.SetPoint(i,x,y);
-	  
+
 	if(LastGoodValue!=i){
 	  TMarker& mrk = fView->AddMarker(x, y, 3, 34, 1.5);
 	  mrk.SetMarkerColor(3);
@@ -653,10 +653,10 @@ namespace evd{
 
     fView->Draw();
     UpdatePad();
-  
+
     return ReturnVal;
   }
-  
+
 }// namespace
 ////////////////////////////////////////////////////////////////////////
 

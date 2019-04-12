@@ -17,7 +17,7 @@ namespace evd {
   {
     this->reconfigure(pset);
   }
-  
+
   //......................................................................
   void RawDrawingOptions::reconfigure(fhicl::ParameterSet const& pset)
   {
@@ -37,9 +37,9 @@ namespace evd {
       fSeeBadChannels             = pset.get< bool               >("SeeBadChannels",       false);
       fRoIthresholds              = pset.get< std::vector<float> >("RoIthresholds",        std::vector<float>());
       fPedestalOption             = pset.get< int                >("PedestalOption",       0    );
-      
+
       if (fRoIthresholds.empty()) fRoIthresholds.push_back((float) fMinSignal);
-      
+
       fRawDigitDrawerParams       = pset.get< fhicl::ParameterSet >("RawDigitDrawer"             );
   }
 }

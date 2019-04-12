@@ -1,6 +1,6 @@
 ///
 /// \file    Ortho3DPad.h
-/// \brief   Drawing pad showing an orthographic projection of 3D objects 
+/// \brief   Drawing pad showing an orthographic projection of 3D objects
 ///          in the detector
 /// \author  greenlee@fnal.gov
 ///
@@ -19,14 +19,14 @@ class TBox;
 namespace evdb { class View2D; }
 
 namespace evd {
-  
+
   /// A drawing pad showing an orthographic rendering of 3D objects.
 
   class Ortho3DPad : public DrawingPad {
   public:
 
     // So this class can receive gui signals.
-    
+
     RQ_OBJECT("evd::Ortho3DPad")
 
   public:

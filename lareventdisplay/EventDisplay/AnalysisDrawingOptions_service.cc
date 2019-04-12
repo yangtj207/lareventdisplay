@@ -17,7 +17,7 @@ namespace evd {
   {
     this->reconfigure(pset);
   }
-  
+
   //......................................................................
   void AnalysisDrawingOptions::reconfigure(fhicl::ParameterSet const& pset)
   {
@@ -31,7 +31,7 @@ namespace evd {
 
     fCalorTemplateFileName     = pset.get< std::string >("CalorTemplateFileName"  );
   }
-  
+
 }
 
 namespace evd {

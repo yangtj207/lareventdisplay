@@ -21,7 +21,7 @@ namespace evd{
 void HeaderDrawer::Header(evdb::View2D* view)
 {
     art::ServiceHandle<evd::EvdLayoutOptions const> layoutopt;
-      
+
     TText& titlet = view->AddText(0.03,0.80,layoutopt->fDisplayName.c_str());
     titlet.SetTextSize(0.13);
     titlet.SetTextFont(72);
@@ -42,7 +42,7 @@ void HeaderDrawer::Header(evdb::View2D* view)
     // The conventional use is for the upper 32 bits to have the seconds since 1970 epoch and the lower 32 bits to be
     // the number of microseconds with the current second.
     unsigned long long int tsval = evt->time().value();
-  
+
     // taking it apart
     // the masking isn't strictly necessary *if* "long" is truly 32bits
     // but this can vary w/ compiler/platform
@@ -50,7 +50,7 @@ void HeaderDrawer::Header(evdb::View2D* view)
     unsigned long int lup = ( tsval >> 32 ) & mask32;
     unsigned long int llo = tsval & mask32;
     TTimeStamp ts(lup, (int)llo);
-    
+
     ts.GetDate(kTRUE,0,&year,&month,&day);
     ts.GetTime(kTRUE,0,&hour,&minute,&second);
     nano = ts.GetNanoSec();
@@ -59,19 +59,19 @@ void HeaderDrawer::Header(evdb::View2D* view)
     char runbuff[256];
     char datebuff[256];
     char timebuff[256];
-  
+
     // Skip first one since ROOT returns these numbers starting from 1 not 0
     static const char* days[] = {"","Mon","Tue","Wed","Thu","Fri","Sat","Sun"};
     static const char* months[] = {"","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"};
-  
+
     sprintf(runbuff,  "Run:   %d/%d",run,srun);
     sprintf(eventbuff,"Event: %d",event);
-    sprintf(datebuff, "UTC %s %s %d, %d", 
+    sprintf(datebuff, "UTC %s %s %d, %d",
             days[dayofweek],
             months[month],
             day,
             year);
-    sprintf(timebuff, "%.2d:%.2d:%2.9f", 
+    sprintf(timebuff, "%.2d:%.2d:%2.9f",
             hour,
             minute,
             (float)second+(float)nano/1.0E9);
@@ -80,7 +80,7 @@ void HeaderDrawer::Header(evdb::View2D* view)
     TText& eventt = view->AddText(0.04,0.45, eventbuff);
     TText& datet  = view->AddText(0.04,0.25, datebuff);
     TText& timet  = view->AddText(0.04,0.10, timebuff);
-	
+
     runt.SetTextSize(0.13);
     runt.SetTextFont(42);
 

@@ -35,14 +35,14 @@ class PCA3DDrawer : public I3DDrawer
 {
 public:
     explicit PCA3DDrawer(const fhicl::ParameterSet&);
-    
+
     ~PCA3DDrawer();
-    
+
     void Draw(const art::Event&, evdb::View3D*) const override;
-    
+
 private:
 };
-    
+
 //----------------------------------------------------------------------
 // Constructor.
 PCA3DDrawer::PCA3DDrawer(const fhicl::ParameterSet& pset)
@@ -62,7 +62,7 @@ void PCA3DDrawer::Draw(const art::Event& evt, evdb::View3D* view) const
 {
 /*
     art::ServiceHandle<evd::SimulationDrawingOptions const> drawOpt;
-    
+
     // If the option is turned off, there's nothing to do
     if (!drawOpt->fShowMCTruthTrajectories) return;
 
@@ -70,12 +70,12 @@ void PCA3DDrawer::Draw(const art::Event& evt, evdb::View3D* view) const
     detinfo::DetectorProperties const* theDetector = lar::providerFrom<detinfo::DetectorPropertiesService>();
     detinfo::DetectorClocks     const* detClocks   = lar::providerFrom<detinfo::DetectorClocksService>();
     art::ServiceHandle<geo::Geometry const>  geom;
-    
+
     // Recover a handle to the collection of MCParticles
     art::Handle< std::vector<simb::MCParticle>> mcParticleHandle;
-    
+
     evt.getByLabel(drawOpt->fG4ModuleLabel, mcParticleHandle);
-    
+
     // Define a couple of colors for neutrals and if we gray it out...
     int neutralColor(12);
     int grayedColor(15);

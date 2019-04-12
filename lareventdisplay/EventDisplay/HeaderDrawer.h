@@ -14,9 +14,9 @@ namespace evdb { class View2D; }
 namespace evd {
   class HeaderDrawer {
   public:
-    
+
     void Header(evdb::View2D* view);
-    
+
   };
 }
 

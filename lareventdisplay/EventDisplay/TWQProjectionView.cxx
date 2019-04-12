@@ -55,43 +55,43 @@ namespace evd{
   static double       kDistance;
   static int          curr_zooming_plane;
   static const char*  zoom_opt=0;
-  
+
   static int          shift_lock;
-  
+
 
   //......................................................................
-  TWQProjectionView::TWQProjectionView(TGMainFrame* mf) 
+  TWQProjectionView::TWQProjectionView(TGMainFrame* mf)
     : evdb::Canvas(mf)
     , fRedraw(nullptr)
     , fCryoInput(nullptr), fTPCInput(nullptr), fTotalTPCLabel(nullptr)
     , isZoomAutomatic
         (art::ServiceHandle<evd::EvdLayoutOptions const>()->fAutoZoomInterest)
     , fLastEvent(new util::DataProductChangeTracker_t)
-  {  
-    
+  {
+
     art::ServiceHandle<geo::Geometry const> geo;
 
-    // first make pads for things that don't depend on the number of 
+    // first make pads for things that don't depend on the number of
     // planes in the detector
     // bottom left corner is (0.,0.), top right is  (1., 1.)
     fAngleInfo=NULL;
     fXYZPosition=NULL;
-      
+
     fLastThreshold = -1.;
-    
-    evdb::Canvas::fCanvas->cd();  
-    fHeaderPad = new HeaderPad("fHeaderPad","Header",0.0,0.0,0.15,0.13,"");  
-    fHeaderPad->Draw();  
 
-    evdb::Canvas::fCanvas->cd();  
-    fMC = new MCBriefPad("fMCPad","MC Info.",0.15,0.13,1.0,0.17,"");  
-    fMC->Draw();  
+    evdb::Canvas::fCanvas->cd();
+    fHeaderPad = new HeaderPad("fHeaderPad","Header",0.0,0.0,0.15,0.13,"");
+    fHeaderPad->Draw();
 
-    evdb::Canvas::fCanvas->cd();  
-//    fWireQ = new TQPad("fWireQPad", "ADCvsTime",0.15,0.0,1.0,0.13,"TQ", 0, 0);  
-    fWireQ = new TQPad("fWireQPad", "ADCvsTime",0.15,0.0,1.0,0.14,"TQ", 0, 0);  
+    evdb::Canvas::fCanvas->cd();
+    fMC = new MCBriefPad("fMCPad","MC Info.",0.15,0.13,1.0,0.17,"");
+    fMC->Draw();
+
+    evdb::Canvas::fCanvas->cd();
+//    fWireQ = new TQPad("fWireQPad", "ADCvsTime",0.15,0.0,1.0,0.13,"TQ", 0, 0);
+    fWireQ = new TQPad("fWireQPad", "ADCvsTime",0.15,0.0,1.0,0.14,"TQ", 0, 0);
     fWireQ->Pad()->SetBit(TPad::kCannotMove,true);
-    fWireQ->Draw();  
+    fWireQ->Draw();
 
 
     // add new "meta frame" to hold the GUI Canvas and a side frame (vframe)
@@ -99,7 +99,7 @@ namespace evd{
     fMetaFrame->SetBit(TPad::kCannotMove,true);
 
     //new frame organizing the buttons on the left of the canvas.
-    fVFrame  = new TGCompositeFrame(fMetaFrame, 60, 60, kVerticalFrame); 
+    fVFrame  = new TGCompositeFrame(fMetaFrame, 60, 60, kVerticalFrame);
     // Define a layout for placing the canvas within the frame.
     fLayout = new TGLayoutHints(kLHintsTop | kLHintsLeft | kLHintsExpandX |
 				kLHintsExpandY, 5, 5, 5, 5);
@@ -108,7 +108,7 @@ namespace evd{
     mf->RemoveFrame(fFrame);
 
     fEmbCanvas->ReparentWindow( fMetaFrame, fXsize, fYsize);
-	
+
 
     fMetaFrame->AddFrame(fVFrame,new TGLayoutHints(kLHintsTop | kLHintsLeft | kLHintsExpandY));
     fMetaFrame->AddFrame(fEmbCanvas, fLayout);
@@ -117,12 +117,12 @@ namespace evd{
     mf->AddFrame(fMetaFrame,fLayout);
     mf->AddFrame(fFrame);
 
-    // plane number entry  
+    // plane number entry
     fPlaneEntry = new TGNumberEntry(fFrame,
 				    0,2,-1,
-				    TGNumberFormat::kNESInteger, 
-				    TGNumberFormat::kNEAAnyNumber, 
-				    TGNumberFormat::kNELLimitMinMax, 
+				    TGNumberFormat::kNESInteger,
+				    TGNumberFormat::kNEAAnyNumber,
+				    TGNumberFormat::kNELLimitMinMax,
 				    0 , geo->Nplanes()-1 );
 
     kPlane = 0;
@@ -141,16 +141,16 @@ namespace evd{
     // Text label for this numeric field.
     fPlaneLabel= new TGLabel(fFrame,"Plane");
 
-    // wire number entry 
+    // wire number entry
     unsigned int maxwire=0;
     for (unsigned int ip=0;ip<geo->Nplanes();ip++)
       maxwire = (geo->Nwires(ip)-1 > maxwire) ? geo->Nwires(ip)-1 : maxwire;
-    
-    
+
+
     fWireEntry = new TGNumberEntry(fFrame,0,6,-1,
-				   TGNumberFormat::kNESInteger, 
-				   TGNumberFormat::kNEAAnyNumber, 
-				   TGNumberFormat::kNELLimitMinMax, 
+				   TGNumberFormat::kNESInteger,
+				   TGNumberFormat::kNEAAnyNumber,
+				   TGNumberFormat::kNELLimitMinMax,
 				   0 , maxwire );
     // Initial value
     fWireEntry->SetNumber( kWire );
@@ -164,11 +164,11 @@ namespace evd{
     // Text label for this numeric field.
     fWireLabel= new TGLabel(fFrame,"Wire");
 
-    // adc threshold number entry 
+    // adc threshold number entry
     fThresEntry = new TGNumberEntry(fFrame,0,6,-1,
-				    TGNumberFormat::kNESInteger, 
-				    TGNumberFormat::kNEAAnyNumber, 
-				    TGNumberFormat::kNELLimitMinMax, 
+				    TGNumberFormat::kNESInteger,
+				    TGNumberFormat::kNEAAnyNumber,
+				    TGNumberFormat::kNELLimitMinMax,
 				    0 , geo->Nwires(0)-1 );
     // Initial value
     art::ServiceHandle<evd::ColorDrawingOptions const> cst;
@@ -232,17 +232,17 @@ namespace evd{
     unsigned int nplanes = geo->Nplanes();
 
     if(evdlayoutopt-> fShowSideBar)
-      SetUpSideBar();    
+      SetUpSideBar();
     else
-      evdlayoutopt->fShowEndPointSection=0;  // zero it to avoid a misconfiguration in the fcl file. 
+      evdlayoutopt->fShowEndPointSection=0;  // zero it to avoid a misconfiguration in the fcl file.
 
     //zero the ppoints queue.
     ppoints.clear();
     pline.clear();
     seedlines.clear();
-       
 
-    // now determine the positions of all the time vs wire number 
+
+    // now determine the positions of all the time vs wire number
     // and charge histograms for the planes
     for(unsigned int i = 0; i < nplanes; ++i){
       double twx1 = 0.;
@@ -262,8 +262,8 @@ namespace evd{
       evdb::Canvas::fCanvas->cd();
       fPlanes.push_back(new TWireProjPad(padname, padtitle, twx1, twy1, twx2, twy2, i));
       fPlanes[i]->Draw();
-//      fPlanes[i]->Pad()->AddExec("mousedispatch",Form("evd::TWQProjectionView::MouseDispatch(%d, (void*)%d)", i, this)); 
-      fPlanes[i]->Pad()->AddExec("mousedispatch",Form("evd::TWQProjectionView::MouseDispatch(%d, (void*)%lu)", i, (unsigned long) this)); 
+//      fPlanes[i]->Pad()->AddExec("mousedispatch",Form("evd::TWQProjectionView::MouseDispatch(%d, (void*)%d)", i, this));
+      fPlanes[i]->Pad()->AddExec("mousedispatch",Form("evd::TWQProjectionView::MouseDispatch(%d, (void*)%lu)", i, (unsigned long) this));
 
       padname = "fQPadPlane";
       padname += i;
@@ -275,7 +275,7 @@ namespace evd{
       fPlaneQ.push_back(new TQPad(padname, padtitle, twx2, twy1, twx3, twy2, "Q", i, 0));
       fPlaneQ[i]->Draw();
 
-    } 
+    }
 
     // propagate the zoom setting
     SetAutomaticZoomMode(isZoomAutomatic);
@@ -285,11 +285,11 @@ namespace evd{
   }
 
   //......................................................................
-  TWQProjectionView::~TWQProjectionView() 
-  {  
-    if (fHeaderPad) { delete fHeaderPad;  fHeaderPad  = 0; }  
-    if (fMC)        { delete fMC;         fMC         = 0; }  
-    if (fWireQ)     { delete fWireQ;      fWireQ      = 0; }  
+  TWQProjectionView::~TWQProjectionView()
+  {
+    if (fHeaderPad) { delete fHeaderPad;  fHeaderPad  = 0; }
+    if (fMC)        { delete fMC;         fMC         = 0; }
+    if (fWireQ)     { delete fWireQ;      fWireQ      = 0; }
     if (fPlaneEntry){ delete fPlaneEntry; fPlaneEntry = 0; }
     if (fWireEntry) { delete fWireEntry;  fWireEntry  = 0; }
     if (fPlaneLabel){ delete fPlaneLabel; fPlaneLabel = 0; }
@@ -300,7 +300,7 @@ namespace evd{
     }
     fPlanes.clear();
     fPlaneQ.clear();
-    
+
     delete fLastEvent;
   }
 
@@ -309,13 +309,13 @@ namespace evd{
     for(TWireProjPad* planePad: fPlanes)
       planePad->RawDataDraw()->ResetRegionOfInterest();
   } // TWQProjectionView::ResetRegionsOfInterest()
-  
+
   //......................................................................
   void TWQProjectionView::DrawPads(const char* /*opt*/)
   {
-    
+
     OnNewEvent(); // if the current event is a new one, we need some resetting
-    
+
     for(unsigned int i=0; i<fPlanes.size();++i){
       fPlanes[i]->Draw();
       fPlanes[i]->Pad()->Update();
@@ -327,8 +327,8 @@ namespace evd{
       fPlaneQ[j]->Pad()->GetFrame()->SetBit(TPad::kCannotMove,true);
     }
   }
-  
-  
+
+
   //......................................................................
   void TWQProjectionView::SetAutomaticZoomMode(bool bSet /* = true */) {
     isZoomAutomatic = bSet;
@@ -336,37 +336,37 @@ namespace evd{
       pPlane->SetZoomToRoI(isZoomAutomatic);
   } // TWQProjectionView::SetAutomaticZoomMode()
 
-  
+
   //......................................................................
-  void TWQProjectionView::Draw(const char* opt) 
-  {  
+  void TWQProjectionView::Draw(const char* opt)
+  {
     mf::LogDebug("TWQProjectionView") << "Starting to draw";
-    
+
     OnNewEvent(); // if the current event is a new one, we need some resetting
-    
+
     art::ServiceHandle<geo::Geometry const> geo;
 
     ClearAllSeeds();
     fPrevZoomOpt.clear();
-  
-  
-    evdb::Canvas::fCanvas->cd();    
+
+
+    evdb::Canvas::fCanvas->cd();
     zoom_opt=0;
-    fHeaderPad->Draw();    
-    fMC       ->Draw(); 
+    fHeaderPad->Draw();
+    fMC       ->Draw();
     fWireQ    ->Draw();
-  
+
     art::ServiceHandle<evd::EvdLayoutOptions const> evdlayoutopt;
     if(evdlayoutopt->fPrintTotalCharge)
       PrintCharge();
-  
+
     //clear queue of selected points
     ppoints.clear();
     pline.clear();
     seedlines.clear();
     // Reset current zooming plane - since it's not currently zooming.
     curr_zooming_plane=-1;
-  
+
     unsigned int const nPlanes = fPlanes.size();
     MF_LOG_DEBUG("TWQProjectionView") << "Start drawing " << nPlanes << " planes";
     //  double Charge=0, ConvCharge=0;
@@ -382,16 +382,16 @@ namespace evd{
       fZoomOpt.tmin[i] = ZoomParams[2];
       fZoomOpt.tmax[i] = ZoomParams[3];
       // Charge deposit feature - not working yet
-      // 
+      //
       //  if(geo->Plane(i).SignalType()==geo::kCollection)
       //  {
-      //	planePad->RecoBaseDraw()->GetChargeSum(i,Charge,ConvCharge);  
+      //	planePad->RecoBaseDraw()->GetChargeSum(i,Charge,ConvCharge);
       //   }
-   
+
     }
     mf::LogDebug("TWQProjectionView")
       << "Done drawing " << nPlanes << " planes";
-  
+
 
     // Charge deposit feature - not working yet
     //  std::stringstream ss;
@@ -403,7 +403,7 @@ namespace evd{
     //  {
     //    ss<<" no reco info";
     //  }
-    //	 	
+    //
     //  TGText * tt = new TGText(ss.str().c_str());
     //  tt->InsLine(1, "Approx EDep:");
     //  fAngleInfo->SetText(tt);
@@ -428,74 +428,74 @@ namespace evd{
   // don't necessarily overlap from plane to plane, ie the same range
   // isn't appropriate for every plane
   //......................................................................
-  //   void TWQProjectionView::RangeChanged() 
-  //   {  
-  //     static int ilolast = -1;  
-  //     static int ihilast = -1;    
-  // 
-  //     int ilo; 
+  //   void TWQProjectionView::RangeChanged()
+  //   {
+  //     static int ilolast = -1;
+  //     static int ihilast = -1;
+  //
+  //     int ilo;
   //     int ihi;
   //     std::vector<int> lo;
   //     std::vector<int> hi;
   //     std::vector<bool> axischanged;
   //     for(unsigned int i = 0; i < fPlanes.size(); ++i){
-  //       fPlanes[i]->GetWireRange(&ilo, &ihi);  
+  //       fPlanes[i]->GetWireRange(&ilo, &ihi);
   //       lo.push_back(ilo);
   //       hi.push_back(ihi);
   //       axischanged.push_back((ilo != ilolast) || (ihi != ihilast));
   //     }
-  //       
-  //     TVirtualPad* ori = gPad;  
-  // 
+  //
+  //     TVirtualPad* ori = gPad;
+  //
   //     // loop over the bools to see which axes need to change
   //     for(unsigned int i = 0; i < axischanged.size(); ++i){
-  //       if (axischanged[i]) {    
-  // 	fPlanes[i]->SetWireRange(ilo, ihi);    
-  // 	fPlanes[i]->Pad()->cd();    
-  // 	fPlanes[i]->Pad()->Modified();    
-  // 	fPlanes[i]->Pad()->Update();    
-  // 
-  // 	ilolast = ilo;    
-  // 	ihilast = ihi;  
-  //       }  
+  //       if (axischanged[i]) {
+  // 	fPlanes[i]->SetWireRange(ilo, ihi);
+  // 	fPlanes[i]->Pad()->cd();
+  // 	fPlanes[i]->Pad()->Modified();
+  // 	fPlanes[i]->Pad()->Update();
+  //
+  // 	ilolast = ilo;
+  // 	ihilast = ihi;
+  //       }
   //     }
-  // 
-  //     evdb::Canvas::fCanvas->cd();  
-  //     evdb::Canvas::fCanvas->Modified();  
-  //     evdb::Canvas::fCanvas->Update();  
+  //
+  //     evdb::Canvas::fCanvas->cd();
+  //     evdb::Canvas::fCanvas->Modified();
+  //     evdb::Canvas::fCanvas->Update();
   //     ori->cd();
   //   }
   //......................................................................
-  
+
     //......................................................................
   void 	TWQProjectionView::SetTestFlag(int number)
   {
-    art::ServiceHandle<evd::InfoTransfer>   infot; 
-    infot->SetTestFlag(number);  
+    art::ServiceHandle<evd::InfoTransfer>   infot;
+    infot->SetTestFlag(number);
   }
-  
-  
+
+
   //......................................................................
   void 	TWQProjectionView::PrintCharge()
   {
 
     art::ServiceHandle<geo::Geometry const> geo;
     art::ServiceHandle<evd::RawDrawingOptions const> rawopt;
-    
+
     for(size_t iplane = 0; iplane < fPlanes.size(); ++iplane){
       geo::PlaneID planeid(rawopt->CurrentTPC(), iplane);
       if (geo->SignalType(planeid) != geo::kCollection) continue;
-        
+
       double ch=0,convch=0;
       if(rawopt->fDrawRawDataOrCalibWires == 0){
         fPlanes[iplane]->RawDataDraw()->GetChargeSum(iplane,ch,convch);
         mf::LogVerbatim("TWQProjectionView") << "Warning! Calculating for RawData! ";
       }
-      else{  
-        fPlanes[iplane]->RecoBaseDraw()->GetChargeSum(iplane,ch,convch);  
-      }    
+      else{
+        fPlanes[iplane]->RecoBaseDraw()->GetChargeSum(iplane,ch,convch);
+      }
 
-      mf::LogVerbatim("TWQProjectionView") << "\ncharge collected at collection plane: " 
+      mf::LogVerbatim("TWQProjectionView") << "\ncharge collected at collection plane: "
                                            << iplane << " " << ch << " " << convch;
     } // for
 
@@ -512,22 +512,22 @@ namespace evd{
     art::ServiceHandle<evd::EvdLayoutOptions const>   evdlayoutopt;
 
     switch (event){
-	
-    case kButton1Shift:           	
-      shift_lock=1;	
+
+    case kButton1Shift:
+      shift_lock=1;
       if(evdlayoutopt->fMakeClusters==1){wqpp->SelectHit(plane);}
       else {wqpp->SelectPoint(plane);}
       break;
-    case kButton1Up:    
+    case kButton1Up:
       if(shift_lock==1) break;
-      if(evdlayoutopt-> fChangeWire==1) wqpp->ChangeWire(plane);		
+      if(evdlayoutopt-> fChangeWire==1) wqpp->ChangeWire(plane);
     case kButton1Down: shift_lock=0;
-    case kButton1Motion:	
+    case kButton1Motion:
       if((evdlayoutopt->fMakeClusters == 1) && !(evdlayoutopt->fMakeSeeds == 1)){ wqpp->SetClusters(plane);}
       else if((evdlayoutopt->fMakeClusters == 0) && (evdlayoutopt->fMakeSeeds == 1)){ wqpp->SetSeeds(plane);}
       else { wqpp->SetMouseZoomRegion(plane);}
       break;
-      //  default:		
+      //  default:
     }
   }
 
@@ -546,7 +546,7 @@ namespace evd{
     //now find wire that was clicked on
     float xx = gPad->AbsPixeltoX(px);
     float x = gPad->PadtoX(xx);
-	
+
 
     kPlane = plane;
     kWire  = (unsigned int)TMath::Nint(x);
@@ -592,11 +592,11 @@ namespace evd{
 	else
 	  this->fPlanes[plane]->View()->AddMarker(0.0,0.0,2,1,0.1);
 	this->fPlanes[this->ppoints[ii].plane]->View()->Draw();
-	repeat_plane=this->ppoints[ii].plane;  
+	repeat_plane=this->ppoints[ii].plane;
 	break;
       }
-	
-    //if plane does not repeat and size of list is larger than 2 pop_front 
+
+    //if plane does not repeat and size of list is larger than 2 pop_front
     // and delete its marker. Otherwise just push_back.
     if(repeat_plane==-1){
       if( this->ppoints.size()>=2){
@@ -615,7 +615,7 @@ namespace evd{
       this->fPlanes[plane]->View()->Draw();
     }
 
-	
+
     return;
 
   }
@@ -627,7 +627,7 @@ namespace evd{
       fPlanes[x]->Pad()->cd();
       fPlanes[x]->View()->Clear();
       fPlanes[x]->View()->AddMarker(0.0,0.0,2,1,0.1);
-      fPlanes[x]->Pad()->Update(); 
+      fPlanes[x]->Pad()->Update();
       fPlanes[x]->View()->Draw();
     }
     ppoints.clear();
@@ -664,14 +664,14 @@ namespace evd{
       art::ServiceHandle<evd::RawDrawingOptions const> rawOpt;
       double ftimetick = detp->SamplingRate()/1000.;
       double larv = detp->DriftVelocity(detp->Efield(), detp->Temperature());
-		
+
       //find wireIDs corresponding to found wires.
       geo::WireID wire1(rawOpt->fCryostat,rawOpt->fTPC,pline[0].plane,pline[0].w0);
       geo::WireID wire2(rawOpt->fCryostat,rawOpt->fTPC,pline[1].plane,pline[1].w0);
-      
+
       bool wires_cross=false;
       bool time_good=false;
-	
+
       if(std::abs(pline[0].t0-pline[1].t0) < 200){
 	geo::WireIDIntersection widIntersect;
 	wires_cross = geom->WireIDsIntersect(wire1,wire2,widIntersect);
@@ -681,7 +681,7 @@ namespace evd{
       }
       else{
 	TGText *tt=new TGText("too big");
-	tt->InsLine(1,"time distance");  
+	tt->InsLine(1,"time distance");
 	fXYZPosition->SetText(tt);
 	fXYZPosition->Update();
 	// return; //not returning, because may need to delete marker from wplane
@@ -697,7 +697,7 @@ namespace evd{
 	xyz_vertex_fit[0]=(pline[0].t0-detp->TriggerOffset())*larv*ftimetick+pos[0];
 	geom->Plane(pline[1].plane).LocalToWorld(origin, pos);
 	second_time=(pline[1].t0-detp->TriggerOffset())*larv*ftimetick+pos[0];
-	
+
 	xx0=(xyz_vertex_fit[0]+second_time)/2;
 	yy0=y;
 	zz0=z;
@@ -719,7 +719,7 @@ namespace evd{
 
       wires_cross=false;
       time_good=false;
-	
+
       if(std::abs(pline[0].t1-pline[1].t1) < 200){
 	geo::WireIDIntersection widIntersect;
 	wires_cross = geom->WireIDsIntersect(wire1,wire2,widIntersect);
@@ -729,7 +729,7 @@ namespace evd{
       }
       else{
 	TGText *tt=new TGText("too big");
-	tt->InsLine(1,"time distance");  
+	tt->InsLine(1,"time distance");
 	fXYZPosition->SetText(tt);
 	fXYZPosition->Update();
 	// return; //not returning, because may need to delete marker from wplane
@@ -805,14 +805,14 @@ namespace evd{
       art::ServiceHandle<evd::RawDrawingOptions const> rawOpt;
       //double ftimetick = detp->SamplingRate()/1000.;
       //double larv = detp->DriftVelocity(detp->Efield(), detp->Temperature());
-		
+
       //find channels corresponding to found wires.
       geo::WireID wire1(rawOpt->fCryostat,rawOpt->fTPC,ppoints[0].plane,ppoints[0].w);
       geo::WireID wire2(rawOpt->fCryostat,rawOpt->fTPC,ppoints[1].plane,ppoints[1].w);
- 
+
       bool wires_cross=false;
       bool time_good=false;
-	
+
       if(std::abs(ppoints[0].t-ppoints[1].t) < 200){
 	geo::WireIDIntersection widIntersect;
 	geom->WireIDsIntersect(wire1,wire2,widIntersect);
@@ -823,7 +823,7 @@ namespace evd{
       }
       else{
 	TGText *tt=new TGText("too big");
-	tt->InsLine(1,"time distance");  
+	tt->InsLine(1,"time distance");
 	fXYZPosition->SetText(tt);
 	fXYZPosition->Update();
 	// return; //not returning, because may need to delete marker from wplane
@@ -832,7 +832,7 @@ namespace evd{
       if(wires_cross){
 	xyz_vertex_fit[1]=y;
 	xyz_vertex_fit[2]=z;
-	
+
 	xyz_vertex_fit[0]=detp->ConvertTicksToX(ppoints[0].t,
 						ppoints[0].plane,
 						rawOpt->fTPC,
@@ -841,14 +841,14 @@ namespace evd{
 					  ppoints[1].plane,
 					  rawOpt->fTPC,
 					  rawOpt->fCryostat);
-	
+
 	TGText *tt=new TGText(Form("z:%4.1f",z));
-	tt->InsLine(1,Form("x:%4.1f,",(xyz_vertex_fit[0]+second_time)/2)); 
-	tt->InsLine(1,Form("y:%4.1f,",y));  
+	tt->InsLine(1,Form("x:%4.1f,",(xyz_vertex_fit[0]+second_time)/2));
+	tt->InsLine(1,Form("y:%4.1f,",y));
 	fXYZPosition->SetText(tt);
 	fXYZPosition->Update();
 	//////////// the xyz vertex is found. Can proceed to calulate distance from edge
-	
+
       }
       else{
 	if(time_good){    //otherwise the wires_cross are false by default
@@ -861,30 +861,30 @@ namespace evd{
       }
       // extrapolate third point only if there are enough planes
       if(fPlanes.size() > 2){
-	
+
 	unsigned int wplane = 0;
 	unsigned int wirevertex = 0;
         art::ServiceHandle<evd::EvdLayoutOptions const> evdlayoutopt;
-	
+
 	for(size_t xx = 0; xx < fPlanes.size(); ++xx){
 	  wplane = 0;
 	  for(int yy = 0; yy < 2; ++yy)
 	    if(ppoints[yy].plane == xx)
 	      ++wplane;
-	
-	  if(!wplane){ 
+
+	  if(!wplane){
 	    wplane = xx;
 	    break;
 	  }
 	}
-	
-	
+
+
 	geom->Plane(wplane).LocalToWorld(origin, pos);
 	pos[1]=xyz_vertex_fit[1];
 	pos[2]=xyz_vertex_fit[2];
-	
+
 	wirevertex = geom->NearestWire(pos, wplane, rawOpt->fTPC, rawOpt->fCryostat);
-	
+
 	double timestart = detp->ConvertXToTicks(xyz_vertex_fit[0],
 						 wplane,
 						 rawOpt->fTPC,
@@ -896,8 +896,8 @@ namespace evd{
 	  fPlanes[wplane]->View()->AddMarker(wirevertex, timestart, kMagenta, 29, 2.0);
 	else  //draw dummy marker to delete old one
 	  fPlanes[wplane]->View()->AddMarker(0.0,0.0,2,1,0.1);
-	fPlanes[wplane]->Pad()->Update(); 
-	fPlanes[wplane]->View()->Draw();	
+	fPlanes[wplane]->Pad()->Update();
+	fPlanes[wplane]->View()->Draw();
       }// end if(fPlanes.size()>2)
       //update pad?
       gPad->Modified();
@@ -919,8 +919,8 @@ namespace evd{
 
   //......................................................................
   void TWQProjectionView::RefitSeeds(){
-  
-  
+
+
   }
 
   //......................................................................
@@ -928,13 +928,13 @@ namespace evd{
   void TWQProjectionView::SaveSelection()
   {
     util::GeometryUtilities gser;
-	
+
     art::ServiceHandle<evd::EvdLayoutOptions const> evdlayoutoptions;
     if(evdlayoutoptions->fMakeSeeds){
       double KineticEnergy = fPlanes[0]->SaveSeedList( seedlines, kDistance);
       std::stringstream ss;
       ss<< " " << std::setprecision(1) << std::fixed << KineticEnergy << " MeV";
-	    
+
       TGText * tt = new TGText(fAngleInfo->GetText());
       tt->InsLine(1,ss.str().c_str());
       fAngleInfo->SetText(tt);
@@ -968,47 +968,47 @@ namespace evd{
 					      pline[ii].t0,
 					      pline[ii].w1,
 					      pline[ii].t1,
-					      kDistance, 
+					      kDistance,
 					      zoom_opt);
       }
       if(fPlanes.size()>pline.size() && pline.size() >=2 ){   // need to project to third plane
 
-		
+
 	util::PxPoint p00(pline[0].plane,pline[0].w0,pline[0].t0);
 	util::PxPoint p01(pline[1].plane,pline[1].w0,pline[1].t0);
 	util::PxPoint p0N(0,0,0);
 	int error1=gser.GetProjectedPoint(&p00,&p01,p0N);
-		
-				
+
+
 	util::PxPoint p10(pline[0].plane,pline[0].w1,pline[0].t1);
 	util::PxPoint p11(pline[1].plane,pline[1].w1,pline[1].t1);
 	util::PxPoint p1N(0,0,0);
 	int error2=gser.GetProjectedPoint(&p10,&p11,p1N);
 	if(error1!=-1 && error2!=-1)
 	  fPlanes[p0N.plane]->SaveHitList(p0N.w,p0N.t,p1N.w,p1N.t,kDistance, zoom_opt,false);
-		
-		
-				
+
+
+
       }
-	
+
       for(size_t jj = 0;jj < fPlanes.size(); ++jj){
 	fPlanes[jj]->UpdatePad();
       }
 
-	
+
       gser.Get3DaxisN(pline[0].plane,pline[1].plane,omx[0],omx[1],xphi,xtheta);
 
 //       double xtheta2;
 //       if(xphi < 2 && xphi > -2)
 // 	xtheta2=gser.Get3DSpecialCaseTheta(pline[0].plane,
 // 					   pline[1].plane,
-// 					   pline[0].w1-pline[0].w0, 
+// 					   pline[0].w1-pline[0].w0,
 // 					   pline[1].w1-pline[1].w0);
-	
+
       double length=FindLineLength();
       TGText *tt=new TGText(Form("Length:%4.1f",length));
-      tt->InsLine(1,Form("Omega P%d:%4.1f,",pline[0].plane,omx[0])); 
-      tt->InsLine(2,Form("Omega P%d:%4.1f,",pline[1].plane,omx[1]));  
+      tt->InsLine(1,Form("Omega P%d:%4.1f,",pline[0].plane,omx[0]));
+      tt->InsLine(2,Form("Omega P%d:%4.1f,",pline[1].plane,omx[1]));
       tt->InsLine(3,Form("Phi: %4.1f,",xphi));
 
       tt->InsLine(4, Form("Theta: %4.1f",xtheta));
@@ -1021,7 +1021,7 @@ namespace evd{
   void TWQProjectionView::ClearSelection()
   {
     art::ServiceHandle<evd::EvdLayoutOptions const> evdlayoutopt;
-  
+
     if(!evdlayoutopt->fMakeSeeds && !evdlayoutopt->fMakeClusters)
       ppoints.clear();
     else if(evdlayoutopt->fMakeSeeds)
@@ -1033,8 +1033,8 @@ namespace evd{
 	fPlanes[i]->UpdatePad();
       }
       pline.clear();
-	
-    }	
+
+    }
   }
 
   //.......................................................................
@@ -1052,7 +1052,7 @@ namespace evd{
       fPlanes[i]->DrawLinesinView(seedlines,true);
       fPlanes[i]->UpdatePad();
     }
-	
+
     return;
   }
 
@@ -1070,7 +1070,7 @@ namespace evd{
     if(this->seedlines.size()==0) return;
 
     // If the seed lines vector is an event seed number, remove
-    //  one seed from the hit selector seed collection  
+    //  one seed from the hit selector seed collection
     if(seedlines.size()%3==0)
       fPlanes[0]->HitSelectorGet()->SeedVector().pop_back();
 
@@ -1078,21 +1078,21 @@ namespace evd{
     int SeedsToRemove = seedlines.size() % fPlanes.size();
     if(SeedsToRemove==0) SeedsToRemove=3;
 
-    mf::LogVerbatim("TWQProjectionView") <<"Removing  " 
-					 << SeedsToRemove 
+    mf::LogVerbatim("TWQProjectionView") <<"Removing  "
+					 << SeedsToRemove
 					 << " of " << seedlines.size() <<" seed lines";
-  
+
     // Throw them out
     for(int i=0; i!=SeedsToRemove; ++i)
       seedlines.pop_back();
-  
+
     // Then update the drawing pads
     for(size_t i=0; i!=fPlanes.size(); ++i){
       fPlanes[i]->UpdatePad();
       fPlanes[i]->DrawLinesinView(seedlines,true);
       fPlanes[i]->UpdatePad();
     }
-  
+
   }
 
   //.......................................................................
@@ -1136,11 +1136,11 @@ namespace evd{
       curr_zooming_plane=plane;
       break;
     }
-    case kButton1Motion:{ 
+    case kButton1Motion:{
       int lx,hx,ly,hy;
       if (pw0 < pxold){
-	lx=pw0; 
-	hx=pxold; 
+	lx=pw0;
+	hx=pxold;
       }
       else{
 	lx=pxold;
@@ -1148,7 +1148,7 @@ namespace evd{
       }
 
       if (pt0 < pyold){
-	ly=pt0; 
+	ly=pt0;
 	hy=pyold;
       }
       else{
@@ -1162,8 +1162,8 @@ namespace evd{
       linedrawn = 1;
 
       if (pw0 < pxold){
-	lx=pw0; 
-	hx=pxold; 
+	lx=pw0;
+	hx=pxold;
       }
       else{
 	lx=pxold;
@@ -1171,7 +1171,7 @@ namespace evd{
       }
 
       if (pt0 < pyold){
-	ly=pt0; 
+	ly=pt0;
 	hy=pyold;
       }
       else{
@@ -1187,26 +1187,26 @@ namespace evd{
       w1 = gPad->AbsPixeltoX(px);
       t1 = gPad->AbsPixeltoY(py);
       gPad->Modified(kTRUE);
-		  
+
       //   line = new TLine(w0,t0,w1,t1);
       //   line->Draw();
-		  
+
       float x = gPad->PadtoX(w1);
       tend = gPad->PadtoY(t1);
       wend  = (unsigned int)TMath::Nint(x);
-		  
+
       gROOT->SetEditorMode();
-		  
+
       //make sure the box is significantly big to avoid accidental zooms on nothing.
       double xx1,yy1,xx2,yy2;
-		  
+
       gPad->GetRangeAxis(xx1, yy1, xx2, yy2);
-		  
-      if(wstart != 0 && tstart != 0 && 
-	 ( std::abs(wend-wstart ) > 0.01*(xx2-xx1) ) && 
-	 ( std::abs(tend-tstart ) > 0.01*(yy2-yy1)   &&  
+
+      if(wstart != 0 && tstart != 0 &&
+	 ( std::abs(wend-wstart ) > 0.01*(xx2-xx1) ) &&
+	 ( std::abs(tend-tstart ) > 0.01*(yy2-yy1)   &&
 	   curr_zooming_plane==plane ) ){
-	
+
 	SetAutomaticZoomMode(false);
 	this->SetZoom(plane,wstart,wend,tstart,tend);
 	wstart=-1;
@@ -1222,15 +1222,15 @@ namespace evd{
   {
     art::ServiceHandle<evd::EvdLayoutOptions const>     evdlayoutopt;
     const detinfo::DetectorProperties* det = lar::providerFrom<detinfo::DetectorPropertiesService>();
-  
+
     static Float_t w0=-1, t0=-1, w1=-1, t1=-1;
 
     static Int_t pxold, pyold;
     static Int_t pw0, pt0;
-  
+
     static Int_t linedrawn;
-  
-    // These static variables keep track of seed lines which 
+
+    // These static variables keep track of seed lines which
     //  were drawn
     static Int_t LastSeedt0;
     static Int_t LastSeedt1;
@@ -1243,12 +1243,12 @@ namespace evd{
     int event = gPad->GetEvent();
     int px = gPad->GetEventX();
     int py = gPad->GetEventY();
-  
+
     int SeedCounter = seedlines.size();
 
 
     int linefinished=0;
-  
+
     switch (event){
 
     case kButton1Down:{
@@ -1257,7 +1257,7 @@ namespace evd{
       t0 = gPad->AbsPixeltoY(py);
       if(evdlayoutopt->fMakeSeeds){
 	if((SeedCounter%3)==1){
-	  t0=det->ConvertXToTicks(det->ConvertTicksToX(LastSeedt0,LastSeedPlane,0,0),plane,0,0);				
+	  t0=det->ConvertXToTicks(det->ConvertTicksToX(LastSeedt0,LastSeedPlane,0,0),plane,0,0);
 	  py=gPad->YtoAbsPixel(t0);
 	}
 	else{
@@ -1272,9 +1272,9 @@ namespace evd{
       break;
     }
 
-    case kButton1Motion:{ 
+    case kButton1Motion:{
       int lx,hx,ly,hy;
-		  
+
       // If we are in seed mode, and one seed line
       //  was already placed, constrain head of next line
       //  to be at same t0
@@ -1287,24 +1287,24 @@ namespace evd{
 
       lx=pxold;
       hx=pw0;
-		  
+
       ly=pyold;
       hy=pt0;
-		  
-		  
+
+
 
       if (linedrawn) gVirtualX->DrawLine(lx, ly, hx, hy);
-		  
+
       pxold = px;
       pyold = py;
       linedrawn = 1;
-		  
+
       lx=pxold;
       hx=pw0;
-		  
+
       ly=pyold;
       hy=pt0;
-		  
+
       if (linedrawn) gVirtualX->DrawLine(lx, ly, hx, hy);
       break;
     }
@@ -1313,14 +1313,14 @@ namespace evd{
       if (px == pw0 && py == pt0) break;
       w1 = gPad->AbsPixeltoX(px);
       t1 = gPad->AbsPixeltoY(py);
-			
+
       gPad->Modified(kTRUE);
 
       // if we are making seeds, process this mouse operation
       // in context of how many unconnected seeds we have
       if(evdlayoutopt->fMakeSeeds){
 	LastSeedt1=t1;
-			    
+
 	// we keep track of how many seed lines we placed
 	SeedCounter++;
 
@@ -1344,16 +1344,16 @@ namespace evd{
 	    pline=util::PxLine(plane,w0,t0,w1,t1);
 	    linefinished=2;
 	  }
-				  
+
 
 	}
 	// If a first seed line, can be drawn with no constraints.
 	// Put down guide lines in other 2 views for t
-			    
+
 	else if((SeedCounter%3)==1){
 	  pline=util::PxLine(plane,w0,t0,w1,t1);
 	  linefinished=1;
-				
+
 	}
 	// Of it is a thid seed line, something is terribly
 	//  wrong.  Shout a warning.
@@ -1362,7 +1362,7 @@ namespace evd{
 	}
       }
       else{
-			  
+
 	pline=util::PxLine(plane,w0,t0,w1,t1);
 	linefinished=1;
       }
@@ -1370,7 +1370,7 @@ namespace evd{
       //gROOT->SetEditorMode();
     }
     }   //end switch
-  
+
     return linefinished;
   }
 
@@ -1384,10 +1384,10 @@ namespace evd{
 
 
     util::PxLine ppx;
-	 
+
     if(!DrawLine(plane,ppx))
       return;
-	 
+
     curr_zooming_plane=-1;
     gROOT->SetEditorMode();
 
@@ -1397,7 +1397,7 @@ namespace evd{
     for(size_t ii = 0; ii < this->pline.size(); ++ii){
       if(ppx.plane==this->pline[ii].plane){
 	this->pline[ii]=ppx;
-		
+
 	//clear View and draw new Marker
 	this->fPlanes[plane]->Pad()->cd();
 	this->fPlanes[this->pline[ii].plane]->View()->Clear();
@@ -1412,7 +1412,7 @@ namespace evd{
 	break;
       }
     }
-	
+
     //if plane does not repeat and size of list is larger than 2 pop_front and delete its marker. Otherwise just push_back.
     if(repeat_plane==-1){
       if( this->pline.size()>=2){
@@ -1444,7 +1444,7 @@ namespace evd{
 
 
     }
-	
+
   }
 
   //.......................................................................
@@ -1456,23 +1456,23 @@ namespace evd{
     TObject *select = gPad->GetSelected();
     if(!select) return;
     if(!select->InheritsFrom("TBox")) return;
-  
-  
+
+
     util::PxLine ppx;
-  
+
     int DrawStatus = DrawLine(plane,ppx);
-  
+
     //  std::cout<<"Draw status return value for this line " <<DrawStatus<<std::endl;
 
     if(DrawStatus==0)
       return;
-  
+
     curr_zooming_plane=-1;
     gROOT->SetEditorMode();
-  
-  
+
+
     this->seedlines.push_back(ppx);
-  
+
     if(DrawStatus==1){
       // We drew the first of seed projection - go ahead and pass it on, and draq guide lines
       for(size_t p = 0; p != fPlanes.size(); ++p)
@@ -1481,21 +1481,21 @@ namespace evd{
     else if(DrawStatus==2){
       mf::LogVerbatim("TWQProjectionView") << "Adding third seed projection";
       // We drew the second seed projection - make the 3D seed
-      
+
       util::PxLine l0 = seedlines.at(seedlines.size()-1);
       util::PxLine l1 = seedlines.at(seedlines.size()-2);
-      
+
       const detinfo::DetectorProperties* det = lar::providerFrom<detinfo::DetectorPropertiesService>();
-      
+
       double x0 = det->ConvertTicksToX(l0.t0, l0.plane, 0,0);
       double x1 = det->ConvertTicksToX(l0.t1, l0.plane, 0,0);
 
-      
+
 
       util::PxPoint thirdp0(0,0,0), thirdp1(0,0,0);
-      
+
       util::GeometryUtilities geomutil;
-      
+
       double yz0[2];
       double yz1[2];
       util::PxPoint l0_pt0 = l0.pt0();
@@ -1506,18 +1506,18 @@ namespace evd{
       geomutil.GetProjectedPoint(&l0_pt1, &l1_pt1, thirdp1);
       geomutil.GetYZ(&l0_pt0, &l1_pt0, yz0);
       geomutil.GetYZ(&l0_pt1, &l1_pt1, yz1);
-	     
+
       thirdp0.t = det->ConvertXToTicks(x0, thirdp0.plane,0,0);
       thirdp1.t = det->ConvertXToTicks(x1, thirdp1.plane,0,0);
 
       util::PxLine thirdline(thirdp0.plane, thirdp0.w, thirdp0.t, thirdp1.w, thirdp1.t);
-    
+
       this->seedlines.push_back(thirdline);
-    
-      mf::LogVerbatim("TWQProjectionView") <<"Third projection goes " 
-					   << thirdline.w0<<" " 
-					   <<thirdline.t0<< " to " 
-					   << thirdline.w1 <<  " " 
+
+      mf::LogVerbatim("TWQProjectionView") <<"Third projection goes "
+					   << thirdline.w0<<" "
+					   <<thirdline.t0<< " to "
+					   << thirdline.w1 <<  " "
 					   << thirdline.t1;
 
 
@@ -1526,17 +1526,17 @@ namespace evd{
       for(size_t p=0; p!=fPlanes.size(); ++p){
 	this->fPlanes[p]->DrawLinesinView(seedlines);
       }
-      
+
 
       // Now make an actual seed object to store
       //  in the hit selector
       double seedpt[3], seeddir[3], seederr[3];
-      
+
       for(int i=0; i!=3; ++i){
 	seederr[i] = 0;
       }
-      
-    
+
+
       seedpt[0]  = (x0+x1)/2.;
       seeddir[0] = (x1-x0)/2.;
 
@@ -1544,20 +1544,20 @@ namespace evd{
       seeddir[1] = (yz1[0]-yz0[0])/2.;
       seedpt[2]  = (yz0[1]+yz1[1])/2.;
       seeddir[2] = (yz1[1]-yz0[1])/2.;
-	  
-      recob::Seed NewSeed(seedpt,seeddir,seederr,seederr); 
-      fPlanes[0]->HitSelectorGet()->SeedVector().push_back(NewSeed);
-      mf::LogVerbatim("TWQProjectionView") <<"Adding seed, vector now of size " 
-					   << fPlanes[0]->HitSelectorGet()->SeedVector().size();
-    
 
-    }  
-  
+      recob::Seed NewSeed(seedpt,seeddir,seederr,seederr);
+      fPlanes[0]->HitSelectorGet()->SeedVector().push_back(NewSeed);
+      mf::LogVerbatim("TWQProjectionView") <<"Adding seed, vector now of size "
+					   << fPlanes[0]->HitSelectorGet()->SeedVector().size();
+
+
+    }
+
     // Update the bezier curve on the screen, and the track params
     //  text box
-    mf::LogVerbatim("TWQProjectionView") << "size of seed vector: " 
+    mf::LogVerbatim("TWQProjectionView") << "size of seed vector: "
 					 << fPlanes[0]->HitSelectorGet()->SeedVector().size();
-    
+
     int NSeeds = fPlanes[0]->HitSelectorGet()->SeedVector().size();
 
     double Length=0;
@@ -1565,17 +1565,17 @@ namespace evd{
     if(NSeeds>1)
       Length = UpdateSeedCurve();
     else if(NSeeds==1)
-      Length = fPlanes[0]->HitSelectorGet()->SeedVector().at(0).GetLength()*2.; 
-    
+      Length = fPlanes[0]->HitSelectorGet()->SeedVector().at(0).GetLength()*2.;
+
     if(Length>0){
-      ss<<" " << Length<< " cm";   
+      ss<<" " << Length<< " cm";
       TGText * tt = new TGText(ss.str().c_str());
       tt->InsLine(1,"3D Track : ");
       fAngleInfo->SetText(tt);
       fAngleInfo->Update();
       ss.clear();
       ss.str("");
-      
+
       double FirstPt[3], LastPt[3], FirstDir[3], LastDir[3], Err[3];
       fPlanes[0]->HitSelectorGet()->SeedVector().at(0).GetPoint(FirstPt,Err);
       fPlanes[0]->HitSelectorGet()->SeedVector().at(0).GetDirection(FirstDir,Err);
@@ -1589,36 +1589,36 @@ namespace evd{
       tt = new TGText(ss.str().c_str());
       ss.clear();
       ss.str("");
-      
+
       ss<<"x| " <<std::setprecision(0)<<std::fixed<< FirstPt[0] <<","<<"\t" <<LastPt[0];
-      
-      
-      tt->InsLine(1,ss.str().c_str());    
+
+
+      tt->InsLine(1,ss.str().c_str());
       ss.clear();
-      ss.str("");    
-      
+      ss.str("");
+
       ss<<"y| " <<std::setprecision(0)<<std::fixed<< FirstPt[1] <<","<<"\t" <<LastPt[1];
-      
-      tt->InsLine(1,ss.str().c_str());    
+
+      tt->InsLine(1,ss.str().c_str());
       ss.clear();
-      ss.str("");    
-      
+      ss.str("");
+
       fXYZPosition->SetText(tt);
-      
+
       art::ServiceHandle<geo::Geometry const> geo;
-      
+
       TVector3 TPCHighBoundary = TVector3(2 * geo->DetHalfWidth(),
 					  geo->DetHalfHeight(),
 					  geo->DetLength());
       TVector3 TPCLowBoundary = TVector3(0,
 					 0-geo->DetHalfHeight(),
 					 0);
-      mf::LogVerbatim("TWQProjectionView") << "Boundaries " 
-					   << TPCLowBoundary[0]  << " " 
-					   << TPCLowBoundary[1]  << " " 
+      mf::LogVerbatim("TWQProjectionView") << "Boundaries "
+					   << TPCLowBoundary[0]  << " "
+					   << TPCLowBoundary[1]  << " "
 					   << TPCLowBoundary[2]  << "\n"
-					   << TPCHighBoundary[0] << " " 
-					   << TPCHighBoundary[1] << " " 
+					   << TPCHighBoundary[0] << " "
+					   << TPCHighBoundary[1] << " "
 					   << TPCHighBoundary[2];
       bool OverPointFound=false;
       for(int i=0; i!=3; ++i){
@@ -1637,12 +1637,12 @@ namespace evd{
 	    fXYZPosition->SetForegroundColor(0x0000ff);
 	    OverPointFound=true;
 	  }
-	      
+
 	}
       }
-    
+
       fXYZPosition->Update();
-  
+
     }
 
     return;
@@ -1683,18 +1683,18 @@ namespace evd{
   void 	TWQProjectionView::ZoomInterest(bool flag)
   {
     mf::LogVerbatim("TWQProjectionView") <<"ZoomInterest called";
-  
+
     if(flag==true) zoom_opt="1";
     else zoom_opt="0";
-  
+
     art::ServiceHandle<geo::Geometry const> geo;
     art::ServiceHandle<evd::RawDrawingOptions const> rawopt;
- 
+
     ZoomOptions zo;
     //  mf::LogVerbatim("TWQProjectionView") <<"Zoom interest pushing back zoom options"<<std::endl;
     fPrevZoomOpt.push_back(fZoomOpt);
 
- 
+
     for(size_t iplane = 0; iplane < fPlanes.size(); ++iplane){
       int minw,maxw,mint,maxt;
       if(flag){
@@ -1703,7 +1703,7 @@ namespace evd{
 	  test = fPlanes[iplane]->RawDataDraw()->GetRegionOfInterest(iplane,minw,maxw,mint,maxt);
 	else
 	  fPlanes[iplane]->RecoBaseDraw()->GetRegionOfInterest(iplane,minw,maxw,mint,maxt);
-	  
+
 	if(test != 0)
 	  continue;
       }
@@ -1713,7 +1713,7 @@ namespace evd{
 	mint = -0.005*fPlanes[iplane]->RawDataDraw()->TotalClockTicks();
 	maxt =  1.01*fPlanes[iplane]->RawDataDraw()->TotalClockTicks();
       }
-      
+
       SetZoom(iplane,minw,maxw,mint,maxt,false);
       zo.wmin[iplane]=minw;
       zo.tmin[iplane]=mint;
@@ -1727,7 +1727,7 @@ namespace evd{
 
   //......................................................................
   void TWQProjectionView::SetUpSideBar()
-  {  
+  {
     SetUpZoomButtons();
     SetUpPositionFind();
     SetUpClusterButtons();
@@ -1737,7 +1737,7 @@ namespace evd{
 
   //......................................................................
   void TWQProjectionView::SetZoomInterest()
-  {  
+  {
     art::ServiceHandle<evd::EvdLayoutOptions>   evdlayoutopt;
     evdlayoutopt->fAutoZoomInterest = fToggleAutoZoom->GetState();
     SetAutomaticZoomMode(evdlayoutopt->fAutoZoomInterest == 1);
@@ -1748,11 +1748,11 @@ namespace evd{
     for (TWireProjPad* pPlane: fPlanes)
       pPlane->SetZoomFromView();
   }
-  
+
 
   //......................................................................
   void TWQProjectionView::SetClusterInterest()
-  {  
+  {
     art::ServiceHandle<evd::EvdLayoutOptions>   evdlayoutopt;
     evdlayoutopt->fMakeClusters = fToggleClusters->GetState();
   }
@@ -1760,7 +1760,7 @@ namespace evd{
 
   //......................................................................
   void TWQProjectionView::SetSeedInterest()
-  {  
+  {
     art::ServiceHandle<evd::EvdLayoutOptions>   evdlayoutopt;
     evdlayoutopt->fMakeSeeds = fToggleSeeds->GetState();
     if(evdlayoutopt->fMakeSeeds==true && evdlayoutopt->fMakeClusters==false ){
@@ -1769,23 +1769,23 @@ namespace evd{
     }
   }
 
-  //......................................................................   
+  //......................................................................
   void TWQProjectionView::ToggleEndPointMarkers()
-  {  
+  {
     art::ServiceHandle<evd::EvdLayoutOptions>   evdlayoutopt;
     evdlayoutopt->fShowEndPointMarkers= fToggleShowMarkers->GetState();
   }
-  
+
   //......................................................................
   void TWQProjectionView::ForceRedraw() {
     MF_LOG_DEBUG("TWQProjectionView") << "Explicit request for redrawing";
-    
+
     // for now, bother only about redrawing the plane pads
     SetZoomFromView();
     DrawPads();
-    
+
   } // TWQProjectionView::ForceRedraw()
-  
+
   //......................................................................
   void TWQProjectionView::SetUpZoomButtons()
   {
@@ -1805,7 +1805,7 @@ namespace evd{
     fZoomBack->Connect("Clicked()", "evd::TWQProjectionView", this, "ZoomBack()");
 
 
-    fToggleAutoZoom=new TGCheckButton(fVFrame,"AutoZoom",0);;       ///< Toggle the autozoom setting 
+    fToggleAutoZoom=new TGCheckButton(fVFrame,"AutoZoom",0);;       ///< Toggle the autozoom setting
     fToggleAutoZoom->Connect("Clicked()", "evd::TWQProjectionView", this, "SetZoomInterest()");
     if(evdlayoutopt->fAutoZoomInterest == 1) fToggleAutoZoom->SetState(kButtonDown);
 
@@ -1821,28 +1821,28 @@ namespace evd{
   void TWQProjectionView::SetUpClusterButtons()
   {
     art::ServiceHandle<evd::EvdLayoutOptions const>        evdlayoutopt;
-    if(!evdlayoutopt->fShowClusterSection)            
+    if(!evdlayoutopt->fShowClusterSection)
       return;
     // enter zoom buttons
-		
+
     fToggleZoom = new TGRadioButton(fVFrame,"Use Zoom",          2);
     fToggleClusters    = new TGRadioButton(fVFrame,"Select Clusters", 3);
-    fToggleSeeds      = new TGRadioButton(fVFrame,"Select Seeds", 4);	
-	
+    fToggleSeeds      = new TGRadioButton(fVFrame,"Select Seeds", 4);
+
     fToggleZoom->Connect("Clicked()", "evd::TWQProjectionView", this, "RadioButtonsDispatch(=0)");
     fToggleClusters->Connect("Clicked()", "evd::TWQProjectionView", this, "RadioButtonsDispatch(=1)");
     fToggleSeeds->Connect("Clicked()", "evd::TWQProjectionView", this, "RadioButtonsDispatch(=2)");
-	
-	
-	
-    //fToggleClusters=new TGCheckButton(fVFrame,"&Make Clusters",0);      ///< Toggle the make cluster setting 
-	
+
+
+
+    //fToggleClusters=new TGCheckButton(fVFrame,"&Make Clusters",0);      ///< Toggle the make cluster setting
+
     fCalcAngle=new TGTextButton(fVFrame, "&Save Selection", 150);
     fCalcAngle->Connect("Clicked()", "evd::TWQProjectionView",this,"SaveSelection()");
-	
+
     fClear=new TGTextButton(fVFrame, "&Clear Selection",0);
     fClear->Connect("Clicked()","evd::TWQProjectionView", this, "ClearSelection()");
-	
+
     fClearLastSeed=new TGTextButton(fVFrame, "&Clear Last Seed",0);
     fClearLastSeed->Connect("Clicked()","evd::TWQProjectionView", this, "ClearLastSeed()");
 
@@ -1851,23 +1851,23 @@ namespace evd{
 
     //fClearSeeds=new TGTextButton(fVFrame, "&Clear All Seeds",0);
     //fClearSeeds->Connect("Clicked()","evd::TWQProjectionView", this, "ClearAllSeeds()");
-	
-    if(evdlayoutopt->fMakeClusters == 1) fToggleClusters->SetState(kButtonDown);  
-    else if(evdlayoutopt->fMakeSeeds == 1) fToggleSeeds->SetState(kButtonDown); 
-    else fToggleZoom->SetState(kButtonDown); 
-	
-	
-	
+
+    if(evdlayoutopt->fMakeClusters == 1) fToggleClusters->SetState(kButtonDown);
+    else if(evdlayoutopt->fMakeSeeds == 1) fToggleSeeds->SetState(kButtonDown);
+    else fToggleZoom->SetState(kButtonDown);
+
+
+
     fAngleInfo=new TGTextView(fVFrame,115,75,999,TGView::kNoHSB | TGView::kNoVSB); ///< Display the calculated angles
     fAngleInfo->SetEditable("false");
     TGText *tt=new TGText("...");
     fAngleInfo->SetText(tt);
-	
+
 
     fDistance = new TGNumberEntry(fVFrame,0,6,-1,
-				  TGNumberFormat::kNESReal, 
-				  TGNumberFormat::kNEAPositive, 
-				  TGNumberFormat::kNELLimitMinMax, 
+				  TGNumberFormat::kNESReal,
+				  TGNumberFormat::kNEAPositive,
+				  TGNumberFormat::kNELLimitMinMax,
 				  0 , 100);
     // Initial value
     fDistance->SetNumber( 1.5 );
@@ -1881,28 +1881,28 @@ namespace evd{
     // Text label for this numeric field.
     fDistanceLabel= new TGLabel(fVFrame,"Distance");
 
-	
+
     fVFrame->AddFrame(fToggleZoom, new TGLayoutHints(kLHintsTop|kLHintsLeft,0,0,5,1));
     fVFrame->AddFrame(fToggleClusters, new TGLayoutHints(kLHintsTop|kLHintsLeft,0,0,5,1));
     fVFrame->AddFrame(fToggleSeeds, new TGLayoutHints(kLHintsTop|kLHintsLeft,0,0,5,1));
-	
+
     fVFrame->AddFrame(fCalcAngle,new TGLayoutHints(kLHintsTop|kLHintsLeft,0,0,5,1));
     fVFrame->AddFrame(fClear,new TGLayoutHints(kLHintsTop | kLHintsLeft,0,0,5,1));
     fVFrame->AddFrame(fClearLastSeed, new TGLayoutHints(kLHintsTop|kLHintsLeft,0,0,5,1));
     //	fVFrame->AddFrame(fRefitSeeds, new TGLayoutHints(kLHintsTop|kLHintsLeft,0,0,5,1));
-	
+
     fVFrame->AddFrame(fDistance,     new TGLayoutHints(kLHintsTop | kLHintsLeft, 0,  0, 5, 1 ) );
     fVFrame->AddFrame(fDistanceLabel,     new TGLayoutHints(kLHintsTop | kLHintsLeft, 0,  0, 5, 1 ) );
-	
+
     fVFrame->AddFrame(fAngleInfo,new TGLayoutHints(kLHintsTop | kLHintsLeft,0,0,5,1));
-	
+
 	fVFrame->AddFrame(fDistance,     new TGLayoutHints(kLHintsTop | kLHintsLeft, 0,  0, 5, 1 ) );
-	
-	
+
+
     //fVFrame->AddFrame(fClearSeeds, new TGLayoutHints(kLHintsTop|kLHintsLeft,0,0,5,1));
-	
+
   }
-  
+
   //......................................................................
   void TWQProjectionView::SetUpDrawingButtons()
   {
@@ -1913,37 +1913,37 @@ namespace evd{
     fRedraw->Connect("Clicked()", "evd::TWQProjectionView", this, "ForceRedraw()");
 
     fVFrame->AddFrame(fRedraw,           new TGLayoutHints(kLHintsTop | kLHintsLeft, 0,  0, 5, 1 ) );
-    
+
   } // SetUpDrawingButtons()
 
 
   //......................................................................
   std::string TWQProjectionView::TotalElementsString(unsigned int NElements)
     { return "(" + std::to_string(NElements) + " total)"; }
-  
+
   void TWQProjectionView::SetUpTPCselection()
   {
     geo::GeometryCore const& geom = *(art::ServiceHandle<geo::Geometry const>());
     art::ServiceHandle<evd::RawDrawingOptions const> rawOpt;
-    
+
     TGHorizontalFrame* pRow = nullptr;
     //
     // Cryostat selection line
     //
     // this is the subframe with horizontal alignment where we place our widgets:
     pRow = new TGHorizontalFrame(fVFrame, 216, 32, kHorizontalFrame);
-    
+
     geo::CryostatID::CryostatID_t const CurrentCryo = rawOpt->fCryostat;
     unsigned int const NCryo = geom.Ncryostats();
     if (NCryo > 1) { // allow a selector
       unsigned int const NCryoDigits = std::to_string(NCryo - 1).length(); // a silly way fast to code...
 
       geo::CryostatID::CryostatID_t const CurrentCryo = rawOpt->fCryostat;
-      
+
       // label
       TGLabel* pLabel = new TGLabel(pRow, "Cryo #");
       pLabel->SetTextJustify(kTextRight | kTextCenterY);
-      
+
       // numerical input
       fCryoInput = new TGNumberEntry(
         pRow, (Double_t) CurrentCryo, // parent widget; starting value;
@@ -1958,7 +1958,7 @@ namespace evd{
       pRow->AddFrame(pLabel,          new TGLayoutHints(kLHintsLeft | kLHintsTop, 2, 2, 5, 5));
       pRow->AddFrame(fCryoInput,      new TGLayoutHints(kLHintsLeft | kLHintsTop, 2, 2, 2, 2));
       pRow->AddFrame(pTotalCryoLabel, new TGLayoutHints(kLHintsLeft | kLHintsTop, 2, 2, 5, 5));
-     
+
       fCryoInput->Connect("ValueSet(Long_t)", "evd::TWQProjectionView", this, "SelectTPC()");
     }
     else { // just place a static label
@@ -1966,26 +1966,26 @@ namespace evd{
       // the numbers are padding on the four sides
       pRow->AddFrame(pLabel, new TGLayoutHints(kLHintsLeft | kLHintsTop, 2, 2, 5, 5));
     }
-    
+
     fVFrame->AddFrame(pRow, new TGLayoutHints(kLHintsLeft | kLHintsTop, 2, 2, 2, 2));
-    
+
     //
     // TPC selection line
     //
     // this is the subframe with horizontal alignment where we place our widgets:
     pRow = new TGHorizontalFrame(fVFrame, 216, 32, kHorizontalFrame);
-    
+
     unsigned int MaxTPC = geom.MaxTPCs();
     if (MaxTPC > 1) { // label, numeric input, then total
       unsigned int const NTPCDigits = std::to_string(MaxTPC - 1).length(); // a silly way fast to code...
 
       geo::TPCID::TPCID_t const CurrentTPC = rawOpt->fTPC;
       unsigned int const NTPCs = geom.NTPC(geo::CryostatID(CurrentCryo));
-      
+
       // label
       TGLabel* pLabel = new TGLabel(pRow, "TPC  #");
       pLabel->SetTextJustify(kTextRight | kTextCenterY);
-      
+
       // numerical input
       fTPCInput = new TGNumberEntry(
         pRow, (Double_t) CurrentTPC, // parent widget; starting value;
@@ -2000,7 +2000,7 @@ namespace evd{
       pRow->AddFrame(pLabel,         new TGLayoutHints(kLHintsLeft | kLHintsTop, 2, 2, 5, 5));
       pRow->AddFrame(fTPCInput,      new TGLayoutHints(kLHintsLeft | kLHintsTop, 2, 2, 2, 2));
       pRow->AddFrame(fTotalTPCLabel, new TGLayoutHints(kLHintsLeft | kLHintsTop, 2, 2, 5, 5));
-     
+
       fTPCInput->Connect("ValueSet(Long_t)", "evd::TWQProjectionView", this, "SelectTPC()");
     }
     else { // just place another static label
@@ -2008,11 +2008,11 @@ namespace evd{
       // the numbers are padding on the four sides
       pRow->AddFrame(pLabel, new TGLayoutHints(kLHintsLeft | kLHintsTop, 2, 2, 5, 5));
     }
-    
+
     fVFrame->AddFrame(pRow, new TGLayoutHints(kLHintsLeft | kLHintsTop, 2, 2, 2, 2));
-    
+
   } // TWQProjectionView::SetUpTPCselection()
-  
+
   //----------------------------------------------------------------------------
   void	TWQProjectionView::SelectTPC()
   {
@@ -2033,14 +2033,14 @@ namespace evd{
      */
     evd::RawDrawingOptions& rawOpt = *(art::ServiceHandle<evd::RawDrawingOptions>());
     geo::GeometryCore const& geom = *(art::ServiceHandle<geo::Geometry const>());
-    
+
     geo::TPCID CurrentTPC(rawOpt.fCryostat, rawOpt.fTPC);
     geo::TPCID RequestedTPC(
       fCryoInput? (unsigned int) fCryoInput->GetIntNumber(): 0U,
       fTPCInput? (unsigned int) fTPCInput->GetIntNumber(): 0U
       );
     geo::TPCID NewTPC(RequestedTPC);
-    
+
     // if the input ends up being invalid, try to fix it somehow;
     // we give a special meaning to negative values;
     // since they are not supported by the container we store them in
@@ -2065,23 +2065,23 @@ namespace evd{
         NewTPC.TPC = (geo::TPCID::TPCID_t) 0;
       }
       else { // TPC wrap
-        if (++NewTPC.Cryostat >= NCryos) 
+        if (++NewTPC.Cryostat >= NCryos)
           NewTPC.Cryostat = (geo::CryostatID::CryostatID_t) 0;
         NewTPC.TPC = (geo::TPCID::TPCID_t) 0;
       }
-      
+
       MF_LOG_DEBUG("TWQProjectionView") << __func__ << ": invalid TPC "
         << RequestedTPC << ", corrected as " << NewTPC << " instead";
     }
-    
+
     if (!geom.HasTPC(NewTPC)) { // weird...
       MF_LOG_ERROR("TWQProjectionView") << __func__ << ": internal error: "
         << RequestedTPC << " turned into an invalid TPC " << NewTPC;
     }
-    else if (NewTPC != CurrentTPC) { // do we need to change after all? 
+    else if (NewTPC != CurrentTPC) { // do we need to change after all?
       MF_LOG_DEBUG("TWQProjectionView") << __func__ << ": switching from "
         << CurrentTPC << " to " << NewTPC;
-    
+
       // new cryostat?
       if (rawOpt.fCryostat != NewTPC.Cryostat) { // update the TPC count
         unsigned int const NTPCs = geom.NTPC(NewTPC);
@@ -2092,7 +2092,7 @@ namespace evd{
       // (that is the thing everything else refers to)
       rawOpt.fCryostat = NewTPC.Cryostat;
       rawOpt.fTPC = NewTPC.TPC;
-      
+
       // redraw the content
       ResetRegionsOfInterest();
       DrawPads();
@@ -2100,38 +2100,38 @@ namespace evd{
     //  evdb::Canvas::fCanvas->Modified();
     //  evdb::Canvas::fCanvas->Update();
     }
-    
+
     // if we have changed the requested TPC, we need to update the input fields
     if (NewTPC != RequestedTPC) {
       if (fCryoInput) fCryoInput->SetIntNumber(NewTPC.Cryostat);
       if (fTPCInput) fTPCInput->SetIntNumber(NewTPC.TPC);
     }
-    
+
   } // TWQProjectionView::SelectTPC()
-  
-  
+
+
   //----------------------------------------------------------------------------
   void	TWQProjectionView::RadioButtonsDispatch(int parameter)
   {
-    art::ServiceHandle<evd::EvdLayoutOptions>        evdlayoutopt; 
-    if(parameter==0){evdlayoutopt->fMakeClusters=0; 
-      evdlayoutopt->fMakeSeeds=0; 
-      fToggleClusters->SetState(kButtonUp); 	 
-      fToggleSeeds->SetState(kButtonUp);  
+    art::ServiceHandle<evd::EvdLayoutOptions>        evdlayoutopt;
+    if(parameter==0){evdlayoutopt->fMakeClusters=0;
+      evdlayoutopt->fMakeSeeds=0;
+      fToggleClusters->SetState(kButtonUp);
+      fToggleSeeds->SetState(kButtonUp);
     }
     else if(parameter==1){
-      evdlayoutopt->fMakeClusters=1; 
-      evdlayoutopt->fMakeSeeds=0; 
-      fToggleZoom->SetState(kButtonUp); 	 
-      fToggleSeeds->SetState(kButtonUp);  
+      evdlayoutopt->fMakeClusters=1;
+      evdlayoutopt->fMakeSeeds=0;
+      fToggleZoom->SetState(kButtonUp);
+      fToggleSeeds->SetState(kButtonUp);
     }
     else if(parameter==2){
-      evdlayoutopt->fMakeClusters=0; 
-      evdlayoutopt->fMakeSeeds=1; 
-      fToggleZoom->SetState(kButtonUp); 	 
-      fToggleClusters->SetState(kButtonUp);  
+      evdlayoutopt->fMakeClusters=0;
+      evdlayoutopt->fMakeSeeds=1;
+      fToggleZoom->SetState(kButtonUp);
+      fToggleClusters->SetState(kButtonUp);
     }
- 
+
   }
 
   //......................................................................
@@ -2139,10 +2139,10 @@ namespace evd{
   {
     // enter zoom buttons
     art::ServiceHandle<evd::EvdLayoutOptions const>        evdlayoutopt;
-    if(!evdlayoutopt->fShowEndPointSection)            
+    if(!evdlayoutopt->fShowEndPointSection)
       return;
 
-    // int    	 fShowEndPointMarkers;             ///< Draw EndPoint Markers if clicked. 
+    // int    	 fShowEndPointMarkers;             ///< Draw EndPoint Markers if clicked.
 
     fFindEndpoint=new TGTextButton(fVFrame,"&Find XYZ",150);
     fFindEndpoint->Connect("Clicked()", "evd::TWQProjectionView", this, "FindEndPoint()");
@@ -2156,7 +2156,7 @@ namespace evd{
     fClearPPoints=new TGTextButton(fVFrame,"&Clear Points",150);
     fClearPPoints->Connect("Clicked()", "evd::TWQProjectionView", this, "ClearEndPoints()");  // ?
 
-    fToggleShowMarkers=new TGCheckButton(fVFrame,"ShowMarkers",0);       ///< Toggle the ShowEndPointMarkers Setting 
+    fToggleShowMarkers=new TGCheckButton(fVFrame,"ShowMarkers",0);       ///< Toggle the ShowEndPointMarkers Setting
     fToggleShowMarkers->Connect("Clicked()", "evd::TWQProjectionView", this, "ToggleEndPointMarkers()");
     if(evdlayoutopt->fShowEndPointMarkers == 1) fToggleShowMarkers->SetState(kButtonDown);
 
@@ -2176,7 +2176,7 @@ namespace evd{
       ZoomOptions ThePrevZoomOpt = fPrevZoomOpt.at(fPrevZoomOpt.size()-1);
       int plane = fZoomOpt.OnlyPlaneChanged;
       if(plane != -1){
-	SetZoom(plane, 
+	SetZoom(plane,
 		ThePrevZoomOpt.wmin[plane],
 		ThePrevZoomOpt.wmax[plane],
 		ThePrevZoomOpt.tmin[plane],
@@ -2185,13 +2185,13 @@ namespace evd{
       }
       else{
 	for( size_t iplane = 0; iplane != fPlanes.size(); ++iplane){
-	  SetZoom(iplane, 
+	  SetZoom(iplane,
 		  ThePrevZoomOpt.wmin[iplane],
 		  ThePrevZoomOpt.wmax[iplane],
 		  ThePrevZoomOpt.tmin[iplane],
 		  ThePrevZoomOpt.tmax[iplane],
 		  false);
-	      
+
 	}
       }
 
@@ -2206,7 +2206,7 @@ namespace evd{
 				     int wirelow,
 				     int wirehi,
 				     int timelow,
-				     int timehi, 
+				     int timehi,
 				     bool StoreZoom)
   {
 
@@ -2230,29 +2230,29 @@ namespace evd{
       wirelow=wirehi;
       wirehi=temp;
     }
-  
+
     if(timehi<timelow){
       int temp=timelow;
       timelow=timehi;
       timehi=temp;
     }
-  
+
     //if drawing, then currently not zooming
     curr_zooming_plane=-1;
-  
+
     fPlanes[plane]->SetZoomRange(wirelow, wirehi,timelow,timehi);
     fPlanes[plane]->Draw("1");
     fPlanes[plane]->UpdatePad();
-  
+
     evdb::Canvas::fCanvas->cd();
     evdb::Canvas::fCanvas->Modified();
     evdb::Canvas::fCanvas->Update();
 
     //  UpdateSeedCurve();
-  
+
     ori->cd();
-  
-    return;  
+
+    return;
   }
 
   //-----------------------------------------------------------------
@@ -2308,7 +2308,7 @@ namespace evd{
   void TWQProjectionView::SetThreshold()
   {
     double threshold = fThresEntry->GetNumberEntry()->GetNumber();
-      
+
     if (threshold != fLastThreshold)
     {
         art::ServiceHandle<evd::RawDrawingOptions> rawopt;
@@ -2322,7 +2322,7 @@ namespace evd{
 
         ori->cd();
     }
-      
+
     fLastThreshold = threshold;
 
     return;
@@ -2434,7 +2434,7 @@ namespace evd{
     for(size_t p = 0; p != fPlanes.size(); ++p){
       // This method draws the existing seed lines on every
       //   plane, as well as guide lines mid seeding.
-      
+
       fPlanes[p]->DrawLinesinView(seedlines);
 
       //  The update method draws the curve onto each 2D pad
@@ -2449,7 +2449,7 @@ namespace evd{
 
   //-----------------------------------------------------------------
   bool TWQProjectionView::OnNewEvent() {
-    
+
     // first check if it's new...
     art::Event const* pEvent = evdb::EventHolder::Instance()->GetEvent();
     if (!pEvent) {
@@ -2457,21 +2457,21 @@ namespace evd{
       fLastEvent->clear();
       return true;
     }
-    
+
     // do we have a new event?
     if (!fLastEvent->update
       ({*pEvent, art::ServiceHandle<evd::RawDrawingOptions const>()->fRawDataLabel})
       )
       return false;
-    
+
     MF_LOG_DEBUG("TWQProjectionView") << "New event or product: " << *fLastEvent;
-    
+
     art::ServiceHandle<evd::EvdLayoutOptions const> drawopt;
     SetAutomaticZoomMode(drawopt->fAutoZoomInterest == 1);
-    
+
     return true; // yes, a new event is here
   } // TWQProjectionView::OnNewEvent()
 
   //-----------------------------------------------------------------
-  
+
 }// namespace

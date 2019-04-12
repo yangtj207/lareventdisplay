@@ -43,13 +43,13 @@ evd::Ortho3DView::Ortho3DView(TGMainFrame* mf) :
 
   fWidgetFrame = new TGVerticalFrame(fMetaFrame);
   fEmbCanvas->ReparentWindow(fMetaFrame);
-  fMetaFrame->AddFrame(fWidgetFrame, new TGLayoutHints(kLHintsTop | 
-						       kLHintsLeft | 
+  fMetaFrame->AddFrame(fWidgetFrame, new TGLayoutHints(kLHintsTop |
+						       kLHintsLeft |
 						       kLHintsExpandY));
   fMetaFrame->AddFrame(fEmbCanvas, fLayout);
 
   // Make vertically stacked subpads and widget subframes.
-    
+
   int npad = 2;
   for(int ipad = 0; ipad < npad; ++ipad) {
     evdb::Canvas::fCanvas->cd();
@@ -68,7 +68,7 @@ evd::Ortho3DView::Ortho3DView(TGMainFrame* mf) :
         throw cet::exception("Ortho3DView")
           << __func__ << ": unknown projection pad " << ipad << "\n";
     } // switch
-    
+
     std::string padname = std::string("Ortho3DPad") + projname;
     std::string padtitle = projname + std::string(" View");
     double ylo = double(npad - ipad - 1) / double(npad);
@@ -81,8 +81,8 @@ evd::Ortho3DView::Ortho3DView(TGMainFrame* mf) :
 
     TGCompositeFrame* wframe = new TGVerticalFrame(fWidgetFrame);
     fWidgetSubFrames.push_back(wframe);
-    fWidgetFrame->AddFrame(wframe, new TGLayoutHints(kLHintsTop | 
-						     kLHintsLeft | 
+    fWidgetFrame->AddFrame(wframe, new TGLayoutHints(kLHintsTop |
+						     kLHintsLeft |
 						     kLHintsExpandY));
 
     // Add widgets.
@@ -127,16 +127,16 @@ evd::Ortho3DView::Ortho3DView(TGMainFrame* mf) :
   Draw();
   evdb::Canvas::fCanvas->Update();
 }
-  
+
 //......................................................................
 // Destructor.
-evd::Ortho3DView::~Ortho3DView() 
+evd::Ortho3DView::~Ortho3DView()
 {
 }
 
 //......................................................................
 // Draw object in graphics pads.
-void evd::Ortho3DView::Draw(const char* /*opt*/) 
+void evd::Ortho3DView::Draw(const char* /*opt*/)
 {
   for(std::vector<Ortho3DPad*>::const_iterator i = fOrtho3DPads.begin();
       i != fOrtho3DPads.end(); ++i) {

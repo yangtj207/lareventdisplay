@@ -15,7 +15,7 @@ namespace evd {
   {
   public:
     explicit AnalysisDrawingOptions(fhicl::ParameterSet const& pset);
-    
+
     void reconfigure(fhicl::ParameterSet const& pset) ;
 
     int fDrawCalorimetry;
@@ -24,7 +24,7 @@ namespace evd {
     int fCaloPlane;
     int fTrackID;
 
-    std::vector<std::string> fCalorimetryLabels;         ///< module labels that produced calorimetry 
+    std::vector<std::string> fCalorimetryLabels;         ///< module labels that produced calorimetry
     std::vector<std::string> fParticleIDLabels;     	   ///< module labels that produced particleid
 
     std::string fCalorTemplateFileName;    ///< files that have calorimetry template curves

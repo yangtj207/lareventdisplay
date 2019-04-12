@@ -35,7 +35,7 @@ public:
 	           double y2, double x2);
     ~DrawingPad();
     TPad* Pad() { return fPad; }
-    
+
     // Access to the drawing utilities
     HeaderDrawer*                HeaderDraw();
     evd_tool::IExperimentDrawer* GeometryDraw();
@@ -46,9 +46,9 @@ public:
     HitSelector*   	             HitSelectorGet();
 
 protected:
-    
+
     using IExperimentDrawerPtr = std::unique_ptr<evd_tool::IExperimentDrawer>;
-    
+
     TPad*                fPad;              ///< The ROOT graphics pad
     HeaderDrawer*     	 fHeaderDraw;       ///< Drawer for event header info
     IExperimentDrawerPtr fGeometryDraw;     ///< Drawer for detector geometry

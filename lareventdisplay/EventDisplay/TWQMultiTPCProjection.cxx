@@ -53,33 +53,33 @@ namespace evd{
   static double       kDistance;
   static int          curr_zooming_plane;
   static const char*  zoom_opt=0;
-  
+
   static int          shift_lock;
-  
+
 
   //......................................................................
-  TWQMultiTPCProjectionView::TWQMultiTPCProjectionView(TGMainFrame* mf) 
+  TWQMultiTPCProjectionView::TWQMultiTPCProjectionView(TGMainFrame* mf)
     : evdb::Canvas(mf)
-  {  
-    
+  {
+
     art::ServiceHandle<geo::Geometry const> geo;
 
-    // first make pads for things that don't depend on the number of 
+    // first make pads for things that don't depend on the number of
     // planes in the detector
     // bottom left corner is (0.,0.), top right is  (1., 1.)
 
-    evdb::Canvas::fCanvas->cd();  
-    fHeaderPad = new HeaderPad("fHeaderPadMultiTPC","Header",0.0,0.0,0.15,0.13,"");  
-    fHeaderPad->Draw();  
+    evdb::Canvas::fCanvas->cd();
+    fHeaderPad = new HeaderPad("fHeaderPadMultiTPC","Header",0.0,0.0,0.15,0.13,"");
+    fHeaderPad->Draw();
 
-    evdb::Canvas::fCanvas->cd();  
-    fMC = new MCBriefPad("fMCPadMultiTPC","MC Info.",0.15,0.13,1.0,0.17,"");  
-    fMC->Draw();  
+    evdb::Canvas::fCanvas->cd();
+    fMC = new MCBriefPad("fMCPadMultiTPC","MC Info.",0.15,0.13,1.0,0.17,"");
+    fMC->Draw();
 
-    evdb::Canvas::fCanvas->cd();  
-    fWireQ = new TQPad("fWireQPadMultiTPC", "ADCvsTime",0.15,0.0,1.0,0.13,"TQ", 0, 0);  
+    evdb::Canvas::fCanvas->cd();
+    fWireQ = new TQPad("fWireQPadMultiTPC", "ADCvsTime",0.15,0.0,1.0,0.13,"TQ", 0, 0);
     fWireQ->Pad()->SetBit(TPad::kCannotMove,true);
-    fWireQ->Draw();  
+    fWireQ->Draw();
 
 
     // add new "meta frame" to hold the GUI Canvas and a side frame (vframe)
@@ -87,7 +87,7 @@ namespace evd{
     fMetaFrame->SetBit(TPad::kCannotMove,true);
 
     //new frame organizing the buttons on the left of the canvas.
-    fVFrame  = new TGCompositeFrame(fMetaFrame, 60, 60, kVerticalFrame); 
+    fVFrame  = new TGCompositeFrame(fMetaFrame, 60, 60, kVerticalFrame);
     // Define a layout for placing the canvas within the frame.
     fLayout = new TGLayoutHints(kLHintsTop | kLHintsLeft | kLHintsExpandX |
 				kLHintsExpandY, 5, 5, 5, 5);
@@ -96,7 +96,7 @@ namespace evd{
     mf->RemoveFrame(fFrame);
 
     fEmbCanvas->ReparentWindow( fMetaFrame, fXsize, fYsize);
-	
+
 
     fMetaFrame->AddFrame(fVFrame,new TGLayoutHints(kLHintsTop | kLHintsLeft | kLHintsExpandY));
     fMetaFrame->AddFrame(fEmbCanvas, fLayout);
@@ -105,12 +105,12 @@ namespace evd{
     mf->AddFrame(fMetaFrame,fLayout);
     mf->AddFrame(fFrame);
 
-    // plane number entry  
+    // plane number entry
     fPlaneEntry = new TGNumberEntry(fFrame,
 				    0,2,-1,
-				    TGNumberFormat::kNESInteger, 
-				    TGNumberFormat::kNEAAnyNumber, 
-				    TGNumberFormat::kNELLimitMinMax, 
+				    TGNumberFormat::kNESInteger,
+				    TGNumberFormat::kNEAAnyNumber,
+				    TGNumberFormat::kNELLimitMinMax,
 				    0, geo->Nplanes()-1 );
 
     kPlane = 0;
@@ -129,11 +129,11 @@ namespace evd{
     // Text label for this numeric field.
     fPlaneLabel= new TGLabel(fFrame,"Plane");
 
-    // wire number entry 
+    // wire number entry
     fWireEntry = new TGNumberEntry(fFrame,0,6,-1,
-				   TGNumberFormat::kNESInteger, 
-				   TGNumberFormat::kNEAAnyNumber, 
-				   TGNumberFormat::kNELLimitMinMax, 
+				   TGNumberFormat::kNESInteger,
+				   TGNumberFormat::kNEAAnyNumber,
+				   TGNumberFormat::kNELLimitMinMax,
 				   0, geo->Nwires(0)-1 );
     // Initial value
     fWireEntry->SetNumber( kWire );
@@ -147,11 +147,11 @@ namespace evd{
     // Text label for this numeric field.
     fWireLabel= new TGLabel(fFrame,"Wire");
 
-    // adc threshold number entry 
+    // adc threshold number entry
     fThresEntry = new TGNumberEntry(fFrame,0,6,-1,
-				    TGNumberFormat::kNESInteger, 
-				    TGNumberFormat::kNEAAnyNumber, 
-				    TGNumberFormat::kNELLimitMinMax, 
+				    TGNumberFormat::kNESInteger,
+				    TGNumberFormat::kNEAAnyNumber,
+				    TGNumberFormat::kNELLimitMinMax,
 				    0 , geo->Nwires(0)-1 );
     // Initial value
     art::ServiceHandle<evd::ColorDrawingOptions const>      cst;
@@ -212,9 +212,9 @@ namespace evd{
    fFrame->AddFrame(fThresLabel,    new TGLayoutHints(kLHintsBottom | kLHintsRight, 0,  0, 5, 1 ) );
 
     if(evdlayoutopt->fShowSideBar)
-      SetUpSideBar();    
+      SetUpSideBar();
     else
-      evdlayoutopt->fShowEndPointSection=0;  // zero it to avoid a misconfiguration in the fcl file. 
+      evdlayoutopt->fShowEndPointSection=0;  // zero it to avoid a misconfiguration in the fcl file.
 
     //zero the ppoints queue.
     ppoints.clear();
@@ -226,7 +226,7 @@ namespace evd{
     // geometry to figure out the number of planes
     unsigned int nplanes = geo->Nplanes();
 
-    // now determine the positions of all the time vs wire number 
+    // now determine the positions of all the time vs wire number
     // and charge histograms for the planes
     for(unsigned int t = 0; t < ntpc; ++t){
       for(unsigned int i = 0; i < nplanes; ++i){
@@ -235,31 +235,31 @@ namespace evd{
 	double twx3 = 1.0;
 	double twy1 = 0.17 +   (i)*(1.0-0.171)/(1.*nplanes);
 	double twy2 = 0.17 + (i+1)*(1.0-0.171)/(1.*nplanes);
-      
+
 	TString padname = "fWireProjTPC";
 	padname += t;
 	padname += "Plane";
 	padname += i;
-      
+
 	TString padtitle = "TPC";
 	padtitle += t;
 	padtitle += "Plane";
 	padtitle += i;
-      
+
 	evdb::Canvas::fCanvas->cd();
 
 	mf::LogVerbatim("MultiTPC") << "make new plane ";
 	fPlanes.push_back(new TWireProjPad(padname, padtitle, twx1, twy1, twx2, twy2, i+t*nplanes));
 	fPlanes.back()->Draw();
 //	fPlanes.back()->Pad()->AddExec("mousedispatch",
-//				       Form("evd::TWQMultiTPCProjectionView::MouseDispatch(%d, (void*)%d)", 
+//				       Form("evd::TWQMultiTPCProjectionView::MouseDispatch(%d, (void*)%d)",
 //					    i+t*nplanes, this)
-//				       ); 
+//				       );
 	fPlanes.back()->Pad()->AddExec("mousedispatch",
-				       Form("evd::TWQMultiTPCProjectionView::MouseDispatch(%d, (void*)%lu)", 
+				       Form("evd::TWQMultiTPCProjectionView::MouseDispatch(%d, (void*)%lu)",
 					    i+t*nplanes, (unsigned long) this)
-				       ); 
-      
+				       );
+
 	mf::LogVerbatim("MultiTPC") << "size of planes vec is now " << fPlanes.size();
 
 	if(t+1 == ntpc){
@@ -267,12 +267,12 @@ namespace evd{
 	  padname += t;
 	  padname += "Plane";
 	  padname += i;
-	  
+
 	  padtitle = "QTPC";
 	  padtitle += t;
 	  padname += "Plane";
 	  padname += i;
-	  
+
 	  evdb::Canvas::fCanvas->cd();
 	  fPlaneQ.push_back(new TQPad(padname, padtitle, twx2, twy1, twx3, twy2, "Q", i, 0));
 	  fPlaneQ[i]->Draw();
@@ -285,11 +285,11 @@ namespace evd{
   }
 
   //......................................................................
-  TWQMultiTPCProjectionView::~TWQMultiTPCProjectionView() 
-  {  
-    if (fHeaderPad) { delete fHeaderPad;  fHeaderPad  = 0; }  
-    if (fMC)        { delete fMC;         fMC         = 0; }  
-    if (fWireQ)     { delete fWireQ;      fWireQ      = 0; }  
+  TWQMultiTPCProjectionView::~TWQMultiTPCProjectionView()
+  {
+    if (fHeaderPad) { delete fHeaderPad;  fHeaderPad  = 0; }
+    if (fMC)        { delete fMC;         fMC         = 0; }
+    if (fWireQ)     { delete fWireQ;      fWireQ      = 0; }
     if (fPlaneEntry){ delete fPlaneEntry; fPlaneEntry = 0; }
     if (fWireEntry) { delete fWireEntry;  fWireEntry  = 0; }
     if (fPlaneLabel){ delete fPlaneLabel; fPlaneLabel = 0; }
@@ -317,28 +317,28 @@ namespace evd{
     }
   }
   //......................................................................
-  void TWQMultiTPCProjectionView::Draw(const char* opt) 
-  {  
+  void TWQMultiTPCProjectionView::Draw(const char* opt)
+  {
     art::ServiceHandle<geo::Geometry const> geo;
 
     fPrevZoomOpt.clear();
-  
-    evdb::Canvas::fCanvas->cd();    
+
+    evdb::Canvas::fCanvas->cd();
     zoom_opt=0;
-    fHeaderPad->Draw();    
-    fMC       ->Draw(); 
+    fHeaderPad->Draw();
+    fMC       ->Draw();
     fWireQ->Draw();
-  
+
     art::ServiceHandle<evd::EvdLayoutOptions const> evdlayoutopt;
 
     if(evdlayoutopt->fPrintTotalCharge) PrintCharge();
-  
+
     //clear queue of selected points
     ppoints.clear();
     pline.clear();
     // Reset current zooming plane - since it's not currently zooming.
     curr_zooming_plane=-1;
-  
+
     //  double Charge=0, ConvCharge=0;
     for(size_t i = 0; i < fPlanes.size(); ++i){
       fPlanes[i]->Draw(opt);
@@ -351,7 +351,7 @@ namespace evd{
       fZoomOpt.tmin[i] = ZoomParams[2];
       fZoomOpt.tmax[i] = ZoomParams[3];
     }
-  
+
     // Reset any text boxes which are enabled
     if(fXYZPosition)
       fXYZPosition->SetForegroundColor(kBlack);
@@ -367,41 +367,41 @@ namespace evd{
   // don't necessarily overlap from plane to plane, ie the same range
   // isn't appropriate for every plane
   //......................................................................
-  //   void TWQMultiTPCProjectionView::RangeChanged() 
-  //   {  
-  //     static int ilolast = -1;  
-  //     static int ihilast = -1;    
-  // 
-  //     int ilo; 
+  //   void TWQMultiTPCProjectionView::RangeChanged()
+  //   {
+  //     static int ilolast = -1;
+  //     static int ihilast = -1;
+  //
+  //     int ilo;
   //     int ihi;
   //     std::vector<int> lo;
   //     std::vector<int> hi;
   //     std::vector<bool> axischanged;
   //     for(unsigned int i = 0; i < fPlanes.size(); ++i){
-  //       fPlanes[i]->GetWireRange(&ilo, &ihi);  
+  //       fPlanes[i]->GetWireRange(&ilo, &ihi);
   //       lo.push_back(ilo);
   //       hi.push_back(ihi);
   //       axischanged.push_back((ilo != ilolast) || (ihi != ihilast));
   //     }
-  //       
-  //     TVirtualPad* ori = gPad;  
-  // 
+  //
+  //     TVirtualPad* ori = gPad;
+  //
   //     // loop over the bools to see which axes need to change
   //     for(unsigned int i = 0; i < axischanged.size(); ++i){
-  //       if (axischanged[i]) {    
-  // 	fPlanes[i]->SetWireRange(ilo, ihi);    
-  // 	fPlanes[i]->Pad()->cd();    
-  // 	fPlanes[i]->Pad()->Modified();    
-  // 	fPlanes[i]->Pad()->Update();    
-  // 
-  // 	ilolast = ilo;    
-  // 	ihilast = ihi;  
-  //       }  
+  //       if (axischanged[i]) {
+  // 	fPlanes[i]->SetWireRange(ilo, ihi);
+  // 	fPlanes[i]->Pad()->cd();
+  // 	fPlanes[i]->Pad()->Modified();
+  // 	fPlanes[i]->Pad()->Update();
+  //
+  // 	ilolast = ilo;
+  // 	ihilast = ihi;
+  //       }
   //     }
-  // 
-  //     evdb::Canvas::fCanvas->cd();  
-  //     evdb::Canvas::fCanvas->Modified();  
-  //     evdb::Canvas::fCanvas->Update();  
+  //
+  //     evdb::Canvas::fCanvas->cd();
+  //     evdb::Canvas::fCanvas->Modified();
+  //     evdb::Canvas::fCanvas->Update();
   //     ori->cd();
   //   }
   //......................................................................
@@ -411,21 +411,21 @@ namespace evd{
 
     art::ServiceHandle<geo::Geometry const> geo;
     art::ServiceHandle<evd::RawDrawingOptions const> rawopt;
-    
+
     geo::TPCID tpcid = rawopt->CurrentTPC();
 
-    for(size_t iplane = 0; iplane < fPlanes.size(); ++iplane){ 
+    for(size_t iplane = 0; iplane < fPlanes.size(); ++iplane){
       if(geo->SignalType(geo::PlaneID(tpcid, iplane))==geo::kCollection){
 	double ch=0,convch=0;
 	if(rawopt->fDrawRawDataOrCalibWires == 0){
 	  fPlanes[iplane]->RawDataDraw()->GetChargeSum(iplane,ch,convch);
 	  mf::LogVerbatim("TWQMultiTPCProjectionView") << "Warning! Calculating for RawData! ";
 	}
-	else{  
-	  fPlanes[iplane]->RecoBaseDraw()->GetChargeSum(iplane,ch,convch);  
-	}    
+	else{
+	  fPlanes[iplane]->RecoBaseDraw()->GetChargeSum(iplane,ch,convch);
+	}
 
-	mf::LogVerbatim("TWQMultiTPCProjectionView") << "\ncharge collected at collection plane: " 
+	mf::LogVerbatim("TWQMultiTPCProjectionView") << "\ncharge collected at collection plane: "
 					     << iplane << " " << ch << " " << convch;
       }
     }
@@ -443,22 +443,22 @@ namespace evd{
     art::ServiceHandle<evd::EvdLayoutOptions const>   evdlayoutopt;
 
     switch (event){
-	
-    case kButton1Shift:           	
+
+    case kButton1Shift:
       shift_lock=1;
       // 	TWQMultiTPCProjectionView::SelectHit() is undefined
       //if(evdlayoutopt->fMakeClusters==1){wqpp->SelectHit(plane);}
       //else {wqpp->SelectPoint(plane);}
       wqpp->SelectPoint(plane);
       break;
-    case kButton1Up:    
+    case kButton1Up:
       if(shift_lock==1) break;
-      if(evdlayoutopt-> fChangeWire==1) wqpp->ChangeWire(plane);		
+      if(evdlayoutopt-> fChangeWire==1) wqpp->ChangeWire(plane);
     case kButton1Down: shift_lock=0;
-    case kButton1Motion:	
+    case kButton1Motion:
       wqpp->SetMouseZoomRegion(plane);
       break;
-      //  default:		
+      //  default:
     }
   }
 
@@ -477,7 +477,7 @@ namespace evd{
     //now find wire that was clicked on
     float xx = gPad->AbsPixeltoX(px);
     float x = gPad->PadtoX(xx);
-	
+
 
     kPlane = plane;
     kWire  = (unsigned int)TMath::Nint(x);
@@ -523,11 +523,11 @@ namespace evd{
 	else
 	  this->fPlanes[plane]->View()->AddMarker(0.0,0.0,2,1,0.1);
 	this->fPlanes[this->ppoints[ii].plane]->View()->Draw();
-	repeat_plane=this->ppoints[ii].plane;  
+	repeat_plane=this->ppoints[ii].plane;
 	break;
       }
-	
-    //if plane does not repeat and size of list is larger than 2 pop_front 
+
+    //if plane does not repeat and size of list is larger than 2 pop_front
     // and delete its marker. Otherwise just push_back.
     if(repeat_plane==-1){
       if( this->ppoints.size()>=2){
@@ -546,7 +546,7 @@ namespace evd{
       this->fPlanes[plane]->View()->Draw();
     }
 
-	
+
     return;
 
   }
@@ -558,7 +558,7 @@ namespace evd{
       fPlanes[x]->Pad()->cd();
       fPlanes[x]->View()->Clear();
       fPlanes[x]->View()->AddMarker(0.0,0.0,2,1,0.1);
-      fPlanes[x]->Pad()->Update(); 
+      fPlanes[x]->Pad()->Update();
       fPlanes[x]->View()->Draw();
     }
     ppoints.clear();
@@ -595,21 +595,21 @@ namespace evd{
       art::ServiceHandle<evd::RawDrawingOptions const> rawOpt;
       double ftimetick = detp->SamplingRate()/1000.;
       double larv = detp->DriftVelocity(detp->Efield(), detp->Temperature());
-		
+
       //find channels corresponding to found wires.
       int chan1 = geom->PlaneWireToChannel(pline[0].plane,pline[0].w0, rawOpt->fTPC, rawOpt->fCryostat);
       int chan2 = geom->PlaneWireToChannel(pline[1].plane,pline[1].w0, rawOpt->fTPC, rawOpt->fCryostat);
 
       bool wires_cross=false;
       bool time_good=false;
-	
+
       if(fabs(pline[0].t0-pline[1].t0) < 200){
 	wires_cross= geom->ChannelsIntersect(chan1,chan2,y,z);
 	time_good=true;
       }
       else{
 	TGText *tt=new TGText("too big");
-	tt->InsLine(1,"time distance");  
+	tt->InsLine(1,"time distance");
 	fXYZPosition->SetText(tt);
 	fXYZPosition->Update();
 	// return; //not returning, because may need to delete marker from wplane
@@ -625,7 +625,7 @@ namespace evd{
 	xyz_vertex_fit[0]=(pline[0].t0-detp->TriggerOffset())*larv*ftimetick+pos[0];
 	geom->Plane(pline[1].plane).LocalToWorld(origin, pos);
 	second_time=(pline[1].t0-detp->TriggerOffset())*larv*ftimetick+pos[0];
-	
+
 	xx0=(xyz_vertex_fit[0]+second_time)/2;
 	yy0=y;
 	zz0=z;
@@ -647,14 +647,14 @@ namespace evd{
 
       wires_cross=false;
       time_good=false;
-	
+
       if(fabs(pline[0].t1-pline[1].t1) < 200){
 	wires_cross= geom->ChannelsIntersect(chan1,chan2,y,z);
 	time_good=true;
       }
       else{
 	TGText *tt=new TGText("too big");
-	tt->InsLine(1,"time distance");  
+	tt->InsLine(1,"time distance");
 	fXYZPosition->SetText(tt);
 	fXYZPosition->Update();
 	// return; //not returning, because may need to delete marker from wplane
@@ -726,21 +726,21 @@ namespace evd{
       art::ServiceHandle<evd::RawDrawingOptions const> rawOpt;
       double ftimetick = detp->SamplingRate()/1000.;
       double larv = detp->DriftVelocity(detp->Efield(), detp->Temperature());
-		
+
       //find channels corresponding to found wires.
       int chan1 = geom->PlaneWireToChannel(ppoints[0].plane,ppoints[0].w, rawOpt->fTPC, rawOpt->fCryostat);
       int chan2 = geom->PlaneWireToChannel(ppoints[1].plane,ppoints[1].w, rawOpt->fTPC, rawOpt->fCryostat);
 
       bool wires_cross=false;
       bool time_good=false;
-	
+
       if(fabs(ppoints[0].t-ppoints[1].t) < 200){
 	wires_cross= geom->ChannelsIntersect(chan1,chan2,y,z);
 	time_good=true;
       }
       else{
 	TGText *tt=new TGText("too big");
-	tt->InsLine(1,"time distance");  
+	tt->InsLine(1,"time distance");
 	fXYZPosition->SetText(tt);
 	fXYZPosition->Update();
 	// return; //not returning, because may need to delete marker from wplane
@@ -753,14 +753,14 @@ namespace evd{
 	xyz_vertex_fit[0]=(ppoints[0].t-detp->TriggerOffset())*larv*ftimetick+pos[0];
 	geom->Plane(ppoints[1].plane).LocalToWorld(origin, pos);
 	second_time=(ppoints[1].t-detp->TriggerOffset())*larv*ftimetick+pos[0];
-		
+
 	TGText *tt=new TGText(Form("z:%4.1f",z));
-	tt->InsLine(1,Form("x:%4.1f,",(xyz_vertex_fit[0]+second_time)/2)); 
-	tt->InsLine(1,Form("y:%4.1f,",y));  
+	tt->InsLine(1,Form("x:%4.1f,",(xyz_vertex_fit[0]+second_time)/2));
+	tt->InsLine(1,Form("y:%4.1f,",y));
 	fXYZPosition->SetText(tt);
 	fXYZPosition->Update();
 	//////////// the xyz vertex is found. Can proceed to calulate distance from edge
-	
+
       }
       else{
 	if(time_good){    //otherwise the wires_cross are false by default
@@ -773,41 +773,41 @@ namespace evd{
       }
       // extrapolate third point only if there are enough planes
       if(fPlanes.size() > 2){
-	
+
 	unsigned int wplane = 0;
 	unsigned int wirevertex = 0;
         art::ServiceHandle<evd::EvdLayoutOptions const> evdlayoutopt;
-	
+
 	for(size_t xx = 0; xx < fPlanes.size(); ++xx){
 	  wplane = 0;
 	  for(int yy = 0; yy < 2; ++yy)
 	    if(ppoints[yy].plane == xx)
 	      ++wplane;
-	
-	  if(!wplane){ 
+
+	  if(!wplane){
 	    wplane = xx;
 	    break;
 	  }
 	}
-	
-	
+
+
 	geom->Plane(wplane).LocalToWorld(origin, pos);
 	pos[1]=xyz_vertex_fit[1];
 	pos[2]=xyz_vertex_fit[2];
-	
+
 	wirevertex = geom->NearestWire(pos, wplane, rawOpt->fTPC, rawOpt->fCryostat);
-	
+
 	double drifttick=((xyz_vertex_fit[0])/detp->DriftVelocity(detp->Efield(),detp->Temperature()))*(1./ftimetick);
 	double timestart=drifttick-(pos[0]/detp->DriftVelocity(detp->Efield(),detp->Temperature()))*(1./ftimetick)+detp->TriggerOffset();
-	
+
 	fPlanes[wplane]->Pad()->cd();
 	fPlanes[wplane]->View()->Clear();
 	if(wires_cross && evdlayoutopt->fShowEndPointMarkers)  //only Draw if it makes sense
 	  fPlanes[wplane]->View()->AddMarker(wirevertex, timestart, kMagenta, 29, 2.0);
 	else  //draw dummy marker to delete old one
 	  fPlanes[wplane]->View()->AddMarker(0.0,0.0,2,1,0.1);
-	fPlanes[wplane]->Pad()->Update(); 
-	fPlanes[wplane]->View()->Draw();	
+	fPlanes[wplane]->Pad()->Update();
+	fPlanes[wplane]->View()->Draw();
       }// end if(fPlanes.size()>2)
       //update pad?
       gPad->Modified();
@@ -865,11 +865,11 @@ namespace evd{
       curr_zooming_plane=plane;
       break;
     }
-    case kButton1Motion:{ 
+    case kButton1Motion:{
       int lx,hx,ly,hy;
       if (pw0 < pxold){
-	lx=pw0; 
-	hx=pxold; 
+	lx=pw0;
+	hx=pxold;
       }
       else{
 	lx=pxold;
@@ -877,7 +877,7 @@ namespace evd{
       }
 
       if (pt0 < pyold){
-	ly=pt0; 
+	ly=pt0;
 	hy=pyold;
       }
       else{
@@ -891,8 +891,8 @@ namespace evd{
       linedrawn = 1;
 
       if (pw0 < pxold){
-	lx=pw0; 
-	hx=pxold; 
+	lx=pw0;
+	hx=pxold;
       }
       else{
 	lx=pxold;
@@ -900,7 +900,7 @@ namespace evd{
       }
 
       if (pt0 < pyold){
-	ly=pt0; 
+	ly=pt0;
 	hy=pyold;
       }
       else{
@@ -916,26 +916,26 @@ namespace evd{
       w1 = gPad->AbsPixeltoX(px);
       t1 = gPad->AbsPixeltoY(py);
       gPad->Modified(kTRUE);
-		  
+
       //   line = new TLine(w0,t0,w1,t1);
       //   line->Draw();
-		  
+
       float x = gPad->PadtoX(w1);
       tend = gPad->PadtoY(t1);
       wend  = (unsigned int)TMath::Nint(x);
-		  
+
       gROOT->SetEditorMode();
-		  
+
       //make sure the box is significantly big to avoid accidental zooms on nothing.
       double xx1,yy1,xx2,yy2;
-		  
+
       gPad->GetRangeAxis(xx1, yy1, xx2, yy2);
-		  
-      if(wstart != 0 && tstart != 0 && 
-	 ( fabs(wend-wstart ) > 0.01*(xx2-xx1) ) && 
-	 ( fabs(tend-tstart ) > 0.01*(yy2-yy1)   &&  
+
+      if(wstart != 0 && tstart != 0 &&
+	 ( fabs(wend-wstart ) > 0.01*(xx2-xx1) ) &&
+	 ( fabs(tend-tstart ) > 0.01*(yy2-yy1)   &&
 	   curr_zooming_plane==plane ) ){
-		    		    
+
 	this->SetZoom(plane,wstart,wend,tstart,tend);
 	wstart=-1;
 	tstart=-1;
@@ -951,18 +951,18 @@ namespace evd{
   void 	TWQMultiTPCProjectionView::ZoomInterest(bool flag)
   {
     mf::LogVerbatim("TWQMultiTPCProjectionView") <<"ZoomInterest called";
-  
+
     if(flag==true) zoom_opt="1";
     else zoom_opt="0";
-  
+
     art::ServiceHandle<geo::Geometry const> geo;
     art::ServiceHandle<evd::RawDrawingOptions const> rawopt;
- 
+
     ZoomOptionsMultiTPC zo;
     //  mf::LogVerbatim("TWQMultiTPCProjectionView") <<"Zoom interest pushing back zoom options"<<std::endl;
     fPrevZoomOpt.push_back(fZoomOpt);
 
- 
+
     for(size_t iplane = 0; iplane < fPlanes.size(); ++iplane){
       int minw,maxw,mint,maxt;
       if(flag){
@@ -971,7 +971,7 @@ namespace evd{
 	  fPlanes[iplane]->RawDataDraw()->GetRegionOfInterest(iplane,minw,maxw,mint,maxt);
 	else
 	  fPlanes[iplane]->RecoBaseDraw()->GetRegionOfInterest(iplane,minw,maxw,mint,maxt);
-	  
+
 	if(test==-1)
 	  continue;
       }
@@ -981,7 +981,7 @@ namespace evd{
 	mint = -0.005*fPlanes[iplane]->RawDataDraw()->TotalClockTicks();
 	maxt =  1.01*fPlanes[iplane]->RawDataDraw()->TotalClockTicks();
       }
-      
+
       SetZoom(iplane,minw,maxw,mint,maxt,false);
       zo.wmin[iplane]=minw;
       zo.tmin[iplane]=mint;
@@ -995,21 +995,21 @@ namespace evd{
 
   //......................................................................
   void TWQMultiTPCProjectionView::SetUpSideBar()
-  {  
+  {
     SetUpZoomButtons();
     SetUpPositionFind();
   }
 
   //......................................................................
   void TWQMultiTPCProjectionView::SetZoomInterest()
-  {  
+  {
     art::ServiceHandle<evd::EvdLayoutOptions>   evdlayoutopt;
     evdlayoutopt->fAutoZoomInterest = fToggleAutoZoom->GetState();
   }
 
-  //......................................................................   
+  //......................................................................
   void TWQMultiTPCProjectionView::ToggleEndPointMarkers()
-  {  
+  {
     art::ServiceHandle<evd::EvdLayoutOptions>   evdlayoutopt;
     evdlayoutopt->fShowEndPointMarkers= fToggleShowMarkers->GetState();
   }
@@ -1033,7 +1033,7 @@ namespace evd{
     fZoomBack->Connect("Clicked()", "evd::TWQMultiTPCProjectionView", this, "ZoomBack()");
 
 
-    fToggleAutoZoom=new TGCheckButton(fVFrame,"AutoZoom",0);;       ///< Toggle the autozoom setting 
+    fToggleAutoZoom=new TGCheckButton(fVFrame,"AutoZoom",0);;       ///< Toggle the autozoom setting
     fToggleAutoZoom->Connect("Clicked()", "evd::TWQMultiTPCProjectionView", this, "SetZoomInterest()");
     if(evdlayoutopt->fAutoZoomInterest == 1) fToggleAutoZoom->SetState(kButtonDown);
 
@@ -1050,9 +1050,9 @@ namespace evd{
   void	TWQMultiTPCProjectionView::RadioButtonsDispatch(int parameter)
   {
     if(parameter==1 || parameter == 2){
-      fToggleZoom->SetState(kButtonUp); 	 
+      fToggleZoom->SetState(kButtonUp);
     }
- 
+
   }
 
   //......................................................................
@@ -1060,10 +1060,10 @@ namespace evd{
   {
     // enter zoom buttons
     art::ServiceHandle<evd::EvdLayoutOptions const>        evdlayoutopt;
-    if(!evdlayoutopt->fShowEndPointSection)            
+    if(!evdlayoutopt->fShowEndPointSection)
       return;
 
-    // int    	 fShowEndPointMarkers;             ///< Draw EndPoint Markers if clicked. 
+    // int    	 fShowEndPointMarkers;             ///< Draw EndPoint Markers if clicked.
 
     fFindEndpoint=new TGTextButton(fVFrame,"&Find XYZ",150);
     fFindEndpoint->Connect("Clicked()", "evd::TWQMultiTPCProjectionView", this, "FindEndPoint()");
@@ -1077,7 +1077,7 @@ namespace evd{
     fClearPPoints=new TGTextButton(fVFrame,"&Clear Points",150);
     fClearPPoints->Connect("Clicked()", "evd::TWQMultiTPCProjectionView", this, "ClearEndPoints()");  // ?
 
-    fToggleShowMarkers=new TGCheckButton(fVFrame,"ShowMarkers",0);       ///< Toggle the ShowEndPointMarkers Setting 
+    fToggleShowMarkers=new TGCheckButton(fVFrame,"ShowMarkers",0);       ///< Toggle the ShowEndPointMarkers Setting
     fToggleShowMarkers->Connect("Clicked()", "evd::TWQMultiTPCProjectionView", this, "ToggleEndPointMarkers()");
     if(evdlayoutopt->fShowEndPointMarkers == 1) fToggleShowMarkers->SetState(kButtonDown);
 
@@ -1097,7 +1097,7 @@ namespace evd{
       ZoomOptionsMultiTPC ThePrevZoomOpt = fPrevZoomOpt.at(fPrevZoomOpt.size()-1);
       int plane = fZoomOpt.OnlyPlaneChanged;
       if(plane != -1){
-	SetZoom(plane, 
+	SetZoom(plane,
 		ThePrevZoomOpt.wmin[plane],
 		ThePrevZoomOpt.wmax[plane],
 		ThePrevZoomOpt.tmin[plane],
@@ -1106,13 +1106,13 @@ namespace evd{
       }
       else{
 	for( size_t iplane = 0; iplane != fPlanes.size(); ++iplane){
-	  SetZoom(iplane, 
+	  SetZoom(iplane,
 		  ThePrevZoomOpt.wmin[iplane],
 		  ThePrevZoomOpt.wmax[iplane],
 		  ThePrevZoomOpt.tmin[iplane],
 		  ThePrevZoomOpt.tmax[iplane],
 		  false);
-	      
+
 	}
       }
 
@@ -1127,7 +1127,7 @@ namespace evd{
 					     int wirelow,
 					     int wirehi,
 					     int timelow,
-					     int timehi, 
+					     int timehi,
 					     bool StoreZoom)
   {
 
@@ -1151,29 +1151,29 @@ namespace evd{
       wirelow=wirehi;
       wirehi=temp;
     }
-  
+
     if(timehi<timelow){
       int temp=timelow;
       timelow=timehi;
       timehi=temp;
     }
-  
+
     //if drawing, then currently not zooming
     curr_zooming_plane=-1;
-  
+
     fPlanes[plane]->SetZoomRange(wirelow, wirehi,timelow,timehi);
     fPlanes[plane]->Draw("1");
     fPlanes[plane]->UpdatePad();
-  
+
     evdb::Canvas::fCanvas->cd();
     evdb::Canvas::fCanvas->Modified();
     evdb::Canvas::fCanvas->Update();
 
     //  UpdateSeedCurve();
-  
+
     ori->cd();
-  
-    return;  
+
+    return;
   }
 
   //-----------------------------------------------------------------

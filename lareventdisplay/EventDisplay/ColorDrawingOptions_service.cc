@@ -11,43 +11,43 @@
 #include "lareventdisplay/EventDisplay/RawDrawingOptions.h"
 
 namespace evd{
-  
+
   //......................................................................
   ColorDrawingOptions::ColorDrawingOptions(fhicl::ParameterSet const& pset)
     : evdb::Reconfigurable{pset}
     , fColorOrGray(pset.get< int                 >("ColorOrGrayScale"))
     , fRawDiv     (pset.get< std::vector<int>    >("RawDiv")          )
     , fRecoDiv    (pset.get< std::vector<int>    >("RecoDiv")         )
-    , fRawQLow    (pset.get< std::vector<double> >("RawQLow")         )	
-    , fRawQHigh   (pset.get< std::vector<double> >("RawQHigh")        )	
-    , fRecoQLow   (pset.get< std::vector<double> >("RecoQLow")        )	
-    , fRecoQHigh  (pset.get< std::vector<double> >("RecoQHigh")       )         
+    , fRawQLow    (pset.get< std::vector<double> >("RawQLow")         )
+    , fRawQHigh   (pset.get< std::vector<double> >("RawQHigh")        )
+    , fRecoQLow   (pset.get< std::vector<double> >("RecoQLow")        )
+    , fRecoQHigh  (pset.get< std::vector<double> >("RecoQHigh")       )
   {
     this->CheckInputVectorSizes();
 
     for(size_t i = 0; i < fRawDiv.size(); ++i){
-      fColorScaleRaw.push_back(evdb::ColorScale(fRawQLow[i], fRawQHigh[i], 
+      fColorScaleRaw.push_back(evdb::ColorScale(fRawQLow[i], fRawQHigh[i],
 						evdb::kBlueToRedII, evdb::kLinear,
 						fRawDiv[i],
 						285.0, 135.0, // angle in the color wheel
-						0.65, 0.25)); // intensity from light to dark, 
+						0.65, 0.25)); // intensity from light to dark,
                                                               // starting with low color wheel value
 
-      fGrayScaleRaw.push_back(evdb::ColorScale(fRawQLow[i], fRawQHigh[i], 
+      fGrayScaleRaw.push_back(evdb::ColorScale(fRawQLow[i], fRawQHigh[i],
 					       evdb::kLinGray, evdb::kLinear,
 					       fRawDiv[i],
 					       270.0, 0.0, // angle in the color wheel
-					       0.5, 0.5)); // intensity from light to dark, 
+					       0.5, 0.5)); // intensity from light to dark,
                                                            // starting with low color wheel value
     }
 
     for(size_t i = 0; i < fRecoDiv.size(); ++i){
-      fColorScaleReco.push_back(evdb::ColorScale(fRecoQLow[i], fRecoQHigh[i], 
+      fColorScaleReco.push_back(evdb::ColorScale(fRecoQLow[i], fRecoQHigh[i],
 						 evdb::kBlueToRedII, evdb::kLinear,
 						 fRecoDiv[i],
 						 285.0, 135.0,
-						 0.65, 0.25)); 
-      fGrayScaleReco.push_back(evdb::ColorScale(fRecoQLow[i], fRecoQHigh[i], 
+						 0.65, 0.25));
+      fGrayScaleReco.push_back(evdb::ColorScale(fRecoQLow[i], fRecoQHigh[i],
 						evdb::kLinGray, evdb::kLinear,
 						fRecoDiv[i],
 						270.0, 0.0,
@@ -106,14 +106,14 @@ namespace evd{
     fColorOrGray = pset.get< int    >("ColorOrGrayScale");
     fRawDiv      = pset.get< std::vector<int>    >("RawDiv");
     fRecoDiv     = pset.get< std::vector<int>    >("RecoDiv");
-    fRawQLow     = pset.get< std::vector<double> >("RawQLow");	
-    fRawQHigh    = pset.get< std::vector<double> >("RawQHigh");	
-    fRecoQLow    = pset.get< std::vector<double> >("RecoQLow");	
-    fRecoQHigh   = pset.get< std::vector<double> >("RecoQHigh");     
+    fRawQLow     = pset.get< std::vector<double> >("RawQLow");
+    fRawQHigh    = pset.get< std::vector<double> >("RawQHigh");
+    fRecoQLow    = pset.get< std::vector<double> >("RecoQLow");
+    fRecoQHigh   = pset.get< std::vector<double> >("RecoQHigh");
 
     this->CheckInputVectorSizes();
 
-    for(size_t i = 0; i < fRawDiv.size(); ++i){   
+    for(size_t i = 0; i < fRawDiv.size(); ++i){
       fColorScaleRaw[i].SetBounds(fRawQLow[i],  fRawQHigh[i]);
       fGrayScaleRaw[i] .SetBounds(fRawQLow[i],  fRawQHigh[i]);
     }
@@ -136,7 +136,7 @@ namespace evd{
 						  << "bad things will happen, so bail\n";
 
     if(fColorOrGray > 0) return fGrayScaleRaw[pos];
-    
+
     return fColorScaleRaw[pos];
   }
 
@@ -150,7 +150,7 @@ namespace evd{
 						  << "bad things will happen, so bail\n";
 
     if(fColorOrGray > 0) return fGrayScaleReco[pos];
-    
+
     return fColorScaleReco[pos];
   }
 
@@ -165,7 +165,7 @@ namespace evd{
 
 
     if(fColorOrGray > 0) return fGrayScaleRaw[pos];
-    
+
     return fColorScaleRaw[pos];
   }
 
@@ -179,7 +179,7 @@ namespace evd{
 						  << "bad things will happen, so bail\n";
 
     if(fColorOrGray > 0) return fGrayScaleReco[pos];
-    
+
     return fColorScaleReco[pos];
   }
 }// namespace

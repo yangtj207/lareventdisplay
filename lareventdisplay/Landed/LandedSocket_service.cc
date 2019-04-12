@@ -23,12 +23,12 @@ namespace evd
     socket_(nullptr),
     service_()
   {
-   
+
     reg.sPostBeginJob.watch       (this, &LandedSocket::postBeginJob);
     reg.sPostBeginJobWorkers.watch(this, &LandedSocket::postBeginJobWorkers);
     reg.sPreProcessEvent.watch    (this, &LandedSocket::preProcessEvent);
     reg.sPostProcessEvent.watch   (this, &LandedSocket::postProcessEvent);
-    
+
   }
 
   void LandedSocket::
@@ -81,10 +81,10 @@ namespace evd
 		//		std::cout << "reload performed\n";
 	      }
 	    //wait for message confirmation
-	    boost::array<char, 2> conf; 
+	    boost::array<char, 2> conf;
 	    if (socket_->receive(boost::asio::buffer(conf))!=1)
-	      throw cet::exception("Landed") << "LANDED app did not confirm instruction result\n";	
-	    
+	      throw cet::exception("Landed") << "LANDED app did not confirm instruction result\n";
+
 	  }
 	else
 	  throw cet::exception("Landed") << "bad instruction from LANDED app\n";
@@ -100,7 +100,7 @@ namespace evd
     endpoint_=new boost::asio::local::stream_protocol::endpoint(sockfile.str());
     if (!endpoint_)
       {
-	mf::LogError("Landed") << "failed to create socket for connection to LANDED app\n";	
+	mf::LogError("Landed") << "failed to create socket for connection to LANDED app\n";
 	return false;
       }
     socket_=new boost::asio::local::stream_protocol::socket(service_);
@@ -117,9 +117,9 @@ namespace evd
     if (socket_->send(boost::asio::buffer(ss.str().c_str(), ss.str().length()))!=ss.str().length() ||
 	socket_->send(boost::asio::buffer(vrml.c_str(), vrml.length()))!=vrml.length())
       {
-	throw cet::exception("Landed") << "failed to send detector geometry to LANDED app\n";	
+	throw cet::exception("Landed") << "failed to send detector geometry to LANDED app\n";
       }
-    boost::array<char, 2> conf; 
+    boost::array<char, 2> conf;
     if (socket_->receive(boost::asio::buffer(conf))!=1)
       throw cet::exception("Landed") << "LANDED app did not confirm detector geometry\n";
     else
@@ -133,10 +133,10 @@ namespace evd
     ss << "EVT:" << record_ << "," << nhits << "," << nvertex << ", " << run << "," << subrun << "," << event << "\n";
     //    std::cout << ss.str();
     if (socket_->send(boost::asio::buffer(ss.str().c_str(), ss.str().length()))!=ss.str().length())
-       throw cet::exception("Landed") << "failed to send event introduction to LANDED app\n";	
-    boost::array<char, 2> conf; 
+       throw cet::exception("Landed") << "failed to send event introduction to LANDED app\n";
+    boost::array<char, 2> conf;
     if (socket_->receive(boost::asio::buffer(conf))!=1)
-      throw cet::exception("Landed") << "LANDED app did not confirm event\n";	
+      throw cet::exception("Landed") << "LANDED app did not confirm event\n";
   }
   void LandedSocket::
   sendHit(double x, double y, double z, double e, double ne, int track)
@@ -145,10 +145,10 @@ namespace evd
     ss << "HIT:" << x << "," << y << "," << z << "," << e << "," << ne << "," << track << "\n";
     //    std::cout << ss.str();
     if (socket_->send(boost::asio::buffer(ss.str().c_str(), ss.str().length()))!=ss.str().length())
-      throw cet::exception("Landed") << "failed to send hit to LANDED app\n";	
-    boost::array<char, 2> conf; 
+      throw cet::exception("Landed") << "failed to send hit to LANDED app\n";
+    boost::array<char, 2> conf;
     if (socket_->receive(boost::asio::buffer(conf))!=1)
-      throw cet::exception("Landed") << "LANDED app did not confirm hit\n";	
+      throw cet::exception("Landed") << "LANDED app did not confirm hit\n";
 
   }
   void LandedSocket::
@@ -157,10 +157,10 @@ namespace evd
     std::ostringstream ss;
     ss << "VTX:" << x << "," << y << "," << z << "," << e << "," << id << "," << pdgcode << "\n";
     if (socket_->send(boost::asio::buffer(ss.str().c_str(), ss.str().length()))!=ss.str().length())
-	throw cet::exception("Landed") << "failed to send vertex to LANDED app\n";	
-    boost::array<char, 2> conf; 
+	throw cet::exception("Landed") << "failed to send vertex to LANDED app\n";
+    boost::array<char, 2> conf;
     if (socket_->receive(boost::asio::buffer(conf))!=1)
-      throw cet::exception("Landed") << "LANDED app did not confirm vertex\n";	
+      throw cet::exception("Landed") << "LANDED app did not confirm vertex\n";
   }
 }
 

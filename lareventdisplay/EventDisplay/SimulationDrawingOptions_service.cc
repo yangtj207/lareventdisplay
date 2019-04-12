@@ -14,7 +14,7 @@ namespace evd {
   {
     this->reconfigure(pset);
   }
-  
+
   //......................................................................
   void SimulationDrawingOptions::reconfigure(fhicl::ParameterSet const& pset)
   {
@@ -39,7 +39,7 @@ namespace evd {
 
     f3DDrawerParams          = pset.get< fhicl::ParameterSet >("Draw3DTools"                   );
   }
-  
+
 }
 
 DEFINE_ART_SERVICE(evd::SimulationDrawingOptions)

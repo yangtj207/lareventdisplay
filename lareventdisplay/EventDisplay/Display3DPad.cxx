@@ -47,20 +47,20 @@ Display3DPad::Display3DPad(const char* nm, const char* ti,
     this->Pad()->Draw();
     this->Pad()->cd();
     fView = new evdb::View3D();
-    
+
     // Set up the 3D drawing tools
     art::ServiceHandle<evd::SimulationDrawingOptions const> simDrawOpt;
 
     // Implement the tools for handling the responses
     const fhicl::ParameterSet& draw3DTools = simDrawOpt->f3DDrawerParams;
-    
+
     for(const std::string& draw3DTool : draw3DTools.get_pset_names())
     {
         const fhicl::ParameterSet& draw3DToolParamSet = draw3DTools.get<fhicl::ParameterSet>(draw3DTool);
-        
+
         fSim3DDrawerVec.push_back(art::make_tool<evdb_tool::ISim3DDrawer>(draw3DToolParamSet));
     }
-    
+
     return;
 }
 
@@ -93,9 +93,9 @@ void Display3DPad::Draw()
         this->RecoBaseDraw()->  Vertex3D     (*evt, fView);
         this->RecoBaseDraw()->  Event3D      (*evt, fView);
         this->RecoBaseDraw()->  Slice3D      (*evt, fView);
-        
+
         for(auto& draw3D : fSim3DDrawerVec) draw3D->Draw(*evt, fView);
-        
+
         art::ServiceHandle<evd::EvdLayoutOptions const> evdlayoutoptions;
         if(evdlayoutoptions->fMakeSeeds) UpdateSeedCurve();
     }
@@ -124,25 +124,25 @@ void Display3DPad::UpdateSeedCurve()
     std::vector<recob::Seed> SeedVec = this->HitSelectorGet()->SeedVector();
     std::cout<<"Seeds available to Display3DPad : " << SeedVec.size()<<std::endl;
     trkf::BezierTrack BTrack(SeedVec);
-    
+
     int N=100;
     TPolyLine3D& pl = fView->AddPolyLine3D(N,kOrange+5,2,0);
     fView->Draw();
-    
-    
+
+
     double  xyzpt[3] ;
-    
+
     for(int i=0; i!=N; i++)
     {
         BTrack.GetTrackPoint(float(i)/N,xyzpt );
         double x = xyzpt[0];
         double y = xyzpt[1];
         double z = xyzpt[2];
-        
+
         pl.SetPoint(i,x,y,z);
-        
+
     }
-    
+
     fView->Draw();
   //  UpdatePad();
 }

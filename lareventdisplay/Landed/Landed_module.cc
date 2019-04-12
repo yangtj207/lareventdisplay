@@ -72,7 +72,7 @@ public:
 
   // Required functions.
   void analyze(art::Event const & e) override;
-  
+
   //optional functions
   void beginJob() override;
   void endJob() override;
@@ -101,11 +101,11 @@ evd::Landed::Landed(fhicl::ParameterSet const & p):
   ppDb_(nullptr),
   events_(p.get<std::vector<int> >("events", std::vector<int>()))
 {
-  
+
   if (outputFilename_.empty() && !sock_->connect())
     {
-      throw cet::exception("Landed") << "no output filename specified and unable to connect to LANDED app using local socket\n" << 
-	"please either specify a filename, or check LANDED is running and that you have started the server\n";	  
+      throw cet::exception("Landed") << "no output filename specified and unable to connect to LANDED app using local socket\n" <<
+	"please either specify a filename, or check LANDED is running and that you have started the server\n";
 
     }
   //  sock_->hello();
@@ -178,8 +178,8 @@ void evd::Landed::beginJob()
       sqlite3_stmt* stmt;
       char * sErrMsg = 0;
       sqlite3_exec(ppDb_, "PRAGMA synchronous = OFF", NULL, NULL, &sErrMsg);
-      
-      
+
+
       //create geometry table
       if (sqlite3_prepare(ppDb_, "CREATE TABLE Geometry ( vrml BLOB, size INT );", 100, &stmt, nullptr)!=SQLITE_OK)
 	throw cet::exception("Landed") << "failed to create geometry table on prepare\n";
@@ -198,7 +198,7 @@ void evd::Landed::beginJob()
       if (sqlite3_finalize(stmt)!=SQLITE_OK)
 	throw cet::exception("Landed") << "failed to fill geometry table on finalize\n";
       delete[] comp;
-      
+
       //create events table
       if (sqlite3_prepare(ppDb_, "CREATE TABLE Events ( RunNumber INT, SubRunNumber INT, EventNumber INT);", 200, &stmt, nullptr)!=SQLITE_OK)
 	throw cet::exception("Landed") << "failed to create events table on prepare\n";
@@ -252,7 +252,7 @@ void evd::Landed::analyze(art::Event const & event)
       art::Handle<art::Assns<recob::PFParticle,recob::Track,void> > particle2track;
       std::map<size_t, int> pdgcodes;
 
-      //get unique event id numbers  
+      //get unique event id numbers
       art::RunNumber_t runnum=event.run();
       art::SubRunNumber_t subrunnum=event.subRun();
       art::EventNumber_t eventnum=event.event();
@@ -262,7 +262,7 @@ void evd::Landed::analyze(art::Event const & event)
 	whichcalo=which_.substr(0, which_.length()-2)+std::string("calodc");
       else
 	whichcalo=which_+std::string("calo");
-  
+
       if (which_=="truth")
 	{
 	  event.getByLabel("largeant", mcparticles);
@@ -317,9 +317,9 @@ void evd::Landed::analyze(art::Event const & event)
       //      std::cout << prov->moduleLabel();
       //      std::cout << std::endl;
       //    }
- 
+
       //  std::cout << "Event: " << event.id() << std::endl;
-  
+
       int hitcount=0;
       int trajtotal=0;
       if (which_=="truth")
@@ -399,7 +399,7 @@ void evd::Landed::analyze(art::Event const & event)
 			    if (sqlite3_bind_double(stmt, 8, ide.z)!=SQLITE_OK)
 			      throw cet::exception("Landed") << "failed to fill hits table on bind\n";
 			    if (sqlite3_bind_int(stmt, 9, ide.trackID)!=SQLITE_OK)
-			      throw cet::exception("Landed") << "failed to fill hits table on bind\n";		  
+			      throw cet::exception("Landed") << "failed to fill hits table on bind\n";
 			    if (sqlite3_step(stmt)!=SQLITE_DONE)
 			      throw cet::exception("Landed") << "failed to fill hits table on step\n";
 			    if (sqlite3_finalize(stmt)!=SQLITE_OK)
@@ -449,8 +449,8 @@ void evd::Landed::analyze(art::Event const & event)
 	  //reconstruction rather than truth
 	  else
 	    {
-	      sqlite3_exec(ppDb_, "BEGIN TRANSACTION", NULL, NULL, &sErrMsg);  
-	  
+	      sqlite3_exec(ppDb_, "BEGIN TRANSACTION", NULL, NULL, &sErrMsg);
+
 	      for (size_t tracknum=0; tracknum<calorimetry->size(); tracknum++)
 		{
 		  auto const& calo=calorimetry->at(tracknum);
@@ -483,8 +483,8 @@ void evd::Landed::analyze(art::Event const & event)
 		    }
 		}
 	      sqlite3_exec(ppDb_, "END TRANSACTION", NULL, NULL, &sErrMsg);
-	  
-	      sqlite3_exec(ppDb_, "BEGIN TRANSACTION", NULL, NULL, &sErrMsg);  
+
+	      sqlite3_exec(ppDb_, "BEGIN TRANSACTION", NULL, NULL, &sErrMsg);
 	      for (size_t tracknum=0; tracknum<calorimetry->size(); tracknum++)
 		{
 		  auto const& calo=calorimetry->at(tracknum);
@@ -521,13 +521,13 @@ void evd::Landed::analyze(art::Event const & event)
 			  if (sqlite3_step(stmt)!=SQLITE_DONE)
 			    throw cet::exception("Landed") << "failed to fill tracks table on step\n";
 			  if (sqlite3_finalize(stmt)!=SQLITE_OK)
-			    throw cet::exception("Landed") << "failed to fill tracks table on finalize\n"; 
+			    throw cet::exception("Landed") << "failed to fill tracks table on finalize\n";
 			  energy-=calo.TrkPitchVec().at(hitnum)*calo.dEdx().at(hitnum);
 			}
 		    }
 		}
 	    }
-	}	
+	}
       else
 	{
 	  sock_->sendEvent(hitcount, trajtotal, runnum, subrunnum, eventnum);

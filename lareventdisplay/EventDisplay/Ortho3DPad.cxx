@@ -132,7 +132,7 @@ evd::Ortho3DPad::Ortho3DPad(const char* name, const char* title,
     TPCBox.back().SetLineWidth(2);
     TPCBox.back().SetLineColor(16);
   }
-  
+
   switch (proj) {
     case evd::kXY:
       fXLo = minx;
@@ -158,7 +158,7 @@ evd::Ortho3DPad::Ortho3DPad(const char* name, const char* title,
   } // switch
 
   // Make enclosing histogram.
-  
+
   fHisto = new TH1F(*(Pad()->DrawFrame(fXLo, fYLo, fXHi, fYHi)));
   fHisto->SetBit(kCannotPick);
   fHisto->SetBit(TPad::kCannotMove);
@@ -192,7 +192,7 @@ evd::Ortho3DPad::Ortho3DPad(const char* name, const char* title,
   fHisto->Draw("AB");
 
   fView = new evdb::View2D();
-    
+
   // Set pad fill color
   Pad()->SetFillColor(18);
   Pad()->SetFrameFillColor(18);
@@ -210,7 +210,7 @@ evd::Ortho3DPad::Ortho3DPad(const char* name, const char* title,
 //......................................................................
 // Destructor.
 
-evd::Ortho3DPad::~Ortho3DPad() 
+evd::Ortho3DPad::~Ortho3DPad()
 {
   if (fHisto) { delete fHisto; fHisto = nullptr; }
   if (fView) { delete fView; fView = nullptr; }
@@ -278,7 +278,7 @@ void evd::Ortho3DPad::SetZoom(double xlo, double ylo,
 			      bool update)
 {
   fHisto->GetXaxis()->SetRangeUser(xlo, xhi);
-  fHisto->GetYaxis()->SetRangeUser(ylo, yhi);  
+  fHisto->GetYaxis()->SetRangeUser(ylo, yhi);
   fPad->Modified();
   if(update) {
     fPad->Update();
@@ -323,7 +323,7 @@ void evd::Ortho3DPad::SetMarkerSize(double size, bool update)
     if(fMSizeEntry)
       fMSizeEntry->SetNumber(size);
 
-    // Loop over graphic objects that are currently drawn on 
+    // Loop over graphic objects that are currently drawn on
     // pad, and update any that are polymarkers.
 
     TIter next(fPad->GetListOfPrimitives());

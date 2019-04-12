@@ -22,7 +22,7 @@ namespace evd {
   public:
 
     RQ_OBJECT("evd::CalorView")
-    
+
   public:
     // Constructor, destructor.
     CalorView(TGMainFrame* mf);
@@ -35,10 +35,10 @@ namespace evd {
     void CloseWindow();
 
   private:
-    
+
     CalorPad* fDeDxPad; ///< Graphics pad for dEdx vs. Res. range
     CalorPad* fKEPad;    ///< Graphics pad for KE vs. Total range
-    
+
   };
 }
 

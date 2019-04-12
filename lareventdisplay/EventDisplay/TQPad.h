@@ -28,16 +28,16 @@ public:
           const char*  opt,
           unsigned int plane,
           unsigned int wire);
-    
+
     ~TQPad();
-    
+
     void Draw();
-    
+
     void SetPlaneWire(unsigned int plane=0, unsigned int wire=0) { fPlane = plane; fWire = wire; }
 
 private:
     void BookHistogram();
-      
+
     using IWFHitDrawerPtr    = std::unique_ptr<evdb_tool::IWFHitDrawer>;
     using IWaveformDrawerPtr = std::unique_ptr<evdb_tool::IWaveformDrawer>;
 

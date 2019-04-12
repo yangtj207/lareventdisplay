@@ -10,7 +10,7 @@
 #include "canvas/Persistency/Common/PtrVector.h"
 
 #ifdef __ROOTCLING__
-namespace art { 
+namespace art {
   class Event;
 }
 namespace trkf
@@ -24,13 +24,13 @@ namespace trkf
 #include "lareventdisplay/EventDisplay/OrthoProj.h"
 
 class TH1F;
-namespace evdb { 
-  class View2D;   
-  class View3D;   
+namespace evdb {
+  class View2D;
+  class View3D;
 }
 
-namespace recob { 
-   class Hit;     
+namespace recob {
+   class Hit;
    class Cluster;
    class Seed;
 }
@@ -42,7 +42,7 @@ namespace recob {
 
 /// Class to perform operations needed to select hits and pass them to InfoTransfer.
 namespace evd {
-  
+
   class HitSelector {
   public:
     HitSelector();
@@ -55,35 +55,35 @@ namespace evd {
 		      double x1, double y1,
 		      double distance,
 		      bool good_plane=true
- 		      ); 
-    
+ 		      );
+
     double SaveSeedLines(const art::Event& evt,
 		       evdb::View2D*     view,
 		       std::vector < util::PxLine > seedline,
 		       double distance
-		       ); 
-  
-    
+		       );
+
+
      void ChangeHit(const art::Event& evt,
 		     evdb::View2D*     view,
 		     unsigned int      plane,
 		       double x,  double y
- 		      ); 
-    
+ 		      );
+
     std::vector< const recob::Hit*> GetSelectedHits(unsigned int plane);
     trkf::HitPtrVec GetSelectedHitPtrs(unsigned int plane);
-     
+
     void ClearHitList(unsigned int plane);
 
     std::vector<recob::Seed>& SeedVector();
-    
+
    private:
       //int test;
-      std::vector<recob::Seed> fSeedVector;   
-    
+      std::vector<recob::Seed> fSeedVector;
+
       std::vector < std::vector <double > > starthitout;
       std::vector < std::vector <double > > endhitout;
-      
+
   };
 }
 

@@ -37,6 +37,7 @@ public:
     int  fDrawSpacePoints;
     int  fDrawProngs;
     int  fDrawTracks;
+    int  fDrawOpHits;
     int  fDrawOpFlashes;
     int  fDrawTrackTrajectoryPoints;
     int  fDrawTrackSegments;
@@ -73,6 +74,7 @@ public:
     std::vector<art::InputTag> fShowerLabels;               ///< module labels that produced showers
     std::vector<art::InputTag> fVertexLabels;               ///< module labels that produced vertices
     std::vector<art::InputTag> fEventLabels;                ///< module labels that produced events
+    std::vector<art::InputTag> fOpHitLabels;                ///< module labels that produced events
     std::vector<art::InputTag> fOpFlashLabels;              ///< module labels that produced events
     std::vector<art::InputTag> fSeedLabels;                 ///< module labels that produced events
     std::vector<art::InputTag> fBezierTrackLabels;          ///< module labels that produced events

@@ -15,6 +15,11 @@ spacepointhitcharge_drawer3D:
     tool_type:  SpacePoint3DDrawerHitCharge
 }
 
+standard_ophit3D:
+{
+tool_type:  OpHit3DDrawer
+}
+
 standard_opflash3D:
 {
     tool_type:  OpFlash3DDrawer

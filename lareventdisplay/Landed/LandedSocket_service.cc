@@ -6,7 +6,7 @@
 #include "art/Framework/Principal/Worker.h"
 #include "canvas/Persistency/Provenance/EventID.h"
 #include "art/Framework/Principal/Event.h"
-#include "art/Framework/IO/Root/RootInput.h"
+#include "art_root_io/RootInput.h"
 
 #include <iostream>
 #include <sstream>

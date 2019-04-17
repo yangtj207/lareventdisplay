@@ -5,7 +5,7 @@ art_make(
           MODULE_LIBRARIES 
             larcore_Geometry_Geometry_service
 	    lareventdisplay_Landed_LandedSocket_service
-            ${ART_FRAMEWORK_SERVICES_OPTIONAL_TFILESERVICE_SERVICE}
+            ${ART_ROOT_IO_TFILESERVICE_SERVICE}
             ${ART_FRAMEWORK_SERVICES_OPTIONAL_RANDOMNUMBERGENERATOR_SERVICE}
             larcorealg_Geometry
             larsim_Simulation nutools_ParticleNavigation lardataobj_Simulation
@@ -17,7 +17,7 @@ art_make(
             ${ART_FRAMEWORK_CORE}
             ${ART_FRAMEWORK_PRINCIPAL}
             ${ART_FRAMEWORK_SERVICES_REGISTRY}
-            ${ART_FRAMEWORK_SERVICES_OPTIONAL}
+            ${ART_ROOT_IO_TFILE_SUPPORT} ${ROOT_CORE}
             art_Persistency_Common
             art_Persistency_Provenance
             art_Utilities
@@ -46,8 +46,8 @@ art_make(
 	  SERVICE_LIBRARIES
     	    ${ART_FRAMEWORK_CORE}
     	    art_Utilities canvas
-    	    ${ART_FRAMEWORK_IO_ROOT_ROOTINPUT_SOURCE}
-    	    ${ART_FRAMEWORK_IO_ROOT}
+    	    ${ART_ROOT_IO_ROOTINPUT_SOURCE}
+    	    ${ART_ROOT_IO}
             art_Framework_Principal
     	    art_Persistency_Provenance
 	    canvas

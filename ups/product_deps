@@ -7,16 +7,17 @@ fcldir		product_dir	job
 #
 product         version
 larreco		v08_11_00
+eigen		v3_3_4a
 
 cetbuildtools	v7_11_00	-	only_for_build
 end_product_list
 
   
-qualifier	larreco	 	notes
-e17:debug	e17:debug
-e17:prof	e17:prof
-c2:debug	c2:debug
-c2:prof		c2:prof
+qualifier	larreco		eigen 	notes
+e17:debug	e17:debug	-nq-
+e17:prof	e17:prof	-nq-
+c2:debug	c2:debug	-nq-
+c2:prof		c2:prof 	-nq-
 end_qualifier_list
 
 # Preserve tabs and formatting in emacs and vi / vim:

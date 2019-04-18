@@ -22,8 +22,7 @@ namespace evd {
 class SimulationDrawingOptions : public evdb::Reconfigurable
 {
 public:
-    explicit SimulationDrawingOptions(fhicl::ParameterSet const& pset, art::ActivityRegistry& reg);
-    ~SimulationDrawingOptions();
+    explicit SimulationDrawingOptions(fhicl::ParameterSet const& pset);
     
     void reconfigure(fhicl::ParameterSet const& pset) ;
   

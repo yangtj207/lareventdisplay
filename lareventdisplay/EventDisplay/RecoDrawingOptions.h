@@ -22,8 +22,7 @@ namespace evd {
   class RecoDrawingOptions : public evdb::Reconfigurable
 {
 public:
-    explicit RecoDrawingOptions(fhicl::ParameterSet const& pset, art::ActivityRegistry& reg);
-    ~RecoDrawingOptions();
+    explicit RecoDrawingOptions(fhicl::ParameterSet const& pset);
     
     void reconfigure(fhicl::ParameterSet const& pset) ;
 

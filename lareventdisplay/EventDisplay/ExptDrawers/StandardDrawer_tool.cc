@@ -90,7 +90,7 @@ void StandardDrawer::DetOutline3D(evdb::View3D* view)
         DrawBoxBoundedGeoOutline(view, cryo.Boundaries(), kRed + 2, 1, kSolid);
 
         // draw all TPC boxes
-        for (geo::TPCGeo const& TPC: cryo.IterateTPCs()) {
+        for (geo::TPCGeo const& TPC: cryo.TPCs()) {
 
             DrawTPCoutline(view, TPC, kRed, 2, kSolid);
 

@@ -11,7 +11,7 @@
 #include "art/Utilities/ToolMacros.h"
 #include "canvas/Persistency/Common/FindManyP.h"
 #include "nutools/EventDisplayBase/EventHolder.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "cetlib_except/exception.h"
 

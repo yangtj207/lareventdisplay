@@ -49,8 +49,11 @@ public:
              ) const;
 
 private:
-    double chargeIntegral(double,double,double,double,int,int) const;
+    double getSpacePointCharge(const art::Ptr<recob::SpacePoint>&,
+                               const art::FindManyP<recob::Hit>* ) const;
+    double chargeIntegral(double,double,double,double,int,int)     const;
 
+    bool           fUseAbsoluteScale;
     float          fMinHitCharge;
     float          fMaxHitCharge;
 };
@@ -62,8 +65,9 @@ SpacePoint3DDrawerHitCharge::SpacePoint3DDrawerHitCharge(const fhicl::ParameterS
 //    fNumPoints     = pset.get< int>("NumPoints",     1000);
 //    fFloatBaseline = pset.get<bool>("FloatBaseline", false);
     // For now only draw cryostat=0.
-    fMinHitCharge = pset.get<float>("MinHitCharge",    0.);
-    fMaxHitCharge = pset.get<float>("MaxHitCharge", 2500.);
+    fUseAbsoluteScale = pset.get<bool >("UseAbsoluteScale", false);
+    fMinHitCharge     = pset.get<float>("MinHitCharge",        0.);
+    fMaxHitCharge     = pset.get<float>("MaxHitCharge",     2500.);
 
     return;
 }
@@ -88,65 +92,94 @@ void SpacePoint3DDrawerHitCharge::Draw(const std::vector<art::Ptr<recob::SpacePo
 
     using HitPosition = std::array<double,6>;
     std::map<int,std::vector<HitPosition>> colorToHitMap;
-
-    float hitChiSqScale((cst->fRecoQHigh[geo::kCollection] - cst->fRecoQLow[geo::kCollection]) / (fMaxHitCharge - fMinHitCharge));
-
-    for(const auto& spacePoint : hitsVec)
+    
+    float minHitCharge(std::numeric_limits<float>::max());
+    float maxHitCharge(std::numeric_limits<float>::lowest());
+    
+    if (fUseAbsoluteScale)
     {
-        const double* pos = spacePoint->XYZ();
-        const double* err = spacePoint->ErrXYZ();
-
-        // Need to recover the integrated charge from the collection plane, so need to loop through associated hits
-        const std::vector<art::Ptr<recob::Hit>>& hit2DVec(hitAssnVec->at(spacePoint.key()));
-
-        float hitCharge(0.);
-        int   lowIndex(std::numeric_limits<int>::min());
-        int   hiIndex(std::numeric_limits<int>::max());
-
-        for(const auto& hit2D : hit2DVec)
+        minHitCharge = fMinHitCharge;
+        maxHitCharge = fMaxHitCharge;
+    }
+    else
+    // Find the range in the input space point list
+    {
+        for(const auto& spacePoint : hitsVec)
         {
-            int hitStart = hit2D->PeakTime() - 2. * hit2D->RMS() - 0.5;
-            int hitStop  = hit2D->PeakTime() + 2. * hit2D->RMS() + 0.5;
-
-            lowIndex = std::max(hitStart,    lowIndex);
-            hiIndex  = std::min(hitStop + 1, hiIndex);
-
-            hitCharge += hit2D->Integral();
-        }
-
-        if (!hit2DVec.empty()) hitCharge /= float(hit2DVec.size());
-
-        if (hitCharge > 0.)
-        {
-            int   chargeColorIdx(0);
-            float integral(0.);
-
-            if (hiIndex > lowIndex)
-            {
-                for(const auto& hit2D : hit2DVec)
-                    integral += chargeIntegral(hit2D->PeakTime(),hit2D->PeakAmplitude(),hit2D->RMS(),1.,lowIndex,hiIndex);
-
-                integral /= float(hit2DVec.size());
-            }
-
-//            hitCharge = std::min(hitCharge, fMaxHitCharge);
-            integral = std::min(integral, fMaxHitCharge);
-
-            float chgFactor = cst->fRecoQLow[geo::kCollection] + hitChiSqScale * integral;
-
-            chargeColorIdx = cst->CalQ(geo::kCollection).GetColor(chgFactor);
-
-            colorToHitMap[chargeColorIdx].push_back(HitPosition()={{pos[0],pos[1],pos[2],err[3],err[3],err[5]}});
+            float hitCharge = getSpacePointCharge(spacePoint, hitAssnVec);
+            
+            minHitCharge = std::min(minHitCharge, hitCharge);
+            maxHitCharge = std::max(maxHitCharge, hitCharge);
         }
     }
-
-    for(auto& hitPair : colorToHitMap)
+    
+    // Make sure we really have something here
+    if (maxHitCharge > minHitCharge)
     {
-        TPolyMarker3D& pm = view->AddPolyMarker3D(hitPair.second.size(), hitPair.first, kFullDotLarge, 0.25);
-        for (const auto& hit : hitPair.second) pm.SetNextPoint(hit[0],hit[1],hit[2]);
+        float hitChiSqScale((cst->fRecoQHigh[geo::kCollection] - cst->fRecoQLow[geo::kCollection]) / (maxHitCharge - minHitCharge));
+        
+        for(const auto& spacePoint : hitsVec)
+        {
+            float hitCharge = getSpacePointCharge(spacePoint, hitAssnVec);
+            
+            if (hitCharge > 0.)
+            {
+                float         chgFactor      = cst->fRecoQLow[geo::kCollection] + hitChiSqScale * hitCharge;
+                int           chargeColorIdx = cst->CalQ(geo::kCollection).GetColor(chgFactor);
+                const double* pos            = spacePoint->XYZ();
+                const double* err            = spacePoint->ErrXYZ();
+
+                colorToHitMap[chargeColorIdx].push_back(HitPosition()={{pos[0],pos[1],pos[2],err[3],err[3],err[5]}});
+            }
+        }
+        
+        for(auto& hitPair : colorToHitMap)
+        {
+            TPolyMarker3D& pm = view->AddPolyMarker3D(hitPair.second.size(), hitPair.first, kFullDotLarge, 0.25);
+            for (const auto& hit : hitPair.second) pm.SetNextPoint(hit[0],hit[1],hit[2]);
+        }
     }
 
     return;
+}
+    
+double SpacePoint3DDrawerHitCharge::getSpacePointCharge(const art::Ptr<recob::SpacePoint>& spacePoint,
+                                                        const art::FindManyP<recob::Hit>*  hitAssnVec) const
+{
+    double totalCharge(0.);
+    
+    // Need to recover the integrated charge from the collection plane, so need to loop through associated hits
+    const std::vector<art::Ptr<recob::Hit>>& hit2DVec(hitAssnVec->at(spacePoint.key()));
+    
+    float hitCharge(0.);
+    int   lowIndex(std::numeric_limits<int>::min());
+    int   hiIndex(std::numeric_limits<int>::max());
+    
+    for(const auto& hit2D : hit2DVec)
+    {
+        int hitStart = hit2D->PeakTime() - 2. * hit2D->RMS() - 0.5;
+        int hitStop  = hit2D->PeakTime() + 2. * hit2D->RMS() + 0.5;
+        
+        lowIndex = std::max(hitStart,    lowIndex);
+        hiIndex  = std::min(hitStop + 1, hiIndex);
+        
+        hitCharge += hit2D->Integral();
+    }
+    
+    if (!hit2DVec.empty()) hitCharge /= float(hit2DVec.size());
+    
+    if (hitCharge > 0.)
+    {
+        if (hiIndex > lowIndex)
+        {
+            for(const auto& hit2D : hit2DVec)
+                totalCharge += chargeIntegral(hit2D->PeakTime(),hit2D->PeakAmplitude(),hit2D->RMS(),1.,lowIndex,hiIndex);
+            
+            totalCharge /= float(hit2DVec.size());
+        }
+    }
+
+    return totalCharge;
 }
 
 double SpacePoint3DDrawerHitCharge::chargeIntegral(double peakMean,

@@ -12,7 +12,17 @@ spacepointchisquare_drawer3D:
 
 spacepointhitcharge_drawer3D:
 {
-    tool_type:  SpacePoint3DDrawerHitCharge
+    tool_type:        SpacePoint3DDrawerHitCharge
+    UseAbsoluteScale: false
+    MinHitCharge:     0.
+    MaxHitCharge:     2500.
+}
+
+spacepointasymmetry_drawer3D:
+{
+    tool_type:        SpacePoint3DDrawerAsymmetry
+    MinAsymmetry:     -1.
+    MaxAsymmetry:     1.
 }
 
 standard_ophit3D:

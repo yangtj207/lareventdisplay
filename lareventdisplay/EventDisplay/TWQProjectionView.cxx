@@ -2460,7 +2460,7 @@ namespace evd{
 
     // do we have a new event?
     if (!fLastEvent->update
-      ({*pEvent, art::ServiceHandle<evd::RawDrawingOptions const>()->fRawDataLabel})
+      ({*pEvent, art::ServiceHandle<evd::RawDrawingOptions const>()->fRawDataLabels[0]})
       )
       return false;
 

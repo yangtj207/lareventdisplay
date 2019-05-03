@@ -13,6 +13,7 @@
 #include "canvas/Persistency/Common/FindManyP.h"
 #include "nutools/EventDisplayBase/EventHolder.h"
 #include "larcore/Geometry/Geometry.h"
+#include "lardataobj/RawData/raw.h"
 #include "lardataobj/RawData/RawDigit.h"
 #include "larevt/CalibrationDBI/Interface/DetPedestalService.h"
 #include "larevt/CalibrationDBI/Interface/DetPedestalProvider.h"
@@ -121,13 +122,16 @@ void DrawRawHist::Fill(evdb::View2D&     view2D,
             mf::LogWarning  ("DrawRawHist") << " PedestalOption is not understood: " << rawOpt->fPedestalOption << ".  Pedestals not subtracted.";
         }
 
-        const raw::RawDigit::ADCvector_t& signalVec = rawDigit->ADCs();
+        std::vector<short> uncompressed(rawDigit->Samples());
+        raw::Uncompress(rawDigit->ADCs(), uncompressed, rawDigit->Compression());
+
+        //const raw::RawDigit::ADCvector_t& signalVec = rawDigit->ADCs();
 
         TH1F* histPtr = fRawDigitHist.get();
 
-        for(size_t idx = 0; idx < signalVec.size(); idx++)
+        for(size_t idx = 0; idx < uncompressed.size(); idx++)
         {
-            float signalVal = float(signalVec[idx]) - pedestal;
+            float signalVal = float(uncompressed[idx]) - pedestal;
 
             histPtr->Fill(float(idx)+0.5,signalVal);
 

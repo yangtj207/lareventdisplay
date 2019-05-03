@@ -2,6 +2,7 @@ cet_enable_asserts()
 
 art_make( TOOL_LIBRARIES
             larcorealg_Geometry
+            lardataobj_RawData
             lareventdisplay_EventDisplay_ColorDrawingOptions_service
             lareventdisplay_EventDisplay_RawDrawingOptions_service
             lareventdisplay_EventDisplay_RecoDrawingOptions_service

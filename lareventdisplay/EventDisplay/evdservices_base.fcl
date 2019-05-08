@@ -25,17 +25,17 @@ standard_colordrawingopt:
 
 standard_rawdrawingopt:
 {
- DrawRawDataOrCalibWires:    0     # 0 = raw, 1 = calibrated signals, 2 = both for ADC vs TDC views         
- TicksPerPoint:              1     # number of TDC ticks to combine for each point in the TDC vs Wire veiws 
- ScaleDigitsByCharge:        0     # 0 = off, 1 = on                                                        
- MinimumSignal:              5.    # minimum ADC value to draw in TDC vs Wire views
- StartTick:                  0.    # Starting tick for the display
- TotalTicks:                 2048. # display TDC ticks 0 -> TotalTicks
- AxisOrientation:            0     # 0 = TDC on y-axis, wire number on x-axis, 1 has that swapped           
- TPC:                        0     # TPC number to display in TWQProjection view
- Cryostat:                   0     # Cryostat number to display in TWQProjection view
- RawDataLabel:               "daq" # label of module making the raw digits
- PedestalOption:             0     # 0: use DetPedestalService; 1: use pedestal from raw digits;  2:  no pedestal subtraction
+ DrawRawDataOrCalibWires:    0       # 0 = raw, 1 = calibrated signals, 2 = both for ADC vs TDC views
+ TicksPerPoint:              1       # number of TDC ticks to combine for each point in the TDC vs Wire veiws
+ ScaleDigitsByCharge:        0       # 0 = off, 1 = on
+ MinimumSignal:              5.      # minimum ADC value to draw in TDC vs Wire views
+ StartTick:                  0.      # Starting tick for the display
+ TotalTicks:                 2048.   # display TDC ticks 0 -> TotalTicks
+ AxisOrientation:            0       # 0 = TDC on y-axis, wire number on x-axis, 1 has that swapped
+ TPC:                        0       # TPC number to display in TWQProjection view
+ Cryostat:                   0       # Cryostat number to display in TWQProjection view
+ RawDataLabels:              ["daq"] # label of module making the raw digits
+ PedestalOption:             0       # 0: use DetPedestalService; 1: use pedestal from raw digits;  2:  no pedestal subtraction
  RawDigitDrawer:             @local::rawdigithist_drawer
 }
 

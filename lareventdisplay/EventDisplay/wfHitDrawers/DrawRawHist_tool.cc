@@ -127,7 +127,7 @@ void DrawRawHist::Fill(evdb::View2D&     view2D,
 
             TH1F* histPtr = fRawDigitHist.get();
             
-            for(size_t idx = 0; idx < signalVec.size(); idx++)
+            for(size_t idx = 0; idx < uncompressed.size(); idx++)
             {
                 float signalVal = float(uncompressed[idx]) - pedestal;
                 

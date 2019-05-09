@@ -25,17 +25,17 @@ standard_colordrawingopt:
 
 standard_rawdrawingopt:
 {
- DrawRawDataOrCalibWires:    0     # 0 = raw, 1 = calibrated signals, 2 = both for ADC vs TDC views         
- TicksPerPoint:              1     # number of TDC ticks to combine for each point in the TDC vs Wire veiws 
- ScaleDigitsByCharge:        0     # 0 = off, 1 = on                                                        
- MinimumSignal:              5.    # minimum ADC value to draw in TDC vs Wire views
- StartTick:                  0.    # Starting tick for the display
- TotalTicks:                 2048. # display TDC ticks 0 -> TotalTicks
- AxisOrientation:            0     # 0 = TDC on y-axis, wire number on x-axis, 1 has that swapped           
- TPC:                        0     # TPC number to display in TWQProjection view
- Cryostat:                   0     # Cryostat number to display in TWQProjection view
- RawDataLabel:               "daq" # label of module making the raw digits
- PedestalOption:             0     # 0: use DetPedestalService; 1: use pedestal from raw digits;  2:  no pedestal subtraction
+ DrawRawDataOrCalibWires:    0       # 0 = raw, 1 = calibrated signals, 2 = both for ADC vs TDC views
+ TicksPerPoint:              1       # number of TDC ticks to combine for each point in the TDC vs Wire veiws
+ ScaleDigitsByCharge:        0       # 0 = off, 1 = on
+ MinimumSignal:              5.      # minimum ADC value to draw in TDC vs Wire views
+ StartTick:                  0.      # Starting tick for the display
+ TotalTicks:                 2048.   # display TDC ticks 0 -> TotalTicks
+ AxisOrientation:            0       # 0 = TDC on y-axis, wire number on x-axis, 1 has that swapped
+ TPC:                        0       # TPC number to display in TWQProjection view
+ Cryostat:                   0       # Cryostat number to display in TWQProjection view
+ RawDataLabels:              ["daq"] # label of module making the raw digits
+ PedestalOption:             0       # 0: use DetPedestalService; 1: use pedestal from raw digits;  2:  no pedestal subtraction
  RawDigitDrawer:             @local::rawdigithist_drawer
 }
 
@@ -59,7 +59,8 @@ standard_recodrawingopt:
  DrawVertices:              0  		       # 0 = off, 1 = on
  DrawSeeds:                 0  		       # 0 = off, 1 = on
  DrawBezierTracks:          0  		       # 0 = off, 1 = on
- DrawOpFlashes:             0              # 0 = off, 1 = on   
+ DrawOpHits:                0              # 0 = off, 1 = on
+ DrawOpFlashes:             0              # 0 = off, 1 = on
  DrawCosmicTags:            0  		       # 0 = off, 1 = on
 
  DrawEvents:                0  		       # 0 = off, 1 = on
@@ -92,6 +93,7 @@ standard_recodrawingopt:
  VertexModuleLabels:        [""]           # list of module labels in which to look for recob::Vertexs    
  SeedModuleLabels:          ["seedfinder"] # list of module labels in which to look for recob::Seeds  
  BezierTrackModuleLabels:   ["beziertracker"] # list of module labels in which to look for Bezier Tracks    
+ OpHitModuleLabels:         ["opflashnew"] # list of module labels in which to look for recob::OpHitss
  OpFlashModuleLabels:       ["opflashnew"] # list of module labels in which to look for recob::OpFlashes
  CosmicTagModuleLabels:     [""]           # list of module labels in which to look for recob::Tracks
  TrkVtxTrackLabels:         [""]           # list of track producers for track/vertex associations
@@ -111,6 +113,12 @@ standard_recodrawingopt:
  WireDrawer:                @local::wirehist_drawer
  SpacePointDrawer:          @local::spacepointchisquare_drawer3D
  AllSpacePointDrawer:       @local::spacepointstandard_drawer3D
+
+ Reco3DDrawers:
+ {
+   OpHit3D:                @local::standard_ophit3D
+   OpFlash3D:              @local::standard_opflash3D
+ }
 }
 
 standard_analysisdrawingopt:
@@ -131,6 +139,7 @@ standard_simdrawingopt:
  ShowMCTruthVectors:      1          # Show MCTruth vectors shifted by space charge effects
  ShowSimChannelInfo:      true       # Show the SimChannel info in the 3D display
  ShowSimEnergyInfo:       true       # Show the SimEnergy info in the 3D display
+ ShowSimPhotonInfo:       false      # Show the SimPhotons in the 3D display
  ShowMCTruthTrajectories: true       # toggle showing of MC truth trajectories in 3D, all depositions
  ShowMCTruthColors:       true       # toggle to use PDG colors for particles
  ShowMCTruthFullSize:     true       # toggle to use larger size markers for visibility
@@ -139,11 +148,13 @@ standard_simdrawingopt:
  G4ModuleLabel:           "largeant" # module labels producing simb::MCParticle objects
  SimChannelLabel:         "largeant" # module labels producing sim::SimChannel objects
  SimEnergyLabel:          "largeant" # Producer of the SimEnergyDeposits
+ SimPhotonLabel:          "largeant" # Producer of the SimPhoton
 
  Draw3DTools:
  {
    Drawer3D:              @local::larvoxel_drawer3D
    SimEnergyDep3D:        @local::simenergydeposit_drawer3D
+   SimPhoton3D:           @local::simphoton_drawer3D
  }
 }
 

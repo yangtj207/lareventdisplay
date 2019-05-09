@@ -44,27 +44,27 @@ namespace evd {
 
       void reconfigure(fhicl::ParameterSet const& pset) override;
 
-      int                 fDrawRawDataOrCalibWires;                 ///< 0 for raw
-      int    	          fTicksPerPoint;                           ///< number of ticks to include in one point
-      int    	          fScaleDigitsByCharge;                     ///< scale the size of the digit by the charge
-      double 	          fMinSignal;                               ///< minimum ADC count to display a time bin
-      double              fStartTick;                               ///< Starting tick for the display
-      double 	          fTicks;                                   ///< number of TDC ticks to display, ie # fTicks past fStartTick
-      int    	          fAxisOrientation;                         ///< 0 = TDC values on y-axis, wire number on x-axis, 1 = swapped
-      unsigned int        fTPC;                                     ///< TPC number to draw, typically set by TWQProjectionView
-      unsigned int        fCryostat;                                ///< Cryostat number to draw, typically set by TWQProjectionView
-      unsigned int        fMinChannelStatus;                        ///< Display channels with this status and above
-      unsigned int        fMaxChannelStatus;                        ///< Display channels with this status and below
-      art::InputTag       fRawDataLabel;                            ///< module label that made the raw digits, default is daq
+      int                        fDrawRawDataOrCalibWires;                 ///< 0 for raw
+      int    	                 fTicksPerPoint;                           ///< number of ticks to include in one point
+      int    	                 fScaleDigitsByCharge;                     ///< scale the size of the digit by the charge
+      double 	                 fMinSignal;                               ///< minimum ADC count to display a time bin
+      double                     fStartTick;                               ///< Starting tick for the display
+      double 	                 fTicks;                                   ///< number of TDC ticks to display, ie # fTicks past fStartTick
+      int    	                 fAxisOrientation;                         ///< 0 = TDC values on y-axis, wire number on x-axis, 1 = swapped
+      unsigned int               fTPC;                                     ///< TPC number to draw, typically set by TWQProjectionView
+      unsigned int               fCryostat;                                ///< Cryostat number to draw, typically set by TWQProjectionView
+      unsigned int               fMinChannelStatus;                        ///< Display channels with this status and above
+      unsigned int               fMaxChannelStatus;                        ///< Display channels with this status and below
+      std::vector<art::InputTag> fRawDataLabels;                           ///< module label that made the raw digits, default is daq
 
-      bool                fUncompressWithPed;                       ///< Option to uncompress with pedestal. Turned off by default
-      bool                fSeeBadChannels;                          ///< Allow "bad" channels to be viewed
-
-      std::vector<float>  fRoIthresholds;                           ///< region of interest thresholds, per plane
-
-      int                 fPedestalOption;                          ///< 0: use DetPedestalService;   1:  Use pedestal in raw::RawDigt;   2:  no ped subtraction
-
-      fhicl::ParameterSet fRawDigitDrawerParams;                    ///< FHICL parameters for the RawDigit waveform display
+      bool                       fUncompressWithPed;                       ///< Option to uncompress with pedestal. Turned off by default
+      bool                       fSeeBadChannels;                          ///< Allow "bad" channels to be viewed
+       
+      std::vector<float>         fRoIthresholds;                           ///< region of interest thresholds, per plane
+      
+      int                        fPedestalOption;                          ///< 0: use DetPedestalService;   1:  Use pedestal in raw::RawDigt;   2:  no ped subtraction
+      
+      fhicl::ParameterSet        fRawDigitDrawerParams;                    ///< FHICL parameters for the RawDigit waveform display
 
       /// Returns the current TPC as a TPCID
       geo::TPCID   CurrentTPC() const { return geo::TPCID(fCryostat, fTPC); }

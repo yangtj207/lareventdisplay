@@ -18,12 +18,12 @@
 #include "canvas/Utilities/InputTag.h"
 
 namespace evd {
-
+  
   class RecoDrawingOptions : public evdb::Reconfigurable
 {
 public:
     explicit RecoDrawingOptions(fhicl::ParameterSet const& pset);
-
+    
     void reconfigure(fhicl::ParameterSet const& pset) ;
 
     int  fDrawHits;
@@ -36,6 +36,7 @@ public:
     int  fDrawSpacePoints;
     int  fDrawProngs;
     int  fDrawTracks;
+    int  fDrawOpHits;
     int  fDrawOpFlashes;
     int  fDrawTrackTrajectoryPoints;
     int  fDrawTrackSegments;
@@ -57,7 +58,7 @@ public:
     bool fDraw3DEdges;
     bool fDraw3DPCAAxes;
     bool fDrawAllWireIDs;
-
+    
     std::vector<art::InputTag> fWireLabels;                 ///< module labels that produced wires
     std::vector<art::InputTag> fHitLabels;                  ///< module labels that produced hits
     std::vector<art::InputTag> fSliceLabels;                ///< module labels that produced slices
@@ -72,6 +73,7 @@ public:
     std::vector<art::InputTag> fShowerLabels;               ///< module labels that produced showers
     std::vector<art::InputTag> fVertexLabels;               ///< module labels that produced vertices
     std::vector<art::InputTag> fEventLabels;                ///< module labels that produced events
+    std::vector<art::InputTag> fOpHitLabels;                ///< module labels that produced events
     std::vector<art::InputTag> fOpFlashLabels;              ///< module labels that produced events
     std::vector<art::InputTag> fSeedLabels;                 ///< module labels that produced events
     std::vector<art::InputTag> fBezierTrackLabels;          ///< module labels that produced events
@@ -83,21 +85,24 @@ public:
     ///\todo Why are calorimetry related drawing options in RecoDrawingOptions instead of a separate service?
     fhicl::ParameterSet        fCaloPSet;                   /// < parameterset for calorimetry algorithm
     fhicl::ParameterSet        fSeedPSet;                   /// < parameterset for seed algorithm
-
+   
     int                        fColorProngsByLabel;         ///< Generate prong colors by label or id?
     int                        fColorSpacePointsByChisq;    ///< Generate space point colors by chisquare?
-
+   
     double                     fFlashMinPE;                 ///< Minimal PE for a flash to be displayed.
     double                     fFlashTMin;                  ///< Minimal time for a flash to be displayed.
     double                     fFlashTMax;                  ///< Maximum time for a flash to be displayed.
-
+    
     fhicl::ParameterSet        fHitDrawerParams;            ///< FHICL parameters for the hit drawing
     fhicl::ParameterSet        fWireDrawerParams;           ///< FHICL parameters for the wire drawing
-
-    fhicl::ParameterSet        fSpacePointDrawerParams;     ///< FHILL parameters for SpacePoint drawing
-    fhicl::ParameterSet        fAllSpacePointDrawerParams;  ///< FHILL parameters for SpacePoint drawing
+    
+    fhicl::ParameterSet        fSpacePointDrawerParams;     ///< FHICL parameters for SpacePoint drawing
+    fhicl::ParameterSet        fAllSpacePointDrawerParams;  ///< FHICL parameters for SpacePoint drawing
+    
+    fhicl::ParameterSet        f3DDrawerParams;             ///< FHICL paramegers for the 3D drawers
   };
 }//namespace
 #endif // __CINT__
 DECLARE_ART_SERVICE(evd::RecoDrawingOptions, LEGACY)
 #endif
+

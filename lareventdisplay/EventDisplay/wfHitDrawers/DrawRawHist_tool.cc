@@ -85,64 +85,63 @@ void DrawRawHist::Fill(evdb::View2D&     view2D,
     fMinimum = std::numeric_limits<float>::max();
     fMaximum = std::numeric_limits<float>::lowest();
 
-    // Step one is to recover the RawDigits to find the one we want to display
-    art::InputTag const which = rawOpt->fRawDataLabel;
-
-    art::Handle< std::vector<raw::RawDigit> > rawDigitVecHandle;
-    event->getByLabel(which, rawDigitVecHandle);
-
-    if (!rawDigitVecHandle.isValid()) return;
-
-    for(size_t rawDigitIdx = 0; rawDigitIdx < rawDigitVecHandle->size(); rawDigitIdx++)
+    // Loop over the possible producers of RawDigits
+    for(const auto& rawDataLabel : rawOpt->fRawDataLabels)
     {
-        art::Ptr<raw::RawDigit> rawDigit(rawDigitVecHandle, rawDigitIdx);
-
-        if (rawDigit->Channel() != channel) continue;
-
-        // We will need the pedestal service...
-        const lariov::DetPedestalProvider& pedestalRetrievalAlg = art::ServiceHandle<lariov::DetPedestalService const>()->GetPedestalProvider();
-
-        // recover the pedestal
-        float  pedestal = 0;
-
-        if (rawOpt->fPedestalOption == 0)
+        art::Handle< std::vector<raw::RawDigit> > rawDigitVecHandle;
+        event->getByLabel(rawDataLabel, rawDigitVecHandle);
+        
+        if (!rawDigitVecHandle.isValid()) continue;
+        
+        for(size_t rawDigitIdx = 0; rawDigitIdx < rawDigitVecHandle->size(); rawDigitIdx++)
         {
-            pedestal = pedestalRetrievalAlg.PedMean(channel);
+            art::Ptr<raw::RawDigit> rawDigit(rawDigitVecHandle, rawDigitIdx);
+            
+            if (rawDigit->Channel() != channel) continue;
+            
+            // We will need the pedestal service...
+            const lariov::DetPedestalProvider& pedestalRetrievalAlg = art::ServiceHandle<lariov::DetPedestalService const>()->GetPedestalProvider();
+            
+            // recover the pedestal
+            float  pedestal = 0;
+            
+            if (rawOpt->fPedestalOption == 0)
+            {
+                pedestal = pedestalRetrievalAlg.PedMean(channel);
+            }
+            else if (rawOpt->fPedestalOption == 1)
+            {
+                pedestal = rawDigit->GetPedestal();
+            }
+            else if (rawOpt->fPedestalOption == 2)
+            {
+                pedestal = 0;
+            }
+            else
+            {
+                mf::LogWarning  ("DrawRawHist") << " PedestalOption is not understood: " << rawOpt->fPedestalOption << ".  Pedestals not subtracted.";
+            }
+            
+            std::vector<short> uncompressed(rawDigit->Samples());
+            raw::Uncompress(rawDigit->ADCs(), uncompressed, rawDigit->Compression());
+
+            TH1F* histPtr = fRawDigitHist.get();
+            
+            for(size_t idx = 0; idx < uncompressed.size(); idx++)
+            {
+                float signalVal = float(uncompressed[idx]) - pedestal;
+                
+                histPtr->Fill(float(idx)+0.5,signalVal);
+                
+                fMinimum  = std::min(fMinimum,float(signalVal));
+                fMaximum  = std::max(fMaximum,float(signalVal));
+            }
+            
+            histPtr->SetLineColor(kBlack);
+            
+            // There is only one channel displayed so if here we are done
+            break;
         }
-        else if (rawOpt->fPedestalOption == 1)
-        {
-            pedestal = rawDigit->GetPedestal();
-        }
-        else if (rawOpt->fPedestalOption == 2)
-        {
-            pedestal = 0;
-        }
-        else
-        {
-            mf::LogWarning  ("DrawRawHist") << " PedestalOption is not understood: " << rawOpt->fPedestalOption << ".  Pedestals not subtracted.";
-        }
-
-        std::vector<short> uncompressed(rawDigit->Samples());
-        raw::Uncompress(rawDigit->ADCs(), uncompressed, rawDigit->Compression());
-
-        //const raw::RawDigit::ADCvector_t& signalVec = rawDigit->ADCs();
-
-        TH1F* histPtr = fRawDigitHist.get();
-
-        for(size_t idx = 0; idx < uncompressed.size(); idx++)
-        {
-            float signalVal = float(uncompressed[idx]) - pedestal;
-
-            histPtr->Fill(float(idx)+0.5,signalVal);
-
-            fMinimum  = std::min(fMinimum,float(signalVal));
-            fMaximum  = std::max(fMaximum,float(signalVal));
-        }
-
-        histPtr->SetLineColor(kBlack);
-
-        // There is only one channel displayed so if here we are done
-        break;
     }
 
     return;

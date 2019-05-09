@@ -606,16 +606,17 @@ void RecoBaseDrawer::OpFlash2D(const art::Event& evt,
                         << " \t PE :"
                         << opflashes[iof]->TotalPE();
 
-            //std::cout<<opflashes[iof]->Time()<<" "<<det->SamplingRate()<<" "<<det->GetXTicksOffset(pid)<<std::endl;
             float flashtick = opflashes[iof]->Time()/det->SamplingRate()*1e3 + det->GetXTicksOffset(pid);
             float wire0 = FLT_MAX;
             float wire1 = FLT_MIN;
+            
             //Find the 4 corners and convert them to wire numbers
             std::vector<TVector3> points;
             points.push_back(TVector3(0, opflashes[iof]->YCenter()-opflashes[iof]->YWidth(), opflashes[iof]->ZCenter()-opflashes[iof]->ZWidth()));
             points.push_back(TVector3(0, opflashes[iof]->YCenter()-opflashes[iof]->YWidth(), opflashes[iof]->ZCenter()+opflashes[iof]->ZWidth()));
             points.push_back(TVector3(0, opflashes[iof]->YCenter()+opflashes[iof]->YWidth(), opflashes[iof]->ZCenter()-opflashes[iof]->ZWidth()));
             points.push_back(TVector3(0, opflashes[iof]->YCenter()+opflashes[iof]->YWidth(), opflashes[iof]->ZCenter()+opflashes[iof]->ZWidth()));
+            
             for (size_t i = 0; i<points.size(); ++i){
               geo::WireID wireID;
               try{

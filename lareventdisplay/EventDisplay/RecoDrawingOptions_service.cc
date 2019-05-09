@@ -35,6 +35,7 @@ void RecoDrawingOptions::reconfigure(fhicl::ParameterSet const& pset)
     fDrawTrackSpacePoints      = pset.get< int                        >("DrawTrackSpacePoints"     );
     fDrawShowers     	       = pset.get< int                        >("DrawShowers"    	       );
     fDrawVertices    	       = pset.get< int                        >("DrawVertices"   	       );
+    fDrawOpHits                = pset.get< int                        >("DrawOpHits"               );
     fDrawOpFlashes             = pset.get< int                        >("DrawOpFlashes"            );
     fDrawSeeds     	           = pset.get< int                        >("DrawSeeds"    	     	   );
     fDrawBezierTracks          = pset.get< int                        >("DrawBezierTracks"         );
@@ -63,6 +64,7 @@ void RecoDrawingOptions::reconfigure(fhicl::ParameterSet const& pset)
     fTrackLabels      	       = pset.get< std::vector<art::InputTag> >("TrackModuleLabels"        );
     fShowerLabels     	       = pset.get< std::vector<art::InputTag> >("ShowerModuleLabels"       );
     fVertexLabels     	       = pset.get< std::vector<art::InputTag> >("VertexModuleLabels"       );
+    fOpHitLabels               = pset.get< std::vector<art::InputTag> >("OpHitModuleLabels"        );
     fOpFlashLabels             = pset.get< std::vector<art::InputTag> >("OpFlashModuleLabels"      );
     fSeedLabels       	       = pset.get< std::vector<art::InputTag> >("SeedModuleLabels"         );
     fBezierTrackLabels         = pset.get< std::vector<art::InputTag> >("BezierTrackModuleLabels"  );
@@ -88,6 +90,8 @@ void RecoDrawingOptions::reconfigure(fhicl::ParameterSet const& pset)
 
     fSpacePointDrawerParams    = pset.get< fhicl::ParameterSet        >("SpacePointDrawer"         );
     fAllSpacePointDrawerParams = pset.get< fhicl::ParameterSet        >("AllSpacePointDrawer"      );
+    
+    f3DDrawerParams            = pset.get< fhicl::ParameterSet        >("Reco3DDrawers"            );
   }
 
   DEFINE_ART_SERVICE(RecoDrawingOptions)

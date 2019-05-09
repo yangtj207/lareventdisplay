@@ -17,9 +17,11 @@
 #include "lareventdisplay/EventDisplay/RecoBaseDrawer.h"
 #include "lareventdisplay/EventDisplay/EvdLayoutOptions.h"
 #include "lareventdisplay/EventDisplay/SimulationDrawingOptions.h"
+#include "lareventdisplay/EventDisplay/RecoDrawingOptions.h"
 #include "lareventdisplay/EventDisplay/HitSelector.h"
 #include "lareventdisplay/EventDisplay/SimDrawers/ISim3DDrawer.h"
 #include "lareventdisplay/EventDisplay/ExptDrawers/IExperimentDrawer.h"
+#include "lareventdisplay/EventDisplay/3DDrawers/I3DDrawer.h"
 #include "lardataobj/RecoBase/Seed.h"
 
 #include "art/Framework/Services/Registry/ServiceHandle.h"
@@ -47,18 +49,31 @@ Display3DPad::Display3DPad(const char* nm, const char* ti,
     this->Pad()->Draw();
     this->Pad()->cd();
     fView = new evdb::View3D();
+    
+    // Set up the 3D drawing tools for the simulation
+    art::ServiceHandle<evd::SimulationDrawingOptions> simDrawOpt;
 
-    // Set up the 3D drawing tools
-    art::ServiceHandle<evd::SimulationDrawingOptions const> simDrawOpt;
-
-    // Implement the tools for handling the responses
-    const fhicl::ParameterSet& draw3DTools = simDrawOpt->f3DDrawerParams;
-
-    for(const std::string& draw3DTool : draw3DTools.get_pset_names())
+    // Implement the tools for handling the 3D simulation drawing tools
+    const fhicl::ParameterSet& drawSim3DTools = simDrawOpt->f3DDrawerParams;
+    
+    for(const std::string& draw3DTool : drawSim3DTools.get_pset_names())
     {
-        const fhicl::ParameterSet& draw3DToolParamSet = draw3DTools.get<fhicl::ParameterSet>(draw3DTool);
-
+        const fhicl::ParameterSet& draw3DToolParamSet = drawSim3DTools.get<fhicl::ParameterSet>(draw3DTool);
+        
         fSim3DDrawerVec.push_back(art::make_tool<evdb_tool::ISim3DDrawer>(draw3DToolParamSet));
+    }
+    
+    // Set up the 3D drawing tools for the reconstruction
+    art::ServiceHandle<evd::RecoDrawingOptions> recoDrawOpt;
+
+    // Implement the tools for handling the 3D reco drawing tools
+    const fhicl::ParameterSet& drawReco3DTools = recoDrawOpt->f3DDrawerParams;
+    
+    for(const std::string& draw3DTool : drawReco3DTools.get_pset_names())
+    {
+        const fhicl::ParameterSet& draw3DToolParamSet = drawReco3DTools.get<fhicl::ParameterSet>(draw3DTool);
+        
+        fReco3DDrawerVec.push_back(art::make_tool<evdb_tool::I3DDrawer>(draw3DToolParamSet));
     }
 
     return;
@@ -77,7 +92,7 @@ void Display3DPad::Draw()
 {
     fView->Clear();
 
-    art::ServiceHandle<geo::Geometry const> geo;
+    art::ServiceHandle<geo::Geometry> geo;
 
     // grab the event from the singleton
     const art::Event *evt = evdb::EventHolder::Instance()->GetEvent();
@@ -94,9 +109,13 @@ void Display3DPad::Draw()
         this->RecoBaseDraw()->  Event3D      (*evt, fView);
         this->RecoBaseDraw()->  Slice3D      (*evt, fView);
 
+        // Call the 3D simulation drawing tools
         for(auto& draw3D : fSim3DDrawerVec) draw3D->Draw(*evt, fView);
-
-        art::ServiceHandle<evd::EvdLayoutOptions const> evdlayoutoptions;
+        
+        // Call the 3D reco drawing tools
+        for(auto& draw3D : fReco3DDrawerVec) draw3D->Draw(*evt, fView);
+        
+        art::ServiceHandle<evd::EvdLayoutOptions> evdlayoutoptions;
         if(evdlayoutoptions->fMakeSeeds) UpdateSeedCurve();
     }
 
@@ -124,25 +143,25 @@ void Display3DPad::UpdateSeedCurve()
     std::vector<recob::Seed> SeedVec = this->HitSelectorGet()->SeedVector();
     std::cout<<"Seeds available to Display3DPad : " << SeedVec.size()<<std::endl;
     trkf::BezierTrack BTrack(SeedVec);
-
+    
     int N=100;
     TPolyLine3D& pl = fView->AddPolyLine3D(N,kOrange+5,2,0);
     fView->Draw();
-
-
+    
+    
     double  xyzpt[3] ;
-
+    
     for(int i=0; i!=N; i++)
     {
         BTrack.GetTrackPoint(float(i)/N,xyzpt );
         double x = xyzpt[0];
         double y = xyzpt[1];
         double z = xyzpt[2];
-
+        
         pl.SetPoint(i,x,y,z);
-
+        
     }
-
+    
     fView->Draw();
   //  UpdatePad();
 }

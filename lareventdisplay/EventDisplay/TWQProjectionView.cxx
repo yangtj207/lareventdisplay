@@ -38,7 +38,6 @@
 #include "lareventdisplay/EventDisplay/Style.h"
 #include "lareventdisplay/EventDisplay/InfoTransfer.h"
 
-#include "lardataobj/RecoBase/Seed.h"
 #include "larcore/Geometry/Geometry.h"
 #include "larcorealg/Geometry/GeometryCore.h"
 #include "larcorealg/Geometry/PlaneGeo.h"
@@ -239,8 +238,6 @@ namespace evd{
     //zero the ppoints queue.
     ppoints.clear();
     pline.clear();
-    seedlines.clear();
-
 
     // now determine the positions of all the time vs wire number
     // and charge histograms for the planes
@@ -346,7 +343,6 @@ namespace evd{
 
     art::ServiceHandle<geo::Geometry const> geo;
 
-    ClearAllSeeds();
     fPrevZoomOpt.clear();
 
 
@@ -363,7 +359,6 @@ namespace evd{
     //clear queue of selected points
     ppoints.clear();
     pline.clear();
-    seedlines.clear();
     // Reset current zooming plane - since it's not currently zooming.
     curr_zooming_plane=-1;
 
@@ -523,8 +518,7 @@ namespace evd{
       if(evdlayoutopt-> fChangeWire==1) wqpp->ChangeWire(plane);
     case kButton1Down: shift_lock=0;
     case kButton1Motion:
-      if((evdlayoutopt->fMakeClusters == 1) && !(evdlayoutopt->fMakeSeeds == 1)){ wqpp->SetClusters(plane);}
-      else if((evdlayoutopt->fMakeClusters == 0) && (evdlayoutopt->fMakeSeeds == 1)){ wqpp->SetSeeds(plane);}
+      if(evdlayoutopt->fMakeClusters == 1) { wqpp->SetClusters(plane);}
       else { wqpp->SetMouseZoomRegion(plane);}
       break;
       //  default:
@@ -918,29 +912,13 @@ namespace evd{
   }
 
   //......................................................................
-  void TWQProjectionView::RefitSeeds(){
-
-
-  }
-
-  //......................................................................
   // SaveSelection
   void TWQProjectionView::SaveSelection()
   {
     util::GeometryUtilities gser;
 
     art::ServiceHandle<evd::EvdLayoutOptions const> evdlayoutoptions;
-    if(evdlayoutoptions->fMakeSeeds){
-      double KineticEnergy = fPlanes[0]->SaveSeedList( seedlines, kDistance);
-      std::stringstream ss;
-      ss<< " " << std::setprecision(1) << std::fixed << KineticEnergy << " MeV";
-
-      TGText * tt = new TGText(fAngleInfo->GetText());
-      tt->InsLine(1,ss.str().c_str());
-      fAngleInfo->SetText(tt);
-      fAngleInfo->Update();
-    }
-    else if(evdlayoutoptions->fMakeClusters){
+    if(evdlayoutoptions->fMakeClusters){
       //only calculating in 3 planes now, needs to be generalized eventually
       //	evd::TWQProjectionView tt;
       double omx[3];
@@ -1022,77 +1000,16 @@ namespace evd{
   {
     art::ServiceHandle<evd::EvdLayoutOptions const> evdlayoutopt;
 
-    if(!evdlayoutopt->fMakeSeeds && !evdlayoutopt->fMakeClusters)
+    if(!evdlayoutopt->fMakeClusters)
       ppoints.clear();
-    else if(evdlayoutopt->fMakeSeeds)
-      ClearAllSeeds();
-    else if(evdlayoutopt->fMakeClusters){
+    else {
       if(this->pline.size()==0) return;
       for(size_t i = 0;i < fPlanes.size(); ++i){
 	fPlanes[i]->ClearHitList();
 	fPlanes[i]->UpdatePad();
       }
       pline.clear();
-
     }
-  }
-
-  //.......................................................................
-  void TWQProjectionView::ClearAllSeeds()
-  {
-    art::ServiceHandle<evd::RecoDrawingOptions const> recoopt;
-    if(!recoopt->fUseHitSelector) return;
-
-    if(this->seedlines.size()==0) return;
-    //this->DrawPads();
-    seedlines.clear();
-    fPlanes[0]->HitSelectorGet()->SeedVector().clear();
-    // only for last plane
-    for(size_t i = 0; i < fPlanes.size(); ++i){
-      fPlanes[i]->DrawLinesinView(seedlines,true);
-      fPlanes[i]->UpdatePad();
-    }
-
-    return;
-  }
-
-
-
-  //.......................................................................
-  // If we are mid seed creation, stop and clear.
-  // Otherwise, remove the last seed.
-  //
-  void TWQProjectionView::ClearLastSeed()
-  {
-    art::ServiceHandle<evd::RecoDrawingOptions const> recoopt;
-    if(!recoopt->fUseHitSelector) return;
-
-    if(this->seedlines.size()==0) return;
-
-    // If the seed lines vector is an event seed number, remove
-    //  one seed from the hit selector seed collection
-    if(seedlines.size()%3==0)
-      fPlanes[0]->HitSelectorGet()->SeedVector().pop_back();
-
-    // Figure out how many display lines need to be rejected
-    int SeedsToRemove = seedlines.size() % fPlanes.size();
-    if(SeedsToRemove==0) SeedsToRemove=3;
-
-    mf::LogVerbatim("TWQProjectionView") <<"Removing  "
-					 << SeedsToRemove
-					 << " of " << seedlines.size() <<" seed lines";
-
-    // Throw them out
-    for(int i=0; i!=SeedsToRemove; ++i)
-      seedlines.pop_back();
-
-    // Then update the drawing pads
-    for(size_t i=0; i!=fPlanes.size(); ++i){
-      fPlanes[i]->UpdatePad();
-      fPlanes[i]->DrawLinesinView(seedlines,true);
-      fPlanes[i]->UpdatePad();
-    }
-
   }
 
   //.......................................................................
@@ -1220,9 +1137,6 @@ namespace evd{
   //......................................................................
   int TWQProjectionView::DrawLine(int plane,util::PxLine &pline)
   {
-    art::ServiceHandle<evd::EvdLayoutOptions const>     evdlayoutopt;
-    const detinfo::DetectorProperties* det = lar::providerFrom<detinfo::DetectorPropertiesService>();
-
     static Float_t w0=-1, t0=-1, w1=-1, t1=-1;
 
     static Int_t pxold, pyold;
@@ -1230,22 +1144,9 @@ namespace evd{
 
     static Int_t linedrawn;
 
-    // These static variables keep track of seed lines which
-    //  were drawn
-    static Int_t LastSeedt0;
-    static Int_t LastSeedt1;
-    static Int_t LastSeedPlane;
-
-
-    //Temporary evil - eventually from pset
-    double MaxSeedTimeDiff=100;
-
     int event = gPad->GetEvent();
     int px = gPad->GetEventX();
     int py = gPad->GetEventY();
-
-    int SeedCounter = seedlines.size();
-
 
     int linefinished=0;
 
@@ -1255,16 +1156,6 @@ namespace evd{
       //not doing anything right now
       w0 = gPad->AbsPixeltoX(px);
       t0 = gPad->AbsPixeltoY(py);
-      if(evdlayoutopt->fMakeSeeds){
-	if((SeedCounter%3)==1){
-	  t0=det->ConvertXToTicks(det->ConvertTicksToX(LastSeedt0,LastSeedPlane,0,0),plane,0,0);
-	  py=gPad->YtoAbsPixel(t0);
-	}
-	else{
-	  LastSeedt0=t0;
-	  LastSeedPlane=plane;
-	}
-      }
       pw0   = px; pt0   = py;
       pxold = px; pyold = py;
       linedrawn = 0;
@@ -1278,12 +1169,6 @@ namespace evd{
       // If we are in seed mode, and one seed line
       //  was already placed, constrain head of next line
       //  to be at same t0
-
-      if((evdlayoutopt->fMakeSeeds)&&((SeedCounter%3)==1)){
-	t0 = det->ConvertXToTicks(det->ConvertTicksToX(LastSeedt0, LastSeedPlane,0,0),plane,0,0);
-	t1 = det->ConvertXToTicks(det->ConvertTicksToX(LastSeedt1, LastSeedPlane,0,0),plane,0,0);
-	pt0=gPad->YtoAbsPixel(t0);
-      }
 
       lx=pxold;
       hx=pw0;
@@ -1316,56 +1201,8 @@ namespace evd{
 
       gPad->Modified(kTRUE);
 
-      // if we are making seeds, process this mouse operation
-      // in context of how many unconnected seeds we have
-      if(evdlayoutopt->fMakeSeeds){
-	LastSeedt1=t1;
-
-	// we keep track of how many seed lines we placed
-	SeedCounter++;
-
-	// If this is a second seed line, it should match an
-	// existing line.  \todo: Add wire check
-	if((SeedCounter%3)==2){
-	  if(LastSeedPlane==plane){
-	    ClearLastSeed();
-	    mf::LogVerbatim("TWQProjectionView") <<"Cannot draw seed with 2 lines in same plane!";
-	    linefinished=0;
-	    return 0;
-	  }
-	  if(((LastSeedt0-t0)>MaxSeedTimeDiff)||(LastSeedt1-t1)>MaxSeedTimeDiff){
-	    mf::LogVerbatim("TWQProjectionView")<<"This seed line does not fit the last proj. not adding it";
-	    linefinished=0;
-	    SeedCounter--;
-	  }
-	  else{
-	    // This proj is compatible to make a 3D seed.  Indicate this with the linefinished status
-	    mf::LogVerbatim("TWQProjectionView")<<"This is a good seed. adding line and returing 2";
-	    pline=util::PxLine(plane,w0,t0,w1,t1);
-	    linefinished=2;
-	  }
-
-
-	}
-	// If a first seed line, can be drawn with no constraints.
-	// Put down guide lines in other 2 views for t
-
-	else if((SeedCounter%3)==1){
-	  pline=util::PxLine(plane,w0,t0,w1,t1);
-	  linefinished=1;
-
-	}
-	// Of it is a thid seed line, something is terribly
-	//  wrong.  Shout a warning.
-	else if((SeedCounter%3)==0){
-	  mf::LogVerbatim("TWQProjectionView") <<"You have been eaten by a Grue. And seed mode is doing something wrong.";
-	}
-      }
-      else{
-
-	pline=util::PxLine(plane,w0,t0,w1,t1);
-	linefinished=1;
-      }
+      pline=util::PxLine(plane,w0,t0,w1,t1);
+      linefinished=1;
       //curr_zooming_plane=-1;
       //gROOT->SetEditorMode();
     }
@@ -1445,207 +1282,6 @@ namespace evd{
 
     }
 
-  }
-
-  //.......................................................................
-  void TWQProjectionView::SetSeeds(int plane)
-  {
-    art::ServiceHandle<evd::RecoDrawingOptions const> recoopt;
-    if(!recoopt->fUseHitSelector) return;
-
-    TObject *select = gPad->GetSelected();
-    if(!select) return;
-    if(!select->InheritsFrom("TBox")) return;
-
-
-    util::PxLine ppx;
-
-    int DrawStatus = DrawLine(plane,ppx);
-
-    //  std::cout<<"Draw status return value for this line " <<DrawStatus<<std::endl;
-
-    if(DrawStatus==0)
-      return;
-
-    curr_zooming_plane=-1;
-    gROOT->SetEditorMode();
-
-
-    this->seedlines.push_back(ppx);
-
-    if(DrawStatus==1){
-      // We drew the first of seed projection - go ahead and pass it on, and draq guide lines
-      for(size_t p = 0; p != fPlanes.size(); ++p)
-	this->fPlanes[p]->DrawLinesinView(seedlines);
-    }
-    else if(DrawStatus==2){
-      mf::LogVerbatim("TWQProjectionView") << "Adding third seed projection";
-      // We drew the second seed projection - make the 3D seed
-
-      util::PxLine l0 = seedlines.at(seedlines.size()-1);
-      util::PxLine l1 = seedlines.at(seedlines.size()-2);
-
-      const detinfo::DetectorProperties* det = lar::providerFrom<detinfo::DetectorPropertiesService>();
-
-      double x0 = det->ConvertTicksToX(l0.t0, l0.plane, 0,0);
-      double x1 = det->ConvertTicksToX(l0.t1, l0.plane, 0,0);
-
-
-
-      util::PxPoint thirdp0(0,0,0), thirdp1(0,0,0);
-
-      util::GeometryUtilities geomutil;
-
-      double yz0[2];
-      double yz1[2];
-      util::PxPoint l0_pt0 = l0.pt0();
-      util::PxPoint l0_pt1 = l0.pt1();
-      util::PxPoint l1_pt0 = l1.pt0();
-      util::PxPoint l1_pt1 = l1.pt1();
-      geomutil.GetProjectedPoint(&l0_pt0, &l1_pt0, thirdp0);
-      geomutil.GetProjectedPoint(&l0_pt1, &l1_pt1, thirdp1);
-      geomutil.GetYZ(&l0_pt0, &l1_pt0, yz0);
-      geomutil.GetYZ(&l0_pt1, &l1_pt1, yz1);
-
-      thirdp0.t = det->ConvertXToTicks(x0, thirdp0.plane,0,0);
-      thirdp1.t = det->ConvertXToTicks(x1, thirdp1.plane,0,0);
-
-      util::PxLine thirdline(thirdp0.plane, thirdp0.w, thirdp0.t, thirdp1.w, thirdp1.t);
-
-      this->seedlines.push_back(thirdline);
-
-      mf::LogVerbatim("TWQProjectionView") <<"Third projection goes "
-					   << thirdline.w0<<" "
-					   <<thirdline.t0<< " to "
-					   << thirdline.w1 <<  " "
-					   << thirdline.t1;
-
-
-      // Update all the views, since we are also adding
-      //  guide lines
-      for(size_t p=0; p!=fPlanes.size(); ++p){
-	this->fPlanes[p]->DrawLinesinView(seedlines);
-      }
-
-
-      // Now make an actual seed object to store
-      //  in the hit selector
-      double seedpt[3], seeddir[3], seederr[3];
-
-      for(int i=0; i!=3; ++i){
-	seederr[i] = 0;
-      }
-
-
-      seedpt[0]  = (x0+x1)/2.;
-      seeddir[0] = (x1-x0)/2.;
-
-      seedpt[1]  = (yz0[0]+yz1[0])/2.;
-      seeddir[1] = (yz1[0]-yz0[0])/2.;
-      seedpt[2]  = (yz0[1]+yz1[1])/2.;
-      seeddir[2] = (yz1[1]-yz0[1])/2.;
-
-      recob::Seed NewSeed(seedpt,seeddir,seederr,seederr);
-      fPlanes[0]->HitSelectorGet()->SeedVector().push_back(NewSeed);
-      mf::LogVerbatim("TWQProjectionView") <<"Adding seed, vector now of size "
-					   << fPlanes[0]->HitSelectorGet()->SeedVector().size();
-
-
-    }
-
-    // Update the bezier curve on the screen, and the track params
-    //  text box
-    mf::LogVerbatim("TWQProjectionView") << "size of seed vector: "
-					 << fPlanes[0]->HitSelectorGet()->SeedVector().size();
-
-    int NSeeds = fPlanes[0]->HitSelectorGet()->SeedVector().size();
-
-    double Length=0;
-    std::stringstream ss;
-    if(NSeeds>1)
-      Length = UpdateSeedCurve();
-    else if(NSeeds==1)
-      Length = fPlanes[0]->HitSelectorGet()->SeedVector().at(0).GetLength()*2.;
-
-    if(Length>0){
-      ss<<" " << Length<< " cm";
-      TGText * tt = new TGText(ss.str().c_str());
-      tt->InsLine(1,"3D Track : ");
-      fAngleInfo->SetText(tt);
-      fAngleInfo->Update();
-      ss.clear();
-      ss.str("");
-
-      double FirstPt[3], LastPt[3], FirstDir[3], LastDir[3], Err[3];
-      fPlanes[0]->HitSelectorGet()->SeedVector().at(0).GetPoint(FirstPt,Err);
-      fPlanes[0]->HitSelectorGet()->SeedVector().at(0).GetDirection(FirstDir,Err);
-      fPlanes[0]->HitSelectorGet()->SeedVector().at(NSeeds-1).GetPoint(LastPt,Err);
-      fPlanes[0]->HitSelectorGet()->SeedVector().at(NSeeds-1).GetDirection(LastDir,Err);
-      for(int i=0; i!=3; ++i){
-	FirstPt[i] -= FirstDir[i];
-	LastPt[i]  += LastDir[i];
-      }
-      ss<<"z| " <<std::setprecision(0)<<std::fixed<< FirstPt[2] <<"," <<"\t" <<LastPt[2];
-      tt = new TGText(ss.str().c_str());
-      ss.clear();
-      ss.str("");
-
-      ss<<"x| " <<std::setprecision(0)<<std::fixed<< FirstPt[0] <<","<<"\t" <<LastPt[0];
-
-
-      tt->InsLine(1,ss.str().c_str());
-      ss.clear();
-      ss.str("");
-
-      ss<<"y| " <<std::setprecision(0)<<std::fixed<< FirstPt[1] <<","<<"\t" <<LastPt[1];
-
-      tt->InsLine(1,ss.str().c_str());
-      ss.clear();
-      ss.str("");
-
-      fXYZPosition->SetText(tt);
-
-      art::ServiceHandle<geo::Geometry const> geo;
-
-      TVector3 TPCHighBoundary = TVector3(2 * geo->DetHalfWidth(),
-					  geo->DetHalfHeight(),
-					  geo->DetLength());
-      TVector3 TPCLowBoundary = TVector3(0,
-					 0-geo->DetHalfHeight(),
-					 0);
-      mf::LogVerbatim("TWQProjectionView") << "Boundaries "
-					   << TPCLowBoundary[0]  << " "
-					   << TPCLowBoundary[1]  << " "
-					   << TPCLowBoundary[2]  << "\n"
-					   << TPCHighBoundary[0] << " "
-					   << TPCHighBoundary[1] << " "
-					   << TPCHighBoundary[2];
-      bool OverPointFound=false;
-      for(int i=0; i!=3; ++i){
-	if((FirstPt[i]>(TPCHighBoundary[i])) ||
-	   (FirstPt[i]<(TPCLowBoundary[i]))  ||
-	   (LastPt[i]>(TPCHighBoundary[i]))  ||
-	   (LastPt[i]<(TPCLowBoundary[i]))){
-	  mf::LogVerbatim("TWQProjectionView") <<"One point over TPC boundary";
-	  fXYZPosition->SetForegroundColor(0xff0000);
-	  OverPointFound=true;
-	}
-	if(!OverPointFound){
-	  if((FirstPt[i]>(TPCHighBoundary[i]-5))||(FirstPt[i]<(TPCLowBoundary[i]+5)) ||
-	     (LastPt[i]>(TPCHighBoundary[i]-5))||(LastPt[i]<(TPCLowBoundary[i]+5))){
-	    mf::LogVerbatim("TWQProjectionView") <<"One point 5cm from TPC boundary";
-	    fXYZPosition->SetForegroundColor(0x0000ff);
-	    OverPointFound=true;
-	  }
-
-	}
-      }
-
-      fXYZPosition->Update();
-
-    }
-
-    return;
   }
 
   //......................................................................
@@ -1759,17 +1395,6 @@ namespace evd{
 
 
   //......................................................................
-  void TWQProjectionView::SetSeedInterest()
-  {
-    art::ServiceHandle<evd::EvdLayoutOptions>   evdlayoutopt;
-    evdlayoutopt->fMakeSeeds = fToggleSeeds->GetState();
-    if(evdlayoutopt->fMakeSeeds==true && evdlayoutopt->fMakeClusters==false ){
-      evdlayoutopt->fMakeClusters = fToggleSeeds->GetState();
-      fToggleClusters->SetState(kButtonDown);
-    }
-  }
-
-  //......................................................................
   void TWQProjectionView::ToggleEndPointMarkers()
   {
     art::ServiceHandle<evd::EvdLayoutOptions>   evdlayoutopt;
@@ -1827,12 +1452,9 @@ namespace evd{
 
     fToggleZoom = new TGRadioButton(fVFrame,"Use Zoom",          2);
     fToggleClusters    = new TGRadioButton(fVFrame,"Select Clusters", 3);
-    fToggleSeeds      = new TGRadioButton(fVFrame,"Select Seeds", 4);
 
     fToggleZoom->Connect("Clicked()", "evd::TWQProjectionView", this, "RadioButtonsDispatch(=0)");
     fToggleClusters->Connect("Clicked()", "evd::TWQProjectionView", this, "RadioButtonsDispatch(=1)");
-    fToggleSeeds->Connect("Clicked()", "evd::TWQProjectionView", this, "RadioButtonsDispatch(=2)");
-
 
 
     //fToggleClusters=new TGCheckButton(fVFrame,"&Make Clusters",0);      ///< Toggle the make cluster setting
@@ -1843,17 +1465,7 @@ namespace evd{
     fClear=new TGTextButton(fVFrame, "&Clear Selection",0);
     fClear->Connect("Clicked()","evd::TWQProjectionView", this, "ClearSelection()");
 
-    fClearLastSeed=new TGTextButton(fVFrame, "&Clear Last Seed",0);
-    fClearLastSeed->Connect("Clicked()","evd::TWQProjectionView", this, "ClearLastSeed()");
-
-    //	fRefitSeeds=new TGTextButton(fVFrame, "&Refit Seeds",0);
-    //	fRefitSeeds->Connect("Clicked()","evd::TWQProjectionView", this, "RefitSeeds()");
-
-    //fClearSeeds=new TGTextButton(fVFrame, "&Clear All Seeds",0);
-    //fClearSeeds->Connect("Clicked()","evd::TWQProjectionView", this, "ClearAllSeeds()");
-
     if(evdlayoutopt->fMakeClusters == 1) fToggleClusters->SetState(kButtonDown);
-    else if(evdlayoutopt->fMakeSeeds == 1) fToggleSeeds->SetState(kButtonDown);
     else fToggleZoom->SetState(kButtonDown);
 
 
@@ -1884,12 +1496,9 @@ namespace evd{
 
     fVFrame->AddFrame(fToggleZoom, new TGLayoutHints(kLHintsTop|kLHintsLeft,0,0,5,1));
     fVFrame->AddFrame(fToggleClusters, new TGLayoutHints(kLHintsTop|kLHintsLeft,0,0,5,1));
-    fVFrame->AddFrame(fToggleSeeds, new TGLayoutHints(kLHintsTop|kLHintsLeft,0,0,5,1));
 
     fVFrame->AddFrame(fCalcAngle,new TGLayoutHints(kLHintsTop|kLHintsLeft,0,0,5,1));
     fVFrame->AddFrame(fClear,new TGLayoutHints(kLHintsTop | kLHintsLeft,0,0,5,1));
-    fVFrame->AddFrame(fClearLastSeed, new TGLayoutHints(kLHintsTop|kLHintsLeft,0,0,5,1));
-    //	fVFrame->AddFrame(fRefitSeeds, new TGLayoutHints(kLHintsTop|kLHintsLeft,0,0,5,1));
 
     fVFrame->AddFrame(fDistance,     new TGLayoutHints(kLHintsTop | kLHintsLeft, 0,  0, 5, 1 ) );
     fVFrame->AddFrame(fDistanceLabel,     new TGLayoutHints(kLHintsTop | kLHintsLeft, 0,  0, 5, 1 ) );
@@ -1898,8 +1507,6 @@ namespace evd{
 
 	fVFrame->AddFrame(fDistance,     new TGLayoutHints(kLHintsTop | kLHintsLeft, 0,  0, 5, 1 ) );
 
-
-    //fVFrame->AddFrame(fClearSeeds, new TGLayoutHints(kLHintsTop|kLHintsLeft,0,0,5,1));
 
   }
 
@@ -2115,21 +1722,11 @@ namespace evd{
   {
     art::ServiceHandle<evd::EvdLayoutOptions>        evdlayoutopt;
     if(parameter==0){evdlayoutopt->fMakeClusters=0;
-      evdlayoutopt->fMakeSeeds=0;
       fToggleClusters->SetState(kButtonUp);
-      fToggleSeeds->SetState(kButtonUp);
     }
     else if(parameter==1){
       evdlayoutopt->fMakeClusters=1;
-      evdlayoutopt->fMakeSeeds=0;
       fToggleZoom->SetState(kButtonUp);
-      fToggleSeeds->SetState(kButtonUp);
-    }
-    else if(parameter==2){
-      evdlayoutopt->fMakeClusters=0;
-      evdlayoutopt->fMakeSeeds=1;
-      fToggleZoom->SetState(kButtonUp);
-      fToggleClusters->SetState(kButtonUp);
     }
 
   }
@@ -2247,8 +1844,6 @@ namespace evd{
     evdb::Canvas::fCanvas->cd();
     evdb::Canvas::fCanvas->Modified();
     evdb::Canvas::fCanvas->Update();
-
-    //  UpdateSeedCurve();
 
     ori->cd();
 
@@ -2421,31 +2016,6 @@ namespace evd{
 
     ori->cd();
   }
-
-  //-----------------------------------------------------------------
-  double TWQProjectionView::UpdateSeedCurve()
-  {
-    double BezLength = util::kBogusD;
-
-    art::ServiceHandle<evd::RecoDrawingOptions const> recoopt;
-    if(!recoopt->fUseHitSelector) return BezLength;
-
-    std::vector<recob::Seed> SeedVec=fPlanes[0]->HitSelectorGet()->SeedVector();
-    for(size_t p = 0; p != fPlanes.size(); ++p){
-      // This method draws the existing seed lines on every
-      //   plane, as well as guide lines mid seeding.
-
-      fPlanes[p]->DrawLinesinView(seedlines);
-
-      //  The update method draws the curve onto each 2D pad
-      //   and returns the track length.
-      // note - the length is the same in every view
-
-      BezLength = fPlanes[p]->UpdateSeedCurve(SeedVec, p);
-    }
-    return BezLength;
-  }
-
 
   //-----------------------------------------------------------------
   bool TWQProjectionView::OnNewEvent() {

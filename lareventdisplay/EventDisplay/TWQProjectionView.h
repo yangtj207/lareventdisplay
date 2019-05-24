@@ -104,13 +104,6 @@ public:
     void    ZoomBack();  // Revert to the previous zoom setting
     void    SetClusterInterest();
 
-
-
-    void 	SetSeedInterest();
-    void 	ClearLastSeed();
-    void 	ClearAllSeeds();
-    void 	SetSeeds(int plane);
-    void 	RefitSeeds();
     void 	SetClusters(int plane);
 
     void 	SetZoomInterest();
@@ -126,7 +119,6 @@ public:
     void	RadioButtonsDispatch(int parameter);
     void 	SaveSelection();
     void 	ClearSelection();
-    double      UpdateSeedCurve();
 
     /// Returns if a new event is detected; if so, it also resets accordingly
     bool    OnNewEvent();
@@ -172,7 +164,6 @@ private:
     TGCheckButton* fToggleAutoZoom;       ///< Toggle the autozoom setting
     TGRadioButton* fToggleZoom;             ///< Use zoom setting
     TGRadioButton* fToggleClusters; 	  ///< Use make cluster setting
-    TGRadioButton* fToggleSeeds; 	  ///<Use the make seed setting
     TGTextView* fAngleInfo;
 
     TGTextButton* fFindEndpoint;	///< Calculate XYZ position of two points in wire planes
@@ -182,11 +173,6 @@ private:
 
     TGTextButton* fCalcAngle; ///<Calculate the 2D & 3D angles between lines
     TGTextButton* fClear; ///<Clears the selected points in an event
-
-    //TGTextButton* fClearSeeds; ///<Clears the selected points in an eventually
-    TGTextButton* fClearLastSeed; ///<Clears the selected points in an event
-
-    //TGTextButton* fRefitSeeds; ///<Clears the selected points in an event
 
     TGTextButton* fRedraw; ///< Button to force redraw
 

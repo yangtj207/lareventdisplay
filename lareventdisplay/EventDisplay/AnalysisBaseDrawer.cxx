@@ -21,7 +21,6 @@
 #include "lardataobj/RecoBase/Track.h"
 #include "lardataobj/RecoBase/Hit.h"
 #include "lardata/Utilities/AssociationUtil.h"
-#include "larreco/Deprecated/BezierTrack.h"
 #include "larreco/Calorimetry/CalorimetryAlg.h"
 
 #include "art/Framework/Services/Registry/ServiceHandle.h"
@@ -342,88 +341,6 @@ namespace evd{
      Line2Mip.SetLineStyle(kDashed);
      Line2Mip.SetLineColor(kGray+2);
    }
-
-   //......................................................................
-   void AnalysisBaseDrawer::CalorInteractive(const art::Event& /*evt*/,
-					     evdb::View2D* view,
-					     trkf::BezierTrack BTrack,
-					     trkf::HitPtrVec HitHider
-					     )
-   {
-
-     // slightly dirty workaround to get the hits passed on
-     std::vector<art::Ptr<recob::Hit> > hits = HitHider.Hits;
-
-     art::ServiceHandle<evd::RecoDrawingOptions const>     recoOpt;
-     art::ServiceHandle<evd::AnalysisDrawingOptions const> anaOpt;
-     art::ServiceHandle<geo::Geometry const>               geom;
-
-
-
-     calo::CalorimetryAlg calalg(recoOpt->fCaloPSet);
-
-
-
-     anab::Calorimetry cal = BTrack.GetCalorimetryObject(hits, geo::kCollection, calalg);
-
-     TPolyMarker& pm = view->AddPolyMarker(cal.dEdx().size(),kOrange,8,0.8);
-     for(size_t h = 0; h!=cal.dEdx().size();++h){
-       pm.SetPoint(h,cal.ResidualRange().at(h), cal.dEdx().at(h));
-
-
-
-     }
-
-     char proton[80];
-     char kaon[80];
-     char pion[80];
-     char muon[80];
-     char mip[80];
-     char mip2[80];
-
-     sprintf(proton,"Proton");
-     sprintf(kaon,"Kaon");
-     sprintf(pion,"Pion");
-     sprintf(muon,"Muon");
-
-     sprintf(mip,"1 MIP");
-     sprintf(mip2,"2 MIP");
-     double offset = 0;
-     TLatex& proton_tex = view->AddLatex(40.0, (23.0-1.0) - offset,proton);
-     TLatex& kaon_tex   = view->AddLatex(40.0, (23.0-2.0) - offset,kaon);
-     TLatex& pion_tex   = view->AddLatex(40.0, (23.0-3.0) - offset,pion);
-     TLatex& muon_tex   = view->AddLatex(40.0, (23.0-4.0) - offset,muon);
-     TLatex& mip_tex   = view->AddLatex(40.0, (23.0-20.0) - offset,mip);
-     TLatex& mip2_tex  = view->AddLatex(40.0, (23.0-18.0) - offset,mip2);
-     proton_tex.SetTextColor(Style::ColorFromPDG(2212));
-     kaon_tex.SetTextColor(Style::ColorFromPDG(321));
-     pion_tex.SetTextColor(Style::ColorFromPDG(211));
-     muon_tex.SetTextColor(Style::ColorFromPDG(13));
-
-
-     proton_tex.SetTextSize(0.03);
-     kaon_tex.SetTextSize(0.03);
-     pion_tex.SetTextSize(0.03);
-     muon_tex.SetTextSize(0.03);
-
-     mip_tex.SetTextColor(kGray+3);
-     mip2_tex.SetTextColor(kGray+2);
-     mip_tex.SetTextSize(0.02);
-     mip2_tex.SetTextSize(0.02);
-
-     double MIP = 1.5 * 1.4;
-     TLine & Line1Mip = view->AddLine(0, MIP, 100, MIP);
-     TLine & Line2Mip = view->AddLine(0, 2*MIP, 100, 2*MIP);
-
-     Line1Mip.SetLineStyle(kDashed);
-     Line1Mip.SetLineColor(kGray+3);
-     Line2Mip.SetLineStyle(kDashed);
-     Line2Mip.SetLineColor(kGray+2);
-
-
-   }
-
-
 
 }// namespace
 ////////////////////////////////////////////////////////////////////////

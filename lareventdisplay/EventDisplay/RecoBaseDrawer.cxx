@@ -43,7 +43,6 @@
 #include "lardataobj/RecoBase/Event.h"
 #include "lardataobj/RecoBase/EndPoint2D.h"
 #include "lardataobj/RecoBase/Seed.h"
-#include "larreco/Deprecated/BezierTrack.h"
 #include "lardataobj/RecoBase/Vertex.h"
 #include "lardataobj/RecoBase/OpFlash.h"
 #include "lardataobj/AnalysisBase/CosmicTag.h"
@@ -740,112 +739,6 @@ void RecoBaseDrawer::Seed2D(const art::Event& evt,
     return;
 }
 
-
-//......................................................................
-void RecoBaseDrawer::BezierTrack2D(const art::Event& evt,
-                                   evdb::View2D*     view,
-                                   unsigned int      plane)
-{
-    art::ServiceHandle<evd::RawDrawingOptions const>   rawOpt;
-    art::ServiceHandle<evd::RecoDrawingOptions const>  recoOpt;
-    art::ServiceHandle<geo::Geometry const>            geo;
-
-    if (rawOpt->fDrawRawDataOrCalibWires < 1) return;
-    if (recoOpt->fDrawBezierTracks == 0)      return;
-
-    for(size_t imod = 0; imod < recoOpt->fBezierTrackLabels.size(); ++imod) {
-        art::InputTag const which = recoOpt->fBezierTrackLabels[imod];
-
-        art::PtrVector<recob::Track> btrackbase;
-        this->GetBezierTracks(evt, which, btrackbase);
-
-        int N=100;
-
-        // project each seed into this view
-        for (size_t ibtb = 0; ibtb < btrackbase.size(); ++ibtb) {
-
-            trkf::BezierTrack BTrack(*btrackbase.at(ibtb));
-
-            std::vector<std::vector<double> > ProjPtUVWs(3);
-            std::vector<std::vector<double> > ProjTimes(3);
-
-            double projpt[3], ticks[3];
-            int c=0, t=0;
-
-            for(int i = 0; i != N; ++i){
-                try{
-                    BTrack.GetProjectedPointUVWT(float(i)/N,projpt,ticks,c,t );
-                    for(size_t n = 0; n != 3; ++n){
-                        ProjPtUVWs[n].push_back(projpt[n]);
-                        ProjTimes[n].push_back(ticks[n]);
-                    }
-                }
-                catch(...){
-                    continue;
-                }
-            }
-
-            TPolyLine& pl = view->AddPolyLine(ProjPtUVWs[plane].size(),kColor[ibtb%kNCOLS],1,0);
-
-            for(size_t i = 0; i != ProjPtUVWs[plane].size(); ++i){
-                double x = ProjPtUVWs[plane][i];
-                double y = ProjTimes[plane][i];
-                if(rawOpt->fAxisOrientation > 0){
-                    y =  ProjPtUVWs[plane][i];
-                    x =  ProjTimes[plane][i];
-                }
-                pl.SetPoint(i,x,y);
-            }
-        }
-    }
-}
-
-//......................................................................
-void RecoBaseDrawer::BezierTrack3D(const art::Event& evt,
-                                   evdb::View3D*       view)
-{
-    art::ServiceHandle<evd::RawDrawingOptions const>   rawOpt;
-    art::ServiceHandle<evd::RecoDrawingOptions const>  recoOpt;
-    art::ServiceHandle<geo::Geometry const>            geo;
-
-    if (rawOpt->fDrawRawDataOrCalibWires < 1) return;
-    if (recoOpt->fDrawBezierTracks == 0)      return;
-
-    for(size_t imod = 0; imod < recoOpt->fBezierTrackLabels.size(); ++imod) {
-        art::InputTag const which = recoOpt->fBezierTrackLabels[imod];
-
-        art::PtrVector<recob::Track> btrackbase;
-        art::PtrVector<recob::Vertex> btrackvertices;
-        this->GetBezierTracks(evt, which, btrackbase);
-        this->GetVertices(evt, which, btrackvertices);
-
-        int N=100;
-
-        // Draw bezier track lines
-        for (size_t ibtb = 0; ibtb < btrackbase.size(); ++ibtb) {
-            trkf::BezierTrack BTrack(*btrackbase.at(ibtb));
-            TPolyLine3D& pl = view->AddPolyLine3D(N,kColor[ibtb%kNCOLS],2,0);
-            double xyzpt[3] ;
-
-            for(int i = 0; i != N; ++i){
-                BTrack.GetTrackPoint(float(i)/N,xyzpt );
-                double x = xyzpt[0];
-                double y = xyzpt[1];
-                double z = xyzpt[2];
-
-                pl.SetPoint(i,x,y,z);
-            }
-        }
-
-        // Draw bezier track vertices
-        TPolyMarker3D&  pmrk = view->AddPolyMarker3D(btrackvertices.size(), kYellow, 4, 1);
-        for(size_t ivtx = 0; ivtx < btrackvertices.size(); ++ivtx){
-            double xyz[3];
-            btrackvertices.at(ivtx)->XYZ(xyz);
-            pmrk.SetPoint(ivtx, xyz[0], xyz[1], xyz[2]);
-        }
-    }
-}
 
   //......................................................................
   void RecoBaseDrawer::Slice2D(const art::Event& evt, evdb::View2D* view, unsigned int plane)
@@ -4008,31 +3901,6 @@ int RecoBaseDrawer::GetSeeds(const art::Event&            evt,
     return seeds.size();
 }
 
-
-//......................................................................
-int RecoBaseDrawer::GetBezierTracks(const art::Event&              evt,
-                                    const art::InputTag&           which,
-                                    art::PtrVector<recob::Track>&  btbs)
-{
-    btbs.clear();
-    art::PtrVector<recob::Track> temp;
-
-    art::Handle< std::vector<recob::Track> > btbcol;
-
-    try{
-        evt.getByLabel(which.encode(), "bezierformat", btbcol);
-        for(unsigned int i = 0; i < btbcol->size(); ++i){
-            art::Ptr<recob::Track> btb(btbcol, i);
-            temp.push_back(btb);
-        }
-        temp.swap(btbs);
-    }
-    catch(cet::exception& e){
-        writeErrMsg("GetBezierTracks", e);
-    }
-
-    return btbs.size();
-}
 
 //......................................................................
 int RecoBaseDrawer::GetSpacePoints(const art::Event&                  evt,

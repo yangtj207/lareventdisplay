@@ -120,7 +120,14 @@ void DrawGausHits::Draw(evdb::View2D&     view2D,
         std::vector<float>          wireDataVec;
 
         // Recover the full (zero-padded outside ROI's) deconvolved waveform for this wire
-        if (wireAssnsVec.isValid() && wireAssnsVec.size() > 0) wireDataVec = wireAssnsVec.at(0).front()->Signal();
+        if (wireAssnsVec.isValid() && wireAssnsVec.size() > 0) 
+	  {
+	    auto hwafp =  wireAssnsVec.at(0).front();
+	    if (!hwafp.isNull() && hwafp.isAvailable())
+	      {
+	         wireDataVec = hwafp->Signal();
+	      }
+	  }
 
         // Now go through and process the hits back into the hit parameters
         using HitParams_t = struct HitParams_t

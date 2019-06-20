@@ -46,7 +46,6 @@ public:
     int  fDrawEvents;
     int  fDraw2DEndPoints;
     int  fDrawSeeds;
-    int  fDrawBezierTracks;
     int  fDrawCosmicTags;
     int  fSelectedHitColor;
     bool fUseHitSelector;
@@ -76,7 +75,6 @@ public:
     std::vector<art::InputTag> fOpHitLabels;                ///< module labels that produced events
     std::vector<art::InputTag> fOpFlashLabels;              ///< module labels that produced events
     std::vector<art::InputTag> fSeedLabels;                 ///< module labels that produced events
-    std::vector<art::InputTag> fBezierTrackLabels;          ///< module labels that produced events
     std::vector<art::InputTag> fCosmicTagLabels;            ///< module labels that produced cosmic tags
     std::vector<art::InputTag> fTrkVtxTrackLabels;          ///< module labels that produced tracks (Track/Vertex module)
     std::vector<art::InputTag> fTrkVtxCosmicLabels;         ///< module labels that tagged track as CR (Track/Vertex module)

@@ -25,7 +25,6 @@ namespace evd {
       fShowEndPointMarkers     = pset.get<     int     >("ShowEndPointMarkers");
       fShowClusterSection      = pset.get<     int     >("ShowClusterSection");
       fMakeClusters 	       = pset.get<     int     >("MakeClusters");
-      fMakeSeeds	 	       = pset.get<     int     >("MakeSeeds");
       fChangeWire		       = pset.get<     int     >("ChangeWire");
       fEnableMCTruthCheckBox   = pset.get<     int     >("EnableMCTruthCheckBox");
 

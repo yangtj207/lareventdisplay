@@ -244,7 +244,6 @@ namespace evd{
       this->RecoBaseDraw()->  Prong2D               (*evt, fView, fPlane);
       this->RecoBaseDraw()->  Vertex2D              (*evt, fView, fPlane);
       this->RecoBaseDraw()->  Seed2D                (*evt, fView, fPlane);
-      this->RecoBaseDraw()->  BezierTrack2D         (*evt, fView, fPlane);
       this->RecoBaseDraw()->  OpFlash2D             (*evt, fView, fPlane);
       this->RecoBaseDraw()->  Event2D               (*evt, fView, fPlane);
       this->RecoBaseDraw()->  DrawTrackVertexAssns2D(*evt, fView, fPlane);
@@ -345,8 +344,6 @@ namespace evd{
 
   void TWireProjPad::ShowFull(int override)
   {
-    art::ServiceHandle<geo::Geometry const> g;
-
     // x values are wire numbers, y values are ticks of the clock
     int xmin = fXLo;
     int xmax = fXHi;
@@ -513,10 +510,6 @@ namespace evd{
 				     bool deleting,
 				     const char * zoom_opt)
   {
-
-    art::ServiceHandle<evd::EvdLayoutOptions const>    evdlayoutopt;
-    detinfo::DetectorProperties const* det = lar::providerFrom<detinfo::DetectorPropertiesService>();
-
     fPad->cd();
     if(deleting) {
       fPad->Clear();
@@ -537,124 +530,13 @@ namespace evd{
 
       fView->Draw();
       evd::Style::FromPDG(l,11);
-
-      // In Seed mode, colour of "sealed" seeds to green
-      if(evdlayoutopt->fMakeSeeds){
-	if( ( (lines.size()%3)==0 ) ||
-	    ( is < ( lines.size()-(lines.size()%3) )  )) {
-	  l.SetLineColor(kGreen);
-	}
-	else
-	  l.SetLineColor(kRed);
-      }
     }
 
-    // Seed mode guide lines
-
-    if(evdlayoutopt->fMakeSeeds){
-      TLine &lg1 = fView->AddLine(0,0,0,0);
-      fView->Draw();
-      TLine &lg0 = fView->AddLine(0,0,0,0);
-      fView->Draw();
-      lg1.SetLineStyle(kDashed);
-      lg0.SetLineStyle(kDashed);
-      lg0.SetLineWidth(1);
-      lg1.SetLineWidth(1);
-      lg0.SetLineColor(kGray);
-      lg1.SetLineColor(kGray);
-      lg0.SetBit(kCannotPick);
-      lg1.SetBit(kCannotPick);
-
-      if((lines.size()%3)==1){
-	mf::LogVerbatim("TWireProjPad") << "adding guide lines";
-	util::PxLine TopLine = lines.at(lines.size()-1);
-	lg0.SetX1(1);
-	lg0.SetX2(5000);
-
-	double TopT0 = det->ConvertXToTicks(det->ConvertTicksToX(TopLine.t0,TopLine.plane,0,0),fPlane,0,0);
-	double TopT1 = det->ConvertXToTicks(det->ConvertTicksToX(TopLine.t1,TopLine.plane,0,0),fPlane,0,0);
-
-	lg0.SetY1(TopT0);
-	lg0.SetY2(TopT0);
-
-	lg1.SetX1(1);
-	lg1.SetX2(5000);
-
-	lg1.SetY1(TopT1);
-	lg1.SetY2(TopT1);
-
-
-      }
-    }
     fView->Draw();
     UpdatePad();
     fView->Draw();
 
     return;
-  }
-
-  ////////////////////////////////////////////
-  //
-  // This method creates and draws a curve on
-  // each view, given the seeds selected by
-  // the user in the HitSelector.
-  //
-  // The return value is the length of the 3D
-  // track
-  //
-  double TWireProjPad::UpdateSeedCurve(std::vector<recob::Seed> SeedVec, int plane)
-  {
-    mf::LogVerbatim("TWireProjPad") <<"running updateseedcurve for plane " << plane;
-    fView->Draw();
-    UpdatePad();
-    int N=100;
-
-    double ReturnVal=0;
-
-    // For some reason, this line is needed to prevent lines being drawn twice
-    //  TPolyLine& pldummy1 = fView->AddPolyLine(2,kBlue,1,0);
-    // pldummy1.SetPoint(0,0,0);
-    // pldummy1.SetPoint(1,0,0);
-
-    int c=0; int t=0;
-    int LastGoodValue=0;
-    double ticks[3];
-    double projpt[3];
-
-    if(SeedVec.size() > 1){
-      TPolyLine& pl = fView->AddPolyLine(N,kOrange+9,2,0);
-      fView->Draw();
-
-      trkf::BezierTrack BTrack(SeedVec);
-
-      for(int i = 0; i != N; ++i){
-	try{
-	  BTrack.GetProjectedPointUVWT(float(i)/N,projpt,ticks,c,t );
-	  LastGoodValue=i;
-	  MF_LOG_DEBUG("TWireProjPad") << i << " ";
-	}
-	catch(cet::exception excp){
-	  BTrack.GetProjectedPointUVWT(float(LastGoodValue)/N, projpt, ticks, c, t);
-	}
-
-	double x = projpt[plane];
-	double y = ticks[plane];
-	pl.SetPoint(i,x,y);
-
-	if(LastGoodValue!=i){
-	  TMarker& mrk = fView->AddMarker(x, y, 3, 34, 1.5);
-	  mrk.SetMarkerColor(3);
-	}
-      }
-      ReturnVal =  BTrack.GetLength();
-    }
-    else
-      ReturnVal=0;
-
-    fView->Draw();
-    UpdatePad();
-
-    return ReturnVal;
   }
 
 }// namespace

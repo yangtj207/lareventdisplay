@@ -30,7 +30,6 @@ namespace evd {
       int         fShowEndPointMarkers;        ///< Draw EndPoint Markers if clicked.
       int 	      fShowClusterSection; 	       ///< Show section to make clusters
       int	      fMakeClusters;		       ///< Draw two lines to make clusters if clicked
-      int	      fMakeSeeds;		           ///< Draw two lines to make clusters if clicked
       int 	      fChangeWire; 		           ///< 1 to click mouse and change wire, 0 don't
       int         fEnableMCTruthCheckBox;      ///< 1 to have the check box appear, 0 otherwise
 

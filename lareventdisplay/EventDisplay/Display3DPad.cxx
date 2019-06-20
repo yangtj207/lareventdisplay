@@ -115,8 +115,6 @@ void Display3DPad::Draw()
         // Call the 3D reco drawing tools
         for(auto& draw3D : fReco3DDrawerVec) draw3D->Draw(*evt, fView);
         
-        art::ServiceHandle<evd::EvdLayoutOptions> evdlayoutoptions;
-        if(evdlayoutoptions->fMakeSeeds) UpdateSeedCurve();
     }
 
     this->Pad()->Clear();
@@ -134,36 +132,5 @@ void Display3DPad::Draw()
     fPad->Update();
 }
 
-
-////////////////////////////////////////////////////////////////////////
-
-
-void Display3DPad::UpdateSeedCurve()
-{
-    std::vector<recob::Seed> SeedVec = this->HitSelectorGet()->SeedVector();
-    std::cout<<"Seeds available to Display3DPad : " << SeedVec.size()<<std::endl;
-    trkf::BezierTrack BTrack(SeedVec);
-    
-    int N=100;
-    TPolyLine3D& pl = fView->AddPolyLine3D(N,kOrange+5,2,0);
-    fView->Draw();
-    
-    
-    double  xyzpt[3] ;
-    
-    for(int i=0; i!=N; i++)
-    {
-        BTrack.GetTrackPoint(float(i)/N,xyzpt );
-        double x = xyzpt[0];
-        double y = xyzpt[1];
-        double z = xyzpt[2];
-        
-        pl.SetPoint(i,x,y,z);
-        
-    }
-    
-    fView->Draw();
-  //  UpdatePad();
-}
 
 }//namespace

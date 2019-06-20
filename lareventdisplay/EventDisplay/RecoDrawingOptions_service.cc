@@ -38,7 +38,6 @@ void RecoDrawingOptions::reconfigure(fhicl::ParameterSet const& pset)
     fDrawOpHits                = pset.get< int                        >("DrawOpHits"               );
     fDrawOpFlashes             = pset.get< int                        >("DrawOpFlashes"            );
     fDrawSeeds     	           = pset.get< int                        >("DrawSeeds"    	     	   );
-    fDrawBezierTracks          = pset.get< int                        >("DrawBezierTracks"         );
     fDrawEvents      	       = pset.get< int                        >("DrawEvents"     	       );
     fDraw2DEndPoints           = pset.get< int                        >("Draw2DEndPoints"	       );
     fDraw2DSlopeEndPoints      = pset.get< int                        >("Draw2DSlopeEndPoints"     );
@@ -67,7 +66,6 @@ void RecoDrawingOptions::reconfigure(fhicl::ParameterSet const& pset)
     fOpHitLabels               = pset.get< std::vector<art::InputTag> >("OpHitModuleLabels"        );
     fOpFlashLabels             = pset.get< std::vector<art::InputTag> >("OpFlashModuleLabels"      );
     fSeedLabels       	       = pset.get< std::vector<art::InputTag> >("SeedModuleLabels"         );
-    fBezierTrackLabels         = pset.get< std::vector<art::InputTag> >("BezierTrackModuleLabels"  );
     fTrkVtxTrackLabels         = pset.get< std::vector<art::InputTag> >("TrkVtxTrackLabels"        );
     fTrkVtxCosmicLabels        = pset.get< std::vector<art::InputTag> >("TrkVtxCosmicLabels"       );
     fTrkVtxFilterLabels        = pset.get< std::vector<art::InputTag> >("TrkVtxFilterLabels"       );

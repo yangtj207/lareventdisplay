@@ -97,11 +97,6 @@ public:
 		        evdb::View2D*     view,
 		        unsigned int      plane);
 
-    void BezierTrack2D(const art::Event& evt,
-		               evdb::View2D*     view,
-		               unsigned int      plane);
-
-
     void Draw2DSlopeEndPoints(double        xStart,
                               double        yStart,
                               double        xEnd,
@@ -180,8 +175,6 @@ public:
                       evdb::View3D*        view);
     void Seed3D(const art::Event& evt,
 		        evdb::View3D*     view);
-    void BezierTrack3D(const art::Event& evt,
-		               evdb::View3D*     view);
     void Vertex3D(const art::Event& evt,
 		          evdb::View3D*     view);
     void Event3D(const art::Event& evt,
@@ -332,11 +325,6 @@ public:
     int GetSeeds(const art::Event&            evt,
                  const art::InputTag&         which,
 		         art::PtrVector<recob::Seed>& seed);
-
-    int GetBezierTracks(const art::Event&             evt,
-			            const art::InputTag&          which,
-			            art::PtrVector<recob::Track>& btbs);
-
 
     int GetOpFlashes(const art::Event&               evt,
                      const art::InputTag&            which,

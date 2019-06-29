@@ -69,82 +69,8 @@ namespace evd{
 
 
     for (size_t imod = 0; imod < recoOpt->fHitLabels.size(); ++imod) {
-        art::InputTag const which = recoOpt->fHitLabels[imod];
-
+      art::InputTag const which = recoOpt->fHitLabels[imod];
       evt.getByLabel(which,HitListHandle);
-
-
-      art::ServiceHandle<evd::EvdLayoutOptions const> evdlayoutoptions;
-      if(evdlayoutoptions->fMakeSeeds)
-	{
-	  // Code to collect hits around curve
-
-	  // First, put the hits into a PtrVector
-	  art::PtrVector<recob::Hit> HitVec;
-	  for(unsigned int i=0; i < HitListHandle->size(); ++i)
-	    {
-	      art::Ptr<recob::Hit> hit(HitListHandle,i);
-	      HitVec.push_back(hit);
-	    }
-
-	  // Get the bezier curve which was created
-	  if(SeedVector().size()>1)
-	    {
-	      mf::LogVerbatim("HitSelector") <<"Hit selector passing bezier track "
-					     << SeedVector().size() << " seeds";
-	    }
-	  else if(SeedVector().size()==1)
-	    {
-	      mf::LogVerbatim("HitSelector") <<"One seed defined - splitting in half to make track";
-	      double Pt[3], Dir[3], Err[3];
-	      SeedVector().at(0).GetPoint(     Pt,  Err);
-	      SeedVector().at(0).GetDirection( Dir, Err);
-
-	      double NewPt1[3], NewPt2[3], NewDir[3];
-	      for(int i=0; i!=3; ++i)
-		{
-		  NewPt1[i] = Pt[i] - Dir[i]/2;
-		  NewPt2[i] = Pt[i] + Dir[i]/2;
-		  NewDir[i] = Dir[i] / 2;
-		}
-	      SeedVector().clear();
-
-	      recob::Seed TheSeed1(NewPt1, NewDir, Err, Err);
-	      SeedVector().push_back(TheSeed1);
-	      recob::Seed TheSeed2(NewPt2, NewDir, Err, Err);
-	      SeedVector().push_back(TheSeed2);
-	    }
-	  else
-	    {
-	      mf::LogWarning("HitSelector") << "Cannot select hits, no seeds selected!";
-	      return 0;
-	    }
-
-	  trkf::BezierTrack BTrack(SeedVector());
-
-	  // These hold output,
-	  //  s = fractional distance along curve of close approach
-	  //  d = min distance from line
-	  std::vector<double> s;
-	  std::vector<double> d;
-
-	  // Run through the hits, getting their distances
-	  BTrack.GetClosestApproaches(HitVec, s, d);
-
-	  // Put them into the vector for output
-	  for(size_t ih=0; ih!=HitVec.size(); ++ih){
-	    if(d.at(ih)<distance){
-	      hits_to_save[HitVec.at(ih)->WireID().Plane].push_back(HitVec.at(ih));
-	    }
-	  }
-          art::ServiceHandle<evd::RecoDrawingOptions const> recoOpt;
-	  calo::CalorimetryAlg calalg(recoOpt->fCaloPSet);
-	  for(std::map<int, std::vector<art::Ptr<recob::Hit> > >::iterator it=hits_to_save.begin(); it!=hits_to_save.end(); ++it){
-	    KineticEnergy += BTrack.GetCalorimetryObject(it->second, geo::kCollection,calalg).KineticEnergy();
-
-	  }
-	  mf::LogVerbatim("HitSelector") <<"Track kinetic energy : " << KineticEnergy;
-	}
     }
 
 
@@ -399,12 +325,10 @@ namespace evd{
   /// @param plane  : plane number of view
   ///
 
-  trkf::HitPtrVec  HitSelector::GetSelectedHitPtrs(unsigned int plane)
+  std::vector<art::Ptr<recob::Hit>>  HitSelector::GetSelectedHitPtrs(unsigned int plane)
   {
     art::ServiceHandle<evd::InfoTransfer const>   infot;
-    trkf::HitPtrVec ToReturn;
-    ToReturn.Hits = infot->GetSelectedHitList(plane);
-    return ToReturn;
+    return infot->GetSelectedHitList(plane);
   }
 
   std::vector< const recob::Hit*>  HitSelector::GetSelectedHits(unsigned int plane)

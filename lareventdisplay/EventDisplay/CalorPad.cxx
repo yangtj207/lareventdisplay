@@ -13,7 +13,6 @@
 #include "lareventdisplay/EventDisplay/EvdLayoutOptions.h"
 #include "lareventdisplay/EventDisplay/RecoDrawingOptions.h"
 #include "lareventdisplay/EventDisplay/HitSelector.h"
-#include "larreco/Deprecated/BezierTrack.h"
 
 #include "TPad.h"
 #include "TH1F.h"
@@ -116,42 +115,18 @@ void evd::CalorPad::Draw(const char* /*opt*/)
 
   // grab the event from the singleton
   const art::Event *evt = evdb::EventHolder::Instance()->GetEvent();
-  art::ServiceHandle<evd::EvdLayoutOptions const>        evdlayoutopt;
 
   // Insert graphic objects into fView collection.
   if(evt){
-    if(evdlayoutopt->fMakeSeeds){
-      art::ServiceHandle<evd::RecoDrawingOptions const> recoopt;
-      if(recoopt->fUseHitSelector){
-	if(HitSelectorGet()->SeedVector().size()==0){
-	  mf::LogWarning("CalorPad::Draw") << " Cannot draw calorimetry view in interactive mode"
-					   << " - no seeds specified. \n";
-	  return;
-	}
-	trkf::BezierTrack BTrack(HitSelectorGet()->SeedVector());
-	trkf::HitPtrVec HitVec;
-	HitVec = HitSelectorGet()->GetSelectedHitPtrs(2);
-	AnalysisBaseDraw()->CalorInteractive(*evt, fView, BTrack, HitVec);
-      }
+    try{
+      if(fcurvetype==1) AnalysisBaseDraw()->DrawDeDx(*evt, fView);
+      else if (fcurvetype==0) AnalysisBaseDraw()->DrawKineticEnergy(*evt, fView);
+      else if (fcurvetype==2) AnalysisBaseDraw()->CalorShower(*evt, fView);
     }
-    else {
-      try{
-        if(fcurvetype==1) AnalysisBaseDraw()->DrawDeDx(*evt, fView);
-        else if (fcurvetype==0) AnalysisBaseDraw()->DrawKineticEnergy(*evt, fView);
-	else if (fcurvetype==2) AnalysisBaseDraw()->CalorShower(*evt, fView);
-      }
-      catch (cet::exception e){
-	if(fcurvetype==1) writeErrMsg("Draw->DrawDeDx",e);
-        else if (fcurvetype==0) writeErrMsg("Draw->DrawKineticEnergy",e);
-	else if (fcurvetype==2) writeErrMsg("Draw->CalorShower",e);
-      }
-//      try{
-//	AnalysisBaseDraw()->CalorShower(*evt, fView);
-//      }
-//      catch (cet::exception e){
-//        writeErrMsg("Draw->CalorShower",e);
-//      }
-
+    catch (cet::exception e){
+      if(fcurvetype==1) writeErrMsg("Draw->DrawDeDx",e);
+      else if (fcurvetype==0) writeErrMsg("Draw->DrawKineticEnergy",e);
+      else if (fcurvetype==2) writeErrMsg("Draw->CalorShower",e);
     }
   }
 

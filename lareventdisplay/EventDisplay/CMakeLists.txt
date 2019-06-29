@@ -26,7 +26,7 @@ art_make_library(
                         larsim_Simulation nutools_ParticleNavigation lardataobj_Simulation
                         lardataobj_RawData
                         lardataobj_RecoBase
-                        lardata_RecoObjects larreco_Deprecated
+                        lardata_RecoObjects
                         lardata_ArtDataHelper
                         lardata_Utilities
                         lardataobj_AnalysisBase

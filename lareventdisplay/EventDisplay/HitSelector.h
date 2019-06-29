@@ -9,17 +9,9 @@
 
 #include "canvas/Persistency/Common/PtrVector.h"
 
-#ifdef __ROOTCLING__
 namespace art {
   class Event;
 }
-namespace trkf
-{
- class HitPtrVec;
-}
-#else
-#include "larreco/Deprecated/BezierTrack.h"
-#endif
 
 #include "lareventdisplay/EventDisplay/OrthoProj.h"
 
@@ -71,7 +63,7 @@ namespace evd {
  		      );
 
     std::vector< const recob::Hit*> GetSelectedHits(unsigned int plane);
-    trkf::HitPtrVec GetSelectedHitPtrs(unsigned int plane);
+    std::vector<art::Ptr<recob::Hit>> GetSelectedHitPtrs(unsigned int plane);
 
     void ClearHitList(unsigned int plane);
 

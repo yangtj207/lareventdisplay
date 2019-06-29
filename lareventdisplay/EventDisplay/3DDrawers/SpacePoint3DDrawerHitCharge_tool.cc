@@ -106,8 +106,9 @@ void SpacePoint3DDrawerHitCharge::Draw(const std::vector<art::Ptr<recob::SpacePo
     {
         for(const auto& spacePoint : hitsVec)
         {
-            float hitCharge = getSpacePointCharge(spacePoint, hitAssnVec);
-            
+            //float hitCharge = getSpacePointCharge(spacePoint, hitAssnVec);
+            float hitCharge = spacePoint->ErrXYZ()[1];
+
             minHitCharge = std::min(minHitCharge, hitCharge);
             maxHitCharge = std::max(maxHitCharge, hitCharge);
         }

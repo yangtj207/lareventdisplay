@@ -2113,6 +2113,7 @@ void RecoBaseDrawer::PFParticle3D(const art::Event& evt,
     for(size_t imod = 0; imod < recoOpt->fPFParticleLabels.size(); ++imod)
     {
         art::InputTag const which = recoOpt->fPFParticleLabels[imod];
+        art::InputTag const assns = recoOpt->fSpacePointLabels[imod];
 
         // Start off by recovering our 3D Clusters for this label
         art::PtrVector<recob::PFParticle> pfParticleVec;
@@ -2125,20 +2126,20 @@ void RecoBaseDrawer::PFParticle3D(const art::Event& evt,
 
         // Get the space points created by the PFParticle producer
         std::vector<art::Ptr<recob::SpacePoint>> spacePointVec;
-        this->GetSpacePoints(evt, which, spacePointVec);
+        this->GetSpacePoints(evt, assns, spacePointVec);
 
         // Recover the edges
-//        art::PtrVector<recob::Edge> edgeVec;
-//        this->GetEdges(evt, which, edgeVec);
+        std::vector<art::Ptr<recob::Edge>> edgeVec;
+        this->GetEdges(evt, assns, edgeVec);
 
         // No space points no continue
-        if (spacePointVec.size() < 1) continue;
+        if (spacePointVec.empty()) continue;
 
         // Add the relations to recover associations cluster hits
-        art::FindManyP<recob::SpacePoint> spacePointAssnVec(pfParticleVec, evt, which);
-        art::FindManyP<recob::Hit>        spHitAssnVec(spacePointVec, evt, which);
-
-        art::FindManyP<recob::Edge>       edgeAssnsVec(pfParticleVec, evt, which);
+        art::FindManyP<recob::SpacePoint> edgeSpacePointAssnsVec(edgeVec, evt, assns);
+        art::FindManyP<recob::SpacePoint> spacePointAssnVec(pfParticleVec, evt, assns);
+        art::FindManyP<recob::Hit>        spHitAssnVec(spacePointVec, evt, assns);
+        art::FindManyP<recob::Edge>       edgeAssnsVec(pfParticleVec, evt, assns);
 
         // If no valid space point associations then nothing to do
         if (!spacePointAssnVec.isValid()) continue;
@@ -2168,7 +2169,7 @@ void RecoBaseDrawer::PFParticle3D(const art::Event& evt,
             if (!pfParticle->IsPrimary()) continue;
 
             // Call the recursive drawing routine
-            DrawPFParticle3D(pfParticle, pfParticleVec, spacePointVec, edgeAssnsVec, spacePointAssnVec, spHitAssnVec, pfTrackAssns, pcAxisAssnVec, pfCosmicAssns, 0, view);
+            DrawPFParticle3D(pfParticle, pfParticleVec, spacePointVec, edgeAssnsVec, spacePointAssnVec, edgeSpacePointAssnsVec, spHitAssnVec, pfTrackAssns, pcAxisAssnVec, pfCosmicAssns, 0, view);
         }
     }
 
@@ -2228,6 +2229,7 @@ void RecoBaseDrawer::DrawPFParticle3D(const art::Ptr<recob::PFParticle>&        
                                       const std::vector<art::Ptr<recob::SpacePoint>>& spacePointVec,
                                       const art::FindManyP<recob::Edge>&              edgeAssnsVec,
                                       const art::FindManyP<recob::SpacePoint>&        spacePointAssnVec,
+                                      const art::FindManyP<recob::SpacePoint>&        edgeSPAssnVec,
                                       const art::FindManyP<recob::Hit>&               spHitAssnVec,
                                       const art::FindMany<recob::Track>&              trackAssnVec,
                                       const art::FindMany<recob::PCAxis>&             pcAxisAssnVec,
@@ -2347,7 +2349,7 @@ void RecoBaseDrawer::DrawPFParticle3D(const art::Ptr<recob::PFParticle>&        
     // Now try to draw any associated edges
     if (edgeAssnsVec.isValid() && recoOpt->fDraw3DEdges)
     {
-        const std::vector<art::Ptr<recob::Edge>>& edgeVec(edgeAssnsVec.at(pfPart->Self()));
+        const std::vector<art::Ptr<recob::Edge>>& edgeVec(edgeAssnsVec.at(pfPart.key()));
 
         if (!edgeVec.empty())
         {
@@ -2355,47 +2357,51 @@ void RecoBaseDrawer::DrawPFParticle3D(const art::Ptr<recob::PFParticle>&        
 
             for (const auto& edge : edgeVec)
             {
-                art::Ptr<recob::SpacePoint> firstSP  = spacePointVec.at(edge->FirstPointID());
-                art::Ptr<recob::SpacePoint> secondSP = spacePointVec.at(edge->SecondPointID());
-
-                if (firstSP->ID() != edge->FirstPointID() || secondSP->ID() != edge->SecondPointID())
+                try
                 {
-                    std::cout << "Space point index mismatch, first: " << firstSP->ID() << ", " << edge->FirstPointID() << ", second: " << secondSP->ID() << ", " << edge->SecondPointID() << std::endl;
-                    continue;
+                    const std::vector<art::Ptr<recob::SpacePoint>>& spacePointVec(edgeSPAssnVec.at(edge.key()));
+                    
+                    if (spacePointVec.size() != 2)
+                    {
+                        std::cout << "Space Point vector associated to edge is not of size 2: " << spacePointVec.size() << std::endl;
+                        continue;
+                    }
+                    
+                    const recob::SpacePoint* firstSP  = spacePointVec[0].get();
+                    const recob::SpacePoint* secondSP = spacePointVec[1].get();
+    
+                    TVector3 startPoint(firstSP->XYZ()[0],firstSP->XYZ()[1],firstSP->XYZ()[2]);
+                    TVector3 endPoint(secondSP->XYZ()[0],secondSP->XYZ()[1],secondSP->XYZ()[2]);
+                    TVector3 lineVec(endPoint - startPoint);
+    
+                    pm.SetNextPoint(startPoint[0],startPoint[1],startPoint[2]);
+                    pm.SetNextPoint(endPoint[0],  endPoint[1],  endPoint[2]);
+    
+                    double length = lineVec.Mag();
+    
+                    if (length == 0.)
+                    {
+                        std::cout << "Edge length is zero, index 1: " << edge->FirstPointID() << ", index 2: " << edge->SecondPointID() << std::endl;
+                        continue;
+                    }
+    
+                    double minLen = std::max(2.01,length);
+    
+                    if (minLen > length)
+                    {
+                        lineVec.SetMag(1.);
+    
+                        startPoint += -0.5 * (minLen - length) * lineVec;
+                        endPoint   +=  0.5 * (minLen - length) * lineVec;
+                    }
+    
+                    // Get a polyline object to draw from the first to the second space point
+                    TPolyLine3D& pl = view->AddPolyLine3D(2, colorIdx, 4, 1);
+    
+                    pl.SetPoint(0, startPoint[0], startPoint[1], startPoint[2]);
+                    pl.SetPoint(1, endPoint[0],   endPoint[1],   endPoint[2]);
                 }
-
-//                if (edge->SecondPointID() == 0) continue;
-
-                TVector3 startPoint(firstSP->XYZ()[0],firstSP->XYZ()[1],firstSP->XYZ()[2]);
-                TVector3 endPoint(secondSP->XYZ()[0],secondSP->XYZ()[1],secondSP->XYZ()[2]);
-                TVector3 lineVec(endPoint - startPoint);
-
-                pm.SetNextPoint(startPoint[0],startPoint[1],startPoint[2]);
-                pm.SetNextPoint(endPoint[0],  endPoint[1],  endPoint[2]);
-
-                double length = lineVec.Mag();
-
-                if (length == 0.)
-                {
-                    std::cout << "Edge length is zero, index 1: " << edge->FirstPointID() << ", index 2: " << edge->SecondPointID() << std::endl;
-                    continue;
-                }
-
-                double minLen = std::max(2.01,length);
-
-                if (minLen > length)
-                {
-                    lineVec.SetMag(1.);
-
-                    startPoint += -0.5 * (minLen - length) * lineVec;
-                    endPoint   +=  0.5 * (minLen - length) * lineVec;
-                }
-
-                // Get a polyline object to draw from the first to the second space point
-                TPolyLine3D& pl = view->AddPolyLine3D(2, colorIdx, 4, 1);
-
-                pl.SetPoint(0, startPoint[0], startPoint[1], startPoint[2]);
-                pl.SetPoint(1, endPoint[0],   endPoint[1],   endPoint[2]);
+                catch(...) {continue;}
             }
         }
     }
@@ -2501,7 +2507,7 @@ void RecoBaseDrawer::DrawPFParticle3D(const art::Ptr<recob::PFParticle>&        
 
         for(const auto& daughterIdx : pfPart->Daughters())
         {
-            DrawPFParticle3D(pfParticleVec.at(daughterIdx), pfParticleVec, spacePointVec, edgeAssnsVec, spacePointAssnVec, spHitAssnVec, trackAssnVec, pcAxisAssnVec, cosmicTagAssnVec, depth, view);
+            DrawPFParticle3D(pfParticleVec.at(daughterIdx), pfParticleVec, spacePointVec, edgeAssnsVec, spacePointAssnVec, edgeSPAssnVec, spHitAssnVec, trackAssnVec, pcAxisAssnVec, cosmicTagAssnVec, depth, view);
         }
     }
 
@@ -2521,7 +2527,7 @@ void RecoBaseDrawer::Edge3D(const art::Event& evt, evdb::View3D* view)
         art::InputTag const which = recoOpt->fEdgeLabels[imod];
 
         // Start off by recovering our 3D Clusters for this label
-        art::PtrVector<recob::Edge> edgeVec;
+        std::vector<art::Ptr<recob::Edge>> edgeVec;
         this->GetEdges(evt, which, edgeVec);
 
         mf::LogDebug("RecoBaseDrawer") << "RecoBaseDrawer: number Edges to draw: " << edgeVec.size() << std::endl;
@@ -4050,28 +4056,15 @@ int RecoBaseDrawer::GetSpacePoints(const art::Event&                  evt,
 //......................................................................
 int RecoBaseDrawer::GetEdges(const art::Event&            evt,
                              const art::InputTag&         which,
-                             art::PtrVector<recob::Edge>& edges)
+                             std::vector<art::Ptr<recob::Edge>>& edges)
 {
     edges.clear();
-    art::PtrVector<recob::Edge> temp;
 
     art::Handle< std::vector<recob::Edge> > edgeCol;
 
-    try
-    {
-        evt.getByLabel(which, edgeCol);
-        temp.reserve(edgeCol->size());
-        for(unsigned int i = 0; i < edgeCol->size(); ++i)
-        {
-            art::Ptr<recob::Edge> edge(edgeCol, i);
-            temp.push_back(edge);
-        }
-        temp.swap(edges);
-    }
-    catch(cet::exception& e)
-    {
-        writeErrMsg("GetEdges", e);
-    }
+    evt.getByLabel(which, edgeCol);
+
+    for(unsigned int i = 0; i < edgeCol->size(); ++i) edges.emplace_back(edgeCol, i);
 
     return edges.size();
 }

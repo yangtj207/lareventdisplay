@@ -155,17 +155,18 @@ public:
 		              evdb::View3D*     view);
     void PFParticle3D(const art::Event& evt,
 		              evdb::View3D*     view);
-    void DrawPFParticle3D(const art::Ptr<recob::PFParticle>&       pfPart,
-                          const art::PtrVector<recob::PFParticle>& pfParticleVec,
+    void DrawPFParticle3D(const art::Ptr<recob::PFParticle>&              pfPart,
+                          const art::PtrVector<recob::PFParticle>&        pfParticleVec,
                           const std::vector<art::Ptr<recob::SpacePoint>>& spacePointVec,
-                          const art::FindManyP<recob::Edge>&       edgeAssnsVec,
-                          const art::FindManyP<recob::SpacePoint>& spacePointAssnsVec,
-                          const art::FindManyP<recob::Hit>&        spHitAssnVec,
-                          const art::FindMany<recob::Track>&       trackAssnVec,
-                          const art::FindMany<recob::PCAxis>&      pcAxisAssnVec,
-                          const art::FindMany<anab::CosmicTag>&    cosmicTagAssnVec,
-                          int                                      depth,
-                          evdb::View3D*                            view);
+                          const art::FindManyP<recob::Edge>&              edgeAssnsVec,
+                          const art::FindManyP<recob::SpacePoint>&        spacePointAssnsVec,
+                          const art::FindManyP<recob::SpacePoint>&        edgeSPAssnVec,
+                          const art::FindManyP<recob::Hit>&               spHitAssnVec,
+                          const art::FindMany<recob::Track>&              trackAssnVec,
+                          const art::FindMany<recob::PCAxis>&             pcAxisAssnVec,
+                          const art::FindMany<anab::CosmicTag>&           cosmicTagAssnVec,
+                          int                                             depth,
+                          evdb::View3D*                                   view);
     void Edge3D(const art::Event& evt, evdb::View3D*     view);
     void Prong3D(const art::Event& evt,
 		         evdb::View3D*     view);
@@ -309,12 +310,12 @@ public:
     int GetEndPoint2D(const art::Event&                  evt,
 		              const art::InputTag&               which,
 		              art::PtrVector<recob::EndPoint2D>& ep2d);
-    int GetSpacePoints(const art::Event&                  evt,
-                       const art::InputTag&               which,
+    int GetSpacePoints(const art::Event&                         evt,
+                       const art::InputTag&                      which,
                        std::vector<art::Ptr<recob::SpacePoint>>& spts);
-    int GetEdges(const art::Event&            evt,
-                 const art::InputTag&         which,
-                 art::PtrVector<recob::Edge>& edges);
+    int GetEdges(const art::Event&                   evt,
+                 const art::InputTag&                which,
+                 std::vector<art::Ptr<recob::Edge>>& edges);
 
     int GetTracks(const art::Event&        evt,
 		          const art::InputTag&     which,

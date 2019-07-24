@@ -9,7 +9,7 @@ art_make( TOOL_LIBRARIES
             lareventdisplay_EventDisplay_EvdLayoutOptions_service
             lareventdisplay_EventDisplay_RawDrawingOptions_service
             lareventdisplay_EventDisplay_RecoDrawingOptions_service
-            larsim_Simulation nutools_ParticleNavigation lardataobj_Simulation
+            larsim_Simulation nug4_ParticleNavigation lardataobj_Simulation
             lardataobj_RawData
             lardataobj_RecoBase
             lardata_RecoObjects

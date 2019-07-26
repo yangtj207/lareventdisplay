@@ -2246,7 +2246,7 @@ void RecoBaseDrawer::DrawPFParticle3D(const art::Ptr<recob::PFParticle>&        
 
         if (!edgeVec.empty())
         {
-            TPolyMarker3D& pm = view->AddPolyMarker3D(2*edgeVec.size(), colorIdx, kFullDotLarge, 0.5);
+            TPolyMarker3D& pm = view->AddPolyMarker3D(2*edgeVec.size(), colorIdx, kFullDotMedium, 1.25); //kFullDotLarge, 0.5);
 
             for (const auto& edge : edgeVec)
             {
@@ -2468,10 +2468,20 @@ void RecoBaseDrawer::Edge3D(const art::Event& evt, evdb::View3D* view)
                 }
 
                 // Get a polyline object to draw from the first to the second space point
-                TPolyLine3D& pl = view->AddPolyLine3D(2, colorIdx, 1, 1); //4, 1);
-
-                pl.SetPoint(0, startPoint[0], startPoint[1], startPoint[2]);
-                pl.SetPoint(1, endPoint[0],   endPoint[1],   endPoint[2]);
+//                TPolyLine3D& pl = view->AddPolyLine3D(2, colorIdx, 1, 1); //4, 1);
+//
+//                pl.SetPoint(0, startPoint[0], startPoint[1], startPoint[2]);
+//                pl.SetPoint(1, endPoint[0],   endPoint[1],   endPoint[2]);
+                TPolyMarker3D& fakeLine = view->AddPolyMarker3D(10, 5, kFullDotMedium, 1.0);
+                
+                lineVec.SetMag(1.);
+                
+                for(int idx = 1; idx <= 10; idx++)
+                {
+                    TVector3 plotPoint = startPoint + 0.1 * double(idx) * length * lineVec;
+                    
+                    fakeLine.SetNextPoint(plotPoint[0],plotPoint[1],plotPoint[2]);
+                }
             }
         }
     }

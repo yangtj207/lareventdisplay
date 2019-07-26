@@ -102,7 +102,7 @@ void SpacePoint3DDrawerChiSquare::Draw(const std::vector<art::Ptr<recob::SpacePo
 
     for(auto& hitPair : colorToHitMap)
     {
-        TPolyMarker3D& pm = view->AddPolyMarker3D(hitPair.second.size(), hitPair.first, kFullDotLarge, 0.25); //kFullDotLarge, 0.3);
+        TPolyMarker3D& pm = view->AddPolyMarker3D(hitPair.second.size(), hitPair.first, kFullDotLarge, 0.17);
         for (const auto& hit : hitPair.second) pm.SetNextPoint(hit[0],hit[1],hit[2]);
     }
 

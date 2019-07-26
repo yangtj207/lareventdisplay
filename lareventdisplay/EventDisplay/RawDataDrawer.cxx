@@ -813,113 +813,107 @@ namespace evd {
         geo::PlaneID const& pid = operation->PlaneID();
         art::ServiceHandle<evd::RawDrawingOptions const> rawopt;
         
-        for(const auto& rawDataLabel : rawopt->fRawDataLabels)
-        {
-            details::CacheID_t NewCacheID(evt, rawDataLabel, pid);
-            GetRawDigits(evt, NewCacheID);
+        if(digit_cache->empty()) return true;
+        
+        MF_LOG_DEBUG("RawDataDrawer") << "RawDataDrawer::RunOperation() running "
+        << operation->Name();
+        
+        // if we have an initialization failure, return false immediately;
+        // but it's way better if the failure throws an exception
+        if (!operation->Initialize()) return false;
+        
+        lariov::ChannelStatusProvider const& channelStatus
+        = art::ServiceHandle<lariov::ChannelStatusService const>()->GetProvider();
+        
+        //get pedestal conditions
+        const lariov::DetPedestalProvider& pedestalRetrievalAlg = *(lar::providerFrom<lariov::DetPedestalService>());
+        
+        geo::GeometryCore const& geom = *(lar::providerFrom<geo::Geometry>());
+        
+        // loop over all the channels/raw digits
+        for (evd::details::RawDigitInfo_t const& digit_info: *digit_cache) {
+            raw::RawDigit const& hit = digit_info.Digit();
+            raw::ChannelID_t const channel = hit.Channel();
             
-            if(digit_cache->empty()) return true;
+            // skip the bad channels
+            if (!channelStatus.IsPresent(channel)) continue;
+            // The following test is meant to be temporary until the "correct" solution is implemented
+            if (!ProcessChannelWithStatus(channelStatus.Status(channel))) continue;
             
-            MF_LOG_DEBUG("RawDataDrawer") << "RawDataDrawer::RunOperation() running "
-            << operation->Name();
+            // we have a list of all channels, but we are drawing only on one plane;
+            // most of the channels will not contribute to this plane,
+            // and before we start querying databases, unpacking data etc.
+            // we want to know it's for something
             
-            // if we have an initialization failure, return false immediately;
-            // but it's way better if the failure throws an exception
-            if (!operation->Initialize()) return false;
+            std::vector<geo::WireID> WireIDs = geom.ChannelToWire(channel);
             
-            lariov::ChannelStatusProvider const& channelStatus
-            = art::ServiceHandle<lariov::ChannelStatusService const>()->GetProvider();
+            bool bDrawChannel = false;
+            for (geo::WireID const& wireID: WireIDs){
+                if (wireID.planeID() != pid) continue; // not us!
+                bDrawChannel = true;
+                break;
+            } // for wires
+            if (!bDrawChannel) continue;
             
-            //get pedestal conditions
-            const lariov::DetPedestalProvider& pedestalRetrievalAlg = *(lar::providerFrom<lariov::DetPedestalService>());
+            // collect bad channels
+            bool const bGood = rawopt->fSeeBadChannels || !channelStatus.IsBad(channel);
             
-            geo::GeometryCore const& geom = *(lar::providerFrom<geo::Geometry>());
+            // nothing else to be done if the channel is not good:
+            // cells are marked bad by default and if any good channel falls in any of
+            // them, they become good
+            if (!bGood) continue;
             
-            // loop over all the channels/raw digits
-            for (evd::details::RawDigitInfo_t const& digit_info: *digit_cache) {
-                raw::RawDigit const& hit = digit_info.Digit();
-                raw::ChannelID_t const channel = hit.Channel();
+            // at this point we know we have to process this channel
+            raw::RawDigit::ADCvector_t const& uncompressed = digit_info.Data();
+            
+            // recover the pedestal
+            float  pedestal = 0;
+            if (rawopt->fPedestalOption == 0)
+            {
+                pedestal = pedestalRetrievalAlg.PedMean(channel);
+            }
+            else if (rawopt->fPedestalOption == 1)
+            {
+                pedestal = hit.GetPedestal();
+            }
+            else if (rawopt->fPedestalOption == 2)
+            {
+                pedestal = 0;
+            }
+            else
+            {
+                mf::LogWarning  ("RawDataDrawer") << " PedestalOption is not understood: " << rawopt->fPedestalOption << ".  Pedestals not subtracted.";
+            }
+            
+            // loop over all the wires that are covered by this channel;
+            // without knowing better, we have to draw into all of them
+            for (geo::WireID const& wireID: WireIDs){
+                // check that the plane and tpc are the correct ones to draw
+                if (wireID.planeID() != pid) continue; // not us!
                 
-                // skip the bad channels
-                if (!channelStatus.IsPresent(channel)) continue;
-                // The following test is meant to be temporary until the "correct" solution is implemented
-                if (!ProcessChannelWithStatus(channelStatus.Status(channel))) continue;
+                // do we have anything to do with this wire?
+                if (!operation->ProcessWire(wireID)) continue;
                 
-                // we have a list of all channels, but we are drawing only on one plane;
-                // most of the channels will not contribute to this plane,
-                // and before we start querying databases, unpacking data etc.
-                // we want to know it's for something
+                // get an iterator over the adc values
+                // accumulate all the data of this wire in our "cells"
+                size_t const max_tick = std::min({
+                    uncompressed.size(),
+                    size_t(fStartTick + fTicks)
+                });
                 
-                std::vector<geo::WireID> WireIDs = geom.ChannelToWire(channel);
-                
-                bool bDrawChannel = false;
-                for (geo::WireID const& wireID: WireIDs){
-                    if (wireID.planeID() != pid) continue; // not us!
-                    bDrawChannel = true;
-                    break;
-                } // for wires
-                if (!bDrawChannel) continue;
-                
-                // collect bad channels
-                bool const bGood = rawopt->fSeeBadChannels || !channelStatus.IsBad(channel);
-                
-                // nothing else to be done if the channel is not good:
-                // cells are marked bad by default and if any good channel falls in any of
-                // them, they become good
-                if (!bGood) continue;
-                
-                // at this point we know we have to process this channel
-                raw::RawDigit::ADCvector_t const& uncompressed = digit_info.Data();
-                
-                // recover the pedestal
-                float  pedestal = 0;
-                if (rawopt->fPedestalOption == 0)
-                {
-                    pedestal = pedestalRetrievalAlg.PedMean(channel);
-                }
-                else if (rawopt->fPedestalOption == 1)
-                {
-                    pedestal = hit.GetPedestal();
-                }
-                else if (rawopt->fPedestalOption == 2)
-                {
-                    pedestal = 0;
-                }
-                else
-                {
-                    mf::LogWarning  ("RawDataDrawer") << " PedestalOption is not understood: " << rawopt->fPedestalOption << ".  Pedestals not subtracted.";
-                }
-                
-                // loop over all the wires that are covered by this channel;
-                // without knowing better, we have to draw into all of them
-                for (geo::WireID const& wireID: WireIDs){
-                    // check that the plane and tpc are the correct ones to draw
-                    if (wireID.planeID() != pid) continue; // not us!
+                for (size_t iTick = fStartTick; iTick < max_tick; ++iTick) {
                     
                     // do we have anything to do with this wire?
-                    if (!operation->ProcessWire(wireID)) continue;
+                    if (!operation->ProcessTick(iTick)) continue;
                     
-                    // get an iterator over the adc values
-                    // accumulate all the data of this wire in our "cells"
-                    size_t const max_tick = std::min({
-                        uncompressed.size(),
-                        size_t(fStartTick + fTicks)
-                    });
+                    float const adc = uncompressed[iTick] - pedestal;
+                    //std::cout << "adc, pedestal: " << adc << " " << pedestal << std::endl;
                     
-                    for (size_t iTick = fStartTick; iTick < max_tick; ++iTick) {
-                        
-                        // do we have anything to do with this wire?
-                        if (!operation->ProcessTick(iTick)) continue;
-                        
-                        float const adc = uncompressed[iTick] - pedestal;
-                        //std::cout << "adc, pedestal: " << adc << " " << pedestal << std::endl;
-                        
-                        if (!operation->Operate(wireID, iTick, adc)) return false;
-                        
-                    } // if good
-                } // for wires
-            } // for channels
-        } // for labels
+                    if (!operation->Operate(wireID, iTick, adc)) return false;
+                    
+                } // if good
+            } // for wires
+        } // for channels
         
         return operation->Finish();
     } // ChannelLooper()
@@ -1209,7 +1203,13 @@ namespace evd {
         // (ok, now it's private, but it could be exposed)
         if (!bDraw) return;
         
-        // Need to loop over the labels
+        art::ServiceHandle<geo::Geometry const> geom;
+
+        // Need to loop over the labels, but we don't want to zap existing cached RawDigits that are valid
+        // So... do the painful search to make sure the RawDigits we recover at those we are searching for.
+        bool theDroidIAmLookingFor = false;
+        
+        // Loop over labels
         for(const auto& rawDataLabel : rawopt->fRawDataLabels)
         {
             // make sure we reset what needs to be reset
@@ -1217,75 +1217,94 @@ namespace evd {
             // we call for reading raw digits; they will be cached, so it's not a waste
             details::CacheID_t NewCacheID(evt, rawDataLabel, pid);
             GetRawDigits(evt, NewCacheID);
-            
-            bool const hasRoI = hasRegionOfInterest(plane);
-            
-            // - if we don't have a RoI yet, we want to get it while we draw
-            //   * if we are zooming into it now, we have to extract it first, then draw
-            //   * if we are not zooming, we can do both at the same time
-            // - if we have a RoI, we don't want to extract it again
-            if (!bZoomToRoI) { // we are not required to zoom to the RoI
+        
+            // Painful check to see if these RawDigits contain the droids we are looking for
+            for(const auto& rawDigit : digit_cache->Digits())
+            {
+                std::vector<geo::WireID> WireIDs = geom->ChannelToWire(rawDigit.Channel());
                 
-                std::unique_ptr<OperationBaseClass> operation;
+                for (geo::WireID const& wireID: WireIDs)
+                {
+                    if (wireID.planeID() != pid) continue; // not us!
+                    theDroidIAmLookingFor = true;
+                    break;
+                } // for wires
                 
-                // we will do the drawing in one pass
-                MF_LOG_DEBUG("RawDataDrawer")
-                << __func__ << "() setting up one-pass drawing";
-                operation.reset(new BoxDrawer(pid, this, view));
-                
-                if (!hasRoI) { // we don't have any RoI; since it's cheap, let's get it
-                    MF_LOG_DEBUG("RawDataDrawer") << __func__ << "() adding RoI extraction";
-                    
-                    // swap cards: operation becomes a multiple operation:
-                    // - prepare the two operations (one is there already, somehow)
-                    std::unique_ptr<OperationBaseClass> drawer(std::move(operation));
-                    std::unique_ptr<OperationBaseClass> extractor
-                    (new RoIextractorClass(pid, this));
-                    // - create a new composite operation and give it the sub-ops
-                    operation.reset(new ManyOperations(pid, this));
-                    ManyOperations* pManyOps
-                    = static_cast<ManyOperations*>(operation.get());
-                    pManyOps->AddOperation(std::move(drawer));
-                    pManyOps->AddOperation(std::move(extractor));
-                }
-                
-                if (!RunOperation(evt, operation.get())) {
-                    throw art::Exception(art::errors::Unknown)
-                    << "RawDataDrawer::RunDrawOperation(): "
-                    "somewhere something went somehow wrong";
-                }
+                if (theDroidIAmLookingFor) break;
             }
-            else { // we are zooming to RoI
-                // first, we want the RoI extracted; the extractor will update this object
-                if (!hasRoI) {
-                    MF_LOG_DEBUG("RawDataDrawer") << __func__
-                    << "() setting up RoI extraction for " << pid;
-                    RoIextractorClass extractor(pid, this);
-                    if (!RunOperation(evt, &extractor)) {
-                        throw art::Exception(art::errors::Unknown)
-                        << "RawDataDrawer::RunDrawOperation():"
-                        " something went somehow wrong while extracting RoI";
-                    }
-                }
-                else {
-                    MF_LOG_DEBUG("RawDataDrawer") << __func__
-                    << "() using existing RoI for " << pid
-                    << ": wires ( " << fWireMin[plane] << " - " << fWireMax[plane]
-                    << " ), ticks ( " << fTimeMin[plane] << " - " << fTimeMax[plane]
-                    << " )";
-                }
+        
+            if (theDroidIAmLookingFor) break;
+        }
+        
+        if (!theDroidIAmLookingFor) return;
+
+        bool const hasRoI = hasRegionOfInterest(plane);
+        
+        // - if we don't have a RoI yet, we want to get it while we draw
+        //   * if we are zooming into it now, we have to extract it first, then draw
+        //   * if we are not zooming, we can do both at the same time
+        // - if we have a RoI, we don't want to extract it again
+        if (!bZoomToRoI) { // we are not required to zoom to the RoI
+            
+            std::unique_ptr<OperationBaseClass> operation;
+            
+            // we will do the drawing in one pass
+            MF_LOG_DEBUG("RawDataDrawer")
+            << __func__ << "() setting up one-pass drawing";
+            operation.reset(new BoxDrawer(pid, this, view));
+            
+            if (!hasRoI) { // we don't have any RoI; since it's cheap, let's get it
+                MF_LOG_DEBUG("RawDataDrawer") << __func__ << "() adding RoI extraction";
                 
-                // adopt the drawing limits information from the wire/time limits
-                SetDrawingLimitsFromRoI(pid);
-                
-                // then we draw
-                MF_LOG_DEBUG("RawDataDrawer") << __func__ << "() setting up drawing";
-                BoxDrawer drawer(pid, this, view);
-                if (!RunOperation(evt, &drawer)) {
+                // swap cards: operation becomes a multiple operation:
+                // - prepare the two operations (one is there already, somehow)
+                std::unique_ptr<OperationBaseClass> drawer(std::move(operation));
+                std::unique_ptr<OperationBaseClass> extractor
+                (new RoIextractorClass(pid, this));
+                // - create a new composite operation and give it the sub-ops
+                operation.reset(new ManyOperations(pid, this));
+                ManyOperations* pManyOps
+                = static_cast<ManyOperations*>(operation.get());
+                pManyOps->AddOperation(std::move(drawer));
+                pManyOps->AddOperation(std::move(extractor));
+            }
+            
+            if (!RunOperation(evt, operation.get())) {
+                throw art::Exception(art::errors::Unknown)
+                << "RawDataDrawer::RunDrawOperation(): "
+                "somewhere something went somehow wrong";
+            }
+        }
+        else { // we are zooming to RoI
+            // first, we want the RoI extracted; the extractor will update this object
+            if (!hasRoI) {
+                MF_LOG_DEBUG("RawDataDrawer") << __func__
+                << "() setting up RoI extraction for " << pid;
+                RoIextractorClass extractor(pid, this);
+                if (!RunOperation(evt, &extractor)) {
                     throw art::Exception(art::errors::Unknown)
                     << "RawDataDrawer::RunDrawOperation():"
-                    " something went somehow wrong while drawing";
+                    " something went somehow wrong while extracting RoI";
                 }
+            }
+            else {
+                MF_LOG_DEBUG("RawDataDrawer") << __func__
+                << "() using existing RoI for " << pid
+                << ": wires ( " << fWireMin[plane] << " - " << fWireMax[plane]
+                << " ), ticks ( " << fTimeMin[plane] << " - " << fTimeMax[plane]
+                << " )";
+            }
+            
+            // adopt the drawing limits information from the wire/time limits
+            SetDrawingLimitsFromRoI(pid);
+            
+            // then we draw
+            MF_LOG_DEBUG("RawDataDrawer") << __func__ << "() setting up drawing";
+            BoxDrawer drawer(pid, this, view);
+            if (!RunOperation(evt, &drawer)) {
+                throw art::Exception(art::errors::Unknown)
+                << "RawDataDrawer::RunDrawOperation():"
+                " something went somehow wrong while drawing";
             }
         }
     } // RawDataDrawer::RawDigit2D()
@@ -1813,7 +1832,7 @@ namespace evd {
             RawDigitInfo_t const* pInfo = FindChannel(channel);
             if (!pInfo)
                 return res; // outdated: we don't even have this channel in cache!
-            
+
             if (&(pInfo->Digit()) != &(res.digits->front()))
                 return res; // outdated: different memory address for data
             
@@ -1822,8 +1841,7 @@ namespace evd {
         } // RawDigitCacheDataClass::CheckUpToDate()
         
         
-        bool RawDigitCacheDataClass::Update
-        (art::Event const& evt, CacheID_t const& new_timestamp)
+        bool RawDigitCacheDataClass::Update(art::Event const& evt, CacheID_t const& new_timestamp)
         {
             BoolWithUpToDateMetadata update_info = CheckUpToDate(new_timestamp, &evt);
             

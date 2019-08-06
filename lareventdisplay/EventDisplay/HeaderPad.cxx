@@ -8,7 +8,6 @@
 #include "lareventdisplay/EventDisplay/HeaderDrawer.h"
 
 #include "TPad.h"
-#include "TText.h"
 
 namespace evd{
 

@@ -9,29 +9,31 @@
 #ifndef EVD_TWQMULTITPCPROJECTION_H
 #define EVD_TWQMULTITPCPROJECTION_H
 
-#include "TGButton.h" // For TGCheckButton
-
 #include "lardata/Utilities/PxUtils.h" // util::PxPoint, util::PxLine
 #include "nutools/EventDisplayBase/Canvas.h"
 
 #include "RQ_OBJECT.h"
 
-#include <vector>
 #include <deque>
+#include <map>
+#include <vector>
 
 // Forward declarations
-class TGNumberEntry;
-class TGTextView;
+class TGCheckButton;
+class TGCompositeFrame;
 class TGLabel;
-class TRootEmbeddedCanvas;
-
+class TGMainFrame;
+class TGNumberEntry;
+class TGRadioButton;
+class TGTextButton;
+class TGTextView;
 
 namespace evd {
 
+  class HeaderPad;
   class MCBriefPad;
   class TQPad;
   class TWireProjPad;
-  class HeaderPad;
 
 
   // Helper class, to store zoom settings in each view

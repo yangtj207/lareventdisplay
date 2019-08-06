@@ -5,9 +5,6 @@
 ///
 #ifndef EVD_HEADERDRAWER_H
 #define EVD_HEADERDRAWER_H
-#include <string>
-#include <vector>
-#include <map>
 
 namespace evdb { class View2D; }
 

@@ -7,13 +7,17 @@
 //
 //  Methods to use by a dummy producer
 ////////////////////////////////////////////////////////////////////////
-#include "lareventdisplay/EventDisplay/GraphClusterAlg.h"
-#include "lardata/Utilities/GeometryUtilities.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
-#include "art/Framework/Principal/Event.h"
-#include "canvas/Persistency/Common/PtrVector.h"
-#include "canvas/Persistency/Common/Ptr.h"
 
+#include "larcore/Geometry/Geometry.h"
+#include "lardata/Utilities/PxUtils.h"
+#include "lareventdisplay/EventDisplay/GraphClusterAlg.h"
+#include "lareventdisplay/EventDisplay/InfoTransfer.h"
+
+#include "art/Framework/Principal/Event.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "canvas/Persistency/Common/Ptr.h"
+#include "canvas/Persistency/Common/PtrVector.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
  //-------------------------------------------------
   evd::GraphClusterAlg::GraphClusterAlg(fhicl::ParameterSet const& pset)

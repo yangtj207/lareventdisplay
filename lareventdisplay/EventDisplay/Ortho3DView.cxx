@@ -4,18 +4,17 @@
 /// \author  greenlee@fnal.gov
 ///
 #include <string>
-#include <cmath>
+
 #include "TCanvas.h"
 #include "TGLabel.h"
 #include "TGButton.h"
 #include "TGNumberEntry.h"
-#include "TVirtualX.h"
+
 #include "TRootEmbeddedCanvas.h"
 #include "lareventdisplay/EventDisplay/Ortho3DView.h"
 #include "lareventdisplay/EventDisplay/Ortho3DPad.h"
 
 #include "cetlib_except/exception.h"
-#include "art/Framework/Principal/Event.h"
 
 //......................................................................
 // Consgtructor.

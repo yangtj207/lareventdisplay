@@ -9,34 +9,34 @@
 #ifndef EVD_TWQPROJECTION_H
 #define EVD_TWQPROJECTION_H
 
-#include "nutools/EventDisplayBase/Canvas.h"
-#include "lardata/Utilities/GeometryUtilities.h"
 #include "RQ_OBJECT.h"
-#include <vector>
+#include "lardata/Utilities/PxUtils.h"
+#include "nutools/EventDisplayBase/Canvas.h"
+
 #include <deque>
+#include <map>
+#include <vector>
 
 // Forward declarations
-#include "TGButton.h" // For TGCheckButton
-
-class TGNumberEntry;
-class TGTextView;
+class TGCheckButton;
+class TGCompositeFrame;
 class TGLabel;
-class TRootEmbeddedCanvas;
+class TGMainFrame;
+class TGNumberEntry;
+class TGRadioButton;
+class TGTextButton;
+class TGTextView;
 
 namespace util {
-//    class PxLine;
-//    class PxPoint;
-
     class DataProductChangeTracker_t;
 }
 
 namespace evd {
 
+class HeaderPad;
 class MCBriefPad;
 class TQPad;
 class TWireProjPad;
-class HeaderPad;
-
 
 // Helper class, to store zoom settings in each view
 

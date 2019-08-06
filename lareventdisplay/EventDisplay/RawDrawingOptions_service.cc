@@ -6,8 +6,8 @@
 // Framework includes
 
 /// LArSoft includes
+#include "larevt/CalibrationDBI/Interface/ChannelStatusProvider.h"
 #include "lareventdisplay/EventDisplay/RawDrawingOptions.h"
-#include "larevt/Filters/ChannelFilter.h"
 
 namespace evd {
 

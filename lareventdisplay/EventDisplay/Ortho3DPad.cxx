@@ -5,25 +5,24 @@
 /// \author  greenlee@fnal.gov
 ///
 
-#include "TPad.h"
-#include "TFrame.h"
-#include "TPadPainter.h"
-#include "TH1F.h"
 #include "TBox.h"
-#include "TPolyMarker.h"
 #include "TGNumberEntry.h"
+#include "TH1F.h"
 #include "TLatex.h"
+#include "TPad.h"
+#include "TPolyMarker.h"
+#include "TVirtualPadPainter.h"
 
 #include "cetlib_except/exception.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 
-#include "lareventdisplay/EventDisplay/Ortho3DPad.h"
-#include "lareventdisplay/EventDisplay/SimulationDrawer.h"
-#include "lareventdisplay/EventDisplay/RecoBaseDrawer.h"
-#include "nutools/EventDisplayBase/View2D.h"
-#include "nutools/EventDisplayBase/EventHolder.h"
 #include "larcore/Geometry/Geometry.h"
 #include "larcorealg/Geometry/TPCGeo.h"
+#include "lareventdisplay/EventDisplay/Ortho3DPad.h"
+#include "lareventdisplay/EventDisplay/RecoBaseDrawer.h"
+#include "lareventdisplay/EventDisplay/SimulationDrawer.h"
+#include "nutools/EventDisplayBase/EventHolder.h"
+#include "nutools/EventDisplayBase/View2D.h"
 
 /// Define static data members.
 

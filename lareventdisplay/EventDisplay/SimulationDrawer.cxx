@@ -4,43 +4,40 @@
 /// \author  messier@indiana.edu
 ///
 
-#include <iomanip>
 #include <algorithm>
+#include <iomanip>
 
-#include "TParticle.h"
-#include "TLine.h"
+#include "TDatabasePDG.h"
 #include "TLatex.h"
-#include "TPolyMarker3D.h"
-#include "TPolyMarker.h"
+#include "TLine.h"
 #include "TPolyLine.h"
 #include "TPolyLine3D.h"
-#include "TDatabasePDG.h"
+#include "TPolyMarker.h"
+#include "TPolyMarker3D.h"
 
-#include "lareventdisplay/EventDisplay/SimulationDrawer.h"
-#include "nutools/EventDisplayBase/View2D.h"
-#include "nutools/EventDisplayBase/View3D.h"
 #include "larcore/CoreUtils/ServiceUtil.h"
 #include "larcore/Geometry/Geometry.h"
-#include "larcorealg/Geometry/PlaneGeo.h"
 #include "larcorealg/Geometry/TPCGeo.h"
-#include "nusimdata/SimulationBase/MCTruth.h"
-#include "nusimdata/SimulationBase/MCParticle.h"
+#include "lardata/DetectorInfoServices/DetectorClocksService.h"
+#include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
+#include "lardataalg/DetectorInfo/DetectorProperties.h"
+#include "lareventdisplay/EventDisplay/RawDrawingOptions.h"
+#include "lareventdisplay/EventDisplay/SimulationDrawer.h"
+#include "lareventdisplay/EventDisplay/SimulationDrawingOptions.h"
+#include "lareventdisplay/EventDisplay/Style.h"
+#include "larevt/SpaceChargeServices/SpaceChargeService.h"
+#include "larsim/MCCheater/ParticleInventoryService.h"
 #include "larsim/Simulation/LArVoxelData.h"
 #include "larsim/Simulation/LArVoxelList.h"
 #include "larsim/Simulation/SimListUtils.h"
-#include "lareventdisplay/EventDisplay/Style.h"
-#include "lareventdisplay/EventDisplay/SimulationDrawingOptions.h"
-#include "lareventdisplay/EventDisplay/RawDrawingOptions.h"
-#include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
-#include "lardataalg/DetectorInfo/DetectorProperties.h"
-#include "lardata/DetectorInfoServices/DetectorClocksService.h"
-#include "larsim/MCCheater/BackTrackerService.h"
-#include "larsim/MCCheater/ParticleInventoryService.h"
-#include "larevt/SpaceChargeServices/SpaceChargeService.h"
+#include "nusimdata/SimulationBase/MCParticle.h"
+#include "nusimdata/SimulationBase/MCTruth.h"
+#include "nutools/EventDisplayBase/View2D.h"
+#include "nutools/EventDisplayBase/View3D.h"
 
-#include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Principal/View.h"
 #include "art/Framework/Principal/Event.h"
+#include "art/Framework/Principal/View.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 namespace {

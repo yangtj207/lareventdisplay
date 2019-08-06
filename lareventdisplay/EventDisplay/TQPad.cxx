@@ -4,13 +4,8 @@
 /// \author  messier@indiana.edu
 ///
 #include "lareventdisplay/EventDisplay/TQPad.h"
-
-#include "TBox.h"
 #include "TH1F.h"
-#include "TF1.h"
 #include "TPad.h"
-#include "TPolyLine.h"
-#include "TText.h"
 
 #include "art/Utilities/make_tool.h"
 #include "cetlib_except/exception.h"
@@ -21,15 +16,9 @@
 #include "lareventdisplay/EventDisplay/RecoDrawingOptions.h"
 #include "lareventdisplay/EventDisplay/ColorDrawingOptions.h"
 #include "lareventdisplay/EventDisplay/RawDataDrawer.h"
-#include "lareventdisplay/EventDisplay/RecoBaseDrawer.h"
 #include "lareventdisplay/EventDisplay/wfHitDrawers/IWFHitDrawer.h"
 #include "lareventdisplay/EventDisplay/wfHitDrawers/IWaveformDrawer.h"
 #include "larcore/Geometry/Geometry.h"
-#include "larcorealg/Geometry/CryostatGeo.h"
-#include "larcorealg/Geometry/TPCGeo.h"
-#include "larcorealg/Geometry/PlaneGeo.h"
-#include "lardataobj/RecoBase/Hit.h"
-#include "lardata/ArtDataHelper/MVAReader.h"
 
 // C/C++ standard libraries
 #include <algorithm> // std::min(), std::max()

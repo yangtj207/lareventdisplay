@@ -8,10 +8,15 @@
 ////////////////////////////////////////////////////////////////////////
 
 // Framework includes
+#include "art/Framework/Principal/Event.h"
+#include "art/Framework/Principal/Handle.h"
+#include "canvas/Persistency/Common/Ptr.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
-#include "lardata/Utilities/AssociationUtil.h"
-#include "lardata/Utilities/GeometryUtilities.h"
+#include "larcore/Geometry/Geometry.h"
+#include "larcoreobj/SimpleTypesAndConstants/geo_types.h"
+#include "lardata/Utilities/PxUtils.h"
+#include "lardataobj/RecoBase/Hit.h"
 #include "lareventdisplay/EventDisplay/InfoTransfer.h"
 #include "nutools/EventDisplayBase/NavState.h"
 

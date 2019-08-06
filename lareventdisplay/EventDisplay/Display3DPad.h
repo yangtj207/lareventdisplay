@@ -6,6 +6,9 @@
 #ifndef EVD_DISPLAY3DPAD_H
 #define EVD_DISPLAY3DPAD_H
 
+#include <memory>
+#include <vector>
+
 #include "lareventdisplay/EventDisplay/DrawingPad.h"
 
 class TH3F;
@@ -14,9 +17,6 @@ namespace evdb_tool { class ISim3DDrawer; class I3DDrawer;}
 
 
 namespace evd {
-
-class RawDataDrawer;
-class RecoBaseDrawer;
 
 /// A drawing pad showing a 3D rendering of the detector
 class Display3DPad : public DrawingPad {

@@ -5,15 +5,18 @@
 ///
 #ifndef EVD_SIMULATIONDRAWER_H
 #define EVD_SIMULATIONDRAWER_H
+
 #include <string>
-#include <vector>
 #include <map>
+
+#include "art/Framework/Principal/fwd.h"
 #include "lareventdisplay/EventDisplay/OrthoProj.h"
 
-namespace art  { class Event;       }
-namespace evdb { class View2D;      }
-namespace evdb { class View3D;      }
-namespace geo  { class Geometry;    }
+namespace evdb {
+  class View2D;
+  class View3D;
+}
+
 namespace simb {
   class MCTruth;
   class MCParticle;

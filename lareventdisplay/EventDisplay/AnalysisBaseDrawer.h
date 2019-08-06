@@ -3,20 +3,12 @@
 #ifndef EVD_ANALYSISBASEDRAWER_H
 #define EVD_ANALYSISBASEDRAWER_H
 
-#include <vector>
-
-#include "canvas/Persistency/Common/PtrVector.h"
-
 namespace art {
   class Event;
 }
 
 namespace evdb{
    class View2D;
-}
-
-namespace recob{
-  class Hit;
 }
 
 namespace trkf

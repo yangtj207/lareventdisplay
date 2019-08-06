@@ -7,28 +7,20 @@
 
 #include <vector>
 
-#include "canvas/Persistency/Common/PtrVector.h"
+#include "art/Framework/Principal/fwd.h"
+#include "canvas/Persistency/Common/Ptr.h"
 
-namespace art {
-  class Event;
-}
+#include "lardataobj/RecoBase/Seed.h"
 
-#include "lareventdisplay/EventDisplay/OrthoProj.h"
-
-class TH1F;
 namespace evdb {
   class View2D;
-  class View3D;
 }
 
 namespace recob {
    class Hit;
-   class Cluster;
-   class Seed;
 }
 
  namespace util {
-   class PxPoint;
    class PxLine;
  }
 
@@ -81,4 +73,3 @@ namespace evd {
 
 #endif
 ////////////////////////////////////////////////////////////////////////
-

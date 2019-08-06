@@ -26,17 +26,13 @@ namespace fhicl {
 namespace recob {
  class Hit;
 }
-
-
 #else
 #include "art/Framework/Core/EDProducer.h"
 #include "canvas/Persistency/Common/PtrVector.h"
 #include "canvas/Persistency/Common/Ptr.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "lareventdisplay/EventDisplay/InfoTransfer.h"
 #include "larcore/Geometry/Geometry.h"
 #include "lardataalg/Utilities/StatCollector.h"
-
 #endif
 
 
@@ -50,42 +46,20 @@ namespace recob {
 //  This dummy producer is designed to create a hitlist and maybe cluster from EVD input
 ////////////////////////////////////////////////////////////////////////
 
-extern "C" {
-#include <sys/types.h>
-#include <sys/stat.h>
-}
-#include <math.h>
-#include <algorithm>
-
 // Framework includes
 #include "art/Framework/Principal/Event.h"
 #include "fhiclcpp/ParameterSet.h"
-#include "art/Framework/Principal/Handle.h"
-#include "canvas/Persistency/Common/Ptr.h"
-#include "canvas/Persistency/Common/PtrVector.h"
-
-#include "art_root_io/TFileService.h"
-#include "art_root_io/TFileDirectory.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
 
 // LArSoft Includes
-
+#include "larcorealg/Geometry/PlaneGeo.h"
+#include "larcoreobj/SimpleTypesAndConstants/geo_types.h"
+#include "lardata/Utilities/AssociationUtil.h"
+#include "lardata/Utilities/PxUtils.h"
 #include "lardataobj/RecoBase/Cluster.h"
 #include "lardataobj/RecoBase/Hit.h"
-#include "lardata/Utilities/AssociationUtil.h"
-#include "larcorealg/Geometry/PlaneGeo.h"
-#include "lardata/Utilities/GeometryUtilities.h"
 #include "lareventdisplay/EventDisplay/GraphClusterAlg.h"
 
-// ROOT
-#include "TMath.h"
-#include "TF1.h"
-#include "TH1D.h"
-
-
-
 namespace util {
- class PxLine;
  class PxPoint;
 }
 

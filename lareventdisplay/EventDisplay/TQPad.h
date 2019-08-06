@@ -5,8 +5,13 @@
 ///
 #ifndef EVD_TQPAD_H
 #define EVD_TQPAD_H
+
 #include "lareventdisplay/EventDisplay/DrawingPad.h"
-#include "TH1F.h"
+
+#include <memory>
+
+class TH1F;
+
 namespace evdb { class View2D; }
 namespace evdb_tool
 {

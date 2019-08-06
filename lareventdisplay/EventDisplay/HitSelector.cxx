@@ -10,17 +10,14 @@
 #include "art/Framework/Principal/Handle.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
-#include "nutools/EventDisplayBase/evdb.h"
 #include "lareventdisplay/EventDisplay/RecoDrawingOptions.h"
-#include "lareventdisplay/EventDisplay/EvdLayoutOptions.h"
 #include "lareventdisplay/EventDisplay/HitSelector.h"
 #include "lardata/Utilities/GeometryUtilities.h"
 #include "lardata/Utilities/PxHitConverter.h"
 #include "lareventdisplay/EventDisplay/InfoTransfer.h"
-#include "lareventdisplay/EventDisplay/HitSelector.h"
 #include "lardataobj/RecoBase/Seed.h"
-#include "larreco/Calorimetry/CalorimetryAlg.h"
 #include "TMath.h"
+
 namespace{
   void WriteMsg(const char* fcn)
   {

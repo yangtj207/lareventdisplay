@@ -3,37 +3,20 @@
 /// \author T. Usher
 ////////////////////////////////////////////////////////////////////////
 
-#include <cmath>
-#include "lareventdisplay/EventDisplay/3DDrawers/I3DDrawer.h"
-#include "lareventdisplay/EventDisplay/RecoDrawingOptions.h"
-#include "lareventdisplay/EventDisplay/ColorDrawingOptions.h"
-
-#include "art/Utilities/ToolMacros.h"
-#include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Principal/View.h"
-#include "art/Framework/Principal/Event.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
-#include "cetlib_except/exception.h"
-#include "canvas/Persistency/Common/FindManyP.h"
-
-#include "lareventdisplay/EventDisplay/Style.h"
-
 #include "larcore/Geometry/Geometry.h"
-#include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
-#include "lardataalg/DetectorInfo/DetectorProperties.h"
-#include "lardata/DetectorInfoServices/DetectorClocksService.h"
-
-#include "lardataobj/RecoBase/OpFlash.h"
 #include "lardataobj/RecoBase/OpHit.h"
+#include "lareventdisplay/EventDisplay/3DDrawers/I3DDrawer.h"
+#include "lareventdisplay/EventDisplay/ColorDrawingOptions.h"
+#include "lareventdisplay/EventDisplay/RecoDrawingOptions.h"
 
-#include "TPolyMarker3D.h"
+#include "art/Framework/Principal/Event.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Utilities/ToolMacros.h"
+
 #include "TPolyLine3D.h"
-#include "TDatabasePDG.h"
 
 // Eigen
-#include <Eigen/Dense>
-
-#include <fstream>
+#include <Eigen/Core>
 
 namespace evdb_tool
 {

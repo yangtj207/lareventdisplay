@@ -13,9 +13,10 @@
 #include "RQ_OBJECT.h"
 #include <vector>
 
+#include "TBox.h"
 class TH1F;
 class TGNumberEntry;
-class TBox;
+
 namespace evdb { class View2D; }
 
 namespace evd {

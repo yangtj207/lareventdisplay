@@ -11,39 +11,15 @@
 
 #include <vector>
 
+#include "art/Framework/Principal/fwd.h"
 #include "canvas/Persistency/Common/PtrVector.h"
 #include "canvas/Persistency/Common/Ptr.h"
-
-namespace art {
-  class Event;
-}
-
-#ifdef __ROOTCLING__
-namespace fhicl {
-  class ParameterSet;
-}
-
-namespace recob {
- class Hit;
-}
-
-
-#else
-#include "lareventdisplay/EventDisplay/InfoTransfer.h"
-#include "larcore/Geometry/Geometry.h"
-#include "fhiclcpp/ParameterSet.h"
-#endif
-
+#include "fhiclcpp/fwd.h"
 
 namespace util {
  class PxLine;
  class PxPoint;
 }
-
-namespace geo {
-  class Geometry;
-}
-
 
 namespace recob {
   class Hit;
@@ -51,9 +27,6 @@ namespace recob {
 }
 
 namespace evd {
-
-  class InfoTransfer;
-
 
   class GraphClusterAlg {
 

@@ -1,34 +1,26 @@
 /// \file    AnalysisBaseDrawer.cxx
 /// \brief   Class to aid in the rendering of AnalysisBase objects
 /// \author  msoderbe@syr.edu
-#include "TMarker.h"
-#include "TBox.h"
-#include "TLine.h"
-#include "TPolyLine.h"
-#include "TPolyLine3D.h"
-#include "TPolyMarker.h"
-#include "TPolyMarker3D.h"
-#include "TLatex.h"
 
-#include "nutools/EventDisplayBase/View2D.h"
-#include "lareventdisplay/EventDisplay/eventdisplay.h"
-#include "lareventdisplay/EventDisplay/Style.h"
-#include "lareventdisplay/EventDisplay/AnalysisBaseDrawer.h"
-#include "lareventdisplay/EventDisplay/RecoDrawingOptions.h"
-#include "lareventdisplay/EventDisplay/AnalysisDrawingOptions.h"
+#include "TLatex.h"
+#include "TLine.h"
+#include "TPolyMarker.h"
+
+#include "larcore/Geometry/Geometry.h"
 #include "lardataobj/AnalysisBase/Calorimetry.h"
 #include "lardataobj/AnalysisBase/ParticleID.h"
 #include "lardataobj/RecoBase/Track.h"
-#include "lardataobj/RecoBase/Hit.h"
-#include "lardata/Utilities/AssociationUtil.h"
-#include "larreco/Calorimetry/CalorimetryAlg.h"
+#include "lareventdisplay/EventDisplay/AnalysisBaseDrawer.h"
+#include "lareventdisplay/EventDisplay/AnalysisDrawingOptions.h"
+#include "lareventdisplay/EventDisplay/RecoDrawingOptions.h"
+#include "lareventdisplay/EventDisplay/eventdisplay.h"
+#include "nutools/EventDisplayBase/View2D.h"
 
-#include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Principal/Event.h"
-#include "canvas/Persistency/Common/Ptr.h"
 #include "art/Framework/Principal/Handle.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "canvas/Persistency/Common/FindMany.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
+#include "canvas/Persistency/Common/Ptr.h"
 
 #include <math.h>
 

@@ -6,7 +6,8 @@
 
 #include <vector>
 
-#include "art/Framework/Principal/Event.h"
+#include "art/Framework/Principal/fwd.h"
+#include "art/Framework/Principal/DataViewImpl.h"
 #include "art/Framework/Principal/View.h"
 #include "canvas/Persistency/Common/PtrVector.h"
 #include "canvas/Persistency/Common/FindMany.h"
@@ -22,8 +23,6 @@ namespace evdb {
     class View2D;
     class View3D;
 }
-
-namespace geo   { class Geometry; }
 
 namespace recob {
     class Edge;
@@ -46,20 +45,11 @@ namespace anab {
     class CosmicTag;
 }
 
-namespace util {
-    class LArPropertiesService;
-    class DetectorProperties;
-}
-
 namespace evdb_tool {
     class ISpacePoints3D;
 }
 
 namespace evd {
-
-class ColorDrawingOptions;
-class RawDrawingOptions;
-class RecoDrawingOptions;
 
 /// Aid in the rendering of RecoBase objects
 class RecoBaseDrawer

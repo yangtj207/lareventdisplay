@@ -18,12 +18,6 @@ namespace evdb { class View2D;   }
 
 namespace util {
   class PxLine;
-  class PxPoint;
-}
-
-namespace recob
-{
-  class Seed;
 }
 
 namespace evd {

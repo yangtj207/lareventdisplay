@@ -3,9 +3,9 @@
 /// \brief   Base class for all event display drawing pads
 /// \author  messier@indiana.edu
 ///
-#include "lareventdisplay/EventDisplay/DrawingPad.h"
 #include "TPad.h"
-#include "nutools/EventDisplayBase/evdb.h"
+
+#include "lareventdisplay/EventDisplay/DrawingPad.h"
 #include "lareventdisplay/EventDisplay/HeaderDrawer.h"
 #include "lareventdisplay/EventDisplay/ExptDrawers/IExperimentDrawer.h"
 #include "lareventdisplay/EventDisplay/SimulationDrawer.h"
@@ -16,7 +16,6 @@
 #include "lareventdisplay/EventDisplay/EvdLayoutOptions.h"
 
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Principal/Event.h"
 #include "art/Utilities/make_tool.h"
 
 namespace evd{

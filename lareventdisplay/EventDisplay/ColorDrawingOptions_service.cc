@@ -8,7 +8,6 @@
 
 /// LArSoft includes
 #include "lareventdisplay/EventDisplay/ColorDrawingOptions.h"
-#include "lareventdisplay/EventDisplay/RawDrawingOptions.h"
 
 namespace evd{
 

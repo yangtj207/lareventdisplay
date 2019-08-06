@@ -3,21 +3,14 @@
 /// \author T. Usher
 ////////////////////////////////////////////////////////////////////////
 
-#include <cmath>
-#include "lareventdisplay/EventDisplay/wfHitDrawers/IWaveformDrawer.h"
-#include "art/Utilities/ToolMacros.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
-#include "cetlib_except/exception.h"
-#include "canvas/Persistency/Common/FindManyP.h"
-#include "nutools/EventDisplayBase/EventHolder.h"
-#include "lareventdisplay/EventDisplay/RecoDrawingOptions.h"
-#include "larcore/Geometry/Geometry.h"
 #include "lardataobj/RecoBase/Wire.h"
+#include "lareventdisplay/EventDisplay/RecoDrawingOptions.h"
+#include "lareventdisplay/EventDisplay/wfHitDrawers/IWaveformDrawer.h"
+#include "nutools/EventDisplayBase/EventHolder.h"
 
-#include "TF1.h"
+#include "art/Utilities/ToolMacros.h"
+
 #include "TPolyLine.h"
-
-#include <fstream>
 
 namespace evdb_tool
 {

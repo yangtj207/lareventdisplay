@@ -3,9 +3,9 @@
 /// \brief   Drawing pad for time or charge histograms
 /// \author  messier@indiana.edu
 ///
-#include "TBox.h"
-#include "TH1F.h"
 #include "TPad.h"
+
+#include "art/Framework/Principal/fwd.h"
 
 #include "lareventdisplay/EventDisplay/MCBriefPad.h"
 #include "nutools/EventDisplayBase/View2D.h"

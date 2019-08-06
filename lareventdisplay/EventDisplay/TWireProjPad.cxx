@@ -5,39 +5,35 @@
 /// \author  messier@indiana.edu
 ///
 ////////////////////////////////////////////////////////////////////////
+
 #include <algorithm>
 
-#include "lareventdisplay/EventDisplay/TWireProjPad.h"
-#include "TPad.h"
-#include "TH1F.h"
-#include "TString.h"
-#include "TMarker.h"
-#include "TLine.h"
-#include "TPolyLine.h"
-#include "TClass.h"
-#include "TVirtualPad.h"
 #include "TCanvas.h"
-#include "TList.h"
-
-#include "nutools/EventDisplayBase/View2D.h"
-#include "nutools/EventDisplayBase/EventHolder.h"
-#include "larcore/Geometry/Geometry.h"
-#include "larcorealg/Geometry/PlaneGeo.h"
-#include "lareventdisplay/EventDisplay/SimulationDrawer.h"
-#include "lareventdisplay/EventDisplay/RawDataDrawer.h"
-#include "lareventdisplay/EventDisplay/RecoBaseDrawer.h"
-#include "lareventdisplay/EventDisplay/HitSelector.h"
-#include "lareventdisplay/EventDisplay/RawDrawingOptions.h"
-#include "lareventdisplay/EventDisplay/RecoDrawingOptions.h"
-#include "lareventdisplay/EventDisplay/EvdLayoutOptions.h"
-#include "lareventdisplay/EventDisplay/Style.h"
+#include "TClass.h"
 #include "TFrame.h"
+#include "TH1F.h"
+#include "TList.h"
+#include "TPad.h"
+#include "TString.h"
+#include "TVirtualPad.h"
 
+#include "larcore/Geometry/Geometry.h"
+#include "lardata/Utilities/PxUtils.h"
+#include "lareventdisplay/EventDisplay/EvdLayoutOptions.h"
+#include "lareventdisplay/EventDisplay/HitSelector.h"
+#include "lareventdisplay/EventDisplay/RawDataDrawer.h"
+#include "lareventdisplay/EventDisplay/RawDrawingOptions.h"
+#include "lareventdisplay/EventDisplay/RecoBaseDrawer.h"
+#include "lareventdisplay/EventDisplay/RecoDrawingOptions.h"
+#include "lareventdisplay/EventDisplay/SimulationDrawer.h"
+#include "lareventdisplay/EventDisplay/Style.h"
+#include "lareventdisplay/EventDisplay/TWireProjPad.h"
+#include "nutools/EventDisplayBase/EventHolder.h"
+#include "nutools/EventDisplayBase/View2D.h"
 
+#include "art/Framework/Principal/fwd.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Principal/Event.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
-#include "lardata/Utilities/GeometryUtilities.h"
 
 namespace {
 
@@ -541,8 +537,3 @@ namespace evd{
 
 }// namespace
 ////////////////////////////////////////////////////////////////////////
-
-
-
-
-

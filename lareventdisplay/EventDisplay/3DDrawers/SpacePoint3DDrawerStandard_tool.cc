@@ -3,30 +3,15 @@
 /// \author T. Usher
 ////////////////////////////////////////////////////////////////////////
 
-#include <cmath>
+#include "lardataobj/RecoBase/SpacePoint.h"
 #include "lareventdisplay/EventDisplay/3DDrawers/ISpacePoints3D.h"
 #include "lareventdisplay/EventDisplay/RecoDrawingOptions.h"
 
-#include "art/Utilities/ToolMacros.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Principal/Event.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
-#include "cetlib_except/exception.h"
+#include "art/Utilities/ToolMacros.h"
 #include "canvas/Persistency/Common/FindManyP.h"
 
-#include "lareventdisplay/EventDisplay/Style.h"
-
-#include "larcore/Geometry/Geometry.h"
-#include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
-#include "lardataalg/DetectorInfo/DetectorProperties.h"
-#include "lardata/DetectorInfoServices/DetectorClocksService.h"
-#include "lardataobj/RecoBase/SpacePoint.h"
-
 #include "TPolyMarker3D.h"
-#include "TPolyLine3D.h"
-#include "TDatabasePDG.h"
-
-#include <fstream>
 
 namespace evdb_tool
 {

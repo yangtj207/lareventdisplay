@@ -5,9 +5,9 @@
 ///
 #ifndef EVD_HEADER_H
 #define EVD_HEADER_H
+
 #include "lareventdisplay/EventDisplay/DrawingPad.h"
 namespace evdb { class View2D; }
-class TH1F;
 
 namespace evd {
   class HeaderPad : public DrawingPad {

@@ -4,23 +4,18 @@
 ////////////////////////////////////////////////////////////////////////
 
 #include <cmath>
-#include "lareventdisplay/EventDisplay/wfHitDrawers/IWFHitDrawer.h"
+
+#include "larcore/Geometry/Geometry.h"
+#include "lardata/ArtDataHelper/MVAReader.h"
+#include "lardataobj/RecoBase/Hit.h"
 #include "lareventdisplay/EventDisplay/RawDrawingOptions.h"
 #include "lareventdisplay/EventDisplay/RecoDrawingOptions.h"
-#include "larcore/Geometry/Geometry.h"
-#include "art/Utilities/ToolMacros.h"
-#include "canvas/Persistency/Common/FindManyP.h"
+#include "lareventdisplay/EventDisplay/wfHitDrawers/IWFHitDrawer.h"
 #include "nutools/EventDisplayBase/EventHolder.h"
-#include "art_root_io/TFileService.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
-#include "cetlib_except/exception.h"
 
-#include "lardataobj/RecoBase/Hit.h"
-#include "lardata/ArtDataHelper/MVAReader.h"
+#include "art/Utilities/ToolMacros.h"
 
 #include "TPolyLine.h"
-
-#include <fstream>
 
 namespace evdb_tool
 {

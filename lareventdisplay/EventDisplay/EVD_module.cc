@@ -7,13 +7,6 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Core/EDAnalyzer.h"
 
-#include "TH1D.h"
-
-extern "C" {
-#include <sys/types.h>
-#include <sys/stat.h>
-}
-
 //LArSoft includes
 #include "nutools/EventDisplayBase/DisplayWindow.h"
 #include "lareventdisplay/EventDisplay/TWQProjectionView.h"
@@ -23,13 +16,8 @@ extern "C" {
 #include "lareventdisplay/EventDisplay/CalorView.h"
 
 // Framework includes
-#include "art/Framework/Principal/Event.h"
-#include "fhiclcpp/ParameterSet.h"
-#include "art/Framework/Principal/Handle.h"
-#include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art_root_io/TFileService.h"
-#include "art_root_io/TFileDirectory.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
+#include "art/Framework/Principal/fwd.h"
+#include "fhiclcpp/fwd.h"
 
 #if defined __clang__
   #pragma clang diagnostic push
@@ -38,6 +26,8 @@ extern "C" {
 
 /// The Event Display
 namespace evd{
+
+  class Canvas;
 
   /// a class for transporting photons in a roughly realistic way
   class EVD : public art::EDAnalyzer

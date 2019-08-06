@@ -5,9 +5,9 @@
 ///
 #ifndef EVD_MCBRIEF_H
 #define EVD_MCBRIEF_H
+
 #include "lareventdisplay/EventDisplay/DrawingPad.h"
 namespace evdb { class View2D; }
-class TH1F;
 
 namespace evd {
   class MCBriefPad : public DrawingPad {

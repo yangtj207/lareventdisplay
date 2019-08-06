@@ -3,32 +3,17 @@
 /// \author T. Usher
 ////////////////////////////////////////////////////////////////////////
 
-#include <cmath>
-#include "lareventdisplay/EventDisplay/ExptDrawers/IExperimentDrawer.h"
-
+#include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Utilities/ToolMacros.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
-#include "cetlib_except/exception.h"
 
-#include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 #include "larcore/Geometry/Geometry.h"
-#include "nutools/EventDisplayBase/View2D.h"
+#include "lareventdisplay/EventDisplay/ExptDrawers/IExperimentDrawer.h"
+#include "lareventdisplay/EventDisplay/RawDrawingOptions.h"
+#include "larevt/CalibrationDBI/Interface/ChannelStatusProvider.h"
+#include "larevt/CalibrationDBI/Interface/ChannelStatusService.h"
 #include "nutools/EventDisplayBase/View3D.h"
 
-#include "lareventdisplay/EventDisplay/EvdLayoutOptions.h"
-#include "lareventdisplay/EventDisplay/RawDrawingOptions.h"
-
-#include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "larevt/CalibrationDBI/Interface/ChannelStatusService.h"
-#include "larevt/CalibrationDBI/Interface/ChannelStatusProvider.h"
-
-#include "TPolyLine.h"
 #include "TPolyLine3D.h"
-#include "TLine.h"
-#include "TBox.h"
-#include "TText.h"
-
-#include <fstream>
 
 namespace evd_tool
 {

@@ -8,8 +8,6 @@
 #include "lareventdisplay/EventDisplay/Display3DView.h"
 #include "lareventdisplay/EventDisplay/Display3DPad.h"
 
-#include "art/Framework/Principal/Event.h"
-
 namespace evd{
 
   //......................................................................

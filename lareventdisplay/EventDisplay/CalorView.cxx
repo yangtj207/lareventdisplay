@@ -3,16 +3,12 @@
 /// \brief   Calorimetric view display window
 /// \author  msoderbe@syr.edu
 ///
-#include <cmath>
-
 #include "TCanvas.h"
-#include "TVirtualX.h"
-#include "TRootEmbeddedCanvas.h"
 #include "lareventdisplay/EventDisplay/CalorView.h"
 #include "lareventdisplay/EventDisplay/CalorPad.h"
 #include "lareventdisplay/EventDisplay/AnalysisDrawingOptions.h"
 
-#include "art/Framework/Principal/Event.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
 
 //......................................................................
 // Constructor.

@@ -4,29 +4,21 @@
 /// \author  msoderbe@syr.edu
 ///
 
-#include "lareventdisplay/EventDisplay/CalorPad.h"
-#include "lareventdisplay/EventDisplay/Style.h"
 #include "lareventdisplay/EventDisplay/AnalysisBaseDrawer.h"
 #include "lareventdisplay/EventDisplay/AnalysisDrawingOptions.h"
-#include "nutools/EventDisplayBase/View2D.h"
+#include "lareventdisplay/EventDisplay/CalorPad.h"
 #include "nutools/EventDisplayBase/EventHolder.h"
-#include "lareventdisplay/EventDisplay/EvdLayoutOptions.h"
-#include "lareventdisplay/EventDisplay/RecoDrawingOptions.h"
-#include "lareventdisplay/EventDisplay/HitSelector.h"
+#include "nutools/EventDisplayBase/View2D.h"
 
-#include "TPad.h"
-#include "TH1F.h"
-#include "TGraph.h"
 #include "TFile.h"
-#include "TFrame.h"
+#include "TGraph.h"
+#include "TH1F.h"
+#include "TPad.h"
 
-
+#include "art/Framework/Principal/fwd.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Principal/Event.h"
-#include "art_root_io/TFileService.h"
-#include "art_root_io/TFileDirectory.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
 #include "cetlib/search_path.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 ///
 /// Create a pad to show calorimety/PID info. for reconstructed tracks.
 /// @param name : Name of the pad

@@ -3,48 +3,38 @@
 /// \brief   The "main" event display view that most people will want to use
 /// \author  brebel@fnal.gov
 ///
+
+#include "Buttons.h"
 #include "TCanvas.h"
 #include "TFrame.h"
 #include "TGFrame.h"  // For TGMainFrame, TGHorizontalFrame
-#include "TGLayout.h" // For TGLayoutHints
-#include "TGDimension.h"
-#include "TGNumberEntry.h"
 #include "TGLabel.h"
-#include "TMath.h"
-#include "TString.h"
-#include "TRootEmbeddedCanvas.h"
-#include "TLine.h"
-#include "Buttons.h"
+#include "TGLayout.h" // For TGLayoutHints
+#include "TGNumberEntry.h"
 #include "TGTextView.h"
+#include "TMath.h"
 #include "TROOT.h"
-#include "sstream"
+#include "TRootEmbeddedCanvas.h"
+#include "TString.h"
 
-#include "nutools/EventDisplayBase/View2D.h"
-#include "lareventdisplay/EventDisplay/TWQMultiTPCProjection.h"
-#include "lareventdisplay/EventDisplay/HeaderPad.h"
-#include "lareventdisplay/EventDisplay/ColorDrawingOptions.h"
-#include "lareventdisplay/EventDisplay/EvdLayoutOptions.h"
-#include "lareventdisplay/EventDisplay/RawDrawingOptions.h"
-#include "lareventdisplay/EventDisplay/SimulationDrawingOptions.h"
-#include "lareventdisplay/EventDisplay/RecoDrawingOptions.h"
-#include "lareventdisplay/EventDisplay/TWireProjPad.h"
-#include "lareventdisplay/EventDisplay/TQPad.h"
-#include "lareventdisplay/EventDisplay/MCBriefPad.h"
-#include "lareventdisplay/EventDisplay/RawDataDrawer.h"
-#include "lareventdisplay/EventDisplay/RecoBaseDrawer.h"
-#include "lareventdisplay/EventDisplay/HitSelector.h"
-#include "lareventdisplay/EventDisplay/Style.h"
-
-#include "lardataobj/RecoBase/Seed.h"
 #include "larcore/Geometry/Geometry.h"
 #include "larcorealg/Geometry/PlaneGeo.h"
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
-#include "art/Framework/Principal/Event.h"
+#include "lareventdisplay/EventDisplay/ColorDrawingOptions.h"
+#include "lareventdisplay/EventDisplay/EvdLayoutOptions.h"
+#include "lareventdisplay/EventDisplay/HeaderPad.h"
+#include "lareventdisplay/EventDisplay/MCBriefPad.h"
+#include "lareventdisplay/EventDisplay/RawDataDrawer.h"
+#include "lareventdisplay/EventDisplay/RawDrawingOptions.h"
+#include "lareventdisplay/EventDisplay/RecoBaseDrawer.h"
+#include "lareventdisplay/EventDisplay/SimulationDrawingOptions.h"
+#include "lareventdisplay/EventDisplay/TQPad.h"
+#include "lareventdisplay/EventDisplay/TWQMultiTPCProjection.h"
+#include "lareventdisplay/EventDisplay/TWireProjPad.h"
+#include "nutools/EventDisplayBase/View2D.h"
+
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
-
-//#include "EventDisplay/InfoTransfer.h"
-#include "lardata/Utilities/GeometryUtilities.h"
 
 namespace evd{
 

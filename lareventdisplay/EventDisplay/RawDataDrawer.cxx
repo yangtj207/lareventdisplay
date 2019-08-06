@@ -51,52 +51,44 @@
  *   too small and a larger area will be drawn, the additional area will be
  *   blank)
  */
+#include <algorithm> // std::fill(), std::find_if(), ...
 #include <cmath> // std::abs(), ...
-#include <utility> // std::pair<>, std::move()
+#include <cstddef> // std::ptrdiff_t
+#include <limits> // std::numeric_limits<>
 #include <memory> // std::unique_ptr()
 #include <tuple>
-#include <limits> // std::numeric_limits<>
 #include <type_traits> // std::add_const_t<>, ...
 #include <typeinfo> // to use typeid()
-#include <algorithm> // std::fill(), std::find_if(), ...
-#include <cstddef> // std::ptrdiff_t
+#include <utility> // std::move()
 
-#include "TH1F.h"
-// #include "TPolyLine3D.h"
 #include "TBox.h"
 #include "TFrame.h"
+#include "TH1F.h"
 #include "TVirtualPad.h"
 
-#include "lareventdisplay/EventDisplay/ChangeTrackers.h" // util::PlaneDataChangeTracker_t
-#include "lareventdisplay/EventDisplay/RawDataDrawer.h"
-#include "nutools/EventDisplayBase/View2D.h"
-#include "nutools/EventDisplayBase/EventHolder.h"
-#include "lareventdisplay/EventDisplay/ColorDrawingOptions.h"
-#include "lareventdisplay/EventDisplay/RawDrawingOptions.h"
-#include "larevt/CalibrationDBI/Interface/DetPedestalService.h"
-#include "larevt/CalibrationDBI/Interface/DetPedestalProvider.h"
-#include "lardataobj/RawData/raw.h"
-#include "lardataobj/RawData/RawDigit.h"
-#include "larevt/CalibrationDBI/Interface/ChannelStatusService.h"
-#include "larevt/CalibrationDBI/Interface/ChannelStatusProvider.h"
-#include "larcorealg/Geometry/CryostatGeo.h"
-#include "larcorealg/Geometry/TPCGeo.h"
-#include "larcorealg/Geometry/PlaneGeo.h"
-#include "lardataalg/Utilities/StatCollector.h" // lar::util::MinMaxCollector<>
 #include "larcore/Geometry/Geometry.h"
-#include "lardata/DetectorInfoServices/LArPropertiesService.h"
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
+#include "lardataalg/Utilities/StatCollector.h" // lar::util::MinMaxCollector<>
+#include "lardataobj/RawData/RawDigit.h"
+#include "lardataobj/RawData/raw.h"
+#include "lareventdisplay/EventDisplay/ChangeTrackers.h" // util::PlaneDataChangeTracker_t
+#include "lareventdisplay/EventDisplay/ColorDrawingOptions.h"
+#include "lareventdisplay/EventDisplay/RawDataDrawer.h"
+#include "lareventdisplay/EventDisplay/RawDrawingOptions.h"
+#include "larevt/CalibrationDBI/Interface/ChannelStatusProvider.h"
+#include "larevt/CalibrationDBI/Interface/ChannelStatusService.h"
+#include "larevt/CalibrationDBI/Interface/DetPedestalProvider.h"
+#include "larevt/CalibrationDBI/Interface/DetPedestalService.h"
+#include "nutools/EventDisplayBase/View2D.h"
 
-
-#include "canvas/Utilities/InputTag.h"
-#include "canvas/Utilities/Exception.h"
-#include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "canvas/Persistency/Common/Ptr.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
+#include "canvas/Utilities/Exception.h"
+#include "canvas/Utilities/InputTag.h"
 #include "cetlib_except/demangle.h"
-
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 namespace {
     template <typename Stream, typename T>

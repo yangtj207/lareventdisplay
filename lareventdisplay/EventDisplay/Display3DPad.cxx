@@ -3,27 +3,21 @@
 /// \brief   Drawing pad showing a 3D rendering of the detector
 /// \author  messier@indiana.edu
 ///
-#include <iostream>
 #include "TPad.h"
 #include "TView3D.h"
-#include "TGLViewer.h"
-#include "TPolyLine3D.h"
 
 #include "lareventdisplay/EventDisplay/Display3DPad.h"
 #include "nutools/EventDisplayBase/View3D.h"
 #include "nutools/EventDisplayBase/EventHolder.h"
 #include "larcore/Geometry/Geometry.h"
-#include "lareventdisplay/EventDisplay/SimulationDrawer.h"
 #include "lareventdisplay/EventDisplay/RecoBaseDrawer.h"
-#include "lareventdisplay/EventDisplay/EvdLayoutOptions.h"
 #include "lareventdisplay/EventDisplay/SimulationDrawingOptions.h"
 #include "lareventdisplay/EventDisplay/RecoDrawingOptions.h"
-#include "lareventdisplay/EventDisplay/HitSelector.h"
 #include "lareventdisplay/EventDisplay/SimDrawers/ISim3DDrawer.h"
 #include "lareventdisplay/EventDisplay/ExptDrawers/IExperimentDrawer.h"
 #include "lareventdisplay/EventDisplay/3DDrawers/I3DDrawer.h"
-#include "lardataobj/RecoBase/Seed.h"
 
+#include "art/Framework/Principal/fwd.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Utilities/make_tool.h"
 

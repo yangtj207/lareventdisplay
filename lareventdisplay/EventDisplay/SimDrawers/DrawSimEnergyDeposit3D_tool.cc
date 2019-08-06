@@ -8,13 +8,9 @@
 
 #include "art/Utilities/ToolMacros.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Principal/View.h"
 #include "art/Framework/Principal/Event.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
-#include "cetlib_except/exception.h"
-#include "canvas/Persistency/Common/FindManyP.h"
 
-#include "nusimdata/SimulationBase/MCTruth.h"
 #include "nusimdata/SimulationBase/MCParticle.h"
 #include "lardataobj/Simulation/SimEnergyDeposit.h"
 #include "lareventdisplay/EventDisplay/Style.h"
@@ -25,14 +21,6 @@
 #include "lardata/DetectorInfoServices/DetectorClocksService.h"
 
 #include "TPolyMarker3D.h"
-#include "TPolyLine3D.h"
-#include "TDatabasePDG.h"
-
-#include "TF1.h"
-#include "TPolyLine.h"
-
-#include <fstream>
-#include <cmath>
 
 namespace evdb_tool
 {

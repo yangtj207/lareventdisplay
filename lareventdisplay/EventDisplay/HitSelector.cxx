@@ -10,6 +10,7 @@
 #include "art/Framework/Principal/Handle.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
+#include "larcore/Geometry/Geometry.h"
 #include "lareventdisplay/EventDisplay/RecoDrawingOptions.h"
 #include "lareventdisplay/EventDisplay/HitSelector.h"
 #include "lardata/Utilities/GeometryUtilities.h"

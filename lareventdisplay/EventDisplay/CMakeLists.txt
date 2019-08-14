@@ -68,6 +68,7 @@ simple_plugin(ColorDrawingOptions "service"
               nutools_EventDisplayBase)
 
 simple_plugin(InfoTransfer "service"
+              larcorealg_Geometry
               nutools_EventDisplayBase
               ${ART_FRAMEWORK_PRINCIPAL}
               ${ART_PERSISTENCY_PROVENANCE}

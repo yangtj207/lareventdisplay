@@ -35,13 +35,10 @@ public:
     void Draw(const art::Event&, evdb::View3D*) const override;
 
 private:
+    void drawMCPartAssociated(const art::Event&, evdb::View3D*) const;
+    void drawAll(             const art::Event&, evdb::View3D*) const;
 
-//    double fMinX;
-//    double fMaxX;
-//    double fMinY;
-//    double fMaxY;
-//    double fMinZ;
-//    double fMaxZ;
+    bool fDrawAllSimEnergy;
 
 };
 
@@ -49,8 +46,7 @@ private:
 // Constructor.
 DrawSimEnergyDeposit3D::DrawSimEnergyDeposit3D(const fhicl::ParameterSet& pset)
 {
-//    fNumPoints     = pset.get< int>("NumPoints",     1000);
-//    fFloatBaseline = pset.get<bool>("FloatBaseline", false);
+    fDrawAllSimEnergy = pset.get<bool>("DrawAllSimEnergyDeposits", false);
 
     return;
 }
@@ -67,7 +63,18 @@ void DrawSimEnergyDeposit3D::Draw(const art::Event& evt, evdb::View3D* view) con
 
     // If the option is turned off, there's nothing to do
     if (!drawOpt->fShowSimEnergyInfo) return;
+    
+    // Split here if drawing all vs drawing MC associated only
+    if (fDrawAllSimEnergy) drawAll(evt,view);
+    else                   drawMCPartAssociated(evt,view);
+    
+    return;
+}
 
+void DrawSimEnergyDeposit3D::drawMCPartAssociated(const art::Event& evt, evdb::View3D* view) const
+{
+    art::ServiceHandle<evd::SimulationDrawingOptions const> drawOpt;
+    
     // Recover a handle to the collection of MCParticles
     // We need these so we can determine the offset (if any)
     art::Handle< std::vector<simb::MCParticle>> mcParticleHandle;
@@ -177,6 +184,83 @@ void DrawSimEnergyDeposit3D::Draw(const art::Event& evt, evdb::View3D* view) con
         }
     }
 
+    return;
+}
+
+void DrawSimEnergyDeposit3D::drawAll(const art::Event& evt, evdb::View3D* view) const
+{
+    art::ServiceHandle<evd::SimulationDrawingOptions const> drawOpt;
+    
+    // NOTE: In this mode we cannot correct the voxel positions for time offsets since we have nothing to offset with
+    // The voxels are drawn in the x,y,z locations given by the SimEnergyDeposit objects
+    
+    // Recover the simchannels
+    art::Handle<std::vector<sim::SimEnergyDeposit>> simEnergyDepositHandle;
+    
+    evt.getByLabel(drawOpt->fSimEnergyLabel, simEnergyDepositHandle);
+    
+    if (simEnergyDepositHandle.isValid() && simEnergyDepositHandle->size() > 0)
+    {
+        mf::LogDebug("SimEnergyDeposit3DDrawer") << "Starting loop over " << simEnergyDepositHandle->size() << " SimEnergyDeposits, " << std::endl;
+        
+        // Get the geometry service and its friends
+        detinfo::DetectorProperties const*      theDetector = lar::providerFrom<detinfo::DetectorPropertiesService>();
+        detinfo::DetectorClocks     const*      detClocks   = lar::providerFrom<detinfo::DetectorClocksService>();
+        art::ServiceHandle<geo::Geometry const> geom;
+
+        // Would like to draw the deposits as markers with colors given by particle id
+        // So we make two passes, first to fill a map with color the key and positions for the markers
+        std::map<int,std::vector<sim::SimEnergyDeposit::Point_t>> colorToPositionMap;
+
+        // Go through the SimEnergyDeposits and populate the map
+        for(const auto& simEnergyDeposit : *simEnergyDepositHandle)
+        {
+            // If we have cosmic rays then we need to get the offset which allows translating from
+            // when they were generated vs when they were tracked.
+            // Note that this also explicitly checks that they are in a TPC volume
+            try
+            {
+                sim::SimEnergyDeposit::Point_t point       = simEnergyDeposit.MidPoint();
+                double                         depTime     = simEnergyDeposit.T();
+                geo::TPCID                     tpcID       = geom->PositionToTPCID(point);
+                geo::PlaneID                   planeID(tpcID,0);
+                double                         g4Ticks     = detClocks->TPCG4Time2Tick(depTime)-theDetector->TriggerOffset();
+                double                         xPosMinTick = theDetector->ConvertTicksToX(0,planeID);
+//                double                         xPosMaxTick = theDetector->ConvertTicksToX(theDetector->NumberTimeSamples(),planeID);
+                double                         xOffset     = theDetector->ConvertTicksToX(g4Ticks, planeID) - xPosMinTick;
+
+                colorToPositionMap[evd::Style::ColorFromPDG(simEnergyDeposit.PdgCode())].emplace_back(sim::SimEnergyDeposit::Point_t(point.X() + xOffset, point.Y(), point.Z()));
+            }
+            catch(...) {continue;}
+        }
+        
+        // Now we can do some drawing
+        for(const auto& pair : colorToPositionMap)
+        {
+            int colorIdx(pair.first);
+            int markerIdx(kFullDotMedium);
+            int markerSize(2);
+            
+            TPolyMarker3D& pm = view->AddPolyMarker3D(1, colorIdx, markerIdx, markerSize);
+            
+            // Import positions into an array
+            std::vector<double> posArrayVec;
+            int    hitCount(0);
+            
+            posArrayVec.resize(3 * pair.second.size());
+            
+            for(const auto& point : pair.second)
+            {
+                posArrayVec[3*hitCount    ] = point.X();
+                posArrayVec[3*hitCount + 1] = point.Y();
+                posArrayVec[3*hitCount + 2] = point.Z();
+                hitCount++;
+            }
+            
+            pm.SetPolyMarker(hitCount, posArrayVec.data(), markerIdx);
+        }
+    }
+    
     return;
 }
 

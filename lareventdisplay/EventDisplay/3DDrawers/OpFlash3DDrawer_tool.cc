@@ -104,15 +104,15 @@ void OpFlash3DDrawer::Draw(const art::Event& event, evdb::View3D* view) const
             // Start by going through the associated OpHits
             const std::vector<art::Ptr<recob::OpHit>> opHitVec = opHitAssnVec.at(opFlashPtr.key());
             
-            const std::vector<double>& peVec = opFlashPtr->PEs();
+            //const std::vector<double>& peVec = opFlashPtr->PEs();
             
-            std::cout << "    -Flash #PEs: " << peVec.size() << ", vals (idx:PE): ";
-            for(size_t idx = 0; idx < peVec.size(); idx++) std::cout << idx << ":" << peVec[idx] << " ";
-            std::cout << std::endl;
-            
-            std::cout << "    -OpHitVec size: " << opHitVec.size() << ", chan/T/PE: ";
-            for(const auto& opHit : opHitVec) std::cout << opHit->OpChannel() << "/" << opHit->PeakTime() << "/" << opHit->PE() << " ";
-            std::cout << std::endl;
+            //std::cout << "    -Flash #PEs: " << peVec.size() << ", vals (idx:PE): ";
+            //for(size_t idx = 0; idx < peVec.size(); idx++) std::cout << idx << ":" << peVec[idx] << " ";
+            //std::cout << std::endl;
+            //
+            //std::cout << "    -OpHitVec size: " << opHitVec.size() << ", chan/T/PE: ";
+            //for(const auto& opHit : opHitVec) std::cout << opHit->OpChannel() << "/" << opHit->PeakTime() << "/" << opHit->PE() << " ";
+            //std::cout << std::endl;
 
             for(const auto& opHit : opHitVec) opHitPEVec.push_back(opHit->PE());
         }
@@ -177,21 +177,21 @@ void OpFlash3DDrawer::Draw(const art::Event& event, evdb::View3D* view) const
                     const geo::Point_t&  opHitPos  = opHitGeo.GetCenter();
                     float                zWidth    = opHitGeo.HalfW();
                     float                yWidth    = opHitGeo.HalfH();
-        
+                
                     Eigen::Vector3f opHitLo(opHitPos.X() - flashXWid, opHitPos.Y() - yWidth, opHitPos.Z() - zWidth);
                     Eigen::Vector3f opHitHi(opHitPos.X() + flashXWid, opHitPos.Y() + yWidth, opHitPos.Z() + zWidth);
-        
+                
                     // Temporary kludge...
                     flashXpos = opHitPos.X();
-        
+                
                     float peFactor = cst->fRecoQLow[geo::kCollection] + opHitPEScale * std::min(maxTotalPE,float(opHit->PE()));
-        
+                
                     int chargeColorIdx = cst->CalQ(geo::kCollection).GetColor(peFactor);
-        
+                
                     DrawRectangularBox(view, opHitLo, opHitHi, chargeColorIdx, 2, 1);
                 }
     
-                std::cout << "     == flashtick: " << flashTick << ", flashwidth: " << flashWidth << ", flashXpos: " << flashXpos << ", wid: " << flashXWid << std::endl;
+                std::cout << "     == flashtick: " << flashTick << ", flashwidth: " << flashWidth << ", flashXpos: " << flashXpos << ", wid: " << flashXWid << ", opHitPEScale: " << opHitPEScale << std::endl;
         
                 //            std::vector<Eigen::Vector3f>
                 Eigen::Vector3f coordsLo(flashXpos - flashXWid,opFlashPtr->YCenter() - opFlashPtr->YWidth(),opFlashPtr->ZCenter() - opFlashPtr->ZWidth());

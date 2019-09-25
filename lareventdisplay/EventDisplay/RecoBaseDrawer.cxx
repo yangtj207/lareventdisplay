@@ -2019,7 +2019,7 @@ void RecoBaseDrawer::PFParticle3D(const art::Event& evt,
 
         // Recover the edges
         std::vector<art::Ptr<recob::Edge>> edgeVec;
-        this->GetEdges(evt, assns, edgeVec);
+        if (recoOpt->fDrawEdges) this->GetEdges(evt, assns, edgeVec);
 
         // No space points no continue
         if (spacePointVec.empty()) continue;

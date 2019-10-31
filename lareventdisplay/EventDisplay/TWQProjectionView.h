@@ -11,7 +11,7 @@
 
 #include "RQ_OBJECT.h"
 #include "lardata/Utilities/PxUtils.h"
-#include "nutools/EventDisplayBase/Canvas.h"
+#include "nuevdb/EventDisplayBase/Canvas.h"
 
 #include <deque>
 #include <map>

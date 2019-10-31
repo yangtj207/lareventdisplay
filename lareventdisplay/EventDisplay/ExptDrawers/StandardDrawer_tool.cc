@@ -10,7 +10,7 @@
 #include "larcore/Geometry/Geometry.h"
 #include "larcorealg/Geometry/CryostatGeo.h"
 #include "larcorealg/Geometry/TPCGeo.h"
-#include "nutools/EventDisplayBase/View3D.h"
+#include "nuevdb/EventDisplayBase/View3D.h"
 #include "fhiclcpp/ParameterSet.h"
 
 #include "TPolyLine3D.h"

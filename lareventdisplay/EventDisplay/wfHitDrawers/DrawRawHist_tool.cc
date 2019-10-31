@@ -11,7 +11,7 @@
 #include "lareventdisplay/EventDisplay/wfHitDrawers/IWaveformDrawer.h"
 #include "larevt/CalibrationDBI/Interface/DetPedestalProvider.h"
 #include "larevt/CalibrationDBI/Interface/DetPedestalService.h"
-#include "nutools/EventDisplayBase/EventHolder.h"
+#include "nuevdb/EventDisplayBase/EventHolder.h"
 
 #include "art/Utilities/ToolMacros.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"

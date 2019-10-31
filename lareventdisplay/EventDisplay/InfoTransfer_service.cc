@@ -18,7 +18,7 @@
 #include "lardata/Utilities/PxUtils.h"
 #include "lardataobj/RecoBase/Hit.h"
 #include "lareventdisplay/EventDisplay/InfoTransfer.h"
-#include "nutools/EventDisplayBase/NavState.h"
+#include "nuevdb/EventDisplayBase/NavState.h"
 
 namespace{
   void WriteMsg(const char* fcn)

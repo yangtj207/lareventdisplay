@@ -10,7 +10,7 @@
 #define EVD_ORTHO3DVIEW_H
 #include <vector>
 
-#include "nutools/EventDisplayBase/Canvas.h"
+#include "nuevdb/EventDisplayBase/Canvas.h"
 
 namespace evd {
 

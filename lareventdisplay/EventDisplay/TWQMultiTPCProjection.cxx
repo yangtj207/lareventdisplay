@@ -31,7 +31,7 @@
 #include "lareventdisplay/EventDisplay/TQPad.h"
 #include "lareventdisplay/EventDisplay/TWQMultiTPCProjection.h"
 #include "lareventdisplay/EventDisplay/TWireProjPad.h"
-#include "nutools/EventDisplayBase/View2D.h"
+#include "nuevdb/EventDisplayBase/View2D.h"
 
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"

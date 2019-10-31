@@ -15,7 +15,7 @@ art_make(
     lareventdisplay_EventDisplay_SimulationDrawingOptions_service
     larsim_Simulation
     nusimdata_SimulationBase
-    nutools_EventDisplayBase
+    nuevdb_EventDisplayBase
 )
 
 install_headers()

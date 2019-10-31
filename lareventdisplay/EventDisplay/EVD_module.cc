@@ -8,7 +8,7 @@
 #include "art/Framework/Core/EDAnalyzer.h"
 
 //LArSoft includes
-#include "nutools/EventDisplayBase/DisplayWindow.h"
+#include "nuevdb/EventDisplayBase/DisplayWindow.h"
 #include "lareventdisplay/EventDisplay/TWQProjectionView.h"
 #include "lareventdisplay/EventDisplay/TWQMultiTPCProjection.h"
 #include "lareventdisplay/EventDisplay/Display3DView.h"

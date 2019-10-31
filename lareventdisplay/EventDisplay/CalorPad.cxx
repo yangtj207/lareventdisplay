@@ -7,8 +7,8 @@
 #include "lareventdisplay/EventDisplay/AnalysisBaseDrawer.h"
 #include "lareventdisplay/EventDisplay/AnalysisDrawingOptions.h"
 #include "lareventdisplay/EventDisplay/CalorPad.h"
-#include "nutools/EventDisplayBase/EventHolder.h"
-#include "nutools/EventDisplayBase/View2D.h"
+#include "nuevdb/EventDisplayBase/EventHolder.h"
+#include "nuevdb/EventDisplayBase/View2D.h"
 
 #include "TFile.h"
 #include "TGraph.h"

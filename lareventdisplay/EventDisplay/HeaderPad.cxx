@@ -4,7 +4,7 @@
 /// \author  messier@indiana.edu
 ///
 #include "lareventdisplay/EventDisplay/HeaderPad.h"
-#include "nutools/EventDisplayBase/View2D.h"
+#include "nuevdb/EventDisplayBase/View2D.h"
 #include "lareventdisplay/EventDisplay/HeaderDrawer.h"
 
 #include "TPad.h"

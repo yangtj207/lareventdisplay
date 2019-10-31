@@ -44,7 +44,7 @@ art_make_library(
     larsim_MCCheater_ParticleInventoryService_service
     larsim_Simulation
     nusimdata_SimulationBase
-    nutools_EventDisplayBase
+    nuevdb_EventDisplayBase
 )
 
 simple_plugin(GraphCluster "module" lareventdisplay_EventDisplay)
@@ -65,11 +65,11 @@ simple_plugin(ColorDrawingOptions "service"
               ${ROOT_MATHCORE}
               larcorealg_Geometry
               lardataobj_RecoBase
-              nutools_EventDisplayBase)
+              nuevdb_EventDisplayBase)
 
 simple_plugin(InfoTransfer "service"
               larcorealg_Geometry
-              nutools_EventDisplayBase
+              nuevdb_EventDisplayBase
               ${ART_FRAMEWORK_PRINCIPAL}
               ${ART_PERSISTENCY_PROVENANCE}
               ${MF_MESSAGELOGGER}

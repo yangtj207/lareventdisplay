@@ -4,8 +4,8 @@
 /// \author  messier@indiana.edu
 ///
 #include "lareventdisplay/EventDisplay/HeaderDrawer.h"
-#include "nutools/EventDisplayBase/View2D.h"
-#include "nutools/EventDisplayBase/EventHolder.h"
+#include "nuevdb/EventDisplayBase/View2D.h"
+#include "nuevdb/EventDisplayBase/EventHolder.h"
 
 #include "TText.h"
 #include "TTimeStamp.h"

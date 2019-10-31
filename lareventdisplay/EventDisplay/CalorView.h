@@ -9,7 +9,7 @@
 
 #include "RQ_OBJECT.h"
 
-#include "nutools/EventDisplayBase/Canvas.h"
+#include "nuevdb/EventDisplayBase/Canvas.h"
 
 namespace evd {
 

@@ -36,8 +36,8 @@
 #include "lareventdisplay/EventDisplay/TQPad.h"
 #include "lareventdisplay/EventDisplay/TWQProjectionView.h"
 #include "lareventdisplay/EventDisplay/TWireProjPad.h"
-#include "nutools/EventDisplayBase/EventHolder.h"
-#include "nutools/EventDisplayBase/View2D.h"
+#include "nuevdb/EventDisplayBase/EventHolder.h"
+#include "nuevdb/EventDisplayBase/View2D.h"
 
 #include "art/Framework/Principal/fwd.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"

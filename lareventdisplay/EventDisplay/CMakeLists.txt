@@ -50,11 +50,11 @@ art_make_library(
 simple_plugin(GraphCluster "module" lareventdisplay_EventDisplay)
 simple_plugin(EVD "module" lareventdisplay_EventDisplay)
 
-simple_plugin(AnalysisDrawingOptions "service" nutools_EventDisplayBase)
-simple_plugin(EvdLayoutOptions "service" nutools_EventDisplayBase)
-simple_plugin(RawDrawingOptions "service" nutools_EventDisplayBase)
-simple_plugin(RecoDrawingOptions "service" nutools_EventDisplayBase)
-simple_plugin(SimulationDrawingOptions "service" nutools_EventDisplayBase)
+simple_plugin(AnalysisDrawingOptions "service" nuevdb_EventDisplayBase)
+simple_plugin(EvdLayoutOptions "service" nuevdb_EventDisplayBase)
+simple_plugin(RawDrawingOptions "service" nuevdb_EventDisplayBase)
+simple_plugin(RecoDrawingOptions "service" nuevdb_EventDisplayBase)
+simple_plugin(SimulationDrawingOptions "service" nuevdb_EventDisplayBase)
 
 simple_plugin(ColorDrawingOptions "service"
               ${ART_PERSISTENCY_PROVENANCE}

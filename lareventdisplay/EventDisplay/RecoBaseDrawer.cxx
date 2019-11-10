@@ -1343,7 +1343,8 @@ void RecoBaseDrawer::DrawTrack2D(std::vector<const recob::Hit*>& hits,
 
     // Draw a line to the hit positions, starting from the vertex
     size_t     nTrackHits = track->NumberTrajectoryPoints();
-    TPolyLine& pl         = view->AddPolyLine(track->CountValidPoints(),1,1,0); //kColor[id%evd::kNCOLS],1,0);
+    //TPolyLine& pl         = view->AddPolyLine(track->CountValidPoints(),1,1,0); //kColor[id%evd::kNCOLS],1,0);
+    TPolyLine& pl         = view->AddPolyLine(0,1,1,0); //kColor[id%evd::kNCOLS],1,0);
 
     size_t vidx = 0;
     for(size_t idx = 0; idx < nTrackHits; idx++)
@@ -1364,9 +1365,13 @@ void RecoBaseDrawer::DrawTrack2D(std::vector<const recob::Hit*>& hits,
         catch(cet::exception &e){
             wireHit = 1.*atoi(e.explain_self().substr(e.explain_self().find("#")+1,5).c_str());
         }
-
-        pl.SetPoint(vidx++,wireHit,tickHit);
+        const size_t tpc = geo->FindTPCAtPosition(hitPos).TPC;
+        const size_t cryo = geo->FindCryostatAtPosition(hitPos);
+        if (tpc == t && cryo == c){
+          pl.SetPoint(vidx++,wireHit,tickHit);
+        }
     }
+    //pl.SetPolyLine(vidx);
 
     return;
 }

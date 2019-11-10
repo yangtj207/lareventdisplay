@@ -11,6 +11,8 @@
 
 #include "art/Utilities/ToolMacros.h"
 #include "canvas/Persistency/Common/FindManyP.h"
+#include "cetlib_except/exception.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "TF1.h"
 #include "TPolyLine.h"
@@ -100,11 +102,18 @@ void DrawGausHits::Draw(evdb::View2D&     view2D,
         // Get a container for the subset of hits we are drawing
         art::PtrVector<recob::Hit> hitPtrVec;
 
-        for(size_t hitIdx = 0; hitIdx < hitVecHandle->size(); hitIdx++)
-        {
-            art::Ptr<recob::Hit> hit(hitVecHandle, hitIdx);
-
-            if (hit->Channel() == channel) hitPtrVec.push_back(hit);
+        try{
+          for(size_t hitIdx = 0; hitIdx < hitVecHandle->size(); hitIdx++)
+            {
+              art::Ptr<recob::Hit> hit(hitVecHandle, hitIdx);
+              
+              if (hit->Channel() == channel) hitPtrVec.push_back(hit);
+            }
+        }
+        catch(cet::exception& e){
+          mf::LogWarning("DrawGausHits") << "DrawGausHits"
+                                         << " failed with message:\n"
+                                         << e;
         }
 
         if (hitPtrVec.empty()) continue;

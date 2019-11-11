@@ -1259,8 +1259,19 @@ void RecoBaseDrawer::DrawProng2D(std::vector<const recob::Hit*>&     hits,
     }
 
     // first draw the hits
-    if (cscore<-1000) //shower
+    if (cscore<-1000){ //shower
       this->Hit2D(hits, color, view, false, false, lineWidth);
+      if(recoOpt->fDrawShowers >= 1){
+        //draw the shower ID at the beginning of shower
+        std::string s = std::to_string(id);
+        char const* txt = s.c_str();
+        double tick = 30 +  detprop->ConvertXToTicks(startPos.X(), plane, t, c);
+        double wire = geo->WireCoordinate(startPos.Y(),startPos.Z(),plane,t,c);
+        TText& shwID = view->AddText(wire, tick, txt);
+        shwID.SetTextColor(evd::kColor2[id%evd::kNCOLS]);
+        shwID.SetTextSize(0.1);
+      }
+    }
     else
       this->Hit2D(hits, color, view, false, false, lineWidth);
 

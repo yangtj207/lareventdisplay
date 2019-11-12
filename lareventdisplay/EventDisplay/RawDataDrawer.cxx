@@ -79,7 +79,7 @@
 #include "larevt/CalibrationDBI/Interface/ChannelStatusService.h"
 #include "larevt/CalibrationDBI/Interface/DetPedestalProvider.h"
 #include "larevt/CalibrationDBI/Interface/DetPedestalService.h"
-#include "nutools/EventDisplayBase/View2D.h"
+#include "nuevdb/EventDisplayBase/View2D.h"
 
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"

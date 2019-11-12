@@ -7,7 +7,7 @@
 #include "lardataobj/RecoBase/Wire.h"
 #include "lareventdisplay/EventDisplay/RecoDrawingOptions.h"
 #include "lareventdisplay/EventDisplay/wfHitDrawers/IWFHitDrawer.h"
-#include "nutools/EventDisplayBase/EventHolder.h"
+#include "nuevdb/EventDisplayBase/EventHolder.h"
 
 #include "art/Utilities/ToolMacros.h"
 #include "canvas/Persistency/Common/FindManyP.h"

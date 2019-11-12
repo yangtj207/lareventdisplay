@@ -18,7 +18,7 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Services/Registry/ServiceMacros.h"
 #include "art/Persistency/Provenance/ScheduleContext.h"
-#include "nutools/EventDisplayBase/Reconfigurable.h"
+#include "nuevdb/EventDisplayBase/Reconfigurable.h"
 
 #include "lardataobj/RecoBase/Hit.h"
 #include "lardataobj/RecoBase/Cluster.h"

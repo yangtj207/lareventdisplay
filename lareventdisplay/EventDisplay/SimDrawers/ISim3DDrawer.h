@@ -13,7 +13,7 @@
 #define ISim3DDrawer_H
 
 #include "fhiclcpp/ParameterSet.h"
-#include "nutools/EventDisplayBase/View3D.h"
+#include "nuevdb/EventDisplayBase/View3D.h"
 #include "art/Framework/Principal/Event.h"
 
 namespace evdb_tool

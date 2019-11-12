@@ -51,9 +51,9 @@
 #include "lareventdisplay/EventDisplay/eventdisplay.h"
 #include "larevt/CalibrationDBI/Interface/ChannelStatusProvider.h"
 #include "larevt/CalibrationDBI/Interface/ChannelStatusService.h"
-#include "nutools/EventDisplayBase/EventHolder.h"
-#include "nutools/EventDisplayBase/View2D.h"
-#include "nutools/EventDisplayBase/View3D.h"
+#include "nuevdb/EventDisplayBase/EventHolder.h"
+#include "nuevdb/EventDisplayBase/View2D.h"
+#include "nuevdb/EventDisplayBase/View3D.h"
 
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"

@@ -32,8 +32,8 @@
 #include "larsim/Simulation/SimListUtils.h"
 #include "nusimdata/SimulationBase/MCParticle.h"
 #include "nusimdata/SimulationBase/MCTruth.h"
-#include "nutools/EventDisplayBase/View2D.h"
-#include "nutools/EventDisplayBase/View3D.h"
+#include "nuevdb/EventDisplayBase/View2D.h"
+#include "nuevdb/EventDisplayBase/View3D.h"
 
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/View.h"

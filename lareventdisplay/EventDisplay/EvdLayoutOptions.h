@@ -11,7 +11,7 @@
 
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Services/Registry/ServiceMacros.h"
-#include "nutools/EventDisplayBase/Reconfigurable.h"
+#include "nuevdb/EventDisplayBase/Reconfigurable.h"
 
 namespace evd {
   class EvdLayoutOptions : public evdb::Reconfigurable

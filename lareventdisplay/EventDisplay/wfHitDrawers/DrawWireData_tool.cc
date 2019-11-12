@@ -6,7 +6,7 @@
 #include "lardataobj/RecoBase/Wire.h"
 #include "lareventdisplay/EventDisplay/RecoDrawingOptions.h"
 #include "lareventdisplay/EventDisplay/wfHitDrawers/IWaveformDrawer.h"
-#include "nutools/EventDisplayBase/EventHolder.h"
+#include "nuevdb/EventDisplayBase/EventHolder.h"
 
 #include "art/Utilities/ToolMacros.h"
 

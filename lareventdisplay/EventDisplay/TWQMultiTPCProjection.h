@@ -10,7 +10,7 @@
 #define EVD_TWQMULTITPCPROJECTION_H
 
 #include "lardata/Utilities/PxUtils.h" // util::PxPoint, util::PxLine
-#include "nutools/EventDisplayBase/Canvas.h"
+#include "nuevdb/EventDisplayBase/Canvas.h"
 
 #include "RQ_OBJECT.h"
 

@@ -10,8 +10,8 @@
 #include "art/Utilities/make_tool.h"
 #include "cetlib_except/exception.h"
 
-#include "nutools/EventDisplayBase/View2D.h"
-#include "nutools/EventDisplayBase/EventHolder.h"
+#include "nuevdb/EventDisplayBase/View2D.h"
+#include "nuevdb/EventDisplayBase/EventHolder.h"
 #include "lareventdisplay/EventDisplay/RawDrawingOptions.h"
 #include "lareventdisplay/EventDisplay/RecoDrawingOptions.h"
 #include "lareventdisplay/EventDisplay/ColorDrawingOptions.h"

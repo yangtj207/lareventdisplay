@@ -44,17 +44,17 @@ art_make_library(
     larsim_MCCheater_ParticleInventoryService_service
     larsim_Simulation
     nusimdata_SimulationBase
-    nutools_EventDisplayBase
+    nuevdb_EventDisplayBase
 )
 
 simple_plugin(GraphCluster "module" lareventdisplay_EventDisplay)
 simple_plugin(EVD "module" lareventdisplay_EventDisplay)
 
-simple_plugin(AnalysisDrawingOptions "service" nutools_EventDisplayBase)
-simple_plugin(EvdLayoutOptions "service" nutools_EventDisplayBase)
-simple_plugin(RawDrawingOptions "service" nutools_EventDisplayBase)
-simple_plugin(RecoDrawingOptions "service" nutools_EventDisplayBase)
-simple_plugin(SimulationDrawingOptions "service" nutools_EventDisplayBase)
+simple_plugin(AnalysisDrawingOptions "service" nuevdb_EventDisplayBase)
+simple_plugin(EvdLayoutOptions "service" nuevdb_EventDisplayBase)
+simple_plugin(RawDrawingOptions "service" nuevdb_EventDisplayBase)
+simple_plugin(RecoDrawingOptions "service" nuevdb_EventDisplayBase)
+simple_plugin(SimulationDrawingOptions "service" nuevdb_EventDisplayBase)
 
 simple_plugin(ColorDrawingOptions "service"
               ${ART_PERSISTENCY_PROVENANCE}
@@ -65,11 +65,11 @@ simple_plugin(ColorDrawingOptions "service"
               ${ROOT_MATHCORE}
               larcorealg_Geometry
               lardataobj_RecoBase
-              nutools_EventDisplayBase)
+              nuevdb_EventDisplayBase)
 
 simple_plugin(InfoTransfer "service"
               larcorealg_Geometry
-              nutools_EventDisplayBase
+              nuevdb_EventDisplayBase
               ${ART_FRAMEWORK_PRINCIPAL}
               ${ART_PERSISTENCY_PROVENANCE}
               ${MF_MESSAGELOGGER}

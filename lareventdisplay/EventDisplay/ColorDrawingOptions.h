@@ -4,12 +4,12 @@
 #ifndef EVD_COLORDRAWINGOPTIONS_H
 #define EVD_COLORDRAWINGOPTIONS_H
 #ifndef __CINT__
-#include "nutools/EventDisplayBase/ColorScale.h"
+#include "nuevdb/EventDisplayBase/ColorScale.h"
 #include "larcore/Geometry/Geometry.h"
 
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Services/Registry/ServiceMacros.h"
-#include "nutools/EventDisplayBase/Reconfigurable.h"
+#include "nuevdb/EventDisplayBase/Reconfigurable.h"
 
 namespace evd {
   class ColorDrawingOptions : public evdb::Reconfigurable{

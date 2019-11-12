@@ -6,21 +6,21 @@ defaultqual	e17
 fcldir		product_dir	job
 #
 product         version
-larreco		v08_22_01
-
-cetbuildtools	v7_13_02	-	only_for_build
+larreco		v08_21_00
+nuevdb		v1_01_00
+cetbuildtools	v7_14_00	-	only_for_build
 end_product_list
 
   
-qualifier	larreco	 	notes
-e17:py3:debug	e17:py3:debug
-e17:py3:prof	e17:py3:prof
-c2:py3:debug	c2:py3:debug
-c2:py3:prof	c2:py3:prof
-e17:debug	e17:debug
-e17:prof	e17:prof
-c2:debug	c2:debug
-c2:prof		c2:prof
+qualifier	larreco	 	nuevdb
+e17:py3:debug	e17:py3:debug	e17:py3:debug
+e17:py3:prof	e17:py3:prof	e17:py3:prof
+c2:py3:debug	c2:py3:debug	c2:py3:debug
+c2:py3:prof	c2:py3:prof	c2:py3:prof
+e17:debug	e17:debug	e17:debug
+e17:prof	e17:prof	e17:prof
+c2:debug	c2:debug	c2:debug
+c2:prof		c2:prof		c2:prof
 end_qualifier_list
 
 # Preserve tabs and formatting in emacs and vi / vim:

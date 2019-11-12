@@ -7,8 +7,8 @@
 #include "TView3D.h"
 
 #include "lareventdisplay/EventDisplay/Display3DPad.h"
-#include "nutools/EventDisplayBase/View3D.h"
-#include "nutools/EventDisplayBase/EventHolder.h"
+#include "nuevdb/EventDisplayBase/View3D.h"
+#include "nuevdb/EventDisplayBase/EventHolder.h"
 #include "larcore/Geometry/Geometry.h"
 #include "lareventdisplay/EventDisplay/RecoBaseDrawer.h"
 #include "lareventdisplay/EventDisplay/SimulationDrawingOptions.h"

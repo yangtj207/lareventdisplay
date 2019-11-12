@@ -21,8 +21,8 @@
 #include "lareventdisplay/EventDisplay/Ortho3DPad.h"
 #include "lareventdisplay/EventDisplay/RecoBaseDrawer.h"
 #include "lareventdisplay/EventDisplay/SimulationDrawer.h"
-#include "nutools/EventDisplayBase/EventHolder.h"
-#include "nutools/EventDisplayBase/View2D.h"
+#include "nuevdb/EventDisplayBase/EventHolder.h"
+#include "nuevdb/EventDisplayBase/View2D.h"
 
 /// Define static data members.
 

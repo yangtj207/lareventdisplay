@@ -14,7 +14,7 @@
 
 #include "canvas/Persistency/Common/PtrVector.h"
 #include "canvas/Persistency/Common/FindManyP.h"
-#include "nutools/EventDisplayBase/View3D.h"
+#include "nuevdb/EventDisplayBase/View3D.h"
 #include "lardataobj/RecoBase/SpacePoint.h"
 #include "lardataobj/RecoBase/Hit.h"
 

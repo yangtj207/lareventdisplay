@@ -14,7 +14,7 @@
 #include "lareventdisplay/EventDisplay/AnalysisDrawingOptions.h"
 #include "lareventdisplay/EventDisplay/RecoDrawingOptions.h"
 #include "lareventdisplay/EventDisplay/eventdisplay.h"
-#include "nutools/EventDisplayBase/View2D.h"
+#include "nuevdb/EventDisplayBase/View2D.h"
 
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"

@@ -11,7 +11,7 @@
 #include "lareventdisplay/EventDisplay/RawDrawingOptions.h"
 #include "larevt/CalibrationDBI/Interface/ChannelStatusProvider.h"
 #include "larevt/CalibrationDBI/Interface/ChannelStatusService.h"
-#include "nutools/EventDisplayBase/View3D.h"
+#include "nuevdb/EventDisplayBase/View3D.h"
 
 #include "TPolyLine3D.h"
 

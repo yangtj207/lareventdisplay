@@ -8,7 +8,7 @@ art_make(
     canvas
     larcorealg_Geometry
     lareventdisplay_EventDisplay_RawDrawingOptions_service
-    nutools_EventDisplayBase
+    nuevdb_EventDisplayBase
   )
 
 install_headers()

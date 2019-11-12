@@ -8,8 +8,8 @@
 #include "art/Framework/Principal/fwd.h"
 
 #include "lareventdisplay/EventDisplay/MCBriefPad.h"
-#include "nutools/EventDisplayBase/View2D.h"
-#include "nutools/EventDisplayBase/EventHolder.h"
+#include "nuevdb/EventDisplayBase/View2D.h"
+#include "nuevdb/EventDisplayBase/EventHolder.h"
 #include "lareventdisplay/EventDisplay/SimulationDrawer.h"
 
 namespace evd{

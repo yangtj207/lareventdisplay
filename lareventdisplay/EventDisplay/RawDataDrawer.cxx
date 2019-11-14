@@ -24,7 +24,7 @@
  * of them), each of the two LArIAT planes contains 240x3200 (less than 1
  * million), and a single TPC of DUNE's 35t prototype about 350x4800 (but it
  * is larger when extended readout window modes are used).
- * The code produces TBox'es to be rendered by the nutools event display
+ * The code produces TBox'es to be rendered by the nuevdb event display
  * infrastructure. The code before August 2015 would produce one box for each
  * of the aggregated charge; charge could be aggregated in time by FHiCL
  * configuration to merge TDC ticks. This typically bloats rendering time,

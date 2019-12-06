@@ -223,7 +223,7 @@ namespace evd {
 	  starthitout[plane][0]=0;
 	}
       }
-      catch(cet::exception e) {
+      catch(cet::exception const& e) {
 	mf::LogWarning("GraphCluster") << "caught exception \n"
 				       << e;
 	starthitout[plane][0]=0;
@@ -245,7 +245,7 @@ namespace evd {
 	  endhitout[plane][0]=0;
 	}
       }
-      catch(cet::exception e) {
+      catch(cet::exception const& e) {
 	mf::LogWarning("GraphCluster") << "caught exception \n"
 				       << e;
 	endhitout[plane][0]=0;

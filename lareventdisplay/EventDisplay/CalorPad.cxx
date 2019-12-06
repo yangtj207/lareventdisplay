@@ -115,7 +115,7 @@ void evd::CalorPad::Draw(const char* /*opt*/)
       else if (fcurvetype==0) AnalysisBaseDraw()->DrawKineticEnergy(*evt, fView);
       else if (fcurvetype==2) AnalysisBaseDraw()->CalorShower(*evt, fView);
     }
-    catch (cet::exception e){
+    catch (cet::exception const& e){
       if(fcurvetype==1) writeErrMsg("Draw->DrawDeDx",e);
       else if (fcurvetype==0) writeErrMsg("Draw->DrawKineticEnergy",e);
       else if (fcurvetype==2) writeErrMsg("Draw->CalorShower",e);

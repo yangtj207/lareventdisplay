@@ -7,18 +7,18 @@ fcldir		product_dir	job
 #
 product         version
 larreco         v08_26_01
-nuevdb          v1_01_02
+nuevdb          v1_02_00
 cetbuildtools   v7_14_00	-	only_for_build
 end_product_list
 
   
 qualifier	larreco	 	nuevdb
-e19:py3:debug	e19:py3:debug	e19:py3:debug
-e19:py3:prof	e19:py3:prof	e19:py3:prof
+e19:py2:debug	e19:py2:debug	e19:py2:debug
+e19:py2:prof	e19:py2:prof	e19:py2:prof
 e19:debug	e19:debug	e19:debug
 e19:prof	e19:prof	e19:prof
-c7:py3:debug	c7:py3:debug	c7:py3:debug
-c7:py3:prof	c7:py3:prof	c7:py3:prof
+c7:py2:debug	c7:py2:debug	c7:py2:debug
+c7:py2:prof	c7:py2:prof	c7:py2:prof
 c7:debug	c7:debug	c7:debug
 c7:prof		c7:prof		c7:prof
 end_qualifier_list

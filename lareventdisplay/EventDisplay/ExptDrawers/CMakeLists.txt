@@ -3,8 +3,8 @@ cet_enable_asserts()
 art_make(
   TOOL_LIBRARIES
     ${ART_FRAMEWORK_SERVICES_REGISTRY}
-    ${ROOT_CORE}
-    ${ROOT_PHYSICS}
+    ROOT::Core
+    ROOT::Physics
     canvas
     larcorealg_Geometry
     lareventdisplay_EventDisplay_RawDrawingOptions_service

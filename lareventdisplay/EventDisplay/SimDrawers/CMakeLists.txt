@@ -5,9 +5,9 @@ art_make(
     ${ART_FRAMEWORK_PRINCIPAL}
     ${ART_FRAMEWORK_SERVICES_REGISTRY}
     ${MF_MESSAGELOGGER}
-    ${ROOT_CORE}
-    ${ROOT_EG}
-    ${ROOT_PHYSICS}
+    ROOT::Core
+    ROOT::EG
+    ROOT::Physics
     canvas
     larcorealg_Geometry
     lareventdisplay_EventDisplay

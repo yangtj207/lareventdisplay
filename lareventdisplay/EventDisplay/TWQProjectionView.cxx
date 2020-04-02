@@ -19,6 +19,7 @@
 #include "larcore/Geometry/Geometry.h"
 #include "larcorealg/Geometry/GeometryCore.h"
 #include "larcorealg/Geometry/PlaneGeo.h"
+#include "lardata/DetectorInfoServices/DetectorClocksService.h"
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 #include "lardata/Utilities/GeometryUtilities.h"
 #include "lareventdisplay/EventDisplay/ChangeTrackers.h" // util::DataProductChangeTracker_t
@@ -476,13 +477,13 @@ namespace evd {
   //     // loop over the bools to see which axes need to change
   //     for(unsigned int i = 0; i < axischanged.size(); ++i){
   //       if (axischanged[i]) {
-  // 	fPlanes[i]->SetWireRange(ilo, ihi);
-  // 	fPlanes[i]->Pad()->cd();
-  // 	fPlanes[i]->Pad()->Modified();
-  // 	fPlanes[i]->Pad()->Update();
+  //    fPlanes[i]->SetWireRange(ilo, ihi);
+  //    fPlanes[i]->Pad()->cd();
+  //    fPlanes[i]->Pad()->Modified();
+  //    fPlanes[i]->Pad()->Update();
   //
-  // 	ilolast = ilo;
-  // 	ihilast = ihi;
+  //    ilolast = ilo;
+  //    ihilast = ihi;
   //       }
   //     }
   //
@@ -664,13 +665,10 @@ namespace evd {
 
   //......................................................................
   double
-  TWQProjectionView::FindLineLength()
+  TWQProjectionView::FindLineLength(detinfo::DetectorClocksData const& clockData,
+                                    detinfo::DetectorPropertiesData const& detProp)
   {
     // if list is larger than or equal to two, can project to XYZ and extrapolate to third plane (if exists)
-
-    ////for now leaving commented. At some point be useful to display this information somewhere
-    // for(unsigned int ix=0;ix<ppoints.size();ix++)
-    //   std::cout << "ppoints, planes,x,y :" << ix << " " << ppoints[ix].plane << " " << ppoints[ix].x << " " << ppoints[ix].y << std::endl;
 
     if (pline.size() >= 2) {
 
@@ -685,11 +683,9 @@ namespace evd {
       double y, z;
 
       art::ServiceHandle<geo::Geometry const> geom;
-      const detinfo::DetectorProperties* detp =
-        lar::providerFrom<detinfo::DetectorPropertiesService>();
       art::ServiceHandle<evd::RawDrawingOptions const> rawOpt;
-      double ftimetick = detp->SamplingRate() / 1000.;
-      double larv = detp->DriftVelocity(detp->Efield(), detp->Temperature());
+      double ftimetick = sampling_rate(clockData) / 1000.;
+      double larv = detProp.DriftVelocity(detProp.Efield(), detProp.Temperature());
 
       //find wireIDs corresponding to found wires.
       geo::WireID wire1(rawOpt->fCryostat, rawOpt->fTPC, pline[0].plane, pline[0].w0);
@@ -710,7 +706,6 @@ namespace evd {
         tt->InsLine(1, "time distance");
         fXYZPosition->SetText(tt);
         fXYZPosition->Update();
-        // return; //not returning, because may need to delete marker from wplane
       }
 
       if (wires_cross) {
@@ -720,9 +715,9 @@ namespace evd {
         xyz_vertex_fit[1] = y;
         xyz_vertex_fit[2] = z;
         geom->Plane(pline[0].plane).LocalToWorld(origin, pos);
-        xyz_vertex_fit[0] = (pline[0].t0 - detp->TriggerOffset()) * larv * ftimetick + pos[0];
+        xyz_vertex_fit[0] = (pline[0].t0 - trigger_offset(clockData)) * larv * ftimetick + pos[0];
         geom->Plane(pline[1].plane).LocalToWorld(origin, pos);
-        second_time = (pline[1].t0 - detp->TriggerOffset()) * larv * ftimetick + pos[0];
+        second_time = (pline[1].t0 - trigger_offset(clockData)) * larv * ftimetick + pos[0];
 
         xx0 = (xyz_vertex_fit[0] + second_time) / 2;
         yy0 = y;
@@ -737,7 +732,6 @@ namespace evd {
           fXYZPosition->SetText(tt);
           fXYZPosition->Update();
         }
-        // return; //not returning, because may need to delete marker from wplanereturn;
       }
       //find wireIDs corresponding to found wires AT END OF LINE.
       wire1.Wire = pline[0].w1;
@@ -768,9 +762,9 @@ namespace evd {
         xyz_vertex_fit[1] = y;
         xyz_vertex_fit[2] = z;
         geom->Plane(pline[0].plane).LocalToWorld(origin, pos);
-        xyz_vertex_fit[0] = (pline[0].t1 - detp->TriggerOffset()) * larv * ftimetick + pos[0];
+        xyz_vertex_fit[0] = (pline[0].t1 - trigger_offset(clockData)) * larv * ftimetick + pos[0];
         geom->Plane(pline[1].plane).LocalToWorld(origin, pos);
-        second_time = (pline[1].t1 - detp->TriggerOffset()) * larv * ftimetick + pos[0];
+        second_time = (pline[1].t1 - trigger_offset(clockData)) * larv * ftimetick + pos[0];
 
         xx1 = (xyz_vertex_fit[0] + second_time) / 2;
         yy1 = y;
@@ -807,13 +801,10 @@ namespace evd {
 
   //......................................................................
   void
-  TWQProjectionView::FindEndPoint()
+  TWQProjectionView::FindEndPoint(detinfo::DetectorClocksData const& clockData,
+                                  detinfo::DetectorPropertiesData const& detProp)
   {
     // if list is larger than or equal to two, can project to XYZ and extrapolate to third plane (if exists)
-
-    ////for now leaving commented. At some point be useful to display this information somewhere
-    // for(unsigned int ix=0;ix<ppoints.size();ix++)
-    //   std::cout << "ppoints, planes,x,y :" << ix << " " << ppoints[ix].plane << " " << ppoints[ix].x << " " << ppoints[ix].y << std::endl;
 
     if (ppoints.size() >= 2) {
 
@@ -825,11 +816,7 @@ namespace evd {
       double z = 0.;
 
       art::ServiceHandle<geo::Geometry const> geom;
-      const detinfo::DetectorProperties* detp =
-        lar::providerFrom<detinfo::DetectorPropertiesService>();
       art::ServiceHandle<evd::RawDrawingOptions const> rawOpt;
-      //double ftimetick = detp->SamplingRate()/1000.;
-      //double larv = detp->DriftVelocity(detp->Efield(), detp->Temperature());
 
       //find channels corresponding to found wires.
       geo::WireID wire1(rawOpt->fCryostat, rawOpt->fTPC, ppoints[0].plane, ppoints[0].w);
@@ -851,7 +838,6 @@ namespace evd {
         tt->InsLine(1, "time distance");
         fXYZPosition->SetText(tt);
         fXYZPosition->Update();
-        // return; //not returning, because may need to delete marker from wplane
       }
 
       if (wires_cross) {
@@ -859,9 +845,9 @@ namespace evd {
         xyz_vertex_fit[2] = z;
 
         xyz_vertex_fit[0] =
-          detp->ConvertTicksToX(ppoints[0].t, ppoints[0].plane, rawOpt->fTPC, rawOpt->fCryostat);
+          detProp.ConvertTicksToX(ppoints[0].t, ppoints[0].plane, rawOpt->fTPC, rawOpt->fCryostat);
         second_time =
-          detp->ConvertTicksToX(ppoints[1].t, ppoints[1].plane, rawOpt->fTPC, rawOpt->fCryostat);
+          detProp.ConvertTicksToX(ppoints[1].t, ppoints[1].plane, rawOpt->fTPC, rawOpt->fCryostat);
 
         TGText* tt = new TGText(Form("z:%4.1f", z));
         tt->InsLine(1, Form("x:%4.1f,", (xyz_vertex_fit[0] + second_time) / 2));
@@ -904,7 +890,7 @@ namespace evd {
         wirevertex = geom->NearestWire(pos, wplane, rawOpt->fTPC, rawOpt->fCryostat);
 
         double timestart =
-          detp->ConvertXToTicks(xyz_vertex_fit[0], wplane, rawOpt->fTPC, rawOpt->fCryostat);
+          detProp.ConvertXToTicks(xyz_vertex_fit[0], wplane, rawOpt->fTPC, rawOpt->fCryostat);
 
         fPlanes[wplane]->Pad()->cd();
         fPlanes[wplane]->View()->Clear();
@@ -926,23 +912,19 @@ namespace evd {
       fXYZPosition->SetText(tt);
       fXYZPosition->Update();
     }
-
-    return;
   }
 
   //......................................................................
   // SaveSelection
   void
-  TWQProjectionView::SaveSelection()
+  TWQProjectionView::SaveSelection(detinfo::DetectorClocksData const& clockData,
+                                   detinfo::DetectorPropertiesData const& detProp,
+                                   util::GeometryUtilities const& gser)
   {
-    util::GeometryUtilities gser;
-
     art::ServiceHandle<evd::EvdLayoutOptions const> evdlayoutoptions;
     if (evdlayoutoptions->fMakeClusters) {
       //only calculating in 3 planes now, needs to be generalized eventually
-      //	evd::TWQProjectionView tt;
       double omx[3];
-      //double omx0,omx1;
       double xphi;
       double xtheta;
       unsigned int ii;
@@ -955,7 +937,6 @@ namespace evd {
       double deltawire;
       double deltatime;
       for (ii = 0; ii < pline.size(); ++ii) {
-        //if(pline[ii].plane==0) break;
         deltawire = pline[ii].w1 - pline[ii].w0;
         deltatime = pline[ii].t1 - pline[ii].t0;
         omx[ii] = gser.Get2Dangle(deltawire, deltatime);
@@ -986,14 +967,7 @@ namespace evd {
 
       gser.Get3DaxisN(pline[0].plane, pline[1].plane, omx[0], omx[1], xphi, xtheta);
 
-      //       double xtheta2;
-      //       if(xphi < 2 && xphi > -2)
-      // 	xtheta2=gser.Get3DSpecialCaseTheta(pline[0].plane,
-      // 					   pline[1].plane,
-      // 					   pline[0].w1-pline[0].w0,
-      // 					   pline[1].w1-pline[1].w0);
-
-      double length = FindLineLength();
+      double length = FindLineLength(clockData, detProp);
       TGText* tt = new TGText(Form("Length:%4.1f", length));
       tt->InsLine(1, Form("Omega P%d:%4.1f,", pline[0].plane, omx[0]));
       tt->InsLine(2, Form("Omega P%d:%4.1f,", pline[1].plane, omx[1]));
@@ -1029,7 +1003,7 @@ namespace evd {
   {
     //*-*-*-*-*-*-*-*-*-*-*Create a new arrow in this pad*-*-*-*-*-*-*-*-*-*-*-*-*
     //*-*                  ==============================
-    //
+
     TObject* select = gPad->GetSelected();
     if (!select) return;
     if (!select->InheritsFrom("TBox")) return;
@@ -1039,8 +1013,6 @@ namespace evd {
     static Int_t pxold, pyold;
     static Int_t pw0, pt0;
     static Int_t linedrawn;
-    //static int curr_plane;
-    //TLine *line;
 
     static int wstart, wend;
     static float tstart, tend;
@@ -1118,9 +1090,6 @@ namespace evd {
       w1 = gPad->AbsPixeltoX(px);
       t1 = gPad->AbsPixeltoY(py);
       gPad->Modified(kTRUE);
-
-      //   line = new TLine(w0,t0,w1,t1);
-      //   line->Draw();
 
       float x = gPad->PadtoX(w1);
       tend = gPad->PadtoY(t1);
@@ -1216,8 +1185,6 @@ namespace evd {
 
       pline = util::PxLine(plane, w0, t0, w1, t1);
       linefinished = 1;
-      //curr_zooming_plane=-1;
-      //gROOT->SetEditorMode();
     }
     } //end switch
 
@@ -1334,7 +1301,6 @@ namespace evd {
     art::ServiceHandle<evd::RawDrawingOptions const> rawopt;
 
     ZoomOptions zo;
-    //  mf::LogVerbatim("TWQProjectionView") <<"Zoom interest pushing back zoom options"<<std::endl;
     fPrevZoomOpt.push_back(fZoomOpt);
 
     for (size_t iplane = 0; iplane < fPlanes.size(); ++iplane) {
@@ -1438,8 +1404,7 @@ namespace evd {
     fZoomBack = new TGTextButton(fVFrame, "&Zoom Back", 150);
     fZoomBack->Connect("Clicked()", "evd::TWQProjectionView", this, "ZoomBack()");
 
-    fToggleAutoZoom = new TGCheckButton(fVFrame, "AutoZoom", 0);
-    ; ///< Toggle the autozoom setting
+    fToggleAutoZoom = new TGCheckButton(fVFrame, "AutoZoom", 0); ///< Toggle the autozoom setting
     fToggleAutoZoom->Connect("Clicked()", "evd::TWQProjectionView", this, "SetZoomInterest()");
     if (evdlayoutopt->fAutoZoomInterest == 1) fToggleAutoZoom->SetState(kButtonDown);
 
@@ -1465,8 +1430,6 @@ namespace evd {
     fToggleZoom->Connect("Clicked()", "evd::TWQProjectionView", this, "RadioButtonsDispatch(=0)");
     fToggleClusters->Connect(
       "Clicked()", "evd::TWQProjectionView", this, "RadioButtonsDispatch(=1)");
-
-    //fToggleClusters=new TGCheckButton(fVFrame,"&Make Clusters",0);      ///< Toggle the make cluster setting
 
     fCalcAngle = new TGTextButton(fVFrame, "&Save Selection", 150);
     fCalcAngle->Connect("Clicked()", "evd::TWQProjectionView", this, "SaveSelection()");
@@ -1525,14 +1488,10 @@ namespace evd {
   void
   TWQProjectionView::SetUpDrawingButtons()
   {
-    // enter zoom buttons
-    //  art::ServiceHandle<evd::EvdLayoutOptions const>        evdlayoutopt;
-
     fRedraw = new TGTextButton(fVFrame, "&Redraw", 120);
     fRedraw->Connect("Clicked()", "evd::TWQProjectionView", this, "ForceRedraw()");
 
     fVFrame->AddFrame(fRedraw, new TGLayoutHints(kLHintsTop | kLHintsLeft, 0, 0, 5, 1));
-
   } // SetUpDrawingButtons()
 
   //......................................................................
@@ -1764,7 +1723,7 @@ namespace evd {
     art::ServiceHandle<evd::EvdLayoutOptions const> evdlayoutopt;
     if (!evdlayoutopt->fShowEndPointSection) return;
 
-    // int    	 fShowEndPointMarkers;             ///< Draw EndPoint Markers if clicked.
+    // int       fShowEndPointMarkers;             ///< Draw EndPoint Markers if clicked.
 
     fFindEndpoint = new TGTextButton(fVFrame, "&Find XYZ", 150);
     fFindEndpoint->Connect("Clicked()", "evd::TWQProjectionView", this, "FindEndPoint()");

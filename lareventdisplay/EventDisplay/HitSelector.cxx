@@ -11,6 +11,8 @@
 
 #include "TMath.h"
 #include "larcore/Geometry/Geometry.h"
+#include "lardata/DetectorInfoServices/DetectorClocksService.h"
+#include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 #include "lardata/Utilities/GeometryUtilities.h"
 #include "lardata/Utilities/PxHitConverter.h"
 #include "lardataobj/RecoBase/Seed.h"
@@ -35,9 +37,6 @@ namespace evd {
     endhitout.resize(3);
   }
 
-  //----------------------------------------------------------------------------
-  HitSelector::~HitSelector() {}
-
   //......................................................................
   ///
   /// Save SeedLineList to infoTransfer service
@@ -49,7 +48,6 @@ namespace evd {
   //
   double
   HitSelector::SaveSeedLines(const art::Event& evt,
-                             evdb::View2D* /*view*/,
                              std::vector<util::PxLine> seedlines,
                              double distance)
   {
@@ -88,7 +86,6 @@ namespace evd {
   ///
   void
   HitSelector::SaveHits(const art::Event& evt,
-                        evdb::View2D* /*view*/,
                         unsigned int plane,
                         double xin,
                         double yin,
@@ -97,19 +94,16 @@ namespace evd {
                         double distance,
                         bool good_plane)
   {
-    // unsigned int w  = 0;
     art::ServiceHandle<evd::RecoDrawingOptions const> recoOpt;
     art::ServiceHandle<geo::Geometry const> geo;
-    util::GeometryUtilities gser;
-    std::vector<art::Ptr<recob::Hit>> hits_to_save; //std::vector < azart::Ptr >
-
-    //std::vector < recob::Hit> hits_to_point; //needed to convert art::Ptr<recob:: Hit> to Hit* to pass to Hit2D
-    // std::vector< const recob::Hit*> hits_to_draw; //draw selected hits in a different color
+    auto const clockData =
+      art::ServiceHandle<detinfo::DetectorClocksService const>()->DataFor(evt);
+    auto const detProp =
+      art::ServiceHandle<detinfo::DetectorPropertiesService const>()->DataFor(evt, clockData);
+    util::GeometryUtilities const gser{*geo, clockData, detProp};
+    std::vector<art::Ptr<recob::Hit>> hits_to_save;
 
     art::Handle<std::vector<recob::Hit>> HitListHandle;
-    //  recob::Hit * startHit;
-    //  recob::Hit * endHit;
-    //preprocess event - load up all the hits with std::vector, as in BackTracker
 
     starthitout[plane].clear();
     endhitout[plane].clear();
@@ -140,7 +134,7 @@ namespace evd {
       }
 
       // Select Local Hit List
-      util::PxHitConverter PxC;
+      util::PxHitConverter PxC{gser};
       std::vector<util::PxHit> pxhitlist;
       PxC.GeneratePxHit(hitlist, pxhitlist);
       std::vector<unsigned int> pxhitlist_local_index;
@@ -152,8 +146,7 @@ namespace evd {
       startHit.w = (x + x1) / 2;
       startHit.t = (y + y1) / 2;
 
-      //      double orttemp=TMath::Sqrt((y1-y)*(y1-y)*gser.TimeToCm()*gser.TimeToCm() + (x1-x)*(x1-x)*gser.WireToCm()*gser.WireToCm())/2;
-      double orttemp = TMath::Sqrt((y1 - y) * (y1 - y) + (x1 - x) * (x1 - x)) / 2;
+      double orttemp = std::hypot(y1 - y, x1 - x) / 2;
 
       gser.SelectLocalHitlistIndex(
         pxhitlist, pxhitlist_local_index, startHit, orttemp, distance, lslope);
@@ -163,31 +156,14 @@ namespace evd {
         pxhitlist_local.push_back(pxhitlist.at(pxhitlist_local_index.at(idx)));
       }
 
-      /*  gser.SelectLocalHitlist( hitlist,
-			 hits_to_save,
-			   (x+x1)/2,
-			   (y+y1)/2,
-			   TMath::Sqrt((y1-y)*(y1-y)*gser.TimeToCm()*gser.TimeToCm() + (x1-x)*(x1-x)*gser.WireToCm()*gser.WireToCm())/2,
-			   distance,
-			   lslope);*/
-      //const_cast<recob::Hit *> (nearHit.get())
+      auto const hit_index = gser.FindClosestHitIndex(pxhitlist_local, x, y);
+      recob::Hit const& hit = *hits_to_save[hit_index];
+      starthitout[plane][1] = hit.PeakTime();
+      starthitout[plane][0] = hit.WireID().Wire;
 
-      recob::Hit* hit = const_cast<recob::Hit*>(
-        (hits_to_save[gser.FindClosestHitIndex(pxhitlist_local, x, y)]).get());
-      //gser.FindClosestHit(hits_to_save,
-      //		      x, y);
-
-      starthitout[plane][1] = hit->PeakTime();
-      starthitout[plane][0] = hit->WireID().Wire;
-
-      //        // this obviously not correct, the fact that x,y are used for both start and end point, A.S. -> to debug
-      recob::Hit* endhit = const_cast<recob::Hit*>(
-        (hits_to_save[gser.FindClosestHitIndex(pxhitlist_local, x, y)]).get());
-      //FindClosestHit(hits_to_save,
-      //		      x, y);
-
-      endhitout[plane][1] = endhit->PeakTime();
-      endhitout[plane][0] = endhit->WireID().Wire;
+      recob::Hit const& endhit = hit; // this obviously not correct, A.S. -> to debug
+      endhitout[plane][1] = endhit.PeakTime();
+      endhitout[plane][0] = endhit.WireID().Wire;
     }
 
     art::ServiceHandle<evd::InfoTransfer> infot;
@@ -209,28 +185,25 @@ namespace evd {
   /// @param plane  : plane number of view
   ///
   void
-  HitSelector::ChangeHit(const art::Event& evt,
-                         evdb::View2D* /*view*/,
-                         unsigned int plane,
-                         double xin,
-                         double yin)
+  HitSelector::ChangeHit(const art::Event& evt, unsigned int plane, double xin, double yin)
   {
     art::ServiceHandle<evd::RecoDrawingOptions const> recoOpt;
     art::ServiceHandle<geo::Geometry const> geo;
-    util::GeometryUtilities gser;
+    auto const clockData =
+      art::ServiceHandle<detinfo::DetectorClocksService const>()->DataFor(evt);
+    auto const detProp =
+      art::ServiceHandle<detinfo::DetectorPropertiesService const>()->DataFor(evt, clockData);
+    util::GeometryUtilities const gser{*geo, clockData, detProp};
 
     //get hits from info transfer, see if our selected hit is in it
     std::vector<art::Ptr<recob::Hit>> hits_saved;
     std::vector<art::Ptr<recob::Hit>> hitlist;
-    // std::vector < art::Ptr < recob::Hit> > hits_to_save;
-    hitlist.clear();
 
     double x = xin * gser.WireToCm();
     double y = yin * gser.TimeToCm();
 
     art::Handle<std::vector<recob::Hit>> HitListHandle;
 
-    //preprocess event - load up all the hits with std::vector, as in BackTracker
     for (size_t imod = 0; imod < recoOpt->fHitLabels.size(); ++imod) {
       art::InputTag const which = recoOpt->fHitLabels[imod];
       evt.getByLabel(which, HitListHandle);
@@ -240,31 +213,11 @@ namespace evd {
         if (hit->WireID().Plane == plane) hitlist.push_back(hit);
       }
 
-      util::PxHitConverter PxC;
+      util::PxHitConverter PxC{gser};
       std::vector<util::PxHit> pxhitlist;
       PxC.GeneratePxHit(hitlist, pxhitlist);
 
-      //       art::Ptr < recob::Hit > selected_hit= hitlist[gser.FindClosestHitIndex(pxhitlist,x,y)];
       unsigned int hitindex = gser.FindClosestHitIndex(pxhitlist, x, y);
-      //FindClosestHitPtr(hitlist, x, y);
-
-      // find selected hit in evD
-      //art::Ptr<recob::Hit> selected_hit;
-      //       for(unsigned int ii = 0; ii < HitListHandle->size(); ++ii){
-      // 	art::Ptr<recob::Hit> hit(HitListHandle, ii);
-      // 	double time=hit->PeakTime();
-      // 	if(hit->WireID().Plane != plane)
-      // 	  continue;
-      // 	if(hit->WireID().Wire < (x+1) &&
-      // 	   hit->WireID().Wire > (x-1) ){
-      // 	  if(y>(time-5) && y<(time+5)){
-      // 	    selected_hit=hit;
-      // 	  }
-      // 	}
-
-      //}
-      // for c2: unsigned int hitindex cannot be < 0
-      //if(hitlist[hitindex].isNull() || (hitindex<0 || hitindex > hitlist.size())){
       if (hitlist[hitindex].isNull() || (hitindex > hitlist.size())) {
         WriteMsg("no luck finding hit in evd, please try again");
         break;
@@ -300,7 +253,6 @@ namespace evd {
   /// @param view   : Pointer to view to draw on
   /// @param plane  : plane number of view
   ///
-
   std::vector<art::Ptr<recob::Hit>>
   HitSelector::GetSelectedHitPtrs(unsigned int plane)
   {
@@ -312,18 +264,13 @@ namespace evd {
   HitSelector::GetSelectedHits(unsigned int plane)
   {
     std::vector<art::Ptr<recob::Hit>> hits_saved;
-    //std::vector < art::Ptr < recob::Hit> > hits_to_save;
-
-    //std::vector < recob::Hit> hits_to_point; //needed to convert art::Ptr<recob:: Hit> to Hit* to pass to Hit2D
     std::vector<const recob::Hit*> hits_to_draw; //draw selected hits in a different color
 
     art::ServiceHandle<evd::InfoTransfer const> infot;
     hits_saved = infot->GetSelectedHitList(plane);
 
-    // if(hits_saved.size()!=0){
     for (unsigned int i = 0; i < hits_saved.size(); i++)
       hits_to_draw.push_back(hits_saved[i].get());
-    //}
 
     return hits_to_draw;
   }

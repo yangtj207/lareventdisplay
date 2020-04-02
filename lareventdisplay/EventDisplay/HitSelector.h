@@ -12,10 +12,6 @@
 
 #include "lardataobj/RecoBase/Seed.h"
 
-namespace evdb {
-  class View2D;
-}
-
 namespace recob {
   class Hit;
 }
@@ -30,10 +26,8 @@ namespace evd {
   class HitSelector {
   public:
     HitSelector();
-    ~HitSelector();
 
     void SaveHits(const art::Event& evt,
-                  evdb::View2D* view,
                   unsigned int plane,
                   double x,
                   double y,
@@ -43,15 +37,10 @@ namespace evd {
                   bool good_plane = true);
 
     double SaveSeedLines(const art::Event& evt,
-                         evdb::View2D* view,
                          std::vector<util::PxLine> seedline,
                          double distance);
 
-    void ChangeHit(const art::Event& evt,
-                   evdb::View2D* view,
-                   unsigned int plane,
-                   double x,
-                   double y);
+    void ChangeHit(const art::Event& evt, unsigned int plane, double x, double y);
 
     std::vector<const recob::Hit*> GetSelectedHits(unsigned int plane);
     std::vector<art::Ptr<recob::Hit>> GetSelectedHitPtrs(unsigned int plane);
@@ -61,7 +50,6 @@ namespace evd {
     std::vector<recob::Seed>& SeedVector();
 
   private:
-    //int test;
     std::vector<recob::Seed> fSeedVector;
 
     std::vector<std::vector<double>> starthitout;

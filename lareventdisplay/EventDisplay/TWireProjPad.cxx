@@ -18,6 +18,7 @@
 #include "TVirtualPad.h"
 
 #include "larcore/Geometry/Geometry.h"
+#include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 #include "lardata/Utilities/PxUtils.h"
 #include "lareventdisplay/EventDisplay/EvdLayoutOptions.h"
 #include "lareventdisplay/EventDisplay/HitSelector.h"
@@ -62,32 +63,6 @@ namespace {
 
   } // DumpPad()
 
-  [[gnu::unused]] void
-  DumpPadsInCanvas(TVirtualPad* pPad, std::string caller, std::string msg = "")
-  {
-    mf::LogDebug log(caller);
-    if (!msg.empty()) log << msg << ": ";
-    if (!pPad) {
-      log << "pad not available";
-      return;
-    }
-
-    DumpPad(log, pPad);
-
-    TCanvas const* pCanvas = pPad->GetCanvas();
-    log << "\nCanvas is: (TCanvas*) (" << ((void*)pPad->GetCanvas()) << ") with "
-        << pCanvas->GetListOfPrimitives()->GetSize() << " primitives and the following pads:";
-    TIterator* pIter = pCanvas->GetListOfPrimitives()->MakeIterator();
-    TObject const* pObject;
-    while ((pObject = pIter->Next())) {
-      if (!pObject->InheritsFrom(TVirtualPad::Class())) continue;
-      log << "\n  " << ((pObject == pPad) ? '*' : '-') << "  ";
-      DumpPad(log, (TVirtualPad*)pObject);
-    }
-    log << "\n";
-    delete pIter;
-  } // DumpPadsInCanvas()
-
 } // local namespace
 
 namespace evd {
@@ -111,13 +86,10 @@ namespace evd {
                              unsigned int plane)
     : DrawingPad(nm, ti, x1, x2, y1, y2), fPlane(plane)
   {
-
     fCurrentZoom.resize(4);
 
     art::ServiceHandle<geo::Geometry const> geo;
 
-    // this->Pad()->SetBit(kCannotPick); // workaround for issue #16169
-    // this->Pad()->SetBit(TPad::kCannotMove);
     this->Pad()->cd();
 
     this->Pad()->SetLeftMargin(0.070);
@@ -221,42 +193,45 @@ namespace evd {
     fView->Clear();
 
     // grab the singleton holding the art::Event
-    const art::Event* evt = evdb::EventHolder::Instance()->GetEvent();
-    if (evt) {
+    art::Event const* evtPtr = evdb::EventHolder::Instance()->GetEvent();
+    if (evtPtr) {
+      auto const& evt = *evtPtr;
+      auto const clockData =
+        art::ServiceHandle<detinfo::DetectorClocksService const>()->DataFor(evt);
+      auto const detProp =
+        art::ServiceHandle<detinfo::DetectorPropertiesService const>()->DataFor(evt,
+                                                                                     clockData);
       art::ServiceHandle<evd::RecoDrawingOptions const> recoOpt;
 
-      this->SimulationDraw()->MCTruthVectors2D(*evt, fView, fPlane);
+      this->SimulationDraw()->MCTruthVectors2D(evt, fView, fPlane);
 
       // the 2D pads have too much detail to be rendered on screen;
       // to act smarter, RawDataDrawer needs to know the range being plotted
       this->RawDataDraw()->ExtractRange(fPad, &GetCurrentZoom());
-      this->RawDataDraw()->RawDigit2D(*evt, fView, fPlane, GetDrawOptions().bZoom2DdrawToRoI);
+      this->RawDataDraw()->RawDigit2D(
+        evt, detProp, fView, fPlane, GetDrawOptions().bZoom2DdrawToRoI);
 
-      this->RecoBaseDraw()->Wire2D(*evt, fView, fPlane);
-      this->RecoBaseDraw()->Hit2D(*evt, fView, fPlane);
+      this->RecoBaseDraw()->Wire2D(evt, fView, fPlane);
+      this->RecoBaseDraw()->Hit2D(evt, detProp, fView, fPlane);
 
       if (recoOpt->fUseHitSelector)
         this->RecoBaseDraw()->Hit2D(
           this->HitSelectorGet()->GetSelectedHits(fPlane), kSelectedColor, fView, true);
 
-      this->RecoBaseDraw()->Slice2D(*evt, fView, fPlane);
-      this->RecoBaseDraw()->Cluster2D(*evt, fView, fPlane);
-      this->RecoBaseDraw()->EndPoint2D(*evt, fView, fPlane);
-      this->RecoBaseDraw()->Prong2D(*evt, fView, fPlane);
-      this->RecoBaseDraw()->Vertex2D(*evt, fView, fPlane);
-      this->RecoBaseDraw()->Seed2D(*evt, fView, fPlane);
-      this->RecoBaseDraw()->OpFlash2D(*evt, fView, fPlane);
-      this->RecoBaseDraw()->Event2D(*evt, fView, fPlane);
-      this->RecoBaseDraw()->DrawTrackVertexAssns2D(*evt, fView, fPlane);
+      this->RecoBaseDraw()->Slice2D(evt, detProp, fView, fPlane);
+      this->RecoBaseDraw()->Cluster2D(evt, clockData, detProp, fView, fPlane);
+      this->RecoBaseDraw()->EndPoint2D(evt, fView, fPlane);
+      this->RecoBaseDraw()->Prong2D(evt, clockData, detProp, fView, fPlane);
+      this->RecoBaseDraw()->Vertex2D(evt, detProp, fView, fPlane);
+      this->RecoBaseDraw()->Seed2D(evt, detProp, fView, fPlane);
+      this->RecoBaseDraw()->OpFlash2D(evt, clockData, detProp, fView, fPlane);
+      this->RecoBaseDraw()->Event2D(evt, fView, fPlane);
+      this->RecoBaseDraw()->DrawTrackVertexAssns2D(evt, clockData, detProp, fView, fPlane);
 
-      //  DumpPadsInCanvas(fPad, "TWireProjPad", "Before UpdatePad()");
       UpdatePad();
     } // if (evt)
 
-    // DumpPadsInCanvas(fPad, "TWireProjPad", "Before ClearandUpdatePad()");
     ClearandUpdatePad();
-
-    // DumpPadsInCanvas(fPad, "TWireProjPad", "After ClearandUpdatePad()");
 
     // check if we need to swap the axis ranges
     art::ServiceHandle<evd::RawDrawingOptions const> rawopt;
@@ -284,11 +259,7 @@ namespace evd {
     // Check if we should zoom the displays;
     // if there is no event, we have no clue about the region of interest
     // and therefore we don't touch anything
-    if (opt == 0 && evt) {
-      //       if (drawopt->fAutoZoom) this->AutoZoom();
-      //       else                    this->ShowFull();
-      this->ShowFull();
-    }
+    if (opt == 0 && evtPtr) { this->ShowFull(); }
 
     MF_LOG_DEBUG("TWireProjPad") << "Started rendering plane " << fPlane;
 
@@ -306,41 +277,7 @@ namespace evd {
       this->HitSelectorGet()->ClearHitList(fPlane);
       this->Draw();
     }
-
-    return;
   }
-
-  //......................................................................
-
-  ///
-  /// Automatically zoom the view to a size just larger than the
-  /// events. Also ensures that the aspect ratio is the same for the XZ
-  /// and YZ projections.
-  ///
-  //   void TWireProjPad::AutoZoom()
-  //   {
-  //     double xmin, ymin, zmin;
-  //     double xmax, ymax, zmax;
-  //     this->RawDataDraw()->GetLimits(&xmin, &xmax,
-  // 				   &ymin, &ymax,
-  // 				   &zmin, &zmax);
-  //     double dx = xmax-xmin;
-  //     double dy = ymax-ymin;
-  //     double dz = zmax-zmin;
-
-  //     if (dx<dy) dx = dy;
-  //     else       dy = dx;
-  //     xmin = 0.5*(xmin+xmax)-0.6*dx;
-  //     xmax = 0.5*(xmin+xmax)+0.6*dx;
-  //     ymin = 0.5*(ymin+ymax)-0.6*dy;
-  //     ymax = 0.5*(ymin+ymax)+0.6*dy;
-  //     zmin -= 0.1*dz;
-  //     zmax += 0.1*dz;
-
-  //     fHisto->GetXaxis()->SetRangeUser(zmin,zmax);
-  //     if (fXorY==kX) fHisto->GetYaxis()->SetRangeUser(xmin,xmax);
-  //     else           fHisto->GetYaxis()->SetRangeUser(ymin,ymax);
-  //   }
 
   //......................................................................
   // the override parameter is needed to unzoom to full range when the fAutoZoomInterest is on.
@@ -368,8 +305,6 @@ namespace evd {
     }
 
     SetZoomRange(xmin, xmax, ymin, ymax);
-
-    return;
   }
 
   //......................................................................
@@ -384,8 +319,6 @@ namespace evd {
       *i1 = fHisto->GetYaxis()->GetFirst();
       *i2 = fHisto->GetYaxis()->GetLast();
     }
-
-    return;
   }
 
   //......................................................................
@@ -400,8 +333,6 @@ namespace evd {
     }
     fCurrentZoom[0] = i1;
     fCurrentZoom[1] = i2;
-
-    return;
   }
 
   //......................................................................
@@ -420,6 +351,7 @@ namespace evd {
     fCurrentZoom[2] = y1;
     fCurrentZoom[3] = y2;
   }
+
   //......................................................................
   // Set the visible range of the wire / time view from the view
   //
@@ -445,16 +377,15 @@ namespace evd {
                             const char* zoom_opt,
                             bool good_plane)
   {
-    const art::Event* evt = evdb::EventHolder::Instance()->GetEvent();
-    if (evt) {
+    const art::Event* evtPtr = evdb::EventHolder::Instance()->GetEvent();
+    if (evtPtr) {
+      auto const& evt = *evtPtr;
       art::ServiceHandle<evd::RecoDrawingOptions const> recoopt;
       if (recoopt->fUseHitSelector) {
-        this->HitSelectorGet()->SaveHits(*evt, fView, fPlane, i1, i2, y1, y2, distance, good_plane);
+        this->HitSelectorGet()->SaveHits(evt, fPlane, i1, i2, y1, y2, distance, good_plane);
         this->Draw(zoom_opt);
       }
     }
-
-    return;
   }
 
   /////////////////////////////////////////////////
@@ -468,7 +399,7 @@ namespace evd {
     if (evt) {
       art::ServiceHandle<evd::RecoDrawingOptions const> recoopt;
       if (recoopt->fUseHitSelector)
-        KineticEnergy = this->HitSelectorGet()->SaveSeedLines(*evt, fView, seedlines, distance);
+        KineticEnergy = this->HitSelectorGet()->SaveSeedLines(*evt, seedlines, distance);
     }
     return KineticEnergy;
   }
@@ -482,12 +413,10 @@ namespace evd {
     if (evt) {
       art::ServiceHandle<evd::RecoDrawingOptions const> recoopt;
       if (recoopt->fUseHitSelector) {
-        this->HitSelectorGet()->ChangeHit(*evt, fView, fPlane, x, y);
+        this->HitSelectorGet()->ChangeHit(*evt, fPlane, x, y);
         this->Draw(zoom_opt);
       }
     }
-
-    return;
   }
 
   //......................................................................

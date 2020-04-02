@@ -26,6 +26,7 @@
 #include "larcorealg/Geometry/TPCGeo.h"
 #include "larcorealg/Geometry/WireGeo.h"
 #include "lardata/ArtDataHelper/MVAReader.h"
+#include "lardata/DetectorInfoServices/DetectorClocksService.h"
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 #include "lardata/RecoBaseProxy/Track.h"
 #include "lardataobj/AnalysisBase/CosmicTag.h"
@@ -244,8 +245,6 @@ namespace evd {
         line.SetBit(kCannotPick);
       }
     }
-
-    return;
   }
 
   //......................................................................
@@ -257,13 +256,14 @@ namespace evd {
   /// @param plane  : plane number of view
   ///
   int
-  RecoBaseDrawer::Hit2D(const art::Event& evt, evdb::View2D* view, unsigned int plane)
+  RecoBaseDrawer::Hit2D(const art::Event& evt,
+                        detinfo::DetectorPropertiesData const& detProp,
+                        evdb::View2D* view,
+                        unsigned int plane)
   {
     art::ServiceHandle<evd::RawDrawingOptions const> rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions const> recoOpt;
     art::ServiceHandle<geo::Geometry const> geo;
-    detinfo::DetectorProperties const* detp =
-      lar::providerFrom<detinfo::DetectorPropertiesService>();
 
     int nHitsDrawn(0);
 
@@ -288,8 +288,8 @@ namespace evd {
         // Try to get the "best" charge measurement, ie. the one last in
         // the calibration chain
         fRawCharge[itr->WireID().Plane] += itr->PeakAmplitude();
-        double dQdX = itr->PeakAmplitude() / geo->WirePitch() / detp->ElectronsToADC();
-        fConvertedCharge[itr->WireID().Plane] += detp->BirksCorrection(dQdX);
+        double dQdX = itr->PeakAmplitude() / geo->WirePitch() / detProp.ElectronsToADC();
+        fConvertedCharge[itr->WireID().Plane] += detProp.BirksCorrection(dQdX);
       } // loop on hits
 
       nHitsDrawn = this->Hit2D(hits, kBlack, view, recoOpt->fDrawAllWireIDs);
@@ -540,7 +540,11 @@ namespace evd {
 
   //......................................................................
   void
-  RecoBaseDrawer::OpFlash2D(const art::Event& evt, evdb::View2D* view, unsigned int plane)
+  RecoBaseDrawer::OpFlash2D(const art::Event& evt,
+                            detinfo::DetectorClocksData const& clockData,
+                            detinfo::DetectorPropertiesData const& detProp,
+                            evdb::View2D* view,
+                            unsigned int plane)
   {
     art::ServiceHandle<evd::RawDrawingOptions const> rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions const> recoOpt;
@@ -549,8 +553,6 @@ namespace evd {
     if (recoOpt->fDrawOpFlashes == 0) return;
 
     art::ServiceHandle<geo::Geometry const> geo;
-    detinfo::DetectorProperties const* det =
-      lar::providerFrom<detinfo::DetectorPropertiesService>();
     geo::PlaneID pid(rawOpt->fCryostat, rawOpt->fTPC, plane);
 
     for (size_t imod = 0; imod < recoOpt->fOpFlashLabels.size(); ++imod) {
@@ -577,7 +579,7 @@ namespace evd {
           << ", " << opflashes[iof]->ZCenter() << " \t PE :" << opflashes[iof]->TotalPE();
 
         float flashtick =
-          opflashes[iof]->Time() / det->SamplingRate() * 1e3 + det->GetXTicksOffset(pid);
+          opflashes[iof]->Time() / sampling_rate(clockData) * 1e3 + detProp.GetXTicksOffset(pid);
         float wire0 = FLT_MAX;
         float wire1 = FLT_MIN;
 
@@ -627,13 +629,14 @@ namespace evd {
 
   //......................................................................
   void
-  RecoBaseDrawer::Seed2D(const art::Event& evt, evdb::View2D* view, unsigned int plane)
+  RecoBaseDrawer::Seed2D(const art::Event& evt,
+                         detinfo::DetectorPropertiesData const& detProp,
+                         evdb::View2D* view,
+                         unsigned int plane)
   {
     art::ServiceHandle<evd::RawDrawingOptions const> rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions const> recoOpt;
     art::ServiceHandle<geo::Geometry const> geo;
-    detinfo::DetectorProperties const* det =
-      lar::providerFrom<detinfo::DetectorPropertiesService>();
 
     if (rawOpt->fDrawRawDataOrCalibWires < 1) return;
     if (recoOpt->fDrawSeeds == 0) return;
@@ -692,18 +695,18 @@ namespace evd {
         }
 
         double x = wirepoint;
-        double y = det->ConvertXToTicks(SeedPoint[0], plane, rawOpt->fTPC, rawOpt->fCryostat);
+        double y = detProp.ConvertXToTicks(SeedPoint[0], plane, rawOpt->fTPC, rawOpt->fCryostat);
         double x1 = wireend1;
-        double y1 = det->ConvertXToTicks(SeedEnd1[0], plane, rawOpt->fTPC, rawOpt->fCryostat);
+        double y1 = detProp.ConvertXToTicks(SeedEnd1[0], plane, rawOpt->fTPC, rawOpt->fCryostat);
         double x2 = wireend2;
-        double y2 = det->ConvertXToTicks(SeedEnd2[0], plane, rawOpt->fTPC, rawOpt->fCryostat);
+        double y2 = detProp.ConvertXToTicks(SeedEnd2[0], plane, rawOpt->fTPC, rawOpt->fCryostat);
 
         if (rawOpt->fAxisOrientation > 0) {
-          x = det->ConvertXToTicks(SeedPoint[0], plane, rawOpt->fTPC, rawOpt->fCryostat);
+          x = detProp.ConvertXToTicks(SeedPoint[0], plane, rawOpt->fTPC, rawOpt->fCryostat);
           y = wirepoint;
-          x1 = det->ConvertXToTicks(SeedEnd1[0], plane, rawOpt->fTPC, rawOpt->fCryostat);
+          x1 = detProp.ConvertXToTicks(SeedEnd1[0], plane, rawOpt->fTPC, rawOpt->fCryostat);
           y1 = wireend1;
-          x2 = det->ConvertXToTicks(SeedEnd2[0], plane, rawOpt->fTPC, rawOpt->fCryostat);
+          x2 = detProp.ConvertXToTicks(SeedEnd2[0], plane, rawOpt->fTPC, rawOpt->fCryostat);
           y2 = wireend2;
         }
 
@@ -720,7 +723,10 @@ namespace evd {
 
   //......................................................................
   void
-  RecoBaseDrawer::Slice2D(const art::Event& evt, evdb::View2D* view, unsigned int plane)
+  RecoBaseDrawer::Slice2D(const art::Event& evt,
+                          detinfo::DetectorPropertiesData const& detProp,
+                          evdb::View2D* view,
+                          unsigned int plane)
   {
     // Color code hits associated with Slices
     art::ServiceHandle<evd::RawDrawingOptions const> rawOpt;
@@ -729,9 +735,6 @@ namespace evd {
     if (recoOpt->fDrawSlices == 0) return;
 
     art::ServiceHandle<geo::Geometry const> geo;
-    detinfo::DetectorProperties const* detprop =
-      lar::providerFrom<detinfo::DetectorPropertiesService>();
-    //    geo::View_t gview = geo->TPC(rawOpt->fTPC).Plane(plane).View();
 
     static bool first = true;
     if (first) {
@@ -763,7 +766,7 @@ namespace evd {
           }
           if (this->Hit2D(hits_on_plane, color, view, false, false) < 1) continue;
           if (recoOpt->fDrawSlices == 2) {
-            double tick = detprop->ConvertXToTicks(slices[isl]->Center().X(), plane, t, c);
+            double tick = detProp.ConvertXToTicks(slices[isl]->Center().X(), plane, t, c);
             double wire = geo->WireCoordinate(
               slices[isl]->Center().Y(), slices[isl]->Center().Z(), plane, t, c);
             std::string s = std::to_string(slcID);
@@ -775,7 +778,7 @@ namespace evd {
         }
         else {
           // draw the center, end points and direction vector
-          double tick = detprop->ConvertXToTicks(slices[isl]->Center().X(), plane, t, c);
+          double tick = detProp.ConvertXToTicks(slices[isl]->Center().X(), plane, t, c);
           double wire =
             geo->WireCoordinate(slices[isl]->Center().Y(), slices[isl]->Center().Z(), plane, t, c);
           float markerSize = 1;
@@ -787,13 +790,13 @@ namespace evd {
           ctr.SetMarkerColor(color);
           // npts, color, width, style
           TPolyLine& pline = view->AddPolyLine(2, color, 2, 3);
-          tick = detprop->ConvertXToTicks(slices[isl]->End0Pos().X(), plane, t, c);
+          tick = detProp.ConvertXToTicks(slices[isl]->End0Pos().X(), plane, t, c);
           wire = geo->WireCoordinate(
             slices[isl]->End0Pos().Y(), slices[isl]->End0Pos().Z(), plane, t, c);
           TMarker& end0 = view->AddMarker(wire, tick, color, 20, 1.0);
           end0.SetMarkerColor(color);
           pline.SetPoint(0, wire, tick);
-          tick = detprop->ConvertXToTicks(slices[isl]->End1Pos().X(), plane, t, c);
+          tick = detProp.ConvertXToTicks(slices[isl]->End1Pos().X(), plane, t, c);
           wire = geo->WireCoordinate(
             slices[isl]->End1Pos().Y(), slices[isl]->End1Pos().Z(), plane, t, c);
           TMarker& end1 = view->AddMarker(wire, tick, color, 20, 1.0);
@@ -807,13 +810,15 @@ namespace evd {
   } // Slice2D
   //......................................................................
   void
-  RecoBaseDrawer::Cluster2D(const art::Event& evt, evdb::View2D* view, unsigned int plane)
+  RecoBaseDrawer::Cluster2D(const art::Event& evt,
+                            detinfo::DetectorClocksData const& clockData,
+                            detinfo::DetectorPropertiesData const& detProp,
+                            evdb::View2D* view,
+                            unsigned int plane)
   {
     art::ServiceHandle<evd::RawDrawingOptions const> rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions const> recoOpt;
     art::ServiceHandle<geo::Geometry const> geo;
-    detinfo::DetectorProperties const* detprop =
-      lar::providerFrom<detinfo::DetectorPropertiesService>();
 
     if (rawOpt->fDrawRawDataOrCalibWires < 1) return;
     if (recoOpt->fDrawClusters == 0) return;
@@ -990,9 +995,9 @@ namespace evd {
         // thetawire is the angle measured CW from +z axis to wire
         //double thetawire = geo->TPC(t).Plane(plane).Wire(0).ThetaZ();
         double wirePitch = geo->WirePitch(gview);
-        double driftvelocity = detprop->DriftVelocity();  // cm/us
-        double timetick = detprop->SamplingRate() * 1e-3; // time sample in us
-        //rotate coord system CCW around x-axis by pi-thetawire
+        double driftvelocity = detProp.DriftVelocity();    // cm/us
+        double timetick = sampling_rate(clockData) * 1e-3; // time sample in us
+        // rotate coord system CCW around x-axis by pi-thetawire
         //   new yprime direction is perpendicular to the wire direction
         //   in the same plane as the wires and in the direction of
         //   increasing wire number
@@ -1219,7 +1224,8 @@ namespace evd {
 
   //......................................................................
   void
-  RecoBaseDrawer::DrawProng2D(std::vector<const recob::Hit*>& hits,
+  RecoBaseDrawer::DrawProng2D(detinfo::DetectorPropertiesData const& detProp,
+                              std::vector<const recob::Hit*>& hits,
                               evdb::View2D* view,
                               unsigned int plane,
                               TVector3 const& startPos,
@@ -1230,8 +1236,6 @@ namespace evd {
     art::ServiceHandle<evd::RawDrawingOptions const> rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions const> recoOpt;
     art::ServiceHandle<geo::Geometry const> geo;
-    detinfo::DetectorProperties const* detprop =
-      lar::providerFrom<detinfo::DetectorPropertiesService>();
 
     unsigned int c = rawOpt->fCryostat;
     unsigned int t = rawOpt->fTPC;
@@ -1255,7 +1259,7 @@ namespace evd {
         //draw the shower ID at the beginning of shower
         std::string s = std::to_string(id);
         char const* txt = s.c_str();
-        double tick = 30 + detprop->ConvertXToTicks(startPos.X(), plane, t, c);
+        double tick = 30 + detProp.ConvertXToTicks(startPos.X(), plane, t, c);
         double wire = geo->WireCoordinate(startPos.Y(), startPos.Z(), plane, t, c);
         TText& shwID = view->AddText(wire, tick, txt);
         shwID.SetTextColor(evd::kColor2[id % evd::kNCOLS]);
@@ -1265,13 +1269,12 @@ namespace evd {
     else
       this->Hit2D(hits, color, view, false, false, lineWidth);
 
-    double tick0 = detprop->ConvertXToTicks(startPos.X(), plane, t, c);
+    double tick0 = detProp.ConvertXToTicks(startPos.X(), plane, t, c);
     double wire0 = geo->WireCoordinate(startPos.Y(), startPos.Z(), plane, t, c);
 
-    double tick1 = detprop->ConvertXToTicks((startPos + startDir).X(), plane, t, c);
+    double tick1 = detProp.ConvertXToTicks((startPos + startDir).X(), plane, t, c);
     double wire1 =
       geo->WireCoordinate((startPos + startDir).Y(), (startPos + startDir).Z(), plane, t, c);
-    //    std::cout<<" W:T "<<(int)wire0<<":"<<(int)tick0<<" "<<(int)wire1<<":"<<(int)tick1<<"\n";
     double cost = 0;
     double cosw = 0;
     double ds = sqrt(pow(tick0 - tick1, 2) + pow(wire0 - wire1, 2));
@@ -1288,7 +1291,9 @@ namespace evd {
 
   //......................................................................
   void
-  RecoBaseDrawer::DrawTrack2D(std::vector<const recob::Hit*>& hits,
+  RecoBaseDrawer::DrawTrack2D(detinfo::DetectorClocksData const& clockData,
+                              detinfo::DetectorPropertiesData const& detProp,
+                              std::vector<const recob::Hit*>& hits,
                               evdb::View2D* view,
                               unsigned int plane,
                               const recob::Track* track,
@@ -1298,8 +1303,6 @@ namespace evd {
     art::ServiceHandle<evd::RawDrawingOptions const> rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions const> recoOpt;
     art::ServiceHandle<geo::Geometry const> geo;
-    detinfo::DetectorProperties const* detprop =
-      lar::providerFrom<detinfo::DetectorPropertiesService>();
     unsigned int c = rawOpt->fCryostat;
     unsigned int t = rawOpt->fTPC;
 
@@ -1317,7 +1320,7 @@ namespace evd {
     world[2] = startPos.Z();
 
     // convert the starting position and direction from 3D to 2D coordinates
-    double tick = detprop->ConvertXToTicks(startPos.X(), plane, t, c);
+    double tick = detProp.ConvertXToTicks(startPos.X(), plane, t, c);
     double wire = 0.;
     try {
       wire = 1. * geo->NearestWire(world, plane, t, c);
@@ -1329,9 +1332,9 @@ namespace evd {
     // thetawire is the angle measured CW from +z axis to wire
     double thetawire = geo->TPC(t).Plane(plane).Wire(0).ThetaZ();
     double wirePitch = geo->WirePitch(hits[0]->View());
-    double driftvelocity = detprop->DriftVelocity();  // cm/us
-    double timetick = detprop->SamplingRate() * 1e-3; // time sample in us
-    //rotate coord system CCW around x-axis by pi-thetawire
+    double driftvelocity = detProp.DriftVelocity();    // cm/us
+    double timetick = sampling_rate(clockData) * 1e-3; // time sample in us
+    // rotate coord system CCW around x-axis by pi-thetawire
     //   new yprime direction is perpendicular to the wire direction
     //   in the same plane as the wires and in the direction of
     //   increasing wire number
@@ -1358,7 +1361,7 @@ namespace evd {
       world[2] = hitPos.Z();
 
       // convert the starting position and direction from 3D to 2D coordinates
-      double tickHit = detprop->ConvertXToTicks(hitPos.X(), plane, t, c);
+      double tickHit = detProp.ConvertXToTicks(hitPos.X(), plane, t, c);
       double wireHit = 0.;
       try {
         wireHit = 1. * geo->NearestWire(world, plane, t, c);
@@ -1377,12 +1380,15 @@ namespace evd {
 
   //......................................................................
   void
-  RecoBaseDrawer::Prong2D(const art::Event& evt, evdb::View2D* view, unsigned int plane)
+  RecoBaseDrawer::Prong2D(const art::Event& evt,
+                          detinfo::DetectorClocksData const& clockData,
+                          detinfo::DetectorPropertiesData const& detProp,
+                          evdb::View2D* view,
+                          unsigned int plane)
   {
     art::ServiceHandle<evd::RawDrawingOptions const> rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions const> recoOpt;
     art::ServiceHandle<geo::Geometry const> geo;
-    auto const* detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
 
     if (rawOpt->fDrawRawDataOrCalibWires < 1) return;
 
@@ -1427,7 +1433,7 @@ namespace evd {
             double x = track.vals().at(t)->End().X();
             double y = track.vals().at(t)->End().Y();
             double z = track.vals().at(t)->End().Z();
-            double tick = 30 + detprop->ConvertXToTicks(x, plane, tpc, cstat);
+            double tick = 30 + detProp.ConvertXToTicks(x, plane, tpc, cstat);
             double wire = geo->WireCoordinate(y, z, plane, tpc, cstat);
             tid =
               track.vals().at(t)->ID() &
@@ -1480,7 +1486,7 @@ namespace evd {
             lineWidth = 3;
           }
 
-          this->DrawTrack2D(hits, view, plane, aTrack, color, lineWidth);
+          this->DrawTrack2D(clockData, detProp, hits, view, plane, aTrack, color, lineWidth);
         } // end loop over prongs
       }   // end loop over labels
     }     // end draw tracks
@@ -1535,9 +1541,9 @@ namespace evd {
             TVector3 endPos = startPos + length * dir;
 
             double swire = geo->WireCoordinate(startPos.Y(), startPos.Z(), plane, tpc, cstat);
-            double stick = detprop->ConvertXToTicks(startPos.X(), plane, tpc, cstat);
+            double stick = detProp.ConvertXToTicks(startPos.X(), plane, tpc, cstat);
             double ewire = geo->WireCoordinate(endPos.Y(), endPos.Z(), plane, tpc, cstat);
-            double etick = detprop->ConvertXToTicks(endPos.X(), plane, tpc, cstat);
+            double etick = detProp.ConvertXToTicks(endPos.X(), plane, tpc, cstat);
             TLine& coneLine = view->AddLine(swire, stick, ewire, etick);
             // color coding by dE/dx
             std::vector<double> dedxVec = shower.vals().at(s)->dEdx();
@@ -1568,17 +1574,16 @@ namespace evd {
             for (unsigned short ipt = 0; ipt < coneRim.size(); ++ipt) {
               double wire =
                 geo->WireCoordinate(coneRim[ipt][1], coneRim[ipt][2], plane, tpc, cstat);
-              double tick = detprop->ConvertXToTicks(coneRim[ipt][0], plane, tpc, cstat);
+              double tick = detProp.ConvertXToTicks(coneRim[ipt][0], plane, tpc, cstat);
               pline.SetPoint(ipt, wire, tick);
             } // ipt
           }
-          this->DrawProng2D(hits,
+          this->DrawProng2D(detProp,
+                            hits,
                             view,
                             plane,
-                            //startPos,
                             shower.vals().at(s)->ShowerStart(),
                             shower.vals().at(s)->Direction(),
-                            //shower.vals().at(s)->ID(),
                             s,
                             -10001); //use -10001 to increase shower hit size
 
@@ -1592,16 +1597,16 @@ namespace evd {
   //......................................................................
   void
   RecoBaseDrawer::DrawTrackVertexAssns2D(const art::Event& evt,
+                                         detinfo::DetectorClocksData const& clockData,
+                                         detinfo::DetectorPropertiesData const& detProp,
                                          evdb::View2D* view,
                                          unsigned int plane)
   {
-    art::ServiceHandle<evd::RawDrawingOptions const> rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions const> recoOpt;
-    art::ServiceHandle<geo::Geometry const> geo;
-    detinfo::DetectorProperties const* detprop =
-      lar::providerFrom<detinfo::DetectorPropertiesService>();
-
     if (!recoOpt->fDrawTrackVertexAssns) return;
+
+    art::ServiceHandle<evd::RawDrawingOptions const> rawOpt;
+    art::ServiceHandle<geo::Geometry const> geo;
 
     geo::View_t gview = geo->TPC(rawOpt->fTPC).Plane(plane).View();
 
@@ -1660,9 +1665,7 @@ namespace evd {
           vertex->XYZ(xyz);
 
           double wire = geo->WireCoordinate(xyz[1], xyz[2], plane, rawOpt->fTPC, rawOpt->fCryostat);
-          double time = detprop->ConvertXToTicks(xyz[0], plane, rawOpt->fTPC, rawOpt->fCryostat);
-
-          //                color = evd::kColor[vertex->ID()%evd::kNCOLS];
+          double time = detProp.ConvertXToTicks(xyz[0], plane, rawOpt->fTPC, rawOpt->fCryostat);
 
           TMarker& strt = view->AddMarker(wire, time, color, 24, 3.0);
           strt.SetMarkerColor(color);
@@ -1678,7 +1681,7 @@ namespace evd {
         double x = track->End().X();
         double y = track->End().Y();
         double z = track->End().Z();
-        double tick = 30 + detprop->ConvertXToTicks(x, plane, tpc, cstat);
+        double tick = 30 + detProp.ConvertXToTicks(x, plane, tpc, cstat);
         double wire = geo->WireCoordinate(y, z, plane, tpc, cstat);
 
         tid = track->ID() & 65535;
@@ -1731,29 +1734,27 @@ namespace evd {
           lineWidth = 3;
         }
 
-        this->DrawTrack2D(hits, view, plane, track.get(), color, lineWidth);
+        this->DrawTrack2D(clockData, detProp, hits, view, plane, track.get(), color, lineWidth);
 
       } // end loop over vertex/track associations
 
     } // end loop over labels
-
-    return;
   }
 
   //......................................................................
   void
-  RecoBaseDrawer::Vertex2D(const art::Event& evt, evdb::View2D* view, unsigned int plane)
+  RecoBaseDrawer::Vertex2D(const art::Event& evt,
+                           detinfo::DetectorPropertiesData const& detProp,
+                           evdb::View2D* view,
+                           unsigned int plane)
   {
     art::ServiceHandle<evd::RawDrawingOptions const> rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions const> recoOpt;
-    art::ServiceHandle<geo::Geometry const> geo;
-    detinfo::DetectorProperties const* detprop =
-      lar::providerFrom<detinfo::DetectorPropertiesService>();
 
     if (rawOpt->fDrawRawDataOrCalibWires < 1) return;
-
     if (recoOpt->fDrawVertices == 0) return;
 
+    art::ServiceHandle<geo::Geometry const> geo;
     static bool first = true;
 
     if (first) {
@@ -1791,7 +1792,7 @@ namespace evd {
         if (xyz[2] < minxyz[2] || xyz[2] > maxxyz[2]) continue;
         // BB: draw polymarker at the vertex position in this plane
         double wire = geo->WireCoordinate(xyz[1], xyz[2], plane, rawOpt->fTPC, rawOpt->fCryostat);
-        double time = detprop->ConvertXToTicks(xyz[0], plane, rawOpt->fTPC, rawOpt->fCryostat);
+        double time = detProp.ConvertXToTicks(xyz[0], plane, rawOpt->fTPC, rawOpt->fCryostat);
         int color = evd::kColor[vertex[v]->ID() % evd::kNCOLS];
         TMarker& strt = view->AddMarker(wire, time, color, 24, 1.0);
         strt.SetMarkerColor(color);
@@ -2967,7 +2968,11 @@ namespace evd {
   }
   //......................................................................
   void
-  RecoBaseDrawer::OpFlashOrtho(const art::Event& evt, evd::OrthoProj_t proj, evdb::View2D* view)
+  RecoBaseDrawer::OpFlashOrtho(const art::Event& evt,
+                               detinfo::DetectorClocksData const& clockData,
+                               detinfo::DetectorPropertiesData const& detProp,
+                               evd::OrthoProj_t proj,
+                               evdb::View2D* view)
   {
     art::ServiceHandle<evd::RawDrawingOptions const> rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions const> recoOpt;
@@ -2976,8 +2981,6 @@ namespace evd {
     if (rawOpt->fDrawRawDataOrCalibWires < 1) return;
     if (recoOpt->fDrawOpFlashes == 0) return;
 
-    detinfo::DetectorProperties const* det =
-      lar::providerFrom<detinfo::DetectorPropertiesService>();
     geo::PlaneID pid(rawOpt->fCryostat, rawOpt->fTPC, 0);
 
     double minx = 1e9;
@@ -3019,17 +3022,11 @@ namespace evd {
           TBox& b1 = view->AddBox(YCentre - YHalfWidth, minx, YCentre + YHalfWidth, maxx);
           b1.SetFillStyle(3004 + (iof % 3));
           b1.SetFillColor(Colour);
-          //TLine&   line = view->AddLine(YCentre, minx, YCentre, maxx);
-          //line.SetLineColor(Colour);
         }
         else if (proj == evd::kXZ) {
-          //	TBox& b1      = view->AddBox(ZCentre-ZHalfWidth, minx, ZCentre+ZHalfWidth, maxx);
-          //	b1.SetFillStyle(3004+(iof%3));
-          //	b1.SetFillColor(Colour);
-          //TLine&   line = view->AddLine(ZCentre, minx, ZCentre, maxx);
-          //line.SetLineColor(Colour);
-          float xflash = det->ConvertTicksToX(
-            opflashes[iof]->Time() / det->SamplingRate() * 1e3 + det->GetXTicksOffset(pid), pid);
+          float xflash = detProp.ConvertTicksToX(
+            opflashes[iof]->Time() / sampling_rate(clockData) * 1e3 + detProp.GetXTicksOffset(pid),
+            pid);
           TLine& line = view->AddLine(ZCentre - ZHalfWidth, xflash, ZCentre + ZHalfWidth, xflash);
           line.SetLineWidth(2);
           line.SetLineStyle(2);
@@ -4165,8 +4162,8 @@ namespace evd {
         for (unsigned int ii = 0; ii < wirSig.size(); ++ii)
           histo->Fill(wirSig[ii]);
         /*
-	for(size_t s = 0; s < wires[i]->NSignal(); ++s)
-	  histo->Fill(wires[i]->Signal()[s]);
+        for(size_t s = 0; s < wires[i]->NSignal(); ++s)
+          histo->Fill(wires[i]->Signal()[s]);
 */
 
       } //end loop over raw hits
@@ -4266,10 +4263,10 @@ namespace evd {
   //double RecoBaseDrawer::EvalMultiExpoFit(double x,
   //					int HitNumber,
   //					int NHits,
-  //				   	std::vector<double> tau1,
-  //				   	std::vector<double> tau2,
-  //				   	std::vector<double> amplitude,
-  //				   	std::vector<double> peaktime)
+  //                                    std::vector<double> tau1,
+  //                                    std::vector<double> tau2,
+  //                                    std::vector<double> amplitude,
+  //                                    std::vector<double> peaktime)
   //{
   //    double x_sum = 0.;
   //

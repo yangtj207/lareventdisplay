@@ -12,6 +12,13 @@
 #include "RQ_OBJECT.h"
 #include "lardata/Utilities/PxUtils.h"
 #include "nuevdb/EventDisplayBase/Canvas.h"
+namespace detinfo {
+  class DetectorClocksData;
+  class DetectorPropertiesData;
+}
+namespace util {
+  class GeometryUtilities;
+}
 
 #include <deque>
 #include <map>
@@ -40,20 +47,15 @@ namespace evd {
 
   // Helper class, to store zoom settings in each view
 
-  class ZoomOptions {
-
-  public:
-    ZoomOptions() { OnlyPlaneChanged = -1; }
-    ~ZoomOptions() {}
+  struct ZoomOptions {
     std::map<int, double> wmin;
     std::map<int, double> wmax;
     std::map<int, double> tmin;
     std::map<int, double> tmax;
-    int OnlyPlaneChanged;
+    int OnlyPlaneChanged{-1};
   };
 
   class TWQProjectionView : public evdb::Canvas {
-
   public:
     RQ_OBJECT("evd::TWQProjectionView")
 
@@ -114,13 +116,17 @@ namespace evd {
     void PrintCharge();
     void DrawPads(const char* opt = "");
 
-    void FindEndPoint();
-    double FindLineLength();
+    void FindEndPoint(detinfo::DetectorClocksData const& clockData,
+                      detinfo::DetectorPropertiesData const& detProp);
+    double FindLineLength(detinfo::DetectorClocksData const& clockData,
+                          detinfo::DetectorPropertiesData const& detProp);
     void ClearEndPoints();
     void ToggleEndPointMarkers();
 
     void RadioButtonsDispatch(int parameter);
-    void SaveSelection();
+    void SaveSelection(detinfo::DetectorClocksData const& clockData,
+                       detinfo::DetectorPropertiesData const& detProp,
+                       util::GeometryUtilities const& gser);
     void ClearSelection();
 
     /// Returns if a new event is detected; if so, it also resets accordingly
@@ -146,7 +152,6 @@ namespace evd {
     TGLabel* fDistanceLabel;
     TGLabel* fPlaneLabel;
     TGLabel* fThresLabel;
-    //TGLabel* fGreyLabel;
 
     TGNumberEntry* fWireEntry;    ///< Wire number displayed.
     TGNumberEntry* fPlaneEntry;   ///< Plane number displayed.

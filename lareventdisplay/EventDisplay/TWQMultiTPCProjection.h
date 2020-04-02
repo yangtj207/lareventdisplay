@@ -11,6 +11,10 @@
 
 #include "lardata/Utilities/PxUtils.h" // util::PxPoint, util::PxLine
 #include "nuevdb/EventDisplayBase/Canvas.h"
+namespace detinfo {
+  class DetectorClocksData;
+  class DetectorPropertiesData;
+}
 
 #include "RQ_OBJECT.h"
 
@@ -79,8 +83,8 @@ namespace evd {
     void SetMouseZoomRegion(int plane);
 
     void SelectPoint(int plane);
-    // 	TWQMultiTPCProjectionView::SelectHit() is undefined
-    //void 	SelectHit(int plane);
+    //  TWQMultiTPCProjectionView::SelectHit() is undefined
+    //void      SelectHit(int plane);
     void SetPlaneWire();
     void SetPlane();
     void SetWire();
@@ -101,8 +105,10 @@ namespace evd {
     void PrintCharge();
     void DrawPads(const char* opt = "");
 
-    void FindEndPoint();
-    double FindLineLength();
+    void FindEndPoint(detinfo::DetectorClocksData const& clockData,
+                      detinfo::DetectorPropertiesData const& detProp);
+    double FindLineLength(detinfo::DetectorClocksData const& clockData,
+                          detinfo::DetectorPropertiesData const& detProp);
     void ClearEndPoints();
     void ToggleEndPointMarkers();
 
@@ -127,7 +133,7 @@ namespace evd {
     TGNumberEntry* fWireEntry;    ///< Wire number displayed.
     TGNumberEntry* fPlaneEntry;   ///< Plane number displayed.
     TGNumberEntry* fThresEntry;   ///< ADC threshold to display.
-    TGNumberEntry* fDistance;     ///<Distance from line to find hits in cluster
+    TGNumberEntry* fDistance;     ///< Distance from line to find hits in cluster
     TGCheckButton* fGreyScale;    ///< Display gray or color scale
     TGCheckButton* fMCOn;         ///< Display MC truth information
     TGRadioButton* fRawDraw;      ///< Draw Raw information only

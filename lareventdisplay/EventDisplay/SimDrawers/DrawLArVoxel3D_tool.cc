@@ -34,8 +34,6 @@ namespace evdb_tool {
   public:
     explicit DrawLArVoxel3D(const fhicl::ParameterSet&);
 
-    ~DrawLArVoxel3D();
-
     void Draw(const art::Event&, evdb::View3D*) const override;
 
   private:
@@ -44,16 +42,7 @@ namespace evdb_tool {
 
   //----------------------------------------------------------------------
   // Constructor.
-  DrawLArVoxel3D::DrawLArVoxel3D(const fhicl::ParameterSet& pset)
-  {
-    //    fNumPoints     = pset.get< int>("NumPoints",     1000);
-    //    fFloatBaseline = pset.get<bool>("FloatBaseline", false);
-    // For now only draw cryostat=0.
-
-    return;
-  }
-
-  DrawLArVoxel3D::~DrawLArVoxel3D() {}
+  DrawLArVoxel3D::DrawLArVoxel3D(const fhicl::ParameterSet& pset) {}
 
   void
   DrawLArVoxel3D::Draw(const art::Event& evt, evdb::View3D* view) const
@@ -66,10 +55,10 @@ namespace evdb_tool {
     // If the option is turned off, there's nothing to do
     if (!drawOpt->fShowMCTruthTrajectories) return;
 
-    //  geo::GeometryCore const* geom = lar::providerFrom<geo::Geometry>();
-    detinfo::DetectorProperties const* theDetector =
-      lar::providerFrom<detinfo::DetectorPropertiesService>();
-    detinfo::DetectorClocks const* detClocks = lar::providerFrom<detinfo::DetectorClocksService>();
+    auto const clockData =
+      art::ServiceHandle<detinfo::DetectorClocksService const>()->DataFor(evt);
+    auto const detProp =
+      art::ServiceHandle<detinfo::DetectorPropertiesService const>()->DataFor(evt, clockData);
     art::ServiceHandle<geo::Geometry const> geom;
 
     // Recover a handle to the collection of MCParticles
@@ -126,13 +115,8 @@ namespace evdb_tool {
         if (!drawOpt->fShowMCTruthColors) colorIdx = grayedColor;
 
         if (!mcTraj.empty() && partEnergy > minPartEnergy && mcParticle->TrackId() < 100000000) {
-          // The following is meant to get the correct offset for drawing the particle trajectory
-          // In particular, the cosmic rays will not be correctly placed without this
-          //double g4Ticks(detClocks->TPCG4Time2Tick(mcPart->T())+theDetector->GetXTicksOffset(0,0,0)-theDetector->TriggerOffset());
-          //double g4Ticks(detClocks->TPCG4Time2Tick(mcPart->T())+theDetector->GetXTicksOffset(0,0,0));
-          //double g4Ticks(detClocks->TPCG4Time2Tick(mcPart->T()));
-          double g4Ticks(detClocks->TPCG4Time2Tick(mcParticle->T()) - theDetector->TriggerOffset());
-          double xOffset(0.); //(theDetector->ConvertTicksToX(g4Ticks, 0, 0, 0));
+          double g4Ticks(clockData.TPCG4Time2Tick(mcParticle->T()) - trigger_offset(clockData));
+          double xOffset(0.);
           double xPosMinTick = 0.;
           double xPosMaxTick = std::numeric_limits<double>::max();
 
@@ -147,9 +131,6 @@ namespace evdb_tool {
             double yPos = mcTraj.Y(hitIdx);
             double zPos = mcTraj.Z(hitIdx);
 
-            // If the original simulated hit did not occur in the TPC volume then don't draw it
-            //                    if (xPos < minx || xPos > maxx || yPos < miny || yPos > maxy|| zPos < minz || zPos > maxz) continue;
-
             // If we have cosmic rays then we need to get the offset which allows translating from
             // when they were generated vs when they were tracked.
             // Note that this also explicitly checks that they are in a TPC volume
@@ -159,9 +140,9 @@ namespace evdb_tool {
               geo::TPCID tpcID = geom->PositionToTPCID(hitLocation);
               geo::PlaneID planeID(tpcID, 0);
 
-              xPosMinTick = theDetector->ConvertTicksToX(0, planeID);
-              xPosMaxTick = theDetector->ConvertTicksToX(theDetector->NumberTimeSamples(), planeID);
-              xOffset = theDetector->ConvertTicksToX(g4Ticks, planeID) - xPosMinTick;
+              xPosMinTick = detProp.ConvertTicksToX(0, planeID);
+              xPosMaxTick = detProp.ConvertTicksToX(detProp.NumberTimeSamples(), planeID);
+              xOffset = detProp.ConvertTicksToX(g4Ticks, planeID) - xPosMinTick;
 
               if (xPosMaxTick < xPosMinTick) std::swap(xPosMinTick, xPosMaxTick);
             }
@@ -174,15 +155,6 @@ namespace evdb_tool {
 
             // Check fiducial limits
             if (xPos > xPosMinTick && xPos < xPosMaxTick) {
-              // Check for space charge offsets
-              //                        if (spaceCharge->EnableSimEfieldSCE())
-              //                        {
-              //                            std::vector<double> offsetVec = spaceCharge->GetPosOffsets(xPos,yPos,zPos);
-              //                            xPos += offsetVec[0] - 0.7;
-              //                            yPos -= offsetVec[1];
-              //                            zPos -= offsetVec[2];
-              //                        }
-
               hitPositions[3 * hitCount] = xPos;
               hitPositions[3 * hitCount + 1] = yPos;
               hitPositions[3 * hitCount + 2] = zPos;
@@ -238,13 +210,8 @@ namespace evdb_tool {
       // Apparently, it can happen that we get a null pointer here or maybe no points to plot
       if (!mcPart || partToPosMapItr->second.empty()) continue;
 
-      // The following is meant to get the correct offset for drawing the particle trajectory
-      // In particular, the cosmic rays will not be correctly placed without this
-      //double g4Ticks(detClocks->TPCG4Time2Tick(mcPart->T())+theDetector->GetXTicksOffset(0,0,0)-theDetector->TriggerOffset());
-      //double g4Ticks(detClocks->TPCG4Time2Tick(mcPart->T())+theDetector->GetXTicksOffset(0,0,0));
-      double g4Ticks(detClocks->TPCG4Time2Tick(mcPart->T()) - theDetector->TriggerOffset());
-      //        double g4Ticks(detClocks->TPCG4Time2Tick(mcPart->T()));
-      double xOffset(0.); //theDetector->ConvertTicksToX(g4Ticks, 0, 0, 0));
+      double g4Ticks(clockData.TPCG4Time2Tick(mcPart->T()) - trigger_offset(clockData));
+      double xOffset = 0.;
       double xPosMinTick = 0.;
       double xPosMaxTick = std::numeric_limits<double>::max();
 
@@ -272,9 +239,9 @@ namespace evdb_tool {
           geo::TPCID tpcID = geom->PositionToTPCID(hitLocation);
           geo::PlaneID planeID(tpcID, 0);
 
-          xPosMinTick = theDetector->ConvertTicksToX(0, planeID);
-          xPosMaxTick = theDetector->ConvertTicksToX(theDetector->NumberTimeSamples(), planeID);
-          xOffset = theDetector->ConvertTicksToX(g4Ticks, planeID) - xPosMinTick;
+          xPosMinTick = detProp.ConvertTicksToX(0, planeID);
+          xPosMaxTick = detProp.ConvertTicksToX(detProp.NumberTimeSamples(), planeID);
+          xOffset = detProp.ConvertTicksToX(g4Ticks, planeID) - xPosMinTick;
 
           if (xPosMaxTick < xPosMinTick) std::swap(xPosMinTick, xPosMaxTick);
         }

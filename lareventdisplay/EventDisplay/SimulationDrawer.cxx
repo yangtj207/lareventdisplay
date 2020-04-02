@@ -217,9 +217,6 @@ namespace evd {
       return;
     }
 
-    detinfo::DetectorProperties const* detprop =
-      lar::providerFrom<detinfo::DetectorPropertiesService>();
-
     art::ServiceHandle<geo::Geometry const> geo;
     art::ServiceHandle<evd::RawDrawingOptions const> rawopt;
     // get the x position of the plane in question
@@ -252,6 +249,9 @@ namespace evd {
     bool showTruth = (drawopt->fShowMCTruthVectors == 1 || drawopt->fShowMCTruthVectors == 3);
     bool showPhotons = (drawopt->fShowMCTruthVectors > 1);
 
+    auto const detProp =
+      art::ServiceHandle<detinfo::DetectorPropertiesService const>()->DataFor(evt);
+
     if (showTruth) {
       // Unpack and draw the MC vectors
       std::vector<const simb::MCTruth*> mctruth;
@@ -272,8 +272,6 @@ namespace evd {
           auto gptStart = geo::Point_t(p.Vx(), p.Vy(), p.Vz());
           geo::Point_t sceOffset{0, 0, 0};
           if (sce->EnableCorrSCE()) sceOffset = sce->GetPosOffsets(gptStart);
-          //          std::cout<<"Pos "<<std::fixed<<std::setprecision(1)<<gptStart.X()<<" "<<gptStart.Y()<<" "<<gptStart.Z();
-          //          std::cout<<" sceOffset "<<std::setprecision(1)<<sceOffset.X()<<" "<<sceOffset.Y()<<" "<<sceOffset.Z()<<"\n";
           xyz1[0] = p.Vx() - sceOffset.X();
           xyz1[1] = p.Vy() + sceOffset.Y();
           xyz1[2] = p.Vz() + sceOffset.Z();
@@ -287,9 +285,9 @@ namespace evd {
             geo->WireCoordinate(xyz2[1], xyz2[2], (int)plane, rawopt->fTPC, rawopt->fCryostat);
 
           double time =
-            detprop->ConvertXToTicks(xyz1[0] + xShift, (int)plane, rawopt->fTPC, rawopt->fCryostat);
+            detProp.ConvertXToTicks(xyz1[0] + xShift, (int)plane, rawopt->fTPC, rawopt->fCryostat);
           double time2 =
-            detprop->ConvertXToTicks(xyz2[0] + xShift, (int)plane, rawopt->fTPC, rawopt->fCryostat);
+            detProp.ConvertXToTicks(xyz2[0] + xShift, (int)plane, rawopt->fTPC, rawopt->fCryostat);
 
           if (rawopt->fAxisOrientation < 1) {
             TLine& l = view->AddLine(w1, time, w2, time2);
@@ -324,8 +322,6 @@ namespace evd {
         auto gptStart = geo::Point_t(p->Vx(), p->Vy(), p->Vz());
         geo::Point_t sceOffset{0, 0, 0};
         if (sce->EnableCorrSCE()) sceOffset = sce->GetPosOffsets(gptStart);
-        //        std::cout<<"Pos "<<std::fixed<<std::setprecision(1)<<gptStart.X()<<" "<<gptStart.Y()<<" "<<gptStart.Z();
-        //        std::cout<<" sceOffset "<<std::setprecision(1)<<sceOffset.X()<<" "<<sceOffset.Y()<<" "<<sceOffset.Z()<<"\n";
         xyz1[0] = p->Vx() - sceOffset.X();
         xyz1[1] = p->Vy() + sceOffset.Y();
         xyz1[2] = p->Vz() + sceOffset.Z();
@@ -334,10 +330,10 @@ namespace evd {
         xyz2[2] = xyz1[2] + r * p->Pz() / p->P();
         double w1 =
           geo->WireCoordinate(xyz1[1], xyz1[2], (int)plane, rawopt->fTPC, rawopt->fCryostat);
-        double t1 = detprop->ConvertXToTicks(xyz1[0], (int)plane, rawopt->fTPC, rawopt->fCryostat);
+        double t1 = detProp.ConvertXToTicks(xyz1[0], (int)plane, rawopt->fTPC, rawopt->fCryostat);
         double w2 =
           geo->WireCoordinate(xyz2[1], xyz2[2], (int)plane, rawopt->fTPC, rawopt->fCryostat);
-        double t2 = detprop->ConvertXToTicks(xyz2[0], (int)plane, rawopt->fTPC, rawopt->fCryostat);
+        double t2 = detProp.ConvertXToTicks(xyz2[0], (int)plane, rawopt->fTPC, rawopt->fCryostat);
         TLine& l = view->AddLine(w1, t1, w2, t2);
         l.SetLineWidth(2);
         l.SetLineStyle(kDotted);
@@ -366,18 +362,10 @@ namespace evd {
     // If the option is turned off, there's nothing to do
     if (!drawopt->fShowMCTruthTrajectories) return;
 
-    // learn whether we want to draw the scintillation light too;
-    // in fact, we don't care whether it's scintillation or not,
-    // but it is photons with very low energy, close to the optical range
-    //   bool const fDrawLight = drawopt->fShowScintillationLight;
-
-    // Space charge service...
-    //  const spacecharge::SpaceCharge* sce = lar::providerFrom<spacecharge::SpaceChargeService>();
-
-    //  geo::GeometryCore const* geom = lar::providerFrom<geo::Geometry>();
-    detinfo::DetectorProperties const* theDetector =
-      lar::providerFrom<detinfo::DetectorPropertiesService>();
-    detinfo::DetectorClocks const* detClocks = lar::providerFrom<detinfo::DetectorClocksService>();
+    auto const clockData =
+      art::ServiceHandle<detinfo::DetectorClocksService const>()->DataFor(evt);
+    auto const detProp =
+      art::ServiceHandle<detinfo::DetectorPropertiesService const>()->DataFor(evt, clockData);
     art::ServiceHandle<geo::Geometry const> geom;
 
     // get the particles from the Geant4 step
@@ -430,13 +418,8 @@ namespace evd {
         if (!drawopt->fShowMCTruthColors) colorIdx = grayedColor;
 
         if (!mcTraj.empty() && partEnergy > minPartEnergy && mcPart->TrackId() < 100000000) {
-          // The following is meant to get the correct offset for drawing the particle trajectory
-          // In particular, the cosmic rays will not be correctly placed without this
-          //double g4Ticks(detClocks->TPCG4Time2Tick(mcPart->T())+theDetector->GetXTicksOffset(0,0,0)-theDetector->TriggerOffset());
-          //double g4Ticks(detClocks->TPCG4Time2Tick(mcPart->T())+theDetector->GetXTicksOffset(0,0,0));
-          //double g4Ticks(detClocks->TPCG4Time2Tick(mcPart->T()));
-          double g4Ticks(detClocks->TPCG4Time2Tick(mcPart->T()) - theDetector->TriggerOffset());
-          double xOffset(0.); //(theDetector->ConvertTicksToX(g4Ticks, 0, 0, 0));
+          double g4Ticks(clockData.TPCG4Time2Tick(mcPart->T()) - trigger_offset(clockData));
+          double xOffset = 0.;
           double xPosMinTick = 0.;
           double xPosMaxTick = std::numeric_limits<double>::max();
 
@@ -451,9 +434,6 @@ namespace evd {
             double yPos = mcTraj.Y(hitIdx);
             double zPos = mcTraj.Z(hitIdx);
 
-            // If the original simulated hit did not occur in the TPC volume then don't draw it
-            //                    if (xPos < minx || xPos > maxx || yPos < miny || yPos > maxy|| zPos < minz || zPos > maxz) continue;
-
             // If we have cosmic rays then we need to get the offset which allows translating from
             // when they were generated vs when they were tracked.
             // Note that this also explicitly checks that they are in a TPC volume
@@ -463,9 +443,9 @@ namespace evd {
               geo::TPCID tpcID = geom->PositionToTPCID(hitLocation);
               geo::PlaneID planeID(tpcID, 0);
 
-              xPosMinTick = theDetector->ConvertTicksToX(0, planeID);
-              xPosMaxTick = theDetector->ConvertTicksToX(theDetector->NumberTimeSamples(), planeID);
-              xOffset = theDetector->ConvertTicksToX(g4Ticks, planeID) - xPosMinTick;
+              xPosMinTick = detProp.ConvertTicksToX(0, planeID);
+              xPosMaxTick = detProp.ConvertTicksToX(detProp.NumberTimeSamples(), planeID);
+              xOffset = detProp.ConvertTicksToX(g4Ticks, planeID) - xPosMinTick;
 
               if (xPosMaxTick < xPosMinTick) std::swap(xPosMinTick, xPosMaxTick);
             }
@@ -542,13 +522,8 @@ namespace evd {
       // Apparently, it can happen that we get a null pointer here or maybe no points to plot
       if (!mcPart || partToPosMapItr->second.empty()) continue;
 
-      // The following is meant to get the correct offset for drawing the particle trajectory
-      // In particular, the cosmic rays will not be correctly placed without this
-      //double g4Ticks(detClocks->TPCG4Time2Tick(mcPart->T())+theDetector->GetXTicksOffset(0,0,0)-theDetector->TriggerOffset());
-      //double g4Ticks(detClocks->TPCG4Time2Tick(mcPart->T())+theDetector->GetXTicksOffset(0,0,0));
-      double g4Ticks(detClocks->TPCG4Time2Tick(mcPart->T()) - theDetector->TriggerOffset());
-      //        double g4Ticks(detClocks->TPCG4Time2Tick(mcPart->T()));
-      double xOffset(0.); //theDetector->ConvertTicksToX(g4Ticks, 0, 0, 0));
+      double g4Ticks(clockData.TPCG4Time2Tick(mcPart->T()) - trigger_offset(clockData));
+      double xOffset = 0.;
       double xPosMinTick = 0.;
       double xPosMaxTick = std::numeric_limits<double>::max();
 
@@ -576,9 +551,9 @@ namespace evd {
           geo::TPCID tpcID = geom->PositionToTPCID(hitLocation);
           geo::PlaneID planeID(tpcID, 0);
 
-          xPosMinTick = theDetector->ConvertTicksToX(0, planeID);
-          xPosMaxTick = theDetector->ConvertTicksToX(theDetector->NumberTimeSamples(), planeID);
-          xOffset = theDetector->ConvertTicksToX(g4Ticks, planeID) - xPosMinTick;
+          xPosMinTick = detProp.ConvertTicksToX(0, planeID);
+          xPosMaxTick = detProp.ConvertTicksToX(detProp.NumberTimeSamples(), planeID);
+          xOffset = detProp.ConvertTicksToX(g4Ticks, planeID) - xPosMinTick;
 
           if (xPosMaxTick < xPosMinTick) std::swap(xPosMinTick, xPosMaxTick);
         }
@@ -663,9 +638,10 @@ namespace evd {
     if (!drawopt->fShowMCTruthTrajectories) return;
 
     geo::GeometryCore const* geom = lar::providerFrom<geo::Geometry>();
-    detinfo::DetectorProperties const* theDetector =
-      lar::providerFrom<detinfo::DetectorPropertiesService>();
-    detinfo::DetectorClocks const* detClocks = lar::providerFrom<detinfo::DetectorClocksService>();
+    auto const clockData =
+      art::ServiceHandle<detinfo::DetectorClocksService const>()->DataFor(evt);
+    auto const detProp =
+      art::ServiceHandle<detinfo::DetectorPropertiesService const>()->DataFor(evt, clockData);
 
     // get the particles from the Geant4 step
     std::vector<const simb::MCParticle*> plist;
@@ -673,15 +649,11 @@ namespace evd {
 
     // Useful variables
 
-    //double detHalfWidth(geom->DetHalfWidth());
     double xMinimum(-1. * (maxx - minx));
     double xMaximum(2. * (maxx - minx));
 
-    //    double detHalfHeight(geom->DetHalfHeight());
-    //    double zMinimum(0.);
-    //    double zMaximum(geom->DetLength());
-
-    // Use the LArVoxelList to get the true energy deposition locations as opposed to using MCTrajectories
+    // Use the LArVoxelList to get the true energy deposition locations as
+    // opposed to using MCTrajectories
     const sim::LArVoxelList voxels =
       sim::SimListUtils::GetLArVoxelList(evt, drawopt->fG4ModuleLabel.label());
 
@@ -771,16 +743,17 @@ namespace evd {
                 tpcminx = tpcgeo.MinX();
                 tpcmaxx = tpcgeo.MaxX();
 
-                coeff = theDetector->GetXTicksCoefficient(tpc, cryo);
+                coeff = detProp.GetXTicksCoefficient(tpc, cryo);
                 readoutwindowsize =
-                  theDetector->ConvertTicksToX(theDetector->ReadOutWindowSize(), 0, tpc, cryo);
+                  detProp.ConvertTicksToX(detProp.ReadOutWindowSize(), 0, tpc, cryo);
 
-                // The following is meant to get the correct offset for drawing the particle trajectory
-                // In particular, the cosmic rays will not be correctly placed without this
-                g4Ticks = detClocks->TPCG4Time2Tick(mcPart->T()) +
-                          theDetector->GetXTicksOffset(0, tpc, cryo) - theDetector->TriggerOffset();
+                // The following is meant to get the correct offset for drawing
+                // the particle trajectory In particular, the cosmic rays will
+                // not be correctly placed without this
+                g4Ticks = clockData.TPCG4Time2Tick(mcPart->T()) +
+                          detProp.GetXTicksOffset(0, tpc, cryo) - trigger_offset(clockData);
 
-                xOffset = theDetector->ConvertTicksToX(g4Ticks, 0, tpc, cryo);
+                xOffset = detProp.ConvertTicksToX(g4Ticks, 0, tpc, cryo);
               }
               else {
                 xOffset = 0;
@@ -895,15 +868,15 @@ namespace evd {
             tpcminx = tpcgeo.MinX();
             tpcmaxx = tpcgeo.MaxX();
 
-            coeff = theDetector->GetXTicksCoefficient(tpc, cryo);
-            readoutwindowsize =
-              theDetector->ConvertTicksToX(theDetector->ReadOutWindowSize(), 0, tpc, cryo);
-            // The following is meant to get the correct offset for drawing the particle trajectory
-            // In particular, the cosmic rays will not be correctly placed without this
-            g4Ticks = detClocks->TPCG4Time2Tick(mcPart->T()) +
-                      theDetector->GetXTicksOffset(0, tpc, cryo) - theDetector->TriggerOffset();
+            coeff = detProp.GetXTicksCoefficient(tpc, cryo);
+            readoutwindowsize = detProp.ConvertTicksToX(detProp.ReadOutWindowSize(), 0, tpc, cryo);
+            // The following is meant to get the correct offset for drawing the
+            // particle trajectory In particular, the cosmic rays will not be
+            // correctly placed without this
+            g4Ticks = clockData.TPCG4Time2Tick(mcPart->T()) +
+                      detProp.GetXTicksOffset(0, tpc, cryo) - trigger_offset(clockData);
 
-            xOffset = theDetector->ConvertTicksToX(g4Ticks, 0, tpc, cryo);
+            xOffset = detProp.ConvertTicksToX(g4Ticks, 0, tpc, cryo);
           }
           else {
             xOffset = 0;

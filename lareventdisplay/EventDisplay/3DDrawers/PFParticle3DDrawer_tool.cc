@@ -45,8 +45,6 @@ namespace evdb_tool {
     if (!drawOpt->fShowMCTruthTrajectories) return;
 
     //  geo::GeometryCore const* geom = lar::providerFrom<geo::Geometry>();
-    detinfo::DetectorProperties const* theDetector = lar::providerFrom<detinfo::DetectorPropertiesService>();
-    detinfo::DetectorClocks     const* detClocks   = lar::providerFrom<detinfo::DetectorClocksService>();
     art::ServiceHandle<geo::Geometry const>  geom;
 
     // Recover a handle to the collection of MCParticles

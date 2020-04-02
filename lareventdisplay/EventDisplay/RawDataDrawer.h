@@ -4,19 +4,19 @@
 #ifndef EVD_RAWDATADRAWER_H
 #define EVD_RAWDATADRAWER_H
 
+#include "art/Framework/Principal/fwd.h"
 #include "larcoreobj/SimpleTypesAndConstants/geo_types.h" // geo::PlaneID
 
 #include <vector>
+
 #ifndef __CINT__
-
 #include "larevt/CalibrationDBI/Interface/ChannelStatusProvider.h" // lariov::ChannelStatusProvider::Status_t
-
 #endif
 
 class TH1F;
 class TVirtualPad;
-namespace art {
-  class Event;
+namespace detinfo {
+  class DetectorPropertiesData;
 }
 namespace evdb {
   class View2D;
@@ -64,12 +64,10 @@ namespace evd {
      * is extracted. In the second, that information is used for rendering.
      */
     void RawDigit2D(art::Event const& evt,
+                    detinfo::DetectorPropertiesData const& detProp,
                     evdb::View2D* view,
                     unsigned int plane,
                     bool bZoomToRoI = false);
-
-    /*     void RawDigit3D(const art::Event& evt, */
-    /* 		    evdb::View3D*     view); */
 
     void FillQHisto(const art::Event& evt, unsigned int plane, TH1F* histo);
 
@@ -197,7 +195,10 @@ namespace evd {
     void QueueDrawingBoxes(evdb::View2D* view,
                            geo::PlaneID const& pid,
                            std::vector<BoxInfo_t> const& BoxInfo);
-    void RunDrawOperation(art::Event const& evt, evdb::View2D* view, unsigned int plane);
+    void RunDrawOperation(art::Event const& evt,
+                          detinfo::DetectorPropertiesData const& detProp,
+                          evdb::View2D* view,
+                          unsigned int plane);
     void RunRoIextractor(art::Event const& evt, unsigned int plane);
     void SetDrawingLimitsFromRoI(geo::PlaneID::PlaneID_t plane);
     void

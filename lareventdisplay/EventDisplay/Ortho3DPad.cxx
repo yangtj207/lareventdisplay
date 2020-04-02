@@ -18,6 +18,8 @@
 
 #include "larcore/Geometry/Geometry.h"
 #include "larcorealg/Geometry/TPCGeo.h"
+#include "lardata/DetectorInfoServices/DetectorClocksService.h"
+#include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 #include "lareventdisplay/EventDisplay/Ortho3DPad.h"
 #include "lareventdisplay/EventDisplay/RecoBaseDrawer.h"
 #include "lareventdisplay/EventDisplay/SimulationDrawer.h"
@@ -233,18 +235,22 @@ evd::Ortho3DPad::Draw(const char* /*opt*/)
 
   // grab the event from the singleton
 
-  const art::Event* evt = evdb::EventHolder::Instance()->GetEvent();
-
   // Insert graphic objects into fView collection.
 
-  if (evt) {
-    SimulationDraw()->MCTruthOrtho(*evt, fProj, fMSize, fView);
-    RecoBaseDraw()->SpacePointOrtho(*evt, fProj, fMSize, fView);
-    RecoBaseDraw()->PFParticleOrtho(*evt, fProj, fMSize, fView);
-    RecoBaseDraw()->ProngOrtho(*evt, fProj, fMSize, fView);
-    RecoBaseDraw()->SeedOrtho(*evt, fProj, fView);
-    RecoBaseDraw()->OpFlashOrtho(*evt, fProj, fView);
-    RecoBaseDraw()->VertexOrtho(*evt, fProj, fView);
+  if (art::Event const* evtPtr = evdb::EventHolder::Instance()->GetEvent()) {
+    auto const& evt = *evtPtr;
+    auto const clockData =
+      art::ServiceHandle<detinfo::DetectorClocksService const>()->DataFor(evt);
+    auto const detProp =
+      art::ServiceHandle<detinfo::DetectorPropertiesService const>()->DataFor(evt, clockData);
+
+    SimulationDraw()->MCTruthOrtho(evt, fProj, fMSize, fView);
+    RecoBaseDraw()->SpacePointOrtho(evt, fProj, fMSize, fView);
+    RecoBaseDraw()->PFParticleOrtho(evt, fProj, fMSize, fView);
+    RecoBaseDraw()->ProngOrtho(evt, fProj, fMSize, fView);
+    RecoBaseDraw()->SeedOrtho(evt, fProj, fView);
+    RecoBaseDraw()->OpFlashOrtho(evt, clockData, detProp, fProj, fView);
+    RecoBaseDraw()->VertexOrtho(evt, fProj, fView);
   }
   // Draw objects on pad.
 

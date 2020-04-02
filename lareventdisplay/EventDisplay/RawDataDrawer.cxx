@@ -652,7 +652,7 @@ namespace evd {
       template <typename Stream>
       void Dump(Stream&& out) const;
 
-    protected:
+    private:
       GridAxisClass wire_axis;
       GridAxisClass tdc_axis;
     }; // CellGridClass
@@ -661,42 +661,25 @@ namespace evd {
     /// Applies Birks correction
     class ADCCorrectorClass {
     public:
-      /// Default constructor: awaits for update()
-      ADCCorrectorClass() {}
-
-      /// Constructor: update()s with the specified information
-      ADCCorrectorClass(geo::PlaneID const& pid) { update(pid); }
+      ADCCorrectorClass(detinfo::DetectorPropertiesData const& dp, geo::PlaneID const& pid)
+        : detProp{dp}
+        , wirePitch{art::ServiceHandle<geo::Geometry const>()->WirePitch(pid)}
+        , electronsToADC{dp.ElectronsToADC()}
+      {}
 
       /// Applies Birks correction to the specified pedestal-subtracted charge
       double
-      Correct(float adc) const
+      operator()(float adc) const
       {
         if (adc < 0.) return 0.;
         double const dQdX = adc / wirePitch / electronsToADC;
-        detinfo::DetectorProperties const* detp =
-          lar::providerFrom<detinfo::DetectorPropertiesService>();
-        return detp->BirksCorrection(dQdX);
-      } // Correct()
-      double
-      operator()(float adc) const
-      {
-        return Correct(adc);
+        return detProp.BirksCorrection(dQdX);
       }
 
-      void
-      update(geo::PlaneID const& pid)
-      {
-        art::ServiceHandle<geo::Geometry const> geo;
-        wirePitch = geo->WirePitch(pid);
-
-        detinfo::DetectorProperties const* detp =
-          lar::providerFrom<detinfo::DetectorPropertiesService>();
-        electronsToADC = detp->ElectronsToADC();
-      } // update()
-
-    protected:
-      float wirePitch;      ///< wire pitch
-      float electronsToADC; ///< conversion constant
+    private:
+      detinfo::DetectorPropertiesData const& detProp;
+      double wirePitch;      ///< wire pitch
+      double electronsToADC; ///< conversion constant
 
     }; // ADCCorrectorClass
        //--------------------------------------------------------------------------
@@ -890,7 +873,7 @@ namespace evd {
       : OperationBaseClass(pid, data_drawer)
     {}
 
-    virtual bool
+    bool
     Initialize() override
     {
       bool bAllOk = true;
@@ -899,14 +882,14 @@ namespace evd {
       return bAllOk;
     }
 
-    virtual bool
+    bool
     ProcessWire(geo::WireID const& wireID) override
     {
       for (std::unique_ptr<OperationBaseClass> const& op : operations)
         if (op->ProcessWire(wireID)) return true;
       return false;
     }
-    virtual bool
+    bool
     ProcessTick(size_t tick) override
     {
       for (std::unique_ptr<OperationBaseClass> const& op : operations)
@@ -914,7 +897,7 @@ namespace evd {
       return false;
     }
 
-    virtual bool
+    bool
     Operate(geo::WireID const& wireID, size_t tick, float adc) override
     {
       for (std::unique_ptr<OperationBaseClass> const& op : operations)
@@ -922,7 +905,7 @@ namespace evd {
       return true;
     }
 
-    virtual bool
+    bool
     Finish() override
     {
       bool bAllOk = true;
@@ -931,7 +914,7 @@ namespace evd {
       return bAllOk;
     }
 
-    virtual std::string
+    std::string
     Name() const override
     {
       std::string msg = cet::demangle_symbol(typeid(*this).name());
@@ -1084,16 +1067,19 @@ namespace evd {
   //......................................................................
   class RawDataDrawer::BoxDrawer : public RawDataDrawer::OperationBaseClass {
   public:
-    BoxDrawer(geo::PlaneID const& pid, RawDataDrawer* dataDrawer, evdb::View2D* new_view)
+    BoxDrawer(detinfo::DetectorPropertiesData const& detProp,
+              geo::PlaneID const& pid,
+              RawDataDrawer* dataDrawer,
+              evdb::View2D* new_view)
       : OperationBaseClass(pid, dataDrawer)
       , view(new_view)
       , rawCharge(0.)
       , convertedCharge(0.)
       , drawingRange(*(dataDrawer->fDrawingRange))
-      , ADCCorrector(PlaneID())
+      , ADCCorrector(detProp, PlaneID())
     {}
 
-    virtual bool
+    bool
     Initialize() override
     {
       art::ServiceHandle<evd::RawDrawingOptions const> rawopt;
@@ -1111,19 +1097,19 @@ namespace evd {
       return true;
     }
 
-    virtual bool
+    bool
     ProcessWire(geo::WireID const& wire) override
     {
       return drawingRange.hasWire((int)wire.Wire);
     }
 
-    virtual bool
+    bool
     ProcessTick(size_t tick) override
     {
       return drawingRange.hasTick((float)tick);
     }
 
-    virtual bool
+    bool
     Operate(geo::WireID const& wireID, size_t tick, float adc) override
     {
       geo::WireID::WireID_t const wire = wireID.Wire;
@@ -1142,7 +1128,7 @@ namespace evd {
       return true;
     }
 
-    virtual bool
+    bool
     Finish() override
     {
       // write the information back
@@ -1249,7 +1235,10 @@ namespace evd {
   } // RawDataDrawer::QueueDrawingBoxes()
 
   void
-  RawDataDrawer::RunDrawOperation(art::Event const& evt, evdb::View2D* view, unsigned int plane)
+  RawDataDrawer::RunDrawOperation(art::Event const& evt,
+                                  detinfo::DetectorPropertiesData const& detProp,
+                                  evdb::View2D* view,
+                                  unsigned int plane)
   {
 
     // Check if we're supposed to draw raw hits at all
@@ -1257,7 +1246,7 @@ namespace evd {
     if (rawopt->fDrawRawDataOrCalibWires == 1) return;
 
     geo::PlaneID const pid(rawopt->CurrentTPC(), plane);
-    BoxDrawer drawer(pid, this, view);
+    BoxDrawer drawer(detProp, pid, this, view);
     if (!RunOperation(evt, &drawer)) {
       throw art::Exception(art::errors::Unknown) << "RawDataDrawer::RunDrawOperation(): "
                                                     "somewhere something went somehow wrong";
@@ -1275,7 +1264,7 @@ namespace evd {
       , RoIthreshold(art::ServiceHandle<evd::RawDrawingOptions const>()->RoIthreshold(PlaneID()))
     {}
 
-    virtual bool
+    bool
     Operate(geo::WireID const& wireID, size_t tick, float adc) override
     {
       if (std::abs(adc) < RoIthreshold) return true;
@@ -1284,7 +1273,7 @@ namespace evd {
       return true;
     } // Operate()
 
-    virtual bool
+    bool
     Finish() override
     {
       geo::PlaneID::PlaneID_t const plane = PlaneID().Plane;
@@ -1342,12 +1331,12 @@ namespace evd {
 
   void
   RawDataDrawer::RawDigit2D(art::Event const& evt,
+                            detinfo::DetectorPropertiesData const& detProp,
                             evdb::View2D* view,
                             unsigned int plane,
                             bool bZoomToRoI /* = false */
   )
   {
-
     art::ServiceHandle<evd::RawDrawingOptions const> rawopt;
     geo::PlaneID const pid(rawopt->CurrentTPC(), plane);
 
@@ -1401,7 +1390,7 @@ namespace evd {
 
       // we will do the drawing in one pass
       MF_LOG_DEBUG("RawDataDrawer") << __func__ << "() setting up one-pass drawing";
-      operation.reset(new BoxDrawer(pid, this, view));
+      operation.reset(new BoxDrawer(detProp, pid, this, view));
 
       if (!hasRoI) { // we don't have any RoI; since it's cheap, let's get it
         MF_LOG_DEBUG("RawDataDrawer") << __func__ << "() adding RoI extraction";
@@ -1445,7 +1434,7 @@ namespace evd {
 
       // then we draw
       MF_LOG_DEBUG("RawDataDrawer") << __func__ << "() setting up drawing";
-      BoxDrawer drawer(pid, this, view);
+      BoxDrawer drawer(detProp, pid, this, view);
       if (!RunOperation(evt, &drawer)) {
         throw art::Exception(art::errors::Unknown) << "RawDataDrawer::RunDrawOperation():"
                                                       " something went somehow wrong while drawing";
@@ -1648,7 +1637,7 @@ namespace evd {
   //......................................................................
 
   //   void RawDataDrawer::RawDigit3D(const art::Event& evt,
-  // 				 evdb::View3D*     view)
+  //                             evdb::View3D*     view)
   //   {
   //     // Check if we're supposed to draw raw hits at all
   //     art::ServiceHandle<evd::RawDrawingOptions const> rawopt;
@@ -1666,67 +1655,67 @@ namespace evd {
   //       GetRawDigits(evt, which, rawhits);
 
   //       for (unsigned int i=0; i<rawhits.size(); ++i) {
-  // 	double t = 0;
-  // 	double q = 0;
-  // 	t = rawhits[i]->fTDC[0];
-  // 	for (unsigned int j=0; j<rawhits[i]->NADC(); ++j) {
-  // 	  q += rawhits[i]->ADC(j);
-  // 	}
-  // 	// Hack for now...
-  // 	if (q<=0.0) q = 1+i%10;
+  //    double t = 0;
+  //    double q = 0;
+  //    t = rawhits[i]->fTDC[0];
+  //    for (unsigned int j=0; j<rawhits[i]->NADC(); ++j) {
+  //      q += rawhits[i]->ADC(j);
+  //    }
+  //    // Hack for now...
+  //    if (q<=0.0) q = 1+i%10;
 
-  // 	// Get the cell geometry for the hit
-  // 	int         iplane = cmap->GetPlane(rawhits[i].get());
-  // 	int         icell  = cmap->GetCell(rawhits[i].get());
-  // 	double      xyz[3];
-  // 	double      dpos[3];
-  // 	geo::View_t v;
-  // 	geom->CellInfo(iplane, icell, &v, xyz, dpos);
+  //    // Get the cell geometry for the hit
+  //    int         iplane = cmap->GetPlane(rawhits[i].get());
+  //    int         icell  = cmap->GetCell(rawhits[i].get());
+  //    double      xyz[3];
+  //    double      dpos[3];
+  //    geo::View_t v;
+  //    geom->CellInfo(iplane, icell, &v, xyz, dpos);
 
-  // 	switch (rawopt->fRawDigit3DStyle) {
-  // 	case 1:
-  // 	  //
-  // 	  // Render digits as towers
-  // 	  //
-  // 	  if (v==geo::kX) {
-  // 	    tower.AddHit(v, iplane, icell, xyz[0], xyz[2], q,  t);
-  // 	  }
-  // 	  else if (v==geo::kY) {
-  // 	    tower.AddHit(v, iplane, icell, xyz[1], xyz[2], q, t);
-  // 	  }
-  // 	  else abort();
-  // 	  break;
-  // 	default:
-  // 	  //
-  // 	  // Render Digits as boxes
-  // 	  //
-  // 	  TPolyLine3D& p = view->AddPolyLine3D(5,kGreen+1,1,2);
-  // 	  double sf = std::sqrt(0.01*q);
-  // 	  if (v==geo::kX) {
-  // 	    double x1 = xyz[0] - sf*dpos[0];
-  // 	    double x2 = xyz[0] + sf*dpos[0];
-  // 	    double z1 = xyz[2] - sf*dpos[2];
-  // 	    double z2 = xyz[2] + sf*dpos[2];
-  // 	    p.SetPoint(0, x1, geom->DetHalfHeight(), z1);
-  // 	    p.SetPoint(1, x2, geom->DetHalfHeight(), z1);
-  // 	    p.SetPoint(2, x2, geom->DetHalfHeight(), z2);
-  // 	    p.SetPoint(3, x1, geom->DetHalfHeight(), z2);
-  // 	    p.SetPoint(4, x1, geom->DetHalfHeight(), z1);
-  // 	  }
-  // 	  else if (v==geo::kY) {
-  // 	    double y1 = xyz[1] - sf*dpos[1];
-  // 	    double y2 = xyz[1] + sf*dpos[1];
-  // 	    double z1 = xyz[2] - sf*dpos[2];
-  // 	    double z2 = xyz[2] + sf*dpos[2];
-  // 	    p.SetPoint(0, geom->DetHalfWidth(), y1, z1);
-  // 	    p.SetPoint(1, geom->DetHalfWidth(), y2, z1);
-  // 	    p.SetPoint(2, geom->DetHalfWidth(), y2, z2);
-  // 	    p.SetPoint(3, geom->DetHalfWidth(), y1, z2);
-  // 	    p.SetPoint(4, geom->DetHalfWidth(), y1, z1);
-  // 	  }
-  // 	  else abort();
-  // 	  break;
-  // 	} // switch fRawDigit3DStyle
+  //    switch (rawopt->fRawDigit3DStyle) {
+  //    case 1:
+  //      //
+  //      // Render digits as towers
+  //      //
+  //      if (v==geo::kX) {
+  //        tower.AddHit(v, iplane, icell, xyz[0], xyz[2], q,  t);
+  //      }
+  //      else if (v==geo::kY) {
+  //        tower.AddHit(v, iplane, icell, xyz[1], xyz[2], q, t);
+  //      }
+  //      else abort();
+  //      break;
+  //    default:
+  //      //
+  //      // Render Digits as boxes
+  //      //
+  //      TPolyLine3D& p = view->AddPolyLine3D(5,kGreen+1,1,2);
+  //      double sf = std::sqrt(0.01*q);
+  //      if (v==geo::kX) {
+  //        double x1 = xyz[0] - sf*dpos[0];
+  //        double x2 = xyz[0] + sf*dpos[0];
+  //        double z1 = xyz[2] - sf*dpos[2];
+  //        double z2 = xyz[2] + sf*dpos[2];
+  //        p.SetPoint(0, x1, geom->DetHalfHeight(), z1);
+  //        p.SetPoint(1, x2, geom->DetHalfHeight(), z1);
+  //        p.SetPoint(2, x2, geom->DetHalfHeight(), z2);
+  //        p.SetPoint(3, x1, geom->DetHalfHeight(), z2);
+  //        p.SetPoint(4, x1, geom->DetHalfHeight(), z1);
+  //      }
+  //      else if (v==geo::kY) {
+  //        double y1 = xyz[1] - sf*dpos[1];
+  //        double y2 = xyz[1] + sf*dpos[1];
+  //        double z1 = xyz[2] - sf*dpos[2];
+  //        double z2 = xyz[2] + sf*dpos[2];
+  //        p.SetPoint(0, geom->DetHalfWidth(), y1, z1);
+  //        p.SetPoint(1, geom->DetHalfWidth(), y2, z1);
+  //        p.SetPoint(2, geom->DetHalfWidth(), y2, z2);
+  //        p.SetPoint(3, geom->DetHalfWidth(), y1, z2);
+  //        p.SetPoint(4, geom->DetHalfWidth(), y1, z1);
+  //      }
+  //      else abort();
+  //      break;
+  //    } // switch fRawDigit3DStyle
   //       }//end loop over raw digits
   //     }// end loop over RawDigit modules
 

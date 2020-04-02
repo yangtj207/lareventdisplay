@@ -84,8 +84,6 @@ void DrawSimPhoton3D::Draw(const art::Event& evt, evdb::View3D* view) const
         mf::LogDebug("SimPhoton3DDrawer") << "Starting loop over " << simPhotonsHandle->size() << " SimPhotons, " << std::endl;
         
         // Get the detector properties, clocks...
-//        detinfo::DetectorProperties const*           theDetector = lar::providerFrom<detinfo::DetectorPropertiesService>();
-//        detinfo::DetectorClocks     const*           detClocks   = lar::providerFrom<detinfo::DetectorClocksService>();
         art::ServiceHandle<geo::Geometry>            geom;
         art::ServiceHandle<evd::ColorDrawingOptions> cst;
 

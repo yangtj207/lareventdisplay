@@ -4,6 +4,7 @@
 ////////////////////////////////////////////////////////////////////////
 
 #include "larcore/Geometry/Geometry.h"
+#include "lardata/DetectorInfoServices/DetectorClocksService.h"
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 #include "lardataalg/DetectorInfo/DetectorProperties.h"
 #include "lardataobj/RecoBase/OpFlash.h"
@@ -28,8 +29,6 @@ namespace evdb_tool {
   public:
     explicit OpFlash3DDrawer(const fhicl::ParameterSet&);
 
-    ~OpFlash3DDrawer();
-
     void Draw(const art::Event&, evdb::View3D*) const override;
 
   private:
@@ -43,9 +42,7 @@ namespace evdb_tool {
 
   //----------------------------------------------------------------------
   // Constructor.
-  OpFlash3DDrawer::OpFlash3DDrawer(const fhicl::ParameterSet& pset) { return; }
-
-  OpFlash3DDrawer::~OpFlash3DDrawer() {}
+  OpFlash3DDrawer::OpFlash3DDrawer(const fhicl::ParameterSet& pset) {}
 
   void
   OpFlash3DDrawer::Draw(const art::Event& event, evdb::View3D* view) const
@@ -56,8 +53,11 @@ namespace evdb_tool {
 
     // Service recovery
     art::ServiceHandle<geo::Geometry> geo;
-    detinfo::DetectorProperties const* det =
-      lar::providerFrom<detinfo::DetectorPropertiesService>();
+    auto const clock_data =
+      art::ServiceHandle<detinfo::DetectorClocksService const>()->DataFor(event);
+    auto const det_prop =
+      art::ServiceHandle<detinfo::DetectorPropertiesService const>()->DataFor(event,
+                                                                                   clock_data);
     art::ServiceHandle<evd::ColorDrawingOptions> cst;
 
     std::vector<geo::PlaneID> planeIDVec;
@@ -104,17 +104,7 @@ namespace evdb_tool {
         if (opFlashPtr->Time() > recoOpt->fFlashTMax) continue;
 
         // Start by going through the associated OpHits
-        const std::vector<art::Ptr<recob::OpHit>> opHitVec = opHitAssnVec.at(opFlashPtr.key());
-
-        //const std::vector<double>& peVec = opFlashPtr->PEs();
-
-        //std::cout << "    -Flash #PEs: " << peVec.size() << ", vals (idx:PE): ";
-        //for(size_t idx = 0; idx < peVec.size(); idx++) std::cout << idx << ":" << peVec[idx] << " ";
-        //std::cout << std::endl;
-        //
-        //std::cout << "    -OpHitVec size: " << opHitVec.size() << ", chan/T/PE: ";
-        //for(const auto& opHit : opHitVec) std::cout << opHit->OpChannel() << "/" << opHit->PeakTime() << "/" << opHit->PE() << " ";
-        //std::cout << std::endl;
+        const std::vector<art::Ptr<recob::OpHit>>& opHitVec = opHitAssnVec.at(opFlashPtr.key());
 
         for (const auto& opHit : opHitVec)
           opHitPEVec.push_back(opHit->PE());
@@ -163,15 +153,16 @@ namespace evdb_tool {
           // Start by going through the associated OpHits
           const std::vector<art::Ptr<recob::OpHit>> opHitVec = opHitAssnVec.at(opFlashPtr.key());
 
-          // We use the flash time to give us an x position (for now... will need a better way eventually)
-          float flashTick =
-            opFlashPtr->Time() / det->SamplingRate() * 1e3 + det->GetXTicksOffset(planeIDVec[idx]);
-          float flashWidth = opFlashPtr->TimeWidth() / det->SamplingRate() * 1e3 +
-                             det->GetXTicksOffset(planeIDVec[idx]);
+          // We use the flash time to give us an x position (for now... will
+          // need a better way eventually)
+          float flashTick = opFlashPtr->Time() / sampling_rate(clock_data) * 1e3 +
+                            det_prop.GetXTicksOffset(planeIDVec[idx]);
+          float flashWidth = opFlashPtr->TimeWidth() / sampling_rate(clock_data) * 1e3 +
+                             det_prop.GetXTicksOffset(planeIDVec[idx]);
 
           // Now convert from time to distance...
-          float flashXpos = det->ConvertTicksToX(flashTick, planeIDVec[idx]);
-          float flashXWid = det->ConvertTicksToX(flashWidth, planeIDVec[idx]);
+          float flashXpos = det_prop.ConvertTicksToX(flashTick, planeIDVec[idx]);
+          float flashXWid = det_prop.ConvertTicksToX(flashWidth, planeIDVec[idx]);
 
           // Loop through the OpHits here
           for (const auto& opHit : opHitVec) {

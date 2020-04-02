@@ -19,6 +19,7 @@
 
 #include "larcore/Geometry/Geometry.h"
 #include "larcorealg/Geometry/PlaneGeo.h"
+#include "lardata/DetectorInfoServices/DetectorClocksService.h"
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 #include "lareventdisplay/EventDisplay/ColorDrawingOptions.h"
 #include "lareventdisplay/EventDisplay/EvdLayoutOptions.h"
@@ -420,13 +421,13 @@ namespace evd {
   //     // loop over the bools to see which axes need to change
   //     for(unsigned int i = 0; i < axischanged.size(); ++i){
   //       if (axischanged[i]) {
-  // 	fPlanes[i]->SetWireRange(ilo, ihi);
-  // 	fPlanes[i]->Pad()->cd();
-  // 	fPlanes[i]->Pad()->Modified();
-  // 	fPlanes[i]->Pad()->Update();
+  //    fPlanes[i]->SetWireRange(ilo, ihi);
+  //    fPlanes[i]->Pad()->cd();
+  //    fPlanes[i]->Pad()->Modified();
+  //    fPlanes[i]->Pad()->Update();
   //
-  // 	ilolast = ilo;
-  // 	ihilast = ihi;
+  //    ilolast = ilo;
+  //    ihilast = ihi;
   //       }
   //     }
   //
@@ -477,7 +478,7 @@ namespace evd {
 
     case kButton1Shift:
       shift_lock = 1;
-      // 	TWQMultiTPCProjectionView::SelectHit() is undefined
+      //        TWQMultiTPCProjectionView::SelectHit() is undefined
       //if(evdlayoutopt->fMakeClusters==1){wqpp->SelectHit(plane);}
       //else {wqpp->SelectPoint(plane);}
       wqpp->SelectPoint(plane);
@@ -597,13 +598,10 @@ namespace evd {
 
   //......................................................................
   double
-  TWQMultiTPCProjectionView::FindLineLength()
+  TWQMultiTPCProjectionView::FindLineLength(detinfo::DetectorClocksData const& clockData,
+                                            detinfo::DetectorPropertiesData const& detProp)
   {
     // if list is larger than or equal to two, can project to XYZ and extrapolate to third plane (if exists)
-
-    ////for now leaving commented. At some point be useful to display this information somewhere
-    // for(unsigned int ix=0;ix<ppoints.size();ix++)
-    //   std::cout << "ppoints, planes,x,y :" << ix << " " << ppoints[ix].plane << " " << ppoints[ix].x << " " << ppoints[ix].y << std::endl;
 
     if (pline.size() >= 2) {
 
@@ -618,11 +616,9 @@ namespace evd {
       double y, z;
 
       art::ServiceHandle<geo::Geometry const> geom;
-      const detinfo::DetectorProperties* detp =
-        lar::providerFrom<detinfo::DetectorPropertiesService>();
       art::ServiceHandle<evd::RawDrawingOptions const> rawOpt;
-      double ftimetick = detp->SamplingRate() / 1000.;
-      double larv = detp->DriftVelocity(detp->Efield(), detp->Temperature());
+      double ftimetick = sampling_rate(clockData) / 1000.;
+      double larv = detProp.DriftVelocity(detProp.Efield(), detProp.Temperature());
 
       //find channels corresponding to found wires.
       int chan1 =
@@ -652,9 +648,9 @@ namespace evd {
         xyz_vertex_fit[1] = y;
         xyz_vertex_fit[2] = z;
         geom->Plane(pline[0].plane).LocalToWorld(origin, pos);
-        xyz_vertex_fit[0] = (pline[0].t0 - detp->TriggerOffset()) * larv * ftimetick + pos[0];
+        xyz_vertex_fit[0] = (pline[0].t0 - trigger_offset(clockData)) * larv * ftimetick + pos[0];
         geom->Plane(pline[1].plane).LocalToWorld(origin, pos);
-        second_time = (pline[1].t0 - detp->TriggerOffset()) * larv * ftimetick + pos[0];
+        second_time = (pline[1].t0 - trigger_offset(clockData)) * larv * ftimetick + pos[0];
 
         xx0 = (xyz_vertex_fit[0] + second_time) / 2;
         yy0 = y;
@@ -699,9 +695,9 @@ namespace evd {
         xyz_vertex_fit[1] = y;
         xyz_vertex_fit[2] = z;
         geom->Plane(pline[0].plane).LocalToWorld(origin, pos);
-        xyz_vertex_fit[0] = (pline[0].t1 - detp->TriggerOffset()) * larv * ftimetick + pos[0];
+        xyz_vertex_fit[0] = (pline[0].t1 - trigger_offset(clockData)) * larv * ftimetick + pos[0];
         geom->Plane(pline[1].plane).LocalToWorld(origin, pos);
-        second_time = (pline[1].t1 - detp->TriggerOffset()) * larv * ftimetick + pos[0];
+        second_time = (pline[1].t1 - trigger_offset(clockData)) * larv * ftimetick + pos[0];
 
         xx1 = (xyz_vertex_fit[0] + second_time) / 2;
         yy1 = y;
@@ -738,7 +734,8 @@ namespace evd {
 
   //......................................................................
   void
-  TWQMultiTPCProjectionView::FindEndPoint()
+  TWQMultiTPCProjectionView::FindEndPoint(detinfo::DetectorClocksData const& clockData,
+                                          detinfo::DetectorPropertiesData const& detProp)
   {
     // if list is larger than or equal to two, can project to XYZ and extrapolate to third plane (if exists)
 
@@ -752,11 +749,9 @@ namespace evd {
       double z = 0.;
 
       art::ServiceHandle<geo::Geometry const> geom;
-      const detinfo::DetectorProperties* detp =
-        lar::providerFrom<detinfo::DetectorPropertiesService>();
       art::ServiceHandle<evd::RawDrawingOptions const> rawOpt;
-      double ftimetick = detp->SamplingRate() / 1000.;
-      double larv = detp->DriftVelocity(detp->Efield(), detp->Temperature());
+      double ftimetick = sampling_rate(clockData) / 1000.;
+      double larv = detProp.DriftVelocity(detProp.Efield(), detProp.Temperature());
 
       //find channels corresponding to found wires.
       int chan1 =
@@ -783,9 +778,9 @@ namespace evd {
         xyz_vertex_fit[1] = y;
         xyz_vertex_fit[2] = z;
         geom->Plane(ppoints[0].plane).LocalToWorld(origin, pos);
-        xyz_vertex_fit[0] = (ppoints[0].t - detp->TriggerOffset()) * larv * ftimetick + pos[0];
+        xyz_vertex_fit[0] = (ppoints[0].t - trigger_offset(clockData)) * larv * ftimetick + pos[0];
         geom->Plane(ppoints[1].plane).LocalToWorld(origin, pos);
-        second_time = (ppoints[1].t - detp->TriggerOffset()) * larv * ftimetick + pos[0];
+        second_time = (ppoints[1].t - trigger_offset(clockData)) * larv * ftimetick + pos[0];
 
         TGText* tt = new TGText(Form("z:%4.1f", z));
         tt->InsLine(1, Form("x:%4.1f,", (xyz_vertex_fit[0] + second_time) / 2));
@@ -828,12 +823,13 @@ namespace evd {
         wirevertex = geom->NearestWire(pos, wplane, rawOpt->fTPC, rawOpt->fCryostat);
 
         double drifttick =
-          ((xyz_vertex_fit[0]) / detp->DriftVelocity(detp->Efield(), detp->Temperature())) *
+          ((xyz_vertex_fit[0]) / detProp.DriftVelocity(detProp.Efield(), detProp.Temperature())) *
           (1. / ftimetick);
         double timestart =
           drifttick -
-          (pos[0] / detp->DriftVelocity(detp->Efield(), detp->Temperature())) * (1. / ftimetick) +
-          detp->TriggerOffset();
+          (pos[0] / detProp.DriftVelocity(detProp.Efield(), detProp.Temperature())) *
+            (1. / ftimetick) +
+          trigger_offset(clockData);
 
         fPlanes[wplane]->Pad()->cd();
         fPlanes[wplane]->View()->Clear();
@@ -1098,7 +1094,7 @@ namespace evd {
     art::ServiceHandle<evd::EvdLayoutOptions const> evdlayoutopt;
     if (!evdlayoutopt->fShowEndPointSection) return;
 
-    // int    	 fShowEndPointMarkers;             ///< Draw EndPoint Markers if clicked.
+    // int       fShowEndPointMarkers;             ///< Draw EndPoint Markers if clicked.
 
     fFindEndpoint = new TGTextButton(fVFrame, "&Find XYZ", 150);
     fFindEndpoint->Connect("Clicked()", "evd::TWQMultiTPCProjectionView", this, "FindEndPoint()");

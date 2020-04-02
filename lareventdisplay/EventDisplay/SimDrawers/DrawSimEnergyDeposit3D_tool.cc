@@ -28,8 +28,6 @@ namespace evdb_tool {
   public:
     explicit DrawSimEnergyDeposit3D(const fhicl::ParameterSet& pset);
 
-    ~DrawSimEnergyDeposit3D();
-
     void Draw(const art::Event&, evdb::View3D*) const override;
 
   private:
@@ -44,11 +42,7 @@ namespace evdb_tool {
   DrawSimEnergyDeposit3D::DrawSimEnergyDeposit3D(const fhicl::ParameterSet& pset)
   {
     fDrawAllSimEnergy = pset.get<bool>("DrawAllSimEnergyDeposits", false);
-
-    return;
   }
-
-  DrawSimEnergyDeposit3D::~DrawSimEnergyDeposit3D() {}
 
   void
   DrawSimEnergyDeposit3D::Draw(const art::Event& evt, evdb::View3D* view) const
@@ -93,16 +87,17 @@ namespace evdb_tool {
 
     evt.getByLabel(drawOpt->fSimEnergyLabel, simEnergyDepositHandle);
 
+    auto const clockData =
+      art::ServiceHandle<detinfo::DetectorClocksService const>()->DataFor(evt);
+    auto const detProp =
+      art::ServiceHandle<detinfo::DetectorPropertiesService const>()->DataFor(evt, clockData);
+
     if (simEnergyDepositHandle.isValid() && simEnergyDepositHandle->size() > 0) {
       mf::LogDebug("SimEnergyDeposit3DDrawer")
         << "Starting loop over " << simEnergyDepositHandle->size() << " SimEnergyDeposits, "
         << std::endl;
 
       // Get the detector properties, clocks...
-      detinfo::DetectorProperties const* theDetector =
-        lar::providerFrom<detinfo::DetectorPropertiesService>();
-      detinfo::DetectorClocks const* detClocks =
-        lar::providerFrom<detinfo::DetectorClocksService>();
       art::ServiceHandle<geo::Geometry const> geom;
 
       // First step is to create a map between MCParticle and SimEnergyDeposit objects...
@@ -121,16 +116,18 @@ namespace evdb_tool {
         mcPartToSimEnergyMap[trackMCItr->second].push_back(&simEnergyDeposit);
       }
 
-      // Would like to draw the deposits as markers with colors given by particle id
-      // So we make two passes, first to fill a map with color the key and positions for the markers
+      // Would like to draw the deposits as markers with colors given by
+      // particle id So we make two passes, first to fill a map with color the
+      // key and positions for the markers
       std::map<int, std::vector<sim::SimEnergyDeposit::Point_t>> colorToPositionMap;
 
       // Now we loop through and build the mapping of color to positions
       for (const auto& mcPartToSimEnergy : mcPartToSimEnergyMap) {
-        // The first task we need to take on is to find the offset for the energy deposit
-        // This is for the case of "out of time" particles... (e.g. cosmic rays)
-        double g4Ticks(detClocks->TPCG4Time2Tick(mcPartToSimEnergy.first->T()) -
-                       theDetector->TriggerOffset());
+        // The first task we need to take on is to find the offset for the
+        // energy deposit This is for the case of "out of time" particles...
+        // (e.g. cosmic rays)
+        double g4Ticks(clockData.TPCG4Time2Tick(mcPartToSimEnergy.first->T()) -
+                       trigger_offset(clockData));
         double xOffset(0.);
         double xPosMinTick(0.);
         double xPosMaxTick(std::numeric_limits<double>::max());
@@ -145,9 +142,9 @@ namespace evdb_tool {
             geo::TPCID tpcID = geom->PositionToTPCID(point);
             geo::PlaneID planeID(tpcID, 0);
 
-            xPosMinTick = theDetector->ConvertTicksToX(0, planeID);
-            xPosMaxTick = theDetector->ConvertTicksToX(theDetector->NumberTimeSamples(), planeID);
-            xOffset = theDetector->ConvertTicksToX(g4Ticks, planeID) - xPosMinTick;
+            xPosMinTick = detProp.ConvertTicksToX(0, planeID);
+            xPosMaxTick = detProp.ConvertTicksToX(detProp.NumberTimeSamples(), planeID);
+            xOffset = detProp.ConvertTicksToX(g4Ticks, planeID) - xPosMinTick;
 
             if (xPosMaxTick < xPosMinTick) std::swap(xPosMinTick, xPosMaxTick);
           }
@@ -207,10 +204,11 @@ namespace evdb_tool {
         << std::endl;
 
       // Get the geometry service and its friends
-      detinfo::DetectorProperties const* theDetector =
-        lar::providerFrom<detinfo::DetectorPropertiesService>();
-      detinfo::DetectorClocks const* detClocks =
-        lar::providerFrom<detinfo::DetectorClocksService>();
+      auto const clockData =
+        art::ServiceHandle<detinfo::DetectorClocksService const>()->DataFor(evt);
+      auto const detProp =
+        art::ServiceHandle<detinfo::DetectorPropertiesService const>()->DataFor(evt,
+                                                                                     clockData);
       art::ServiceHandle<geo::Geometry const> geom;
 
       // Would like to draw the deposits as markers with colors given by particle id
@@ -227,10 +225,9 @@ namespace evdb_tool {
           double depTime = simEnergyDeposit.T();
           geo::TPCID tpcID = geom->PositionToTPCID(point);
           geo::PlaneID planeID(tpcID, 0);
-          double g4Ticks = detClocks->TPCG4Time2Tick(depTime) - theDetector->TriggerOffset();
-          double xPosMinTick = theDetector->ConvertTicksToX(0, planeID);
-          //                double                         xPosMaxTick = theDetector->ConvertTicksToX(theDetector->NumberTimeSamples(),planeID);
-          double xOffset = theDetector->ConvertTicksToX(g4Ticks, planeID) - xPosMinTick;
+          double g4Ticks = clockData.TPCG4Time2Tick(depTime) - trigger_offset(clockData);
+          double xPosMinTick = detProp.ConvertTicksToX(0, planeID);
+          double xOffset = detProp.ConvertTicksToX(g4Ticks, planeID) - xPosMinTick;
 
           colorToPositionMap[evd::Style::ColorFromPDG(simEnergyDeposit.PdgCode())].emplace_back(
             sim::SimEnergyDeposit::Point_t(point.X() + xOffset, point.Y(), point.Z()));

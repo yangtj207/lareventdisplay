@@ -16,6 +16,10 @@
 #include "lardataobj/RecoBase/Slice.h"
 #include "lardataobj/RecoBase/SpacePoint.h"
 #include "lareventdisplay/EventDisplay/OrthoProj.h"
+namespace detinfo {
+  class DetectorClocksData;
+  class DetectorPropertiesData;
+}
 
 class TVector3;
 class TH1F;
@@ -59,7 +63,10 @@ namespace evd {
 
   public:
     void Wire2D(const art::Event& evt, evdb::View2D* view, unsigned int plane);
-    int Hit2D(const art::Event& evt, evdb::View2D* view, unsigned int plane);
+    int Hit2D(const art::Event& evt,
+              detinfo::DetectorPropertiesData const& detProp,
+              evdb::View2D* view,
+              unsigned int plane);
     int Hit2D(std::vector<const recob::Hit*> hits,
               int color,
               evdb::View2D* view,
@@ -69,9 +76,16 @@ namespace evd {
     int Hit2D(std::vector<const recob::Hit*> hits, evdb::View2D* view, float cosmicscore);
 
     void EndPoint2D(const art::Event& evt, evdb::View2D* view, unsigned int plane);
-    void OpFlash2D(const art::Event& evt, evdb::View2D* view, unsigned int plane);
+    void OpFlash2D(const art::Event& evt,
+                   detinfo::DetectorClocksData const& clockData,
+                   detinfo::DetectorPropertiesData const& detProp,
+                   evdb::View2D* view,
+                   unsigned int plane);
 
-    void Seed2D(const art::Event& evt, evdb::View2D* view, unsigned int plane);
+    void Seed2D(const art::Event& evt,
+                detinfo::DetectorPropertiesData const& detProp,
+                evdb::View2D* view,
+                unsigned int plane);
 
     void Draw2DSlopeEndPoints(double xStart,
                               double yStart,
@@ -87,24 +101,45 @@ namespace evd {
                               double cosy,
                               int color,
                               evdb::View2D* view);
-    void Slice2D(const art::Event& evt, evdb::View2D* view, unsigned int plane);
-    void Cluster2D(const art::Event& evt, evdb::View2D* view, unsigned int plane);
-    void Prong2D(const art::Event& evt, evdb::View2D* view, unsigned int plane);
-    void DrawTrackVertexAssns2D(const art::Event& evt, evdb::View2D* view, unsigned int plane);
-    void DrawProng2D(std::vector<const recob::Hit*>& hits,
+    void Slice2D(const art::Event& evt,
+                 detinfo::DetectorPropertiesData const& detProp,
+                 evdb::View2D* view,
+                 unsigned int plane);
+    void Cluster2D(const art::Event& evt,
+                   detinfo::DetectorClocksData const& clockData,
+                   detinfo::DetectorPropertiesData const& detProp,
+                   evdb::View2D* view,
+                   unsigned int plane);
+    void Prong2D(const art::Event& evt,
+                 detinfo::DetectorClocksData const& clockData,
+                 detinfo::DetectorPropertiesData const& detProp,
+                 evdb::View2D* view,
+                 unsigned int plane);
+    void DrawTrackVertexAssns2D(const art::Event& evt,
+                                detinfo::DetectorClocksData const& clockData,
+                                detinfo::DetectorPropertiesData const& detProp,
+                                evdb::View2D* view,
+                                unsigned int plane);
+    void DrawProng2D(detinfo::DetectorPropertiesData const& detProp,
+                     std::vector<const recob::Hit*>& hits,
                      evdb::View2D* view,
                      unsigned int plane,
                      TVector3 const& startPos,
                      TVector3 const& startDir,
                      int id,
                      float cscore = -5);
-    void DrawTrack2D(std::vector<const recob::Hit*>& hits,
+    void DrawTrack2D(detinfo::DetectorClocksData const& clockData,
+                     detinfo::DetectorPropertiesData const& detProp,
+                     std::vector<const recob::Hit*>& hits,
                      evdb::View2D* view,
                      unsigned int plane,
                      const recob::Track* track,
                      int color,
                      int lineWidth);
-    void Vertex2D(const art::Event& evt, evdb::View2D* view, unsigned int plane);
+    void Vertex2D(const art::Event& evt,
+                  detinfo::DetectorPropertiesData const& detProp,
+                  evdb::View2D* view,
+                  unsigned int plane);
 
     void Event2D(const art::Event& evt, evdb::View2D* view, unsigned int plane);
 
@@ -134,7 +169,11 @@ namespace evd {
     void Vertex3D(const art::Event& evt, evdb::View3D* view);
     void Event3D(const art::Event& evt, evdb::View3D* view);
     void Slice3D(const art::Event& evt, evdb::View3D* view);
-    void OpFlashOrtho(const art::Event& evt, evd::OrthoProj_t proj, evdb::View2D* view);
+    void OpFlashOrtho(const art::Event& evt,
+                      detinfo::DetectorClocksData const& clockData,
+                      detinfo::DetectorPropertiesData const& detProp,
+                      evd::OrthoProj_t proj,
+                      evdb::View2D* view);
     void VertexOrtho(const art::PtrVector<recob::Vertex>& vertex,
                      evd::OrthoProj_t proj,
                      evdb::View2D* view,

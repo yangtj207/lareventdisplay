@@ -17,12 +17,12 @@ namespace evdb {
 }
 
 namespace recob {
-   class Hit;
+  class Hit;
 }
 
- namespace util {
-   class PxLine;
- }
+namespace util {
+  class PxLine;
+}
 
 /// Class to perform operations needed to select hits and pass them to InfoTransfer.
 namespace evd {
@@ -33,41 +33,39 @@ namespace evd {
     ~HitSelector();
 
     void SaveHits(const art::Event& evt,
-		     evdb::View2D*     view,
-		     unsigned int      plane,
-		      double x,  double y,
-		      double x1, double y1,
-		      double distance,
-		      bool good_plane=true
- 		      );
+                  evdb::View2D* view,
+                  unsigned int plane,
+                  double x,
+                  double y,
+                  double x1,
+                  double y1,
+                  double distance,
+                  bool good_plane = true);
 
     double SaveSeedLines(const art::Event& evt,
-		       evdb::View2D*     view,
-		       std::vector < util::PxLine > seedline,
-		       double distance
-		       );
+                         evdb::View2D* view,
+                         std::vector<util::PxLine> seedline,
+                         double distance);
 
+    void ChangeHit(const art::Event& evt,
+                   evdb::View2D* view,
+                   unsigned int plane,
+                   double x,
+                   double y);
 
-     void ChangeHit(const art::Event& evt,
-		     evdb::View2D*     view,
-		     unsigned int      plane,
-		       double x,  double y
- 		      );
-
-    std::vector< const recob::Hit*> GetSelectedHits(unsigned int plane);
+    std::vector<const recob::Hit*> GetSelectedHits(unsigned int plane);
     std::vector<art::Ptr<recob::Hit>> GetSelectedHitPtrs(unsigned int plane);
 
     void ClearHitList(unsigned int plane);
 
     std::vector<recob::Seed>& SeedVector();
 
-   private:
-      //int test;
-      std::vector<recob::Seed> fSeedVector;
+  private:
+    //int test;
+    std::vector<recob::Seed> fSeedVector;
 
-      std::vector < std::vector <double > > starthitout;
-      std::vector < std::vector <double > > endhitout;
-
+    std::vector<std::vector<double>> starthitout;
+    std::vector<std::vector<double>> endhitout;
   };
 }
 

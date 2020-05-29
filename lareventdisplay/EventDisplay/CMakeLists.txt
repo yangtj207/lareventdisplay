@@ -30,6 +30,7 @@ art_make_library(
     ROOT::RIO
     canvas
     cetlib_except
+    lardataalg_DetectorInfo
     larcorealg_Geometry
     lardata_ArtDataHelper
     lardata_Utilities

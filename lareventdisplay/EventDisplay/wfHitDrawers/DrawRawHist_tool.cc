@@ -39,8 +39,8 @@ private:
 
     void BookHistogram(raw::ChannelID_t&, float, float);
 
-    float                 fMaximum;
-    float                 fMinimum;
+    float fMaximum;
+    float fMinimum;
 
     std::unique_ptr<TH1F> fRawDigitHist;
 };
@@ -97,7 +97,7 @@ void DrawRawHist::Fill(evdb::View2D&     view2D,
             const lariov::DetPedestalProvider& pedestalRetrievalAlg = art::ServiceHandle<lariov::DetPedestalService const>()->GetPedestalProvider();
             
             // recover the pedestal
-            float  pedestal = 0;
+            float pedestal = 0;
             
             if (rawOpt->fPedestalOption == 0)
             {
@@ -126,10 +126,13 @@ void DrawRawHist::Fill(evdb::View2D&     view2D,
                 float signalVal = float(uncompressed[idx]) - pedestal;
                 
                 histPtr->Fill(float(idx)+0.5,signalVal);
-                
-                fMinimum  = std::min(fMinimum,float(signalVal));
-                fMaximum  = std::max(fMaximum,float(signalVal));
             }
+
+            short minimumVal = *std::min_element(uncompressed.begin(),uncompressed.end());
+            short maximumVal = *std::max_element(uncompressed.begin(),uncompressed.end());
+
+            fMinimum = float(minimumVal) - pedestal;
+            fMaximum = float(maximumVal) - pedestal;
             
             histPtr->SetLineColor(kBlack);
             

@@ -123,14 +123,6 @@ namespace evdb_tool {
       }
 
       // Now go through and process the hits back into the hit parameters
-      using HitParams_t = struct HitParams_t {
-        float hitCenter;
-        float hitSigma;
-        float hitHeight;
-        float hitStart;
-        float hitEnd;
-      };
-
       using ROIHitParamsVec = std::vector<HitParams_t>;
       using HitParamsVec = std::vector<ROIHitParamsVec>;
 
@@ -151,8 +143,8 @@ namespace evdb_tool {
         hitParams.hitCenter = hit->PeakTime();
         hitParams.hitSigma = hit->RMS();
         hitParams.hitHeight = hit->PeakAmplitude();
-        hitParams.hitStart = hit->PeakTime() - 3. * hit->RMS();
-        hitParams.hitEnd = hit->PeakTime() + 3. * hit->RMS();
+        hitParams.hitStart = hit->StartTick(); //PeakTime() - 3. * hit->RMS();
+        hitParams.hitEnd = hit->EndTick();     //PeakTime() + 3. * hit->RMS();
 
         lastEndTick = hitParams.hitEnd;
 

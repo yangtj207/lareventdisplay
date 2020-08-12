@@ -96,7 +96,6 @@ namespace evdb_tool {
         << "Starting loop over " << simEnergyDepositHandle->size() << " SimEnergyDeposits, "
         << std::endl;
 
-      // Get the detector properties, clocks...
       art::ServiceHandle<geo::Geometry const> geom;
 
       // First step is to create a map between MCParticle and SimEnergyDeposit objects...
@@ -115,9 +114,8 @@ namespace evdb_tool {
         mcPartToSimEnergyMap[trackMCItr->second].push_back(&simEnergyDeposit);
       }
 
-      // Would like to draw the deposits as markers with colors given by
-      // particle id So we make two passes, first to fill a map with color the
-      // key and positions for the markers
+      // Would like to draw the deposits as markers with colors given by particle id
+      // So we make two passes, first to fill a map with color the key and positions for the markers
       std::map<int, std::vector<sim::SimEnergyDeposit::Point_t>> colorToPositionMap;
 
       // Now we loop through and build the mapping of color to positions

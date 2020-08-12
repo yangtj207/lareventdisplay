@@ -160,7 +160,7 @@ namespace evd {
       starthitout[plane][1] = hit.PeakTime();
       starthitout[plane][0] = hit.WireID().Wire;
 
-      recob::Hit const& endhit = hit; // this obviously not correct, A.S. -> to debug
+      recob::Hit const& endhit = hit; // this obviously not correct, the fact that x,y are used for both start and end point, A.S. -> to debug
       endhitout[plane][1] = endhit.PeakTime();
       endhitout[plane][0] = endhit.WireID().Wire;
     }

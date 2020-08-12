@@ -118,10 +118,13 @@ namespace evdb_tool {
           float signalVal = float(uncompressed[idx]) - pedestal;
 
           histPtr->Fill(float(idx) + 0.5, signalVal);
-
-          fMinimum = std::min(fMinimum, float(signalVal));
-          fMaximum = std::max(fMaximum, float(signalVal));
         }
+
+        short minimumVal = *std::min_element(uncompressed.begin(), uncompressed.end());
+        short maximumVal = *std::max_element(uncompressed.begin(), uncompressed.end());
+
+        fMinimum = float(minimumVal) - pedestal;
+        fMaximum = float(maximumVal) - pedestal;
 
         histPtr->SetLineColor(kBlack);
 

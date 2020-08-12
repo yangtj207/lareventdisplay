@@ -73,7 +73,7 @@ namespace {
   {
     mf::LogWarning("RecoBaseDrawer") << "RecoBaseDrawer::" << fcn << " failed with message:\n" << e;
   }
-}
+} // namespace
 
 namespace evd {
 
@@ -747,6 +747,7 @@ namespace evd {
     }
     unsigned int c = rawOpt->fCryostat;
     unsigned int t = rawOpt->fTPC;
+    geo::PlaneID planeID(c, t, plane);
 
     for (size_t imod = 0; imod < recoOpt->fSliceLabels.size(); ++imod) {
       art::InputTag const which = recoOpt->fSliceLabels[imod];
@@ -766,9 +767,10 @@ namespace evd {
           }
           if (this->Hit2D(hits_on_plane, color, view, false, false) < 1) continue;
           if (recoOpt->fDrawSlices == 2) {
-            double tick = detProp.ConvertXToTicks(slices[isl]->Center().X(), plane, t, c);
-            double wire = geo->WireCoordinate(
-              slices[isl]->Center().Y(), slices[isl]->Center().Z(), plane, t, c);
+            geo::Point_t slicePos(
+              slices[isl]->Center().X(), slices[isl]->Center().Y(), slices[isl]->Center().Z());
+            double tick = detProp.ConvertXToTicks(slices[isl]->Center().X(), planeID);
+            double wire = geo->WireCoordinate(slicePos, planeID);
             std::string s = std::to_string(slcID);
             char const* txt = s.c_str();
             TText& slcID = view->AddText(wire, tick, txt);
@@ -778,9 +780,10 @@ namespace evd {
         }
         else {
           // draw the center, end points and direction vector
-          double tick = detProp.ConvertXToTicks(slices[isl]->Center().X(), plane, t, c);
-          double wire =
-            geo->WireCoordinate(slices[isl]->Center().Y(), slices[isl]->Center().Z(), plane, t, c);
+          geo::Point_t slicePos(
+            slices[isl]->Center().X(), slices[isl]->Center().Y(), slices[isl]->Center().Z());
+          double tick = detProp.ConvertXToTicks(slices[isl]->Center().X(), planeID);
+          double wire = geo->WireCoordinate(slicePos, planeID);
           float markerSize = 1;
           if (slices[isl]->AspectRatio() > 0) {
             markerSize = 1 / slices[isl]->AspectRatio();
@@ -790,15 +793,17 @@ namespace evd {
           ctr.SetMarkerColor(color);
           // npts, color, width, style
           TPolyLine& pline = view->AddPolyLine(2, color, 2, 3);
-          tick = detProp.ConvertXToTicks(slices[isl]->End0Pos().X(), plane, t, c);
-          wire = geo->WireCoordinate(
-            slices[isl]->End0Pos().Y(), slices[isl]->End0Pos().Z(), plane, t, c);
+          geo::Point_t slicePos0(
+            slices[isl]->End0Pos().X(), slices[isl]->End0Pos().Y(), slices[isl]->End0Pos().Z());
+          tick = detProp.ConvertXToTicks(slices[isl]->End0Pos().X(), planeID);
+          wire = geo->WireCoordinate(slicePos0, planeID);
           TMarker& end0 = view->AddMarker(wire, tick, color, 20, 1.0);
           end0.SetMarkerColor(color);
           pline.SetPoint(0, wire, tick);
+          geo::Point_t slicePos1(
+            slices[isl]->End1Pos().X(), slices[isl]->End1Pos().Y(), slices[isl]->End1Pos().Z());
           tick = detProp.ConvertXToTicks(slices[isl]->End1Pos().X(), plane, t, c);
-          wire = geo->WireCoordinate(
-            slices[isl]->End1Pos().Y(), slices[isl]->End1Pos().Z(), plane, t, c);
+          wire = geo->WireCoordinate(slicePos1, planeID);
           TMarker& end1 = view->AddMarker(wire, tick, color, 20, 1.0);
           end1.SetMarkerColor(color);
           pline.SetPoint(1, wire, tick);
@@ -1239,6 +1244,8 @@ namespace evd {
 
     unsigned int c = rawOpt->fCryostat;
     unsigned int t = rawOpt->fTPC;
+    geo::PlaneID planeID(c, t, plane);
+    geo::Point_t localPos(startPos.X(), startPos.Y(), startPos.Z());
 
     int color(evd::kColor2[id % evd::kNCOLS]);
     int lineWidth(1);
@@ -1259,8 +1266,8 @@ namespace evd {
         //draw the shower ID at the beginning of shower
         std::string s = std::to_string(id);
         char const* txt = s.c_str();
-        double tick = 30 + detProp.ConvertXToTicks(startPos.X(), plane, t, c);
-        double wire = geo->WireCoordinate(startPos.Y(), startPos.Z(), plane, t, c);
+        double tick = 30 + detProp.ConvertXToTicks(startPos.X(), planeID);
+        double wire = geo->WireCoordinate(localPos, planeID);
         TText& shwID = view->AddText(wire, tick, txt);
         shwID.SetTextColor(evd::kColor2[id % evd::kNCOLS]);
         shwID.SetTextSize(0.1);
@@ -1269,12 +1276,13 @@ namespace evd {
     else
       this->Hit2D(hits, color, view, false, false, lineWidth);
 
-    double tick0 = detProp.ConvertXToTicks(startPos.X(), plane, t, c);
-    double wire0 = geo->WireCoordinate(startPos.Y(), startPos.Z(), plane, t, c);
+    double tick0 = detProp.ConvertXToTicks(startPos.X(), planeID);
+    double wire0 = geo->WireCoordinate(localPos, planeID);
 
-    double tick1 = detProp.ConvertXToTicks((startPos + startDir).X(), plane, t, c);
-    double wire1 =
-      geo->WireCoordinate((startPos + startDir).Y(), (startPos + startDir).Z(), plane, t, c);
+    localPos = geo::Point_t(startPos + startDir); // Huh? what is this?
+
+    double tick1 = detProp.ConvertXToTicks((startPos + startDir).X(), planeID);
+    double wire1 = geo->WireCoordinate(localPos, planeID);
     double cost = 0;
     double cosw = 0;
     double ds = sqrt(pow(tick0 - tick1, 2) + pow(wire0 - wire1, 2));
@@ -1400,6 +1408,7 @@ namespace evd {
 
     unsigned int cstat = rawOpt->fCryostat;
     unsigned int tpc = rawOpt->fTPC;
+    geo::PlaneID planeID(cstat, tpc, plane);
     int tid = 0;
 
     if (recoOpt->fDrawTracks != 0) {
@@ -1430,11 +1439,11 @@ namespace evd {
 
           if (recoOpt->fDrawTracks > 1) {
             // BB: draw the track ID at the end of the track
-            double x = track.vals().at(t)->End().X();
-            double y = track.vals().at(t)->End().Y();
-            double z = track.vals().at(t)->End().Z();
-            double tick = 30 + detProp.ConvertXToTicks(x, plane, tpc, cstat);
-            double wire = geo->WireCoordinate(y, z, plane, tpc, cstat);
+            geo::Point_t trackPos(track.vals().at(t)->End().X(),
+                                  track.vals().at(t)->End().Y(),
+                                  track.vals().at(t)->End().Z());
+            double tick = 30 + detProp.ConvertXToTicks(trackPos.X(), plane, tpc, cstat);
+            double wire = geo->WireCoordinate(trackPos, geo::PlaneID(cstat, tpc, plane));
             tid =
               track.vals().at(t)->ID() &
               65535; //this is a hack for PMA track id which uses the 16th bit to identify shower-like track.;
@@ -1540,10 +1549,13 @@ namespace evd {
             // Find the center of the cone base
             TVector3 endPos = startPos + length * dir;
 
-            double swire = geo->WireCoordinate(startPos.Y(), startPos.Z(), plane, tpc, cstat);
-            double stick = detProp.ConvertXToTicks(startPos.X(), plane, tpc, cstat);
-            double ewire = geo->WireCoordinate(endPos.Y(), endPos.Z(), plane, tpc, cstat);
-            double etick = detProp.ConvertXToTicks(endPos.X(), plane, tpc, cstat);
+            geo::Point_t localStart(startPos);
+            geo::Point_t localEnd(endPos);
+
+            double swire = geo->WireCoordinate(localStart, planeID);
+            double stick = detProp.ConvertXToTicks(startPos.X(), planeID);
+            double ewire = geo->WireCoordinate(localEnd, planeID);
+            double etick = detProp.ConvertXToTicks(endPos.X(), planeID);
             TLine& coneLine = view->AddLine(swire, stick, ewire, etick);
             // color coding by dE/dx
             std::vector<double> dedxVec = shower.vals().at(s)->dEdx();
@@ -1572,9 +1584,10 @@ namespace evd {
             TPolyLine& pline = view->AddPolyLine(coneRim.size(), color, 2, 0);
             // project these points into the plane
             for (unsigned short ipt = 0; ipt < coneRim.size(); ++ipt) {
-              double wire =
-                geo->WireCoordinate(coneRim[ipt][1], coneRim[ipt][2], plane, tpc, cstat);
-              double tick = detProp.ConvertXToTicks(coneRim[ipt][0], plane, tpc, cstat);
+              geo::Point_t localPos(coneRim[ipt][0], coneRim[ipt][1], coneRim[ipt][2]);
+
+              double wire = geo->WireCoordinate(localPos, planeID);
+              double tick = detProp.ConvertXToTicks(coneRim[ipt][0], planeID);
               pline.SetPoint(ipt, wire, tick);
             } // ipt
           }
@@ -1616,6 +1629,7 @@ namespace evd {
 
     unsigned int cstat = rawOpt->fCryostat;
     unsigned int tpc = rawOpt->fTPC;
+    geo::PlaneID planeID(cstat, tpc, plane);
     int tid = 0;
 
     for (size_t imod = 0; imod < recoOpt->fTrkVtxTrackLabels.size(); ++imod) {
@@ -1664,8 +1678,10 @@ namespace evd {
 
           vertex->XYZ(xyz);
 
-          double wire = geo->WireCoordinate(xyz[1], xyz[2], plane, rawOpt->fTPC, rawOpt->fCryostat);
-          double time = detProp.ConvertXToTicks(xyz[0], plane, rawOpt->fTPC, rawOpt->fCryostat);
+          geo::Point_t localXYZ(xyz[0], xyz[1], xyz[2]);
+
+          double wire = geo->WireCoordinate(localXYZ, planeID);
+          double time = detProp.ConvertXToTicks(xyz[0], planeID);
 
           TMarker& strt = view->AddMarker(wire, time, color, 24, 3.0);
           strt.SetMarkerColor(color);
@@ -1679,10 +1695,9 @@ namespace evd {
 
         // BB: draw the track ID at the end of the track
         double x = track->End().X();
-        double y = track->End().Y();
-        double z = track->End().Z();
-        double tick = 30 + detProp.ConvertXToTicks(x, plane, tpc, cstat);
-        double wire = geo->WireCoordinate(y, z, plane, tpc, cstat);
+        geo::Point_t trackEnd(track->End());
+        double tick = 30 + detProp.ConvertXToTicks(x, planeID);
+        double wire = geo->WireCoordinate(trackEnd, planeID);
 
         tid = track->ID() & 65535;
 
@@ -1790,8 +1805,12 @@ namespace evd {
         if (xyz[0] < minxyz[0] || xyz[0] > maxxyz[0]) continue;
         if (xyz[1] < minxyz[1] || xyz[1] > maxxyz[1]) continue;
         if (xyz[2] < minxyz[2] || xyz[2] > maxxyz[2]) continue;
+
+        geo::Point_t localPos(xyz[0], xyz[1], xyz[2]);
+
         // BB: draw polymarker at the vertex position in this plane
-        double wire = geo->WireCoordinate(xyz[1], xyz[2], plane, rawOpt->fTPC, rawOpt->fCryostat);
+        double wire =
+          geo->WireCoordinate(localPos, geo::PlaneID(rawOpt->fCryostat, rawOpt->fTPC, plane));
         double time = detProp.ConvertXToTicks(xyz[0], plane, rawOpt->fTPC, rawOpt->fCryostat);
         int color = evd::kColor[vertex[v]->ID() % evd::kNCOLS];
         TMarker& strt = view->AddMarker(wire, time, color, 24, 1.0);
@@ -4278,5 +4297,5 @@ namespace evd {
   //return x_sum;
   //}
 
-} // namespace
+} // namespace evd
 ////////////////////////////////////////////////////////////////////////

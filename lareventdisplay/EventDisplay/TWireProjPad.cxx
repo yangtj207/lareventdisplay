@@ -63,6 +63,32 @@ namespace {
 
   } // DumpPad()
 
+  [[maybe_unused]] void
+  DumpPadsInCanvas(TVirtualPad* pPad, std::string caller, std::string msg = "")
+  {
+    mf::LogDebug log(caller);
+    if (!msg.empty()) log << msg << ": ";
+    if (!pPad) {
+      log << "pad not available";
+      return;
+    }
+
+    DumpPad(log, pPad);
+
+    TCanvas const* pCanvas = pPad->GetCanvas();
+    log << "\nCanvas is: (TCanvas*) (" << ((void*)pPad->GetCanvas()) << ") with "
+        << pCanvas->GetListOfPrimitives()->GetSize() << " primitives and the following pads:";
+    TIterator* pIter = pCanvas->GetListOfPrimitives()->MakeIterator();
+    TObject const* pObject;
+    while ((pObject = pIter->Next())) {
+      if (!pObject->InheritsFrom(TVirtualPad::Class())) continue;
+      log << "\n  " << ((pObject == pPad) ? '*' : '-') << "  ";
+      DumpPad(log, (TVirtualPad*)pObject);
+    }
+    log << "\n";
+    delete pIter;
+  } // DumpPadsInCanvas()
+
 } // local namespace
 
 namespace evd {

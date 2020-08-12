@@ -239,8 +239,7 @@ evd::Ortho3DPad::Draw(const char* /*opt*/)
 
   if (art::Event const* evtPtr = evdb::EventHolder::Instance()->GetEvent()) {
     auto const& evt = *evtPtr;
-    auto const clockData =
-      art::ServiceHandle<detinfo::DetectorClocksService const>()->DataFor(evt);
+    auto const clockData = art::ServiceHandle<detinfo::DetectorClocksService const>()->DataFor(evt);
     auto const detProp =
       art::ServiceHandle<detinfo::DetectorPropertiesService const>()->DataFor(evt, clockData);
 

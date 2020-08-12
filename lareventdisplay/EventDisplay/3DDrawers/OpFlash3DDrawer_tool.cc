@@ -56,8 +56,7 @@ namespace evdb_tool {
     auto const clock_data =
       art::ServiceHandle<detinfo::DetectorClocksService const>()->DataFor(event);
     auto const det_prop =
-      art::ServiceHandle<detinfo::DetectorPropertiesService const>()->DataFor(event,
-                                                                                   clock_data);
+      art::ServiceHandle<detinfo::DetectorPropertiesService const>()->DataFor(event, clock_data);
     art::ServiceHandle<evd::ColorDrawingOptions> cst;
 
     std::vector<geo::PlaneID> planeIDVec;

@@ -199,8 +199,7 @@ namespace evd {
       auto const clockData =
         art::ServiceHandle<detinfo::DetectorClocksService const>()->DataFor(evt);
       auto const detProp =
-        art::ServiceHandle<detinfo::DetectorPropertiesService const>()->DataFor(evt,
-                                                                                     clockData);
+        art::ServiceHandle<detinfo::DetectorPropertiesService const>()->DataFor(evt, clockData);
       art::ServiceHandle<evd::RecoDrawingOptions const> recoOpt;
 
       this->SimulationDraw()->MCTruthVectors2D(evt, fView, fPlane);

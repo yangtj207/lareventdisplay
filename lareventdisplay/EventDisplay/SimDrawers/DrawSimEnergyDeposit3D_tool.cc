@@ -87,8 +87,7 @@ namespace evdb_tool {
 
     evt.getByLabel(drawOpt->fSimEnergyLabel, simEnergyDepositHandle);
 
-    auto const clockData =
-      art::ServiceHandle<detinfo::DetectorClocksService const>()->DataFor(evt);
+    auto const clockData = art::ServiceHandle<detinfo::DetectorClocksService const>()->DataFor(evt);
     auto const detProp =
       art::ServiceHandle<detinfo::DetectorPropertiesService const>()->DataFor(evt, clockData);
 
@@ -207,8 +206,7 @@ namespace evdb_tool {
       auto const clockData =
         art::ServiceHandle<detinfo::DetectorClocksService const>()->DataFor(evt);
       auto const detProp =
-        art::ServiceHandle<detinfo::DetectorPropertiesService const>()->DataFor(evt,
-                                                                                     clockData);
+        art::ServiceHandle<detinfo::DetectorPropertiesService const>()->DataFor(evt, clockData);
       art::ServiceHandle<geo::Geometry const> geom;
 
       // Would like to draw the deposits as markers with colors given by particle id

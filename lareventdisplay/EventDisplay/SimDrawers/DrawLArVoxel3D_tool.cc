@@ -55,8 +55,7 @@ namespace evdb_tool {
     // If the option is turned off, there's nothing to do
     if (!drawOpt->fShowMCTruthTrajectories) return;
 
-    auto const clockData =
-      art::ServiceHandle<detinfo::DetectorClocksService const>()->DataFor(evt);
+    auto const clockData = art::ServiceHandle<detinfo::DetectorClocksService const>()->DataFor(evt);
     auto const detProp =
       art::ServiceHandle<detinfo::DetectorPropertiesService const>()->DataFor(evt, clockData);
     art::ServiceHandle<geo::Geometry const> geom;

@@ -7,41 +7,40 @@
 #include "art/Utilities/ToolMacros.h"
 #include "fhiclcpp/fwd.h"
 #include "lareventdisplay/EventDisplay/3DDrawers/I3DDrawer.h"
-namespace evdb { class View3D; }
+namespace evdb {
+  class View3D;
+}
 
-namespace evdb_tool
-{
+namespace evdb_tool {
 
-class PCA3DDrawer : public I3DDrawer
-{
-public:
+  class PCA3DDrawer : public I3DDrawer {
+  public:
     explicit PCA3DDrawer(const fhicl::ParameterSet&);
 
     ~PCA3DDrawer();
 
     void Draw(const art::Event&, evdb::View3D*) const override;
 
-private:
-};
+  private:
+  };
 
-//----------------------------------------------------------------------
-// Constructor.
-PCA3DDrawer::PCA3DDrawer(const fhicl::ParameterSet& pset)
-{
-//    fNumPoints     = pset.get< int>("NumPoints",     1000);
-//    fFloatBaseline = pset.get<bool>("FloatBaseline", false);
+  //----------------------------------------------------------------------
+  // Constructor.
+  PCA3DDrawer::PCA3DDrawer(const fhicl::ParameterSet& pset)
+  {
+    //    fNumPoints     = pset.get< int>("NumPoints",     1000);
+    //    fFloatBaseline = pset.get<bool>("FloatBaseline", false);
     // For now only draw cryostat=0.
 
     return;
-}
+  }
 
-PCA3DDrawer::~PCA3DDrawer()
-{
-}
+  PCA3DDrawer::~PCA3DDrawer() {}
 
-void PCA3DDrawer::Draw(const art::Event& evt, evdb::View3D* view) const
-{
-/*
+  void
+  PCA3DDrawer::Draw(const art::Event& evt, evdb::View3D* view) const
+  {
+    /*
     art::ServiceHandle<evd::SimulationDrawingOptions const> drawOpt;
 
     // If the option is turned off, there's nothing to do
@@ -61,7 +60,7 @@ void PCA3DDrawer::Draw(const art::Event& evt, evdb::View3D* view) const
     int neutrinoColor(38);
 */
     return;
-}
+  }
 
-DEFINE_ART_CLASS_TOOL(PCA3DDrawer)
+  DEFINE_ART_CLASS_TOOL(PCA3DDrawer)
 }

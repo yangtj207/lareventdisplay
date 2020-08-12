@@ -9,39 +9,36 @@
 #include "art/Framework/Principal/fwd.h"
 #include "art/Utilities/ToolMacros.h"
 
-namespace evdb_tool
-{
+namespace evdb_tool {
 
-class PFParticle3DDrawer : public I3DDrawer
-{
-public:
+  class PFParticle3DDrawer : public I3DDrawer {
+  public:
     explicit PFParticle3DDrawer(const fhicl::ParameterSet&);
 
     ~PFParticle3DDrawer();
 
     void Draw(const art::Event&, evdb::View3D*) const override;
 
-private:
-};
+  private:
+  };
 
-//----------------------------------------------------------------------
-// Constructor.
-PFParticle3DDrawer::PFParticle3DDrawer(const fhicl::ParameterSet& pset)
-{
-//    fNumPoints     = pset.get< int>("NumPoints",     1000);
-//    fFloatBaseline = pset.get<bool>("FloatBaseline", false);
+  //----------------------------------------------------------------------
+  // Constructor.
+  PFParticle3DDrawer::PFParticle3DDrawer(const fhicl::ParameterSet& pset)
+  {
+    //    fNumPoints     = pset.get< int>("NumPoints",     1000);
+    //    fFloatBaseline = pset.get<bool>("FloatBaseline", false);
     // For now only draw cryostat=0.
 
     return;
-}
+  }
 
-PFParticle3DDrawer::~PFParticle3DDrawer()
-{
-}
+  PFParticle3DDrawer::~PFParticle3DDrawer() {}
 
-void PFParticle3DDrawer::Draw(const art::Event& evt, evdb::View3D* view) const
-{
-/*
+  void
+  PFParticle3DDrawer::Draw(const art::Event& evt, evdb::View3D* view) const
+  {
+    /*
     art::ServiceHandle<evd::SimulationDrawingOptions const> drawOpt;
 
     // If the option is turned off, there's nothing to do
@@ -63,7 +60,7 @@ void PFParticle3DDrawer::Draw(const art::Event& evt, evdb::View3D* view) const
     int neutrinoColor(38);
 */
     return;
-}
+  }
 
-DEFINE_ART_CLASS_TOOL(PFParticle3DDrawer)
+  DEFINE_ART_CLASS_TOOL(PFParticle3DDrawer)
 }

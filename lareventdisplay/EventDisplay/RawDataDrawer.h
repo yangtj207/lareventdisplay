@@ -4,20 +4,26 @@
 #ifndef EVD_RAWDATADRAWER_H
 #define EVD_RAWDATADRAWER_H
 
+#include "art/Framework/Principal/fwd.h"
 #include "larcoreobj/SimpleTypesAndConstants/geo_types.h" // geo::PlaneID
 
 #include <vector>
+
 #ifndef __CINT__
-
 #include "larevt/CalibrationDBI/Interface/ChannelStatusProvider.h" // lariov::ChannelStatusProvider::Status_t
-
 #endif
 
 class TH1F;
 class TVirtualPad;
-namespace art    { class Event;     }
-namespace evdb   { class View2D;    }
-namespace raw    { class RawDigit;  }
+namespace detinfo {
+  class DetectorPropertiesData;
+}
+namespace evdb {
+  class View2D;
+}
+namespace raw {
+  class RawDigit;
+}
 namespace util {
   class PlaneDataChangeTracker_t;
 } // namespace util
@@ -33,7 +39,6 @@ namespace evd {
   /// Aid in the rendering of RawData objects
   class RawDataDrawer {
   public:
-
     RawDataDrawer();
     ~RawDataDrawer();
 
@@ -58,39 +63,34 @@ namespace evd {
      * in the first, run only of no region of interest is known yet, the region
      * is extracted. In the second, that information is used for rendering.
      */
-    void RawDigit2D(
-      art::Event const& evt, evdb::View2D* view, unsigned int plane,
-      bool bZoomToRoI = false
-      );
+    void RawDigit2D(art::Event const& evt,
+                    detinfo::DetectorPropertiesData const& detProp,
+                    evdb::View2D* view,
+                    unsigned int plane,
+                    bool bZoomToRoI = false);
 
-/*     void RawDigit3D(const art::Event& evt, */
-/* 		    evdb::View3D*     view); */
+    void FillQHisto(const art::Event& evt, unsigned int plane, TH1F* histo);
 
-    void FillQHisto(const art::Event& evt,
-		    unsigned int      plane,
-		    TH1F*             histo);
+    void FillTQHisto(const art::Event& evt, unsigned int plane, unsigned int wire, TH1F* histo);
 
-    void FillTQHisto(const art::Event& evt,
-		     unsigned int      plane,
-		     unsigned int      wire,
-		     TH1F*             histo);
-
-    double StartTick()       const { return fStartTick; }
-    double TotalClockTicks() const { return fTicks; }
+    double
+    StartTick() const
+    {
+      return fStartTick;
+    }
+    double
+    TotalClockTicks() const
+    {
+      return fTicks;
+    }
 
     /// Fills the viewport information from the specified pad
-    void ExtractRange
-      (TVirtualPad* pPad, std::vector<double> const* zoom = nullptr);
+    void ExtractRange(TVirtualPad* pPad, std::vector<double> const* zoom = nullptr);
 
     /// Fills the viewport borders from the specified extremes
-    void SetDrawingLimits
-      (float low_wire, float high_wire, float low_tdc, float high_tdc);
+    void SetDrawingLimits(float low_wire, float high_wire, float low_tdc, float high_tdc);
 
-    int GetRegionOfInterest(int plane,
-			    int& minw,
-			    int& maxw,
-			    int& mint,
-			    int& maxt);
+    int GetRegionOfInterest(int plane, int& minw, int& maxw, int& mint, int& maxt);
 
     /// Forgets about the current region of interest
     void ResetRegionOfInterest();
@@ -99,22 +99,24 @@ namespace evd {
     /// for the specified plane
     bool hasRegionOfInterest(geo::PlaneID::PlaneID_t plane) const;
 
-    void GetChargeSum(int plane,
-		      double& charge,
-		      double& convcharge);
+    void GetChargeSum(int plane, double& charge, double& convcharge);
 
   private:
     typedef struct {
-      int    adc   = 0;  ///< total ADC count in this box
-      bool   good  = false; ///< whether the channel is not bad
+      int adc = 0;       ///< total ADC count in this box
+      bool good = false; ///< whether the channel is not bad
     } BoxInfo_t;
 
     typedef struct {
-      unsigned int width = 0; // width of pad in pixels
+      unsigned int width = 0;  // width of pad in pixels
       unsigned int height = 0; // heigt of pad in pixels
 
       /// Returns whether the stored value is valid
-      bool isFilled() const { return (width != 0) && (height != 0); }
+      bool
+      isFilled() const
+      {
+        return (width != 0) && (height != 0);
+      }
 
       /// Returns whether the stored value is valid
       operator bool() const { return isFilled(); }
@@ -149,20 +151,19 @@ namespace evd {
     void GetRawDigits(art::Event const& evt);
 
     /// Returns whether a channel with the specified status should be processed
-    bool ProcessChannelWithStatus
-      (lariov::ChannelStatusProvider::Status_t channel_status) const;
+    bool ProcessChannelWithStatus(lariov::ChannelStatusProvider::Status_t channel_status) const;
 #endif // __CINT__
 
-    double fStartTick;                       ///< low tick
-    double fTicks;                           ///< number of ticks of the clock
+    double fStartTick; ///< low tick
+    double fTicks;     ///< number of ticks of the clock
 
-    std::vector<int> fWireMin;     ///< lowest wire in interesting region for each plane
-    std::vector<int> fWireMax;     ///< highest wire in interesting region for each plane
-    std::vector<int> fTimeMin;     ///< lowest time in interesting region for each plane
-    std::vector<int> fTimeMax;     ///< highest time in interesting region for each plane
+    std::vector<int> fWireMin; ///< lowest wire in interesting region for each plane
+    std::vector<int> fWireMax; ///< highest wire in interesting region for each plane
+    std::vector<int> fTimeMin; ///< lowest time in interesting region for each plane
+    std::vector<int> fTimeMax; ///< highest time in interesting region for each plane
 
-    std::vector<double> fRawCharge;     ///< Sum of Raw Charge
-    std::vector<double> fConvertedCharge;     ///< Sum of Charge Converted using Birks' formula
+    std::vector<double> fRawCharge;       ///< Sum of Raw Charge
+    std::vector<double> fConvertedCharge; ///< Sum of Charge Converted using Birks' formula
 
     PadResolution_t PadResolution; ///< stored pad resolution
 
@@ -172,8 +173,7 @@ namespace evd {
     details::CellGridClass* fDrawingRange; ///< information about the viewport
 
     /// Performs the 2D wire plane drawing
-    void DrawRawDigit2D
-      (art::Event const& evt, evdb::View2D* view, unsigned int plane);
+    void DrawRawDigit2D(art::Event const& evt, evdb::View2D* view, unsigned int plane);
 
     /**
      * @brief Makes sure raw::RawDigit's are available for the current settings
@@ -188,28 +188,29 @@ namespace evd {
      * This method also triggers a Reset() if the target state differs from the
      * old one.
      */
-    void GetRawDigits
-      (art::Event const& evt, details::CacheID_t const& new_timestamp);
+    void GetRawDigits(art::Event const& evt, details::CacheID_t const& new_timestamp);
 
     // Helper functions for drawing
     bool RunOperation(art::Event const& evt, OperationBaseClass* operation);
-    void QueueDrawingBoxes(
-      evdb::View2D* view,
-      geo::PlaneID const& pid,
-      std::vector<BoxInfo_t> const& BoxInfo
-      );
-    void RunDrawOperation
-      (art::Event const& evt, evdb::View2D* view, unsigned int plane);
+    void QueueDrawingBoxes(evdb::View2D* view,
+                           geo::PlaneID const& pid,
+                           std::vector<BoxInfo_t> const& BoxInfo);
+    void RunDrawOperation(art::Event const& evt,
+                          detinfo::DetectorPropertiesData const& detProp,
+                          evdb::View2D* view,
+                          unsigned int plane);
     void RunRoIextractor(art::Event const& evt, unsigned int plane);
     void SetDrawingLimitsFromRoI(geo::PlaneID::PlaneID_t plane);
-    void SetDrawingLimitsFromRoI(geo::PlaneID const pid)
-      { SetDrawingLimitsFromRoI(pid.Plane); }
+    void
+    SetDrawingLimitsFromRoI(geo::PlaneID const pid)
+    {
+      SetDrawingLimitsFromRoI(pid.Plane);
+    }
 
     /// Empty collection, used in return value of invalid digits
     static std::vector<raw::RawDigit> const EmptyRawDigits;
 
   }; // class RawDataDrawer
-
 
 }
 

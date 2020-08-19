@@ -12,6 +12,13 @@
 #include "RQ_OBJECT.h"
 #include "lardata/Utilities/PxUtils.h"
 #include "nuevdb/EventDisplayBase/Canvas.h"
+namespace detinfo {
+  class DetectorClocksData;
+  class DetectorPropertiesData;
+}
+namespace util {
+  class GeometryUtilities;
+}
 
 #include <deque>
 #include <map>
@@ -28,164 +35,165 @@ class TGTextButton;
 class TGTextView;
 
 namespace util {
-    class DataProductChangeTracker_t;
+  class DataProductChangeTracker_t;
 }
 
 namespace evd {
 
-class HeaderPad;
-class MCBriefPad;
-class TQPad;
-class TWireProjPad;
+  class HeaderPad;
+  class MCBriefPad;
+  class TQPad;
+  class TWireProjPad;
 
-// Helper class, to store zoom settings in each view
+  // Helper class, to store zoom settings in each view
 
-class ZoomOptions
-{
+  struct ZoomOptions {
+    std::map<int, double> wmin;
+    std::map<int, double> wmax;
+    std::map<int, double> tmin;
+    std::map<int, double> tmax;
+    int OnlyPlaneChanged{-1};
+  };
 
-public:
-    ZoomOptions() {OnlyPlaneChanged=-1;}
-    ~ZoomOptions() {}
-    std::map<int, double>  wmin;
-    std::map<int, double>  wmax;
-    std::map<int, double>  tmin;
-    std::map<int, double>  tmax;
-    int OnlyPlaneChanged;
-};
-
-
-
-class TWQProjectionView : public evdb::Canvas {
-
-public:
-
+  class TWQProjectionView : public evdb::Canvas {
+  public:
     RQ_OBJECT("evd::TWQProjectionView")
 
-public:
+  public:
     TWQProjectionView(TGMainFrame* mf);
     ~TWQProjectionView();
 
-    const char* Description() const { return "Time/Wire/Charge Projections"; }
-    const char* PrintTag()    const { return "twq-proj";                     }
+    const char*
+    Description() const
+    {
+      return "Time/Wire/Charge Projections";
+    }
+    const char*
+    PrintTag() const
+    {
+      return "twq-proj";
+    }
 
-    void Draw(const char* opt="");
+    void Draw(const char* opt = "");
 
     //   void        RangeChanged();
-    static void MouseDispatch(int plane, void * wqpv);
+    static void MouseDispatch(int plane, void* wqpv);
 
+    void ChangeWire(int plane);
+    void SelectTPC(); ///< select TPC from GUI
 
-    void    ChangeWire(int plane);
-    void    SelectTPC(); ///< select TPC from GUI
+    void SetMouseZoomRegion(int plane);
 
-    void    SetMouseZoomRegion(int plane);
-
-    void    SelectPoint(int plane);
-    void    SelectHit(int plane);
-    void    SetPlaneWire();
-    void    SetPlane();
-    void    SetWire();
-    void    SetDistance();
-    void    SetThreshold();
-    void    SetGreyscale();
-    void    SetMCInfo();
-    void    SetRawCalib();
-    void    SetUpSideBar();
-    void    ForceRedraw(); ///< Forces a redraw of the window
-    void    SetUpZoomButtons();
-    void    SetUpClusterButtons();
-    void    SetUpDrawingButtons();
-    void    SetUpTPCselection();
-    void    SetUpPositionFind();
-    void    SetZoom(int plane,int wirelow,int wirehi,int timelo,int timehi, bool StoreZoom=true);
-    void    ZoomInterest(bool flag=true);
+    void SelectPoint(int plane);
+    void SelectHit(int plane);
+    void SetPlaneWire();
+    void SetPlane();
+    void SetWire();
+    void SetDistance();
+    void SetThreshold();
+    void SetGreyscale();
+    void SetMCInfo();
+    void SetRawCalib();
+    void SetUpSideBar();
+    void ForceRedraw(); ///< Forces a redraw of the window
+    void SetUpZoomButtons();
+    void SetUpClusterButtons();
+    void SetUpDrawingButtons();
+    void SetUpTPCselection();
+    void SetUpPositionFind();
+    void SetZoom(int plane, int wirelow, int wirehi, int timelo, int timehi, bool StoreZoom = true);
+    void ZoomInterest(bool flag = true);
     /// Clear all the regions of interest
-    void    ResetRegionsOfInterest();
+    void ResetRegionsOfInterest();
 
-    void    ZoomBack();  // Revert to the previous zoom setting
-    void    SetClusterInterest();
+    void ZoomBack(); // Revert to the previous zoom setting
+    void SetClusterInterest();
 
-    void 	SetClusters(int plane);
+    void SetClusters(int plane);
 
-    void 	SetZoomInterest();
-    void	SetZoomFromView();
-    void 	PrintCharge();
-    void 	DrawPads(const char* opt="");
+    void SetZoomInterest();
+    void SetZoomFromView();
+    void PrintCharge();
+    void DrawPads(const char* opt = "");
 
-    void 	FindEndPoint();
-    double 	FindLineLength();
-    void 	ClearEndPoints();
-    void 	ToggleEndPointMarkers();
+    void FindEndPoint(detinfo::DetectorClocksData const& clockData,
+                      detinfo::DetectorPropertiesData const& detProp);
+    double FindLineLength(detinfo::DetectorClocksData const& clockData,
+                          detinfo::DetectorPropertiesData const& detProp);
+    void ClearEndPoints();
+    void ToggleEndPointMarkers();
 
-    void	RadioButtonsDispatch(int parameter);
-    void 	SaveSelection();
-    void 	ClearSelection();
+    void RadioButtonsDispatch(int parameter);
+    void SaveSelection(detinfo::DetectorClocksData const& clockData,
+                       detinfo::DetectorPropertiesData const& detProp,
+                       util::GeometryUtilities const& gser);
+    void ClearSelection();
 
     /// Returns if a new event is detected; if so, it also resets accordingly
-    bool    OnNewEvent();
+    bool OnNewEvent();
 
-    void 	SetTestFlag(int number=1);
+    void SetTestFlag(int number = 1);
 
-protected:
-    TGCompositeFrame*    fVFrame;        ///< needed for the side frame
+  protected:
+    TGCompositeFrame* fVFrame; ///< needed for the side frame
 
+  private:
+    HeaderPad* fHeaderPad;              ///< Show header information
+    TQPad* fWireQ;                      ///< Histogram of charge vs time on selected wire
+    MCBriefPad* fMC;                    ///< Short summary of MC event
+    std::vector<TQPad*> fPlaneQ;        ///< charge on each plane
+    std::vector<TWireProjPad*> fPlanes; ///< time vs wire projection for each plane
 
-private:
+    double fLastThreshold; ///< Kludge to prevent double drawing when changing threshold
 
-    HeaderPad*  fHeaderPad;              ///< Show header information
-    TQPad*      fWireQ;                  ///< Histogram of charge vs time on selected wire
-    MCBriefPad* fMC;                     ///< Short summary of MC event
-    std::vector<TQPad* >        fPlaneQ; ///< charge on each plane
-    std::vector<TWireProjPad*>  fPlanes; ///< time vs wire projection for each plane
-
-    double fLastThreshold;               ///< Kludge to prevent double drawing when changing threshold
-
-
-    TGCompositeFrame*    fMetaFrame;   ///< needed for the side frame
+    TGCompositeFrame* fMetaFrame; ///< needed for the side frame
 
     TGLabel* fWireLabel;
     TGLabel* fDistanceLabel;
     TGLabel* fPlaneLabel;
     TGLabel* fThresLabel;
-    //TGLabel* fGreyLabel;
 
-    TGNumberEntry* fWireEntry;     ///< Wire number displayed.
-    TGNumberEntry* fPlaneEntry;    ///< Plane number displayed.
-    TGNumberEntry* fThresEntry;    ///< ADC threshold to display.
-    TGNumberEntry* fDistance;      ///<Distance from line to find hits in cluster
-    TGCheckButton* fGreyScale;     ///< Display gray or color scale
-    TGCheckButton* fMCOn;          ///< Display MC truth information
-    TGRadioButton* fRawDraw;       ///< Draw Raw information only
-    TGRadioButton* fCalibDraw;     ///< Draw calibrated information only
-    TGRadioButton* fRawCalibDraw;  ///< Draw raw and calibrated information
+    TGNumberEntry* fWireEntry;    ///< Wire number displayed.
+    TGNumberEntry* fPlaneEntry;   ///< Plane number displayed.
+    TGNumberEntry* fThresEntry;   ///< ADC threshold to display.
+    TGNumberEntry* fDistance;     ///<Distance from line to find hits in cluster
+    TGCheckButton* fGreyScale;    ///< Display gray or color scale
+    TGCheckButton* fMCOn;         ///< Display MC truth information
+    TGRadioButton* fRawDraw;      ///< Draw Raw information only
+    TGRadioButton* fCalibDraw;    ///< Draw calibrated information only
+    TGRadioButton* fRawCalibDraw; ///< Draw raw and calibrated information
 
-    TGTextButton* fZoomInterest;       ///< Zoom on iteresting region
-    TGTextButton* fUnZoomInterest;       ///< Unzoom on iteresting region
-    TGTextButton* fZoomBack;       ///< Unzoom on iteresting region
-    TGCheckButton* fToggleAutoZoom;       ///< Toggle the autozoom setting
-    TGRadioButton* fToggleZoom;             ///< Use zoom setting
-    TGRadioButton* fToggleClusters; 	  ///< Use make cluster setting
+    TGTextButton* fZoomInterest;    ///< Zoom on iteresting region
+    TGTextButton* fUnZoomInterest;  ///< Unzoom on iteresting region
+    TGTextButton* fZoomBack;        ///< Unzoom on iteresting region
+    TGCheckButton* fToggleAutoZoom; ///< Toggle the autozoom setting
+    TGRadioButton* fToggleZoom;     ///< Use zoom setting
+    TGRadioButton* fToggleClusters; ///< Use make cluster setting
     TGTextView* fAngleInfo;
 
-    TGTextButton* fFindEndpoint;	///< Calculate XYZ position of two points in wire planes
+    TGTextButton* fFindEndpoint;       ///< Calculate XYZ position of two points in wire planes
     TGTextButton* fClearPPoints;       ///< Clear current list of End Points
     TGCheckButton* fToggleShowMarkers; ///< Toggle the ShowEndPointMarkersSetting
-    TGTextView* fXYZPosition; ///< Display the xyz position
+    TGTextView* fXYZPosition;          ///< Display the xyz position
 
     TGTextButton* fCalcAngle; ///<Calculate the 2D & 3D angles between lines
-    TGTextButton* fClear; ///<Clears the selected points in an event
+    TGTextButton* fClear;     ///<Clears the selected points in an event
 
     TGTextButton* fRedraw; ///< Button to force redraw
 
     TGNumberEntry* fCryoInput; ///< current cryostat
-    TGNumberEntry* fTPCInput; ///< current TPC
-    TGLabel* fTotalTPCLabel; ///< total TPCs in the current cryostat
+    TGNumberEntry* fTPCInput;  ///< current TPC
+    TGLabel* fTotalTPCLabel;   ///< total TPCs in the current cryostat
 
-    int DrawLine(int plane,util::PxLine &pline);
+    int DrawLine(int plane, util::PxLine& pline);
 
-    std::deque<util::PxPoint> ppoints; ///< list of points in each WireProjPad used for x,y,z finding
-    std::deque<util::PxLine>  pline;   ///< list of lines in each WireProjPad used for calculating 2d and 3d angles, also making seeds (eventually)
+    std::deque<util::PxPoint>
+      ppoints; ///< list of points in each WireProjPad used for x,y,z finding
+    std::deque<util::PxLine>
+      pline; ///< list of lines in each WireProjPad used for calculating 2d and 3d angles, also making seeds (eventually)
 
-    std::vector<util::PxLine>  seedlines; ///< list of lines in each WireProjPad used for calculating 2d and 3d angles, also making seeds (eventually)
+    std::vector<util::PxLine>
+      seedlines; ///< list of lines in each WireProjPad used for calculating 2d and 3d angles, also making seeds (eventually)
 
     ZoomOptions fZoomOpt;
     std::vector<ZoomOptions> fPrevZoomOpt;
@@ -199,9 +207,8 @@ private:
 
     /// Returns a string visualizing the total number of elements
     static std::string TotalElementsString(unsigned int NElements);
+  };
 
-};
-
-}// namespace
+} // namespace
 
 #endif //EVD_TWQPROJECTION_H

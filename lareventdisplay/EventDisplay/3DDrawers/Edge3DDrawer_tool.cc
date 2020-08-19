@@ -7,49 +7,46 @@
 #include "art/Utilities/ToolMacros.h"
 #include "fhiclcpp/fwd.h"
 #include "lareventdisplay/EventDisplay/3DDrawers/I3DDrawer.h"
-namespace evdb { class View3D; }
+namespace evdb {
+  class View3D;
+}
 
-namespace evdb_tool
-{
+namespace evdb_tool {
 
-class Edge3DDrawer : public I3DDrawer
-{
-public:
+  class Edge3DDrawer : public I3DDrawer {
+  public:
     explicit Edge3DDrawer(const fhicl::ParameterSet&);
 
     ~Edge3DDrawer();
 
     void Draw(const art::Event&, evdb::View3D*) const override;
 
-private:
-};
+  private:
+  };
 
-//----------------------------------------------------------------------
-// Constructor.
-Edge3DDrawer::Edge3DDrawer(const fhicl::ParameterSet& pset)
-{
-//    fNumPoints     = pset.get< int>("NumPoints",     1000);
-//    fFloatBaseline = pset.get<bool>("FloatBaseline", false);
+  //----------------------------------------------------------------------
+  // Constructor.
+  Edge3DDrawer::Edge3DDrawer(const fhicl::ParameterSet& pset)
+  {
+    //    fNumPoints     = pset.get< int>("NumPoints",     1000);
+    //    fFloatBaseline = pset.get<bool>("FloatBaseline", false);
     // For now only draw cryostat=0.
 
     return;
-}
+  }
 
-Edge3DDrawer::~Edge3DDrawer()
-{
-}
+  Edge3DDrawer::~Edge3DDrawer() {}
 
-void Edge3DDrawer::Draw(const art::Event& evt, evdb::View3D* view) const
-{
-/*
+  void
+  Edge3DDrawer::Draw(const art::Event& evt, evdb::View3D* view) const
+  {
+    /*
     art::ServiceHandle<evd::SimulationDrawingOptions const> drawOpt;
 
     // If the option is turned off, there's nothing to do
     if (!drawOpt->fShowMCTruthTrajectories) return;
 
     //  geo::GeometryCore const* geom = lar::providerFrom<geo::Geometry>();
-    detinfo::DetectorProperties const* theDetector = lar::providerFrom<detinfo::DetectorPropertiesService>();
-    detinfo::DetectorClocks     const* detClocks   = lar::providerFrom<detinfo::DetectorClocksService>();
     art::ServiceHandle<geo::Geometry const>  geom;
 
     // Recover a handle to the collection of MCParticles
@@ -63,7 +60,7 @@ void Edge3DDrawer::Draw(const art::Event& evt, evdb::View3D* view) const
     int neutrinoColor(38);
 */
     return;
-}
+  }
 
-DEFINE_ART_CLASS_TOOL(Edge3DDrawer)
+  DEFINE_ART_CLASS_TOOL(Edge3DDrawer)
 }

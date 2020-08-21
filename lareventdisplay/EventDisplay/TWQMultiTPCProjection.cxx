@@ -32,6 +32,7 @@
 #include "lareventdisplay/EventDisplay/TQPad.h"
 #include "lareventdisplay/EventDisplay/TWQMultiTPCProjection.h"
 #include "lareventdisplay/EventDisplay/TWireProjPad.h"
+#include "nuevdb/EventDisplayBase/EventHolder.h"
 #include "nuevdb/EventDisplayBase/View2D.h"
 
 #include "art/Framework/Services/Registry/ServiceHandle.h"
@@ -734,9 +735,17 @@ namespace evd {
 
   //......................................................................
   void
-  TWQMultiTPCProjectionView::FindEndPoint(detinfo::DetectorClocksData const& clockData,
-                                          detinfo::DetectorPropertiesData const& detProp)
+  TWQMultiTPCProjectionView::FindEndPoint()
   {
+    art::Event const* pEvent = evdb::EventHolder::Instance()->GetEvent();
+    if (not pEvent) {
+      std::cerr << "No event available\n";
+      return;
+    }
+
+    auto const clockData = art::ServiceHandle<detinfo::DetectorClocksService>()->DataFor(*pEvent);
+    auto const detProp = art::ServiceHandle<detinfo::DetectorPropertiesService>()->DataFor(*pEvent, clockData);
+
     // if list is larger than or equal to two, can project to XYZ and extrapolate to third plane (if exists)
 
     if (ppoints.size() >= 2) {

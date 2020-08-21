@@ -105,8 +105,7 @@ namespace evd {
     void PrintCharge();
     void DrawPads(const char* opt = "");
 
-    void FindEndPoint(detinfo::DetectorClocksData const& clockData,
-                      detinfo::DetectorPropertiesData const& detProp);
+    void FindEndPoint();
     double FindLineLength(detinfo::DetectorClocksData const& clockData,
                           detinfo::DetectorPropertiesData const& detProp);
     void ClearEndPoints();

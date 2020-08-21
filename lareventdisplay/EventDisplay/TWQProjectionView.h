@@ -16,9 +16,6 @@ namespace detinfo {
   class DetectorClocksData;
   class DetectorPropertiesData;
 }
-namespace util {
-  class GeometryUtilities;
-}
 
 #include <deque>
 #include <map>
@@ -116,17 +113,14 @@ namespace evd {
     void PrintCharge();
     void DrawPads(const char* opt = "");
 
-    void FindEndPoint(detinfo::DetectorClocksData const& clockData,
-                      detinfo::DetectorPropertiesData const& detProp);
+    void FindEndPoint();
     double FindLineLength(detinfo::DetectorClocksData const& clockData,
                           detinfo::DetectorPropertiesData const& detProp);
     void ClearEndPoints();
     void ToggleEndPointMarkers();
 
     void RadioButtonsDispatch(int parameter);
-    void SaveSelection(detinfo::DetectorClocksData const& clockData,
-                       detinfo::DetectorPropertiesData const& detProp,
-                       util::GeometryUtilities const& gser);
+    void SaveSelection();
     void ClearSelection();
 
     /// Returns if a new event is detected; if so, it also resets accordingly

@@ -801,9 +801,16 @@ namespace evd {
 
   //......................................................................
   void
-  TWQProjectionView::FindEndPoint(detinfo::DetectorClocksData const& clockData,
-                                  detinfo::DetectorPropertiesData const& detProp)
+  TWQProjectionView::FindEndPoint()
   {
+    art::Event const* pEvent = evdb::EventHolder::Instance()->GetEvent();
+    if (not pEvent) {
+      std::cerr << "No event available\n";
+      return;
+    }
+
+    auto const detProp = art::ServiceHandle<detinfo::DetectorPropertiesService>()->DataFor(*pEvent);
+
     // if list is larger than or equal to two, can project to XYZ and extrapolate to third plane (if exists)
 
     if (ppoints.size() >= 2) {
@@ -917,10 +924,19 @@ namespace evd {
   //......................................................................
   // SaveSelection
   void
-  TWQProjectionView::SaveSelection(detinfo::DetectorClocksData const& clockData,
-                                   detinfo::DetectorPropertiesData const& detProp,
-                                   util::GeometryUtilities const& gser)
+  TWQProjectionView::SaveSelection()
   {
+    art::Event const* pEvent = evdb::EventHolder::Instance()->GetEvent();
+    if (not pEvent) {
+      std::cerr << "No event available\n";
+      return;
+    }
+
+    art::ServiceHandle<geo::Geometry const> geom;
+    auto const clockData = art::ServiceHandle<detinfo::DetectorClocksService>()->DataFor(*pEvent);
+    auto const detProp = art::ServiceHandle<detinfo::DetectorPropertiesService>()->DataFor(*pEvent, clockData);
+    util::GeometryUtilities const gser{*geom, clockData, detProp};
+
     art::ServiceHandle<evd::EvdLayoutOptions const> evdlayoutoptions;
     if (evdlayoutoptions->fMakeClusters) {
       //only calculating in 3 planes now, needs to be generalized eventually

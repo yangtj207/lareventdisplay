@@ -63,6 +63,7 @@ custom_disp:
 {
   Geometry:               @local::argoneut_geo # from geometry.fcl
   ExptGeoHelperInterface: @local::argoneut_geometry_helper # from geometry.fcl
+  GeometryConfigurationWriter: {}
   DetectorPropertiesService:     @local::standard_detproperties # from detectorproperties.fcl
   LArPropertiesService:          @local::standard_properties # from larproperties.fcl
   DetectorClocksService:            @local::argoneut_detectorclocks # from detectorclocks_argoneut.fcl

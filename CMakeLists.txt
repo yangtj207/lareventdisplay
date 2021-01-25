@@ -42,7 +42,6 @@ find_ups_product( nug4 )
 find_ups_product( nugen )
 find_ups_product( art )
 find_ups_product(art_root_io)
-find_ups_product( cetbuildtools )
 find_ups_product( postgresql )
 
 # use the system zlib

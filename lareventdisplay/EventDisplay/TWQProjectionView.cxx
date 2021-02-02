@@ -15,6 +15,7 @@
 #include "TROOT.h"
 #include "TRootEmbeddedCanvas.h"
 #include "TString.h"
+#include "TVirtualX.h"
 
 #include "larcore/Geometry/Geometry.h"
 #include "larcorealg/Geometry/GeometryCore.h"

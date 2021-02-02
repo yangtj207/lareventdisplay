@@ -11,6 +11,7 @@
 #include "TLatex.h"
 #include "TPad.h"
 #include "TPolyMarker.h"
+#include "TVirtualX.h"
 #include "TVirtualPadPainter.h"
 
 #include "art/Framework/Services/Registry/ServiceHandle.h"

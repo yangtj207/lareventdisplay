@@ -3107,11 +3107,11 @@ namespace evd {
       this->GetVertices(evt, which, vertex);
       this->VertexOrtho(vertex, proj, view, 24);
 
-      this->GetVertices(evt, art::InputTag(which.label(), "kink", which.process()), vertex);
-      this->VertexOrtho(vertex, proj, view, 27);
+      //this->GetVertices(evt, art::InputTag(which.label(), "kink", which.process()), vertex);
+      //this->VertexOrtho(vertex, proj, view, 27);
 
-      this->GetVertices(evt, art::InputTag(which.label(), "node", which.process()), vertex);
-      this->VertexOrtho(vertex, proj, view, 22);
+      //this->GetVertices(evt, art::InputTag(which.label(), "node", which.process()), vertex);
+      //this->VertexOrtho(vertex, proj, view, 22);
     }
     return;
   }

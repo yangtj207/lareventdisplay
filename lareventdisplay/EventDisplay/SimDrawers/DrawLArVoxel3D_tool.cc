@@ -323,7 +323,8 @@ namespace evdb_tool {
 
     // use get by Type because there should only be one collection of these in the event
     try {
-      evt.getManyByType(mctcol);
+      //evt.getManyByType(mctcol);
+      mctcol = evt.getMany<std::vector<simb::MCTruth>>();
 
       for (size_t mctc = 0; mctc < mctcol.size(); ++mctc) {
         art::Handle<std::vector<simb::MCTruth>> mclistHandle = mctcol[mctc];

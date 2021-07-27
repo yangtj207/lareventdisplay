@@ -7,8 +7,8 @@ fcldir		product_dir	job
 #
 product         version
 larreco         v09_06_10
-nuevdb          v1_03_05
-cetbuildtools   v7_17_01	-	only_for_build
+nuevdb          v1_05_04
+cetbuildtools   v8_11_02	-	only_for_build
 end_product_list
 
 

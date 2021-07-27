@@ -27,6 +27,7 @@ cet_set_compiler_flags(DIAGS CAUTIOUS
 cet_report_compiler_flags()
 
 # these are minimum required versions, not the actual product versions
+find_ups_product( eigen )
 find_ups_product( larcoreobj )
 find_ups_product( larcorealg )
 find_ups_product( larcore )
@@ -36,13 +37,13 @@ find_ups_product( lardata )
 find_ups_product( larevt )
 find_ups_product( larsim )
 find_ups_product( larreco )
-find_ups_product( eigen )
 find_ups_product( nuevdb )
 find_ups_product( nug4 )
 find_ups_product( nugen )
 find_ups_product( art )
 find_ups_product(art_root_io)
 find_ups_product( postgresql )
+find_ups_boost()
 
 # use the system zlib
 find_package( ZLIB REQUIRED )
@@ -52,6 +53,8 @@ include_directories( ZLIB_INCLUDE_DIRS )
 include(ArtDictionary)
 include(ArtMake)
 include(BuildPlugins)
+
+include_directories( $ENV{EIGEN_INC} )
 
 # source
 add_subdirectory(lareventdisplay)

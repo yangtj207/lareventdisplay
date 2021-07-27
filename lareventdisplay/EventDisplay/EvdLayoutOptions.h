@@ -9,8 +9,8 @@
 #ifndef __CINT__
 #include <string>
 
+#include "art/Framework/Services/Registry/ServiceDeclarationMacros.h"
 #include "fhiclcpp/ParameterSet.h"
-#include "art/Framework/Services/Registry/ServiceMacros.h"
 #include "nuevdb/EventDisplayBase/Reconfigurable.h"
 
 namespace evd {

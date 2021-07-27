@@ -8,7 +8,6 @@
 #include "larcore/Geometry/Geometry.h"
 
 #include "fhiclcpp/ParameterSet.h"
-#include "art/Framework/Services/Registry/ServiceMacros.h"
 #include "nuevdb/EventDisplayBase/Reconfigurable.h"
 
 namespace evd {

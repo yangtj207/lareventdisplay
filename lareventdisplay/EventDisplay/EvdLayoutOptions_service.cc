@@ -5,6 +5,7 @@
 
 /// LArSoft includes
 #include "lareventdisplay/EventDisplay/EvdLayoutOptions.h"
+#include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
 
 namespace evd {
 

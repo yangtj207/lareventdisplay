@@ -2,10 +2,10 @@ cet_enable_asserts()
 
 art_make(
   TOOL_LIBRARIES
-    ${ART_FRAMEWORK_PRINCIPAL}
-    ${ART_FRAMEWORK_SERVICES_REGISTRY}
+    art::Framework_Principal
+    art::Framework_Services_Registry
     ROOT::Core
-    canvas
+    canvas::canvas
     lardata_ArtDataHelper
     lardataobj_RawData
     lareventdisplay_EventDisplay_ColorDrawingOptions_service

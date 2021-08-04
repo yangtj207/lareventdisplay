@@ -8,7 +8,7 @@
 
 cmake_minimum_required(VERSION 3.19 FATAL_ERROR)
 
-project(lareventdisplay VERSION 09.01.14.01 LANGUAGES CXX)
+project(lareventdisplay VERSION 09.01.14.02 LANGUAGES CXX)
 
 # cetbuildtools contains our cmake modules
 find_package(cetbuildtools REQUIRED)

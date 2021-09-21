@@ -6,6 +6,8 @@
 /// LArSoft includes
 #include "lareventdisplay/EventDisplay/SimulationDrawingOptions.h"
 
+#include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
+
 namespace evd {
 
   //......................................................................

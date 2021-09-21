@@ -2650,8 +2650,9 @@ namespace evd {
       // track, so that we can find associated space points and draw
       // them.
       const art::Event* evt = evdb::EventHolder::Instance()->GetEvent();
-      std::vector<art::Handle<std::vector<recob::Track>>> handles;
-      evt->getManyByType(handles);
+      //std::vector<art::Handle<std::vector<recob::Track>>> handles;
+      //evt->getManyByType(handles);
+      auto handles = evt->getMany<std::vector<recob::Track>>();
 
       for (auto ih : handles) {
         const art::Handle<std::vector<recob::Track>> handle = ih;
@@ -2754,8 +2755,9 @@ namespace evd {
     // B. Baller: Catch an exception if there are no space points and draw a cone instead.
 
     const art::Event* evt = evdb::EventHolder::Instance()->GetEvent();
-    std::vector<art::Handle<std::vector<recob::Shower>>> handles;
-    evt->getManyByType(handles);
+    //std::vector<art::Handle<std::vector<recob::Shower>>> handles;
+    //evt->getManyByType(handles);
+    auto handles = evt->getMany<std::vector<recob::Shower>>();
 
     bool noSpts = false;
 
@@ -3584,8 +3586,9 @@ namespace evd {
       // them.
 
       const art::Event* evt = evdb::EventHolder::Instance()->GetEvent();
-      std::vector<art::Handle<std::vector<recob::Track>>> handles;
-      evt->getManyByType(handles);
+      //std::vector<art::Handle<std::vector<recob::Track>>> handles;
+      //evt->getManyByType(handles);
+      auto handles = evt->getMany<std::vector<recob::Track>>();
       for (auto ih : handles) {
         const art::Handle<std::vector<recob::Track>> handle = ih;
         if (handle.isValid()) {
@@ -3680,8 +3683,9 @@ namespace evd {
     // them.
 
     const art::Event* evt = evdb::EventHolder::Instance()->GetEvent();
-    std::vector<art::Handle<std::vector<recob::Shower>>> handles;
-    evt->getManyByType(handles);
+    //std::vector<art::Handle<std::vector<recob::Shower>>> handles;
+    //evt->getManyByType(handles);
+    auto handles = evt->getMany<std::vector<recob::Shower>>();
     for (auto ih : handles) {
       const art::Handle<std::vector<recob::Shower>> handle = ih;
       if (handle.isValid()) {

@@ -2,13 +2,13 @@ cet_enable_asserts()
 
 art_make(
   TOOL_LIBRARIES
-    ${ART_FRAMEWORK_PRINCIPAL}
-    ${ART_FRAMEWORK_SERVICES_REGISTRY}
-    ${MF_MESSAGELOGGER}
+    art::Framework_Principal
+    art::Framework_Services_Registry
+    messagefacility::MF_MessageLogger
     ROOT::Core
     ROOT::EG
     ROOT::Physics
-    canvas
+    canvas::canvas
     larcorealg_Geometry
     lareventdisplay_EventDisplay
     lareventdisplay_EventDisplay_ColorDrawingOptions_service

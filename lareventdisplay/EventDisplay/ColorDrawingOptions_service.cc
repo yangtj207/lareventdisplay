@@ -4,6 +4,7 @@
 /// \author  brebel@fnal.gov
 
 // Framework includes
+#include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 /// LArSoft includes

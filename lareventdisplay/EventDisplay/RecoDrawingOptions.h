@@ -11,9 +11,8 @@
 #include <vector>
 
 #include "fhiclcpp/ParameterSet.h"
-#include "art/Framework/Services/Registry/ActivityRegistry.h"
+#include "art/Framework/Services/Registry/ServiceDeclarationMacros.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Registry/ServiceMacros.h"
 #include "nuevdb/EventDisplayBase/Reconfigurable.h"
 #include "canvas/Utilities/InputTag.h"
 
@@ -103,4 +102,3 @@ public:
 #endif // __CINT__
 DECLARE_ART_SERVICE(evd::RecoDrawingOptions, LEGACY)
 #endif
-

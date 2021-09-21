@@ -15,10 +15,10 @@ art_make_library(
     ${src_files}
     ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE}Cint.cc
   LIBRARIES
-    ${ART_FRAMEWORK_PRINCIPAL}
-    ${ART_FRAMEWORK_SERVICES_REGISTRY}
+    art::Framework_Principal
+    art::Framework_Services_Registry
     ${ART_PERSISTENCY_PROVENANCE}
-    ${MF_MESSAGELOGGER}
+    messagefacility::MF_MessageLogger
     ROOT::Core
     ROOT::EG
     ROOT::Gpad
@@ -28,8 +28,8 @@ art_make_library(
     ROOT::Hist
     ROOT::Physics
     ROOT::RIO
-    canvas
-    cetlib_except
+    canvas::canvas
+    cetlib_except::cetlib_except
     lardataalg_DetectorInfo
     larcorealg_Geometry
     lardata_ArtDataHelper
@@ -59,7 +59,7 @@ simple_plugin(SimulationDrawingOptions "service" nuevdb_EventDisplayBase)
 
 simple_plugin(ColorDrawingOptions "service"
               ${ART_PERSISTENCY_PROVENANCE}
-              ${MF_MESSAGELOGGER}
+              messagefacility::MF_MessageLogger
               ROOT::Core
               ROOT::Graf3d
               ROOT::Hist
@@ -71,9 +71,9 @@ simple_plugin(ColorDrawingOptions "service"
 simple_plugin(InfoTransfer "service"
               larcorealg_Geometry
               nuevdb_EventDisplayBase
-              ${ART_FRAMEWORK_PRINCIPAL}
+              art::Framework_Principal
               ${ART_PERSISTENCY_PROVENANCE}
-              ${MF_MESSAGELOGGER}
+              messagefacility::MF_MessageLogger
               ROOT::Core)
 
 install_headers()

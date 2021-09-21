@@ -10,6 +10,7 @@
 // Framework includes
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
+#include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
 #include "canvas/Persistency/Common/Ptr.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 

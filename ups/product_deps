@@ -6,9 +6,9 @@ defaultqual	e20
 fcldir		product_dir	job
 #
 product         version
-larreco         v09_07_01
-nuevdb          v1_05_04
-cetbuildtools   v8_18_00	-	only_for_build
+larreco         v09_07_02
+nuevdb          v1_05_05
+cetbuildtools   v8_18_04	-	only_for_build
 end_product_list
 
 

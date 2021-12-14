@@ -11,7 +11,7 @@ art_make(
     lareventdisplay_EventDisplay_ColorDrawingOptions_service
     lareventdisplay_EventDisplay_RawDrawingOptions_service
     lareventdisplay_EventDisplay_RecoDrawingOptions_service
-    nuevdb_EventDisplayBase
+    nuevdb::EventDisplayBase
 )
 
 install_headers()

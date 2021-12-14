@@ -17,7 +17,7 @@ art_make_library(
   LIBRARIES
     art::Framework_Principal
     art::Framework_Services_Registry
-    ${ART_PERSISTENCY_PROVENANCE}
+    art::Persistency_Provenance
     messagefacility::MF_MessageLogger
     ROOT::Core
     ROOT::EG
@@ -44,8 +44,8 @@ art_make_library(
     lareventdisplay_EventDisplay_SimulationDrawingOptions_service
     larsim_MCCheater_ParticleInventoryService_service
     larsim_Simulation
-    nusimdata_SimulationBase
-    nuevdb_EventDisplayBase
+    nusimdata::SimulationBase
+    nuevdb::EventDisplayBase
 )
 
 simple_plugin(GraphCluster "module" lareventdisplay_EventDisplay)
@@ -58,7 +58,7 @@ simple_plugin(RecoDrawingOptions "service" nuevdb_EventDisplayBase)
 simple_plugin(SimulationDrawingOptions "service" nuevdb_EventDisplayBase)
 
 simple_plugin(ColorDrawingOptions "service"
-              ${ART_PERSISTENCY_PROVENANCE}
+              art::Persistency_Provenance
               messagefacility::MF_MessageLogger
               ROOT::Core
               ROOT::Graf3d
@@ -66,13 +66,13 @@ simple_plugin(ColorDrawingOptions "service"
               ROOT::MathCore
               larcorealg_Geometry
               lardataobj_RecoBase
-              nuevdb_EventDisplayBase)
+              nuevdb::EventDisplayBase)
 
 simple_plugin(InfoTransfer "service"
               larcorealg_Geometry
-              nuevdb_EventDisplayBase
+              nuevdb::EventDisplayBase
               art::Framework_Principal
-              ${ART_PERSISTENCY_PROVENANCE}
+              art::Persistency_Provenance
               messagefacility::MF_MessageLogger
               ROOT::Core)
 

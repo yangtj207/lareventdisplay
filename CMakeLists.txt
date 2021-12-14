@@ -8,12 +8,10 @@
 
 cmake_minimum_required(VERSION 3.19 FATAL_ERROR)
 
-project(lareventdisplay VERSION 09.02.04 LANGUAGES CXX)
+project(lareventdisplay VERSION 09.03.01 LANGUAGES CXX)
 
 # cetbuildtools contains our cmake modules
 find_package(cetbuildtools REQUIRED)
-
-list(APPEND CMAKE_MODULE_PATH $ENV{CANVAS_ROOT_IO_DIR}/Modules $ENV{ART_DIR}/Modules)
 
 include(CetCMakeEnv)
 cet_cmake_env()
@@ -26,8 +24,15 @@ cet_set_compiler_flags(DIAGS CAUTIOUS
 
 cet_report_compiler_flags()
 
+find_package (Eigen3 3.3...3.3.9 REQUIRED NO_MODULE)
+find_package(canvas_root_io REQUIRED)
+find_package(art REQUIRED PUBLIC)
+find_package(art_root_io REQUIRED PUBLIC)
+find_package(nuevdb REQUIRED PUBLIC)
+find_package(nug4 REQUIRED PUBLIC)
+find_package(nugen REQUIRED PUBLIC)
+find_package(PostgreSQL REQUIRED PUBLIC)
 # these are minimum required versions, not the actual product versions
-find_ups_product( eigen )
 find_ups_product( larcoreobj )
 find_ups_product( larcorealg )
 find_ups_product( larcore )
@@ -37,13 +42,7 @@ find_ups_product( lardata )
 find_ups_product( larevt )
 find_ups_product( larsim )
 find_ups_product( larreco )
-find_ups_product( nuevdb )
-find_ups_product( nug4 )
-find_ups_product( nugen )
-find_ups_product( art )
-find_ups_product(art_root_io)
 find_ups_product( postgresql )
-find_ups_boost()
 
 # use the system zlib
 find_package( ZLIB REQUIRED )

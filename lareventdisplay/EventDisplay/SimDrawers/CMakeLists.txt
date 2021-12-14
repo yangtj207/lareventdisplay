@@ -14,8 +14,8 @@ art_make(
     lareventdisplay_EventDisplay_ColorDrawingOptions_service
     lareventdisplay_EventDisplay_SimulationDrawingOptions_service
     larsim_Simulation
-    nusimdata_SimulationBase
-    nuevdb_EventDisplayBase
+    nusimdata::SimulationBase
+    nuevdb::EventDisplayBase
 )
 
 install_headers()

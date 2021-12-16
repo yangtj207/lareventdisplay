@@ -94,7 +94,7 @@ namespace evd{
 		 if (calos.size()!=pids.size()) continue;
 		 size_t bestplane = 0;
                  size_t calopl = 0;
-                 size_t pidpl = 0;
+                 //size_t pidpl = 0;
 		 size_t nmaxhits = 0;
 		 for (size_t icalo = 0; icalo < calos.size(); ++icalo){
 		   if (calos[icalo]->dEdx().size() > nmaxhits){
@@ -115,11 +115,13 @@ namespace evd{
                      calopl = icalo;
                    }
                  }
+                 /*
                  for (size_t ipid = 0; ipid < pids.size(); ++ipid){
                    if (pids[ipid]->PlaneID().Plane==bestplane){
                      pidpl = ipid;
                    }
                  }
+                 */
 
 		 TPolyMarker& pm = view->AddPolyMarker(calos[calopl]->dEdx().size(),evd::kColor[color],8,0.8);
 		 for(size_t h = 0; h<calos[calopl]->dEdx().size();++h){
@@ -142,6 +144,7 @@ namespace evd{
 			 int(tracklist[trkIter].key()),
 			 calos[calopl]->KineticEnergy(),
 			 calos[calopl]->Range());
+         /*
 		 sprintf(proton,"Proton Chi2 = %.1f, Kaon Chi2 = %.1f",
 			 pids[pidpl]->Chi2Proton(),
 			 pids[pidpl]->Chi2Kaon());
@@ -157,6 +160,7 @@ namespace evd{
 			 pids[pidpl]->PIDA(),
                          int(calos[calopl]->dEdx().size()));
 
+         */
 		 double offset = (ntracks - 1)*10.0;
 		 TLatex& track_tex  = view->AddLatex(13.0, (46.0)     - offset,trackinfo);
 		 TLatex& pida_tex   = view->AddLatex(13.0, (46.0-2.5) - offset,pida);

@@ -3,9 +3,9 @@
 /// \author T. Usher
 ////////////////////////////////////////////////////////////////////////
 
-#include "art/Framework/Principal/fwd.h"
+namespace art { class Event; }
 #include "art/Utilities/ToolMacros.h"
-#include "fhiclcpp/fwd.h"
+namespace fhicl { class ParameterSet; }
 #include "lareventdisplay/EventDisplay/3DDrawers/I3DDrawer.h"
 namespace evdb {
   class View3D;

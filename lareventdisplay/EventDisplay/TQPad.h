@@ -8,7 +8,7 @@
 
 #include "lareventdisplay/EventDisplay/DrawingPad.h"
 
-#include <memory>
+#include <memory> // std::unique_ptr<>
 
 class TH1F;
 

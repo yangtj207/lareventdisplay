@@ -7,6 +7,7 @@
 #include "TH1F.h"
 #include "TPad.h"
 
+#include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Utilities/make_tool.h"
 #include "cetlib_except/exception.h"
 

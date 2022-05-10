@@ -6,7 +6,7 @@
 #include "lardataalg/DetectorInfo/DetectorProperties.h"
 #include "lareventdisplay/EventDisplay/3DDrawers/I3DDrawer.h"
 
-#include "art/Framework/Principal/fwd.h"
+namespace art { class Event; }
 #include "art/Utilities/ToolMacros.h"
 
 namespace evdb_tool {

@@ -12,12 +12,14 @@
 
 #include "larcoreobj/SimpleTypesAndConstants/geo_types.h" // geo::TPCID
 
-#include "fhiclcpp/ParameterSet.h"
-#include "art/Framework/Services/Registry/ActivityRegistry.h"
-#include "art/Framework/Services/Registry/ServiceDeclarationMacros.h"
-#include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "canvas/Utilities/InputTag.h"
 #include "nuevdb/EventDisplayBase/Reconfigurable.h"
+
+namespace art {
+  class ActivityRegistry;
+}
+#include "art/Framework/Services/Registry/ServiceDeclarationMacros.h"
+#include "canvas/Utilities/InputTag.h"
+#include "fhiclcpp/ParameterSet.h"
 
 namespace evd {
   /**

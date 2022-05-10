@@ -36,6 +36,7 @@
 #include "nusimdata/SimulationBase/MCTruth.h"
 
 #include "art/Framework/Principal/Event.h"
+#include "art/Framework/Principal/DataViewImpl.h" // Missing from View.h
 #include "art/Framework/Principal/View.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"

@@ -11,8 +11,6 @@
 #ifndef IExperimentDrawer_H
 #define IExperimentDrawer_H
 
-#include "fhiclcpp/ParameterSet.h"
-
 namespace evdb
 {
     class View3D;

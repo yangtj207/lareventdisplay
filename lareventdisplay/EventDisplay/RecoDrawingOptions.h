@@ -12,7 +12,6 @@
 
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Services/Registry/ServiceDeclarationMacros.h"
-#include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "nuevdb/EventDisplayBase/Reconfigurable.h"
 #include "canvas/Utilities/InputTag.h"
 

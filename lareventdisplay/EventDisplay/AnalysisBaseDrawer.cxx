@@ -2,10 +2,6 @@
 /// \brief   Class to aid in the rendering of AnalysisBase objects
 /// \author  msoderbe@syr.edu
 
-#include "TLatex.h"
-#include "TLine.h"
-#include "TPolyMarker.h"
-
 #include "larcore/Geometry/Geometry.h"
 #include "lardataobj/AnalysisBase/Calorimetry.h"
 #include "lardataobj/AnalysisBase/ParticleID.h"
@@ -22,20 +18,11 @@
 #include "canvas/Persistency/Common/FindMany.h"
 #include "canvas/Persistency/Common/Ptr.h"
 
-#include <math.h>
+#include "TLatex.h"
+#include "TLine.h"
+#include "TPolyMarker.h"
 
-/* unused function
-namespace {
-   // Utility function to make uniform error messages.
-   void writeErrMsg(const char* fcn,
-                    cet::exception const& e)
-   {
-      mf::LogWarning("AnalysisBaseDrawer") << "AnalysisBaseDrawer::" << fcn
-                                           << " failed with message:\n"
-                                           << e;
-   }
-}
-*/
+#include <cmath>
 
 namespace evd{
 

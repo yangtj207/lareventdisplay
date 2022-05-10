@@ -7,7 +7,6 @@
 
 #include <vector>
 
-#include "art/Framework/Principal/fwd.h"
 #include "canvas/Persistency/Common/Ptr.h"
 
 #include "lardataobj/RecoBase/Seed.h"

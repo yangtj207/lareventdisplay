@@ -3,9 +3,12 @@
 /// \author T. Usher
 ////////////////////////////////////////////////////////////////////////
 
-#include "lardataobj/RecoBase/SpacePoint.h"
 #include "lareventdisplay/EventDisplay/3DDrawers/ISpacePoints3D.h"
 #include "lareventdisplay/EventDisplay/ColorDrawingOptions.h"
+#include "lardataobj/RecoBase/Hit.h"
+#include "lardataobj/RecoBase/SpacePoint.h"
+
+#include "nuevdb/EventDisplayBase/View3D.h"
 
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Utilities/ToolMacros.h"

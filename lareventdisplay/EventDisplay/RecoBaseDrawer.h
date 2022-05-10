@@ -4,30 +4,28 @@
 #ifndef EVD_RECOBASEDRAWER_H
 #define EVD_RECOBASEDRAWER_H
 
+#include <array>
+#include <memory> // std::unique_ptr<>
 #include <vector>
 
-#include "art/Framework/Principal/DataViewImpl.h"
-#include "art/Framework/Principal/View.h"
-#include "art/Framework/Principal/fwd.h"
-#include "canvas/Persistency/Common/FindMany.h"
-#include "canvas/Persistency/Common/FindManyP.h"
-#include "canvas/Persistency/Common/PtrVector.h"
-
-#include "lardataobj/RecoBase/Slice.h"
-#include "lardataobj/RecoBase/SpacePoint.h"
-#include "lareventdisplay/EventDisplay/OrthoProj.h"
-namespace detinfo {
-  class DetectorClocksData;
-  class DetectorPropertiesData;
-}
-
-class TVector3;
-class TH1F;
 namespace evdb {
   class View2D;
   class View3D;
 }
 
+namespace evdb_tool {
+  class ISpacePoints3D;
+}
+
+#include "lareventdisplay/EventDisplay/OrthoProj.h"
+
+namespace detinfo {
+  class DetectorClocksData;
+  class DetectorPropertiesData;
+}
+
+#include "lardataobj/RecoBase/Slice.h"
+#include "lardataobj/RecoBase/SpacePoint.h"
 namespace recob {
   class Edge;
   class Hit;
@@ -49,9 +47,16 @@ namespace anab {
   class CosmicTag;
 }
 
-namespace evdb_tool {
-  class ISpacePoints3D;
-}
+namespace art { class Event; }
+#include "art/Framework/Principal/DataViewImpl.h" // Missing from View.h
+#include "art/Framework/Principal/View.h"
+#include "canvas/Persistency/Common/FindMany.h"
+#include "canvas/Persistency/Common/FindManyP.h"
+#include "canvas/Persistency/Common/PtrVector.h"
+namespace fhicl { class ParameterSet; }
+
+class TVector3;
+class TH1F;
 
 namespace evd {
 

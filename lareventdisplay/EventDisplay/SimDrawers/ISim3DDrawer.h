@@ -12,9 +12,8 @@
 #ifndef ISim3DDrawer_H
 #define ISim3DDrawer_H
 
-#include "fhiclcpp/ParameterSet.h"
-#include "nuevdb/EventDisplayBase/View3D.h"
-#include "art/Framework/Principal/Event.h"
+namespace art { class Event; }
+namespace evdb { class View3D; }
 
 namespace evdb_tool
 {

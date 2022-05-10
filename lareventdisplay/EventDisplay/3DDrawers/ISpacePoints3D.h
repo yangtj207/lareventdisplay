@@ -12,11 +12,15 @@
 #ifndef ISpacePoints3D_H
 #define ISpacePoints3D_H
 
-#include "canvas/Persistency/Common/PtrVector.h"
 #include "canvas/Persistency/Common/FindManyP.h"
-#include "nuevdb/EventDisplayBase/View3D.h"
-#include "lardataobj/RecoBase/SpacePoint.h"
-#include "lardataobj/RecoBase/Hit.h"
+#include "canvas/Persistency/Common/Ptr.h"
+
+namespace evdb { class View3D; }
+
+namespace recob {
+  class Hit;
+  class SpacePoint;
+}
 
 namespace evdb_tool
 {

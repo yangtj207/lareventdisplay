@@ -1,80 +1,184 @@
 include(CetRootCint)
 
 set(PACKAGE EventDisplay)
-FILE(GLOB src_files *.cxx)
 
-cet_rootcint(${PACKAGE})
+cet_make_library(LIBRARY_NAME SpacePoint3DDrawer INTERFACE
+  SOURCE 3DDrawers/ISpacePoints3D.h
+  LIBRARIES INTERFACE
+  canvas::canvas
+)
+
+cet_make_library(LIBRARY_NAME WFHitDrawer INTERFACE
+  SOURCE wfHitDrawers/IWFHitDrawer.h
+  LIBRARIES INTERFACE
+  larcoreobj::headers
+)
+
+cet_make_library(LIBRARY_NAME WaveformDrawer INTERFACE
+  SOURCE wfHitDrawers/IWaveformDrawer.h
+  LIBRARIES INTERFACE
+  larcoreobj::headers
+)
+
+cet_build_plugin(AnalysisDrawingOptions art::service
+  LIBRARIES PUBLIC
+  nuevdb::EventDisplayBase
+)
+
+cet_build_plugin(ColorDrawingOptions art::service
+  LIBRARIES
+  PUBLIC
+  nuevdb::EventDisplayBase
+  larcoreobj::SimpleTypesAndConstants
+  PRIVATE
+  messagefacility::MF_MessageLogger
+)
+
+cet_build_plugin(EvdLayoutOptions art::service
+  LIBRARIES PUBLIC
+  nuevdb::EventDisplayBase
+)
+
+cet_build_plugin(InfoTransfer art::service
+  LIBRARIES
+  PUBLIC
+  nuevdb::EventDisplayBase
+  art::Persistency_Provenance
+  PRIVATE
+  lardata::Utilities
+  larcore::Geometry_Geometry_service
+  lardataobj::RecoBase
+  nuevdb::EventDisplayBase
+  art::Framework_Principal
+  canvas::canvas
+  messagefacility::MF_MessageLogger
+)
+
+cet_build_plugin(RawDrawingOptions art::service
+  LIBRARIES
+  PUBLIC
+  larcoreobj::SimpleTypesAndConstants
+  nuevdb::EventDisplayBase
+  canvas::canvas
+  fhiclcpp::fhiclcpp
+  PRIVATE
+  larevt::ChannelStatusProvider
+)
+
+cet_build_plugin(RecoDrawingOptions art::service
+  LIBRARIES
+  PUBLIC
+  nuevdb::EventDisplayBase
+  canvas::canvas
+  fhiclcpp::fhiclcpp
+)
+
+cet_build_plugin(SimulationDrawingOptions art::service
+  LIBRARIES PUBLIC
+  nuevdb::EventDisplayBase
+  canvas::canvas
+  fhiclcpp::fhiclcpp  
+)
+
+cet_rootcint(${PACKAGE} LIB_TARGET lareventdisplay_EventDisplay)
+
+cet_make_library(SOURCE
+  ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE}Cint.cc
+  AnalysisBaseDrawer.cxx
+  CalorPad.cxx
+  CalorView.cxx
+  Display3DPad.cxx
+  Display3DView.cxx
+  DrawingPad.cxx
+  GraphClusterAlg.cxx
+  HeaderDrawer.cxx
+  HeaderPad.cxx
+  HitSelector.cxx
+  MCBriefPad.cxx
+  Ortho3DPad.cxx
+  Ortho3DView.cxx
+  RawDataDrawer.cxx
+  RecoBaseDrawer.cxx
+  SimulationDrawer.cxx
+  Style.cxx
+  TQPad.cxx
+  TWQMultiTPCProjection.cxx
+  TWQProjectionView.cxx
+  TWireProjPad.cxx
+  LIBRARIES
+  PUBLIC
+  larevt::ChannelStatusProvider
+  lardata::Utilities
+  lardataobj::RecoBase
+  larcoreobj::SimpleTypesAndConstants
+  nuevdb::EventDisplayBase
+  art::Framework_Principal
+  canvas::canvas
+  ROOT::Geom
+  PRIVATE
+  lareventdisplay::EventDisplay_AnalysisDrawingOptions_service
+  lareventdisplay::EventDisplay_ColorDrawingOptions_service
+  lareventdisplay::EventDisplay_EvdLayoutOptions_service
+  lareventdisplay::EventDisplay_InfoTransfer_service
+  lareventdisplay::EventDisplay_RawDrawingOptions_service
+  lareventdisplay::EventDisplay_RecoDrawingOptions_service
+  lareventdisplay::EventDisplay_SimulationDrawingOptions_service
+  lareventdisplay::SpacePoint3DDrawer
+  lareventdisplay::WFHitDrawer
+  lareventdisplay::WaveformDrawer
+  larsim::MCCheater_ParticleInventoryService_service
+  larsim::Simulation
+  larevt::ChannelStatusService
+  larevt::DetPedestalProvider
+  larevt::DetPedestalService
+  lardata::ArtDataHelper
+  lardata::DetectorClocksService
+  lardata::DetectorPropertiesService
+  larcore::Geometry_Geometry_service
+  larcore::ServiceUtil
+  lardataalg::headers
+  lardataobj::AnalysisBase
+  lardataobj::RawData
+  nusimdata::SimulationBase
+  art::Framework_Services_Registry
+  art_plugin_support::toolMaker
+  messagefacility::MF_MessageLogger
+  cetlib::cetlib
+  cetlib_except::cetlib_except
+  ROOT::Core
+  ROOT::EG
+  ROOT::Gpad
+  ROOT::Gui
+  ROOT::Hist
+  ROOT::MathCore
+)
 
 add_subdirectory(ExptDrawers)
 add_subdirectory(wfHitDrawers)
 add_subdirectory(SimDrawers)
 add_subdirectory(3DDrawers)
 
-art_make_library(
-  SOURCE
-    ${src_files}
-    ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE}Cint.cc
-  LIBRARIES
-    art::Framework_Principal
-    art::Framework_Services_Registry
-    art::Persistency_Provenance
-    messagefacility::MF_MessageLogger
-    ROOT::Core
-    ROOT::EG
-    ROOT::Gpad
-    ROOT::Graf3d
-    ROOT::Graf
-    ROOT::Gui
-    ROOT::Hist
-    ROOT::Physics
-    ROOT::RIO
-    canvas::canvas
-    cetlib_except::cetlib_except
-    lardataalg_DetectorInfo
-    larcorealg_Geometry
-    lardata_ArtDataHelper
-    lardata_Utilities
-    lardataobj_RawData
-    lareventdisplay_EventDisplay_AnalysisDrawingOptions_service
-    lareventdisplay_EventDisplay_ColorDrawingOptions_service
-    lareventdisplay_EventDisplay_EvdLayoutOptions_service
-    lareventdisplay_EventDisplay_InfoTransfer_service
-    lareventdisplay_EventDisplay_RawDrawingOptions_service
-    lareventdisplay_EventDisplay_RecoDrawingOptions_service
-    lareventdisplay_EventDisplay_SimulationDrawingOptions_service
-    larsim_MCCheater_ParticleInventoryService_service
-    larsim_Simulation
-    nusimdata::SimulationBase
-    nuevdb::EventDisplayBase
+cet_build_plugin(EVD art::EDAnalyzer
+  LIBRARIES PRIVATE
+  lareventdisplay::EventDisplay
+  nuevdb::EventDisplayBase
 )
 
-simple_plugin(GraphCluster "module" lareventdisplay_EventDisplay) ### MIGRATE-ACTION-RECOMMENDED (migrate-3.13.00) - deprecated: use cet_build_plugin() with explicit source lists and plugin base types
-simple_plugin(EVD "module" lareventdisplay_EventDisplay) ### MIGRATE-ACTION-RECOMMENDED (migrate-3.13.00) - deprecated: use cet_build_plugin() with explicit source lists and plugin base types
-
-simple_plugin(AnalysisDrawingOptions "service" nuevdb_EventDisplayBase) ### MIGRATE-ACTION-RECOMMENDED (migrate-3.13.00) - deprecated: use cet_build_plugin() with explicit source lists and plugin base types
-simple_plugin(EvdLayoutOptions "service" nuevdb_EventDisplayBase) ### MIGRATE-ACTION-RECOMMENDED (migrate-3.13.00) - deprecated: use cet_build_plugin() with explicit source lists and plugin base types
-simple_plugin(RawDrawingOptions "service" nuevdb_EventDisplayBase) ### MIGRATE-ACTION-RECOMMENDED (migrate-3.13.00) - deprecated: use cet_build_plugin() with explicit source lists and plugin base types
-simple_plugin(RecoDrawingOptions "service" nuevdb_EventDisplayBase) ### MIGRATE-ACTION-RECOMMENDED (migrate-3.13.00) - deprecated: use cet_build_plugin() with explicit source lists and plugin base types
-simple_plugin(SimulationDrawingOptions "service" nuevdb_EventDisplayBase) ### MIGRATE-ACTION-RECOMMENDED (migrate-3.13.00) - deprecated: use cet_build_plugin() with explicit source lists and plugin base types
-
-simple_plugin(ColorDrawingOptions "service"
-              art::Persistency_Provenance
-              messagefacility::MF_MessageLogger
-              ROOT::Core
-              ROOT::Graf3d
-              ROOT::Hist
-              ROOT::MathCore
-              larcorealg_Geometry
-              lardataobj_RecoBase
-              nuevdb::EventDisplayBase) ### MIGRATE-ACTION-RECOMMENDED (migrate-3.13.00) - deprecated: use cet_build_plugin() with explicit source lists and plugin base types
-
-simple_plugin(InfoTransfer "service"
-              larcorealg_Geometry
-              nuevdb::EventDisplayBase
-              art::Framework_Principal
-              art::Persistency_Provenance
-              messagefacility::MF_MessageLogger
-              ROOT::Core) ### MIGRATE-ACTION-RECOMMENDED (migrate-3.13.00) - deprecated: use cet_build_plugin() with explicit source lists and plugin base types
+cet_build_plugin(GraphCluster art::EDProducer
+  LIBRARIES PRIVATE
+  lareventdisplay::EventDisplay
+  lardata::AssociationUtil
+  lardata::Utilities
+  larcore::Geometry_Geometry_service
+  lardataalg::UtilitiesHeaders
+  lardataobj::RecoBase
+  larcorealg::Geometry
+  larcoreobj::SimpleTypesAndConstants
+  art::Framework_Principal
+  art::Framework_Services_Registry
+  canvas::canvas
+  fhiclcpp::fhiclcpp
+)
 
 install_headers()
 install_fhicl()

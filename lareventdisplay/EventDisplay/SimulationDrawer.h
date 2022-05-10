@@ -8,8 +8,9 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
-#include "art/Framework/Principal/fwd.h"
+namespace art { class Event; }
 #include "lareventdisplay/EventDisplay/OrthoProj.h"
 
 namespace evdb {

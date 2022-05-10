@@ -12,10 +12,11 @@
 #ifndef IWaveformDrawer_H
 #define IWaveformDrawer_H
 
-#include "fhiclcpp/ParameterSet.h"
 #include "larcoreobj/SimpleTypesAndConstants/RawTypes.h" // raw::ChannelID_t
-#include "nuevdb/EventDisplayBase/View2D.h"
-#include "TF1.h"
+namespace fhicl { class ParameterSet; }
+namespace evdb { class View2D; }
+
+#include <string>
 
 namespace evdb_tool
 {

@@ -9,8 +9,11 @@
 #include "lareventdisplay/EventDisplay/RawDrawingOptions.h"
 #include "lareventdisplay/EventDisplay/RecoDrawingOptions.h"
 #include "lareventdisplay/EventDisplay/wfHitDrawers/IWaveformDrawer.h"
+
 #include "nuevdb/EventDisplayBase/EventHolder.h"
 
+#include "art/Framework/Principal/Handle.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Utilities/ToolMacros.h"
 
 #include "TH1F.h"

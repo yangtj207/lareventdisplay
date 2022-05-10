@@ -13,20 +13,27 @@
 #include <vector>
 #include <iostream>
 
-#include "fhiclcpp/ParameterSet.h"
-#include "art/Framework/Services/Registry/ActivityRegistry.h"
-#include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Persistency/Provenance/ScheduleContext.h"
 #include "nuevdb/EventDisplayBase/Reconfigurable.h"
 
-#include "lardataobj/RecoBase/Hit.h"
-#include "lardataobj/RecoBase/Cluster.h"
+#include "art/Persistency/Provenance/ScheduleContext.h"
+#include "art/Framework/Services/Registry/ServiceDeclarationMacros.h"
 
+namespace art {
+  class ActivityRegistry;
+  class Event;
+}
+#include "canvas/Persistency/Common/Ptr.h"
 
- namespace util {
-   class PxPoint;
-   class PxLine;
- }
+namespace fhicl { class ParameterSet; }
+
+namespace recob {
+  class Hit;
+}
+
+namespace util {
+  class PxPoint;
+  class PxLine;
+}
 
 
 namespace evd {

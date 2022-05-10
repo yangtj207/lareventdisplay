@@ -4,11 +4,15 @@
 #ifndef EVD_COLORDRAWINGOPTIONS_H
 #define EVD_COLORDRAWINGOPTIONS_H
 #ifndef __CINT__
-#include "nuevdb/EventDisplayBase/ColorScale.h"
-#include "larcore/Geometry/Geometry.h"
 
-#include "fhiclcpp/ParameterSet.h"
+#include "larcoreobj/SimpleTypesAndConstants/geo_types.h"
+
+#include "nuevdb/EventDisplayBase/ColorScale.h"
 #include "nuevdb/EventDisplayBase/Reconfigurable.h"
+
+#include "art/Framework/Services/Registry/ServiceDeclarationMacros.h"
+
+namespace fhicl { class ParameterSet; }
 
 namespace evd {
   class ColorDrawingOptions : public evdb::Reconfigurable{

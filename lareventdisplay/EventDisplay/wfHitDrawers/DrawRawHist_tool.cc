@@ -3,17 +3,20 @@
 /// \author T. Usher
 ////////////////////////////////////////////////////////////////////////
 
-#include "larcore/Geometry/Geometry.h"
-#include "lardataobj/RawData/RawDigit.h"
-#include "lardataobj/RawData/raw.h"
 #include "lareventdisplay/EventDisplay/ColorDrawingOptions.h"
 #include "lareventdisplay/EventDisplay/RawDrawingOptions.h"
 #include "lareventdisplay/EventDisplay/wfHitDrawers/IWaveformDrawer.h"
 #include "larevt/CalibrationDBI/Interface/DetPedestalProvider.h"
 #include "larevt/CalibrationDBI/Interface/DetPedestalService.h"
+#include "larcore/Geometry/Geometry.h"
+#include "lardataobj/RawData/RawDigit.h"
+#include "lardataobj/RawData/raw.h"
+
 #include "nuevdb/EventDisplayBase/EventHolder.h"
 
 #include "art/Utilities/ToolMacros.h"
+#include "art/Framework/Principal/Handle.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "TH1F.h"

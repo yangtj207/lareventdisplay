@@ -8,6 +8,8 @@
 #include "lareventdisplay/EventDisplay/ColorDrawingOptions.h"
 #include "lareventdisplay/EventDisplay/SimDrawers/ISim3DDrawer.h"
 #include "lareventdisplay/EventDisplay/SimulationDrawingOptions.h"
+
+#include "nuevdb/EventDisplayBase/View3D.h"
 #include "nusimdata/SimulationBase/MCParticle.h"
 
 #include "art/Framework/Principal/Event.h"

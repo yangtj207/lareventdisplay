@@ -9,6 +9,8 @@
 #include "lareventdisplay/EventDisplay/ColorDrawingOptions.h"
 #include "lareventdisplay/EventDisplay/RecoDrawingOptions.h"
 
+#include "nuevdb/EventDisplayBase/View3D.h"
+
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Utilities/ToolMacros.h"

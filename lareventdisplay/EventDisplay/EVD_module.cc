@@ -16,8 +16,8 @@
 #include "lareventdisplay/EventDisplay/CalorView.h"
 
 // Framework includes
-#include "art/Framework/Principal/fwd.h"
-#include "fhiclcpp/fwd.h"
+namespace art { class Event; }
+namespace fhicl { class ParameterSet; }
 
 #if defined __clang__
   #pragma clang diagnostic push

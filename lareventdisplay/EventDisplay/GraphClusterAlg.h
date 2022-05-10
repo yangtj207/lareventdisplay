@@ -11,19 +11,17 @@
 
 #include <vector>
 
-#include "art/Framework/Principal/fwd.h"
+namespace art { class Event; }
 #include "canvas/Persistency/Common/PtrVector.h"
-#include "canvas/Persistency/Common/Ptr.h"
-#include "fhiclcpp/fwd.h"
+
+namespace fhicl { class ParameterSet; }
 
 namespace util {
  class PxLine;
- class PxPoint;
 }
 
 namespace recob {
   class Hit;
-  class Cluster;
 }
 
 namespace evd {

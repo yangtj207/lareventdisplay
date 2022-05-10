@@ -5,24 +5,24 @@
 
 #include "lareventdisplay/EventDisplay/SimDrawers/ISim3DDrawer.h"
 #include "lareventdisplay/EventDisplay/SimulationDrawingOptions.h"
+#include "lareventdisplay/EventDisplay/Style.h"
+#include "larsim/Simulation/LArVoxelData.h"
+#include "larsim/Simulation/LArVoxelList.h"
+#include "larsim/Simulation/SimListUtils.h"
+#include "lardata/DetectorInfoServices/DetectorClocksService.h"
+#include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
+#include "larcore/Geometry/Geometry.h"
+#include "lardataalg/DetectorInfo/DetectorProperties.h"
+
+#include "nuevdb/EventDisplayBase/View3D.h"
+#include "nusimdata/SimulationBase/MCParticle.h"
+#include "nusimdata/SimulationBase/MCTruth.h"
 
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Utilities/ToolMacros.h"
 #include "cetlib_except/exception.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
-
-#include "lareventdisplay/EventDisplay/Style.h"
-#include "larsim/Simulation/LArVoxelData.h"
-#include "larsim/Simulation/LArVoxelList.h"
-#include "larsim/Simulation/SimListUtils.h"
-#include "nusimdata/SimulationBase/MCParticle.h"
-#include "nusimdata/SimulationBase/MCTruth.h"
-
-#include "larcore/Geometry/Geometry.h"
-#include "lardata/DetectorInfoServices/DetectorClocksService.h"
-#include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
-#include "lardataalg/DetectorInfo/DetectorProperties.h"
 
 #include "TDatabasePDG.h"
 #include "TPolyLine3D.h"

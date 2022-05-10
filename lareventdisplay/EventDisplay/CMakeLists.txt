@@ -48,14 +48,14 @@ art_make_library(
     nuevdb::EventDisplayBase
 )
 
-simple_plugin(GraphCluster "module" lareventdisplay_EventDisplay)
-simple_plugin(EVD "module" lareventdisplay_EventDisplay)
+simple_plugin(GraphCluster "module" lareventdisplay_EventDisplay) ### MIGRATE-ACTION-RECOMMENDED (migrate-3.13.00) - deprecated: use cet_build_plugin() with explicit source lists and plugin base types
+simple_plugin(EVD "module" lareventdisplay_EventDisplay) ### MIGRATE-ACTION-RECOMMENDED (migrate-3.13.00) - deprecated: use cet_build_plugin() with explicit source lists and plugin base types
 
-simple_plugin(AnalysisDrawingOptions "service" nuevdb_EventDisplayBase)
-simple_plugin(EvdLayoutOptions "service" nuevdb_EventDisplayBase)
-simple_plugin(RawDrawingOptions "service" nuevdb_EventDisplayBase)
-simple_plugin(RecoDrawingOptions "service" nuevdb_EventDisplayBase)
-simple_plugin(SimulationDrawingOptions "service" nuevdb_EventDisplayBase)
+simple_plugin(AnalysisDrawingOptions "service" nuevdb_EventDisplayBase) ### MIGRATE-ACTION-RECOMMENDED (migrate-3.13.00) - deprecated: use cet_build_plugin() with explicit source lists and plugin base types
+simple_plugin(EvdLayoutOptions "service" nuevdb_EventDisplayBase) ### MIGRATE-ACTION-RECOMMENDED (migrate-3.13.00) - deprecated: use cet_build_plugin() with explicit source lists and plugin base types
+simple_plugin(RawDrawingOptions "service" nuevdb_EventDisplayBase) ### MIGRATE-ACTION-RECOMMENDED (migrate-3.13.00) - deprecated: use cet_build_plugin() with explicit source lists and plugin base types
+simple_plugin(RecoDrawingOptions "service" nuevdb_EventDisplayBase) ### MIGRATE-ACTION-RECOMMENDED (migrate-3.13.00) - deprecated: use cet_build_plugin() with explicit source lists and plugin base types
+simple_plugin(SimulationDrawingOptions "service" nuevdb_EventDisplayBase) ### MIGRATE-ACTION-RECOMMENDED (migrate-3.13.00) - deprecated: use cet_build_plugin() with explicit source lists and plugin base types
 
 simple_plugin(ColorDrawingOptions "service"
               art::Persistency_Provenance
@@ -66,7 +66,7 @@ simple_plugin(ColorDrawingOptions "service"
               ROOT::MathCore
               larcorealg_Geometry
               lardataobj_RecoBase
-              nuevdb::EventDisplayBase)
+              nuevdb::EventDisplayBase) ### MIGRATE-ACTION-RECOMMENDED (migrate-3.13.00) - deprecated: use cet_build_plugin() with explicit source lists and plugin base types
 
 simple_plugin(InfoTransfer "service"
               larcorealg_Geometry
@@ -74,7 +74,7 @@ simple_plugin(InfoTransfer "service"
               art::Framework_Principal
               art::Persistency_Provenance
               messagefacility::MF_MessageLogger
-              ROOT::Core)
+              ROOT::Core) ### MIGRATE-ACTION-RECOMMENDED (migrate-3.13.00) - deprecated: use cet_build_plugin() with explicit source lists and plugin base types
 
 install_headers()
 install_fhicl()

@@ -279,11 +279,8 @@ namespace evd_tool {
         if (channelStatus.IsBad(channel)) {
           const geo::WireGeo* wireGeo = geo->WirePtr(wireID);
 
-          double wireStart[3];
-          double wireEnd[3];
-
-          wireGeo->GetStart(wireStart);
-          wireGeo->GetEnd(wireEnd);
+          auto const wireStart = wireGeo->GetStart();
+          auto const wireEnd = wireGeo->GetEnd();
 
           TPolyLine3D& pl = view->AddPolyLine3D(2, color, style, width);
           pl.SetPoint(0, coords[0] - 0.5, wireStart[1], wireStart[2]);

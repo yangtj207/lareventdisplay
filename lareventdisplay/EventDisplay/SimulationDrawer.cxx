@@ -218,12 +218,10 @@ namespace evd {
 
     art::ServiceHandle<geo::Geometry const> geo;
     art::ServiceHandle<evd::RawDrawingOptions const> rawopt;
-    // get the x position of the plane in question
-    double xyz1[3] = {0.};
-    double xyz2[3] = {0.};
+    geo::PlaneID const planeID{rawopt->fCryostat, rawopt->fTPC, plane};
 
     // shift the truth by a fixed amount so it doesn't overlay the reco
-    double xShift = -2;
+    double const xShift = -2;
 
     static bool first = true;
     if (first) {
@@ -271,22 +269,16 @@ namespace evd {
           auto gptStart = geo::Point_t(p.Vx(), p.Vy(), p.Vz());
           geo::Point_t sceOffset{0, 0, 0};
           if (sce->EnableCorrSCE()) sceOffset = sce->GetPosOffsets(gptStart);
-          xyz1[0] = p.Vx() - sceOffset.X();
-          xyz1[1] = p.Vy() + sceOffset.Y();
-          xyz1[2] = p.Vz() + sceOffset.Z();
-          xyz2[0] = xyz1[0] + r * p.Px() / p.P();
-          xyz2[1] = xyz1[1] + r * p.Py() / p.P();
-          xyz2[2] = xyz1[2] + r * p.Pz() / p.P();
+          geo::Point_t const xyz1{
+            p.Vx() - sceOffset.X(), p.Vy() + sceOffset.Y(), p.Vz() + sceOffset.Z()};
+          geo::Point_t const xyz2{xyz1.X() + r * p.Px() / p.P(),
+                                  xyz1.Y() + r * p.Py() / p.P(),
+                                  xyz1.Z() + r * p.Pz() / p.P()};
+          double w1 = geo->WireCoordinate(xyz1, planeID);
+          double w2 = geo->WireCoordinate(xyz2, planeID);
 
-          double w1 =
-            geo->WireCoordinate(xyz1[1], xyz1[2], (int)plane, rawopt->fTPC, rawopt->fCryostat);
-          double w2 =
-            geo->WireCoordinate(xyz2[1], xyz2[2], (int)plane, rawopt->fTPC, rawopt->fCryostat);
-
-          double time =
-            detProp.ConvertXToTicks(xyz1[0] + xShift, (int)plane, rawopt->fTPC, rawopt->fCryostat);
-          double time2 =
-            detProp.ConvertXToTicks(xyz2[0] + xShift, (int)plane, rawopt->fTPC, rawopt->fCryostat);
+          double time = detProp.ConvertXToTicks(xyz1.X() + xShift, planeID);
+          double time2 = detProp.ConvertXToTicks(xyz2.X() + xShift, planeID);
 
           if (rawopt->fAxisOrientation < 1) {
             TLine& l = view->AddLine(w1, time, w2, time2);
@@ -321,18 +313,15 @@ namespace evd {
         auto gptStart = geo::Point_t(p->Vx(), p->Vy(), p->Vz());
         geo::Point_t sceOffset{0, 0, 0};
         if (sce->EnableCorrSCE()) sceOffset = sce->GetPosOffsets(gptStart);
-        xyz1[0] = p->Vx() - sceOffset.X();
-        xyz1[1] = p->Vy() + sceOffset.Y();
-        xyz1[2] = p->Vz() + sceOffset.Z();
-        xyz2[0] = xyz1[0] + r * p->Px() / p->P();
-        xyz2[1] = xyz1[1] + r * p->Py() / p->P();
-        xyz2[2] = xyz1[2] + r * p->Pz() / p->P();
-        double w1 =
-          geo->WireCoordinate(xyz1[1], xyz1[2], (int)plane, rawopt->fTPC, rawopt->fCryostat);
-        double t1 = detProp.ConvertXToTicks(xyz1[0], (int)plane, rawopt->fTPC, rawopt->fCryostat);
-        double w2 =
-          geo->WireCoordinate(xyz2[1], xyz2[2], (int)plane, rawopt->fTPC, rawopt->fCryostat);
-        double t2 = detProp.ConvertXToTicks(xyz2[0], (int)plane, rawopt->fTPC, rawopt->fCryostat);
+        geo::Point_t const xyz1{
+          p->Vx() - sceOffset.X(), p->Vy() + sceOffset.Y(), p->Vz() + sceOffset.Z()};
+        geo::Point_t const xyz2{xyz1.X() + r * p->Px() / p->P(),
+                                xyz1.Y() + r * p->Py() / p->P(),
+                                xyz1.Z() + r * p->Pz() / p->P()};
+        double w1 = geo->WireCoordinate(xyz1, planeID);
+        double t1 = detProp.ConvertXToTicks(xyz1.X(), planeID);
+        double w2 = geo->WireCoordinate(xyz2, planeID);
+        double t2 = detProp.ConvertXToTicks(xyz2.X(), planeID);
         TLine& l = view->AddLine(w1, t1, w2, t2);
         l.SetLineWidth(2);
         l.SetLineStyle(kDotted);
@@ -679,7 +668,6 @@ namespace evd {
     double g4Ticks = 0.0;
     double coeff = 0.0;
     double readoutwindowsize = 0.0;
-    double vtx[3] = {0.0, 0.0, 0.0};
     for (size_t p = 0; p < plist.size(); ++p) {
       trackToMcParticleMap[plist[p]->TrackId()] = plist[p];
 
@@ -711,9 +699,6 @@ namespace evd {
           tpcmaxx = -1.0;
           xOffset = 0.0;
           g4Ticks = 0.0;
-          vtx[0] = 0.0;
-          vtx[1] = 0.0;
-          vtx[2] = 0.0;
           coeff = 0.0;
           readoutwindowsize = 0.0;
           for (int hitIdx = 0; hitIdx < numTrajPoints; hitIdx++) {
@@ -727,11 +712,9 @@ namespace evd {
               continue;
 
             if ((xPos < tpcminx) || (xPos > tpcmaxx)) {
-              vtx[0] = xPos;
-              vtx[1] = yPos;
-              vtx[2] = zPos;
+              geo::Point_t const vtx{xPos, yPos, zPos};
               geo::TPCID tpcid = geom->FindTPCAtPosition(vtx);
-              unsigned int cryo = geom->FindCryostatAtPosition(vtx);
+              unsigned int cryo = geom->PositionToCryostatID(vtx).Cryostat;
 
               if (tpcid.isValid) {
                 unsigned int tpc = tpcid.TPC;
@@ -851,11 +834,9 @@ namespace evd {
         const std::vector<double>& posVec = partToPosMapItr->second[posIdx];
 
         if ((posVec[0] < tpcminx) || (posVec[0] > tpcmaxx)) {
-          vtx[0] = posVec[0];
-          vtx[1] = posVec[1];
-          vtx[2] = posVec[2];
+          geo::Point_t const vtx{posVec[0], posVec[1], posVec[2]};
           geo::TPCID tpcid = geom->FindTPCAtPosition(vtx);
-          unsigned int cryo = geom->FindCryostatAtPosition(vtx);
+          unsigned int cryo = geom->PositionToCryostatID(vtx).Cryostat;
 
           if (tpcid.isValid) {
             unsigned int tpc = tpcid.TPC;

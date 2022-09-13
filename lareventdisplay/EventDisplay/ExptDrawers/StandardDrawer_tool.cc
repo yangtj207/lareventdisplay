@@ -114,7 +114,7 @@ namespace evd_tool {
       DrawBoxBoundedGeoOutline(view, cryo.Boundaries(), kRed + 2, 1, kSolid);
 
       // draw all TPC boxes
-      for (geo::TPCGeo const& TPC : cryo.TPCs()) {
+      for (geo::TPCGeo const& TPC : cryo.IterateTPCs()) {
 
         DrawTPCoutline(view, TPC, kRed, 2, kSolid);
 

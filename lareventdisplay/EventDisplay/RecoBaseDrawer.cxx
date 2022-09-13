@@ -577,19 +577,19 @@ namespace evd {
         float wire1 = FLT_MIN;
 
         //Find the 4 corners and convert them to wire numbers
-        std::vector<TVector3> points;
-        points.push_back(TVector3(0,
-                                  opflashes[iof]->YCenter() - opflashes[iof]->YWidth(),
-                                  opflashes[iof]->ZCenter() - opflashes[iof]->ZWidth()));
-        points.push_back(TVector3(0,
-                                  opflashes[iof]->YCenter() - opflashes[iof]->YWidth(),
-                                  opflashes[iof]->ZCenter() + opflashes[iof]->ZWidth()));
-        points.push_back(TVector3(0,
-                                  opflashes[iof]->YCenter() + opflashes[iof]->YWidth(),
-                                  opflashes[iof]->ZCenter() - opflashes[iof]->ZWidth()));
-        points.push_back(TVector3(0,
-                                  opflashes[iof]->YCenter() + opflashes[iof]->YWidth(),
-                                  opflashes[iof]->ZCenter() + opflashes[iof]->ZWidth()));
+        std::vector<geo::Point_t> points;
+        points.emplace_back(0,
+                            opflashes[iof]->YCenter() - opflashes[iof]->YWidth(),
+                            opflashes[iof]->ZCenter() - opflashes[iof]->ZWidth());
+        points.emplace_back(0,
+                            opflashes[iof]->YCenter() - opflashes[iof]->YWidth(),
+                            opflashes[iof]->ZCenter() + opflashes[iof]->ZWidth());
+        points.emplace_back(0,
+                            opflashes[iof]->YCenter() + opflashes[iof]->YWidth(),
+                            opflashes[iof]->ZCenter() - opflashes[iof]->ZWidth());
+        points.emplace_back(0,
+                            opflashes[iof]->YCenter() + opflashes[iof]->YWidth(),
+                            opflashes[iof]->ZCenter() + opflashes[iof]->ZWidth());
 
         for (size_t i = 0; i < points.size(); ++i) {
           geo::WireID wireID;
@@ -667,20 +667,22 @@ namespace evd {
         unsigned int wirepoint = 0;
         unsigned int wireend1 = 0;
         unsigned int wireend2 = 0;
+        using geo::vect::toPoint;
+        geo::PlaneID const& planeID{rawOpt->fCryostat, rawOpt->fTPC, plane};
         try {
-          wirepoint = geo->NearestWire(SeedPoint, plane, rawOpt->fTPC, rawOpt->fCryostat);
+          wirepoint = geo->NearestWireID(toPoint(SeedPoint), planeID).Wire;
         }
         catch (cet::exception& e) {
           wirepoint = atoi(e.explain_self().substr(e.explain_self().find("#") + 1, 5).c_str());
         }
         try {
-          wireend1 = geo->NearestWire(SeedEnd1, plane, rawOpt->fTPC, rawOpt->fCryostat);
+          wireend1 = geo->NearestWireID(toPoint(SeedEnd1), planeID).Wire;
         }
         catch (cet::exception& e) {
           wireend1 = atoi(e.explain_self().substr(e.explain_self().find("#") + 1, 5).c_str());
         }
         try {
-          wireend2 = geo->NearestWire(SeedEnd2, plane, rawOpt->fTPC, rawOpt->fCryostat);
+          wireend2 = geo->NearestWireID(toPoint(SeedEnd2), planeID).Wire;
         }
         catch (cet::exception& e) {
           wireend2 = atoi(e.explain_self().substr(e.explain_self().find("#") + 1, 5).c_str());
@@ -1295,8 +1297,7 @@ namespace evd {
     art::ServiceHandle<evd::RawDrawingOptions const> rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions const> recoOpt;
     art::ServiceHandle<geo::Geometry const> geo;
-    unsigned int c = rawOpt->fCryostat;
-    unsigned int t = rawOpt->fTPC;
+    geo::PlaneID const planeID{rawOpt->fCryostat, rawOpt->fTPC, plane};
 
     // first draw the hits
     this->Hit2D(hits, color, view, false, true, lineWidth);
@@ -1305,24 +1306,23 @@ namespace evd {
     const auto& startDir = track->VertexDirection();
 
     // prepare to draw prongs
-    double local[3] = {0.};
-    double world[3] = {0.};
-    geo->Cryostat(c).TPC(t).Plane(plane).LocalToWorld(local, world);
-    world[1] = startPos.Y();
-    world[2] = startPos.Z();
+    geo::PlaneGeo::LocalPoint_t const local{};
+    auto world = geo->Plane(planeID).toWorldCoords(local);
+    world.SetY(startPos.Y());
+    world.SetZ(startPos.Z());
 
     // convert the starting position and direction from 3D to 2D coordinates
-    double tick = detProp.ConvertXToTicks(startPos.X(), plane, t, c);
+    double tick = detProp.ConvertXToTicks(startPos.X(), planeID);
     double wire = 0.;
     try {
-      wire = 1. * geo->NearestWire(world, plane, t, c);
+      wire = 1. * geo->NearestWireID(world, planeID).Wire;
     }
     catch (cet::exception& e) {
       wire = 1. * atoi(e.explain_self().substr(e.explain_self().find("#") + 1, 5).c_str());
     }
 
     // thetawire is the angle measured CW from +z axis to wire
-    double thetawire = geo->TPC(t).Plane(plane).Wire(0).ThetaZ();
+    double thetawire = geo->Plane(planeID).Wire(0).ThetaZ();
     double wirePitch = geo->WirePitch(hits[0]->View());
     double driftvelocity = detProp.DriftVelocity();    // cm/us
     double timetick = sampling_rate(clockData) * 1e-3; // time sample in us
@@ -1349,21 +1349,22 @@ namespace evd {
       const auto& hitPos = track->LocationAtPoint(idx);
 
       // Use "world" from above
-      world[1] = hitPos.Y();
-      world[2] = hitPos.Z();
+      world.SetY(hitPos.Y());
+      world.SetZ(hitPos.Z());
 
       // convert the starting position and direction from 3D to 2D coordinates
-      double tickHit = detProp.ConvertXToTicks(hitPos.X(), plane, t, c);
+      double tickHit = detProp.ConvertXToTicks(hitPos.X(), planeID);
       double wireHit = 0.;
       try {
-        wireHit = 1. * geo->NearestWire(world, plane, t, c);
+        wireHit = 1. * geo->NearestWireID(world, planeID).Wire;
       }
       catch (cet::exception& e) {
         wireHit = 1. * atoi(e.explain_self().substr(e.explain_self().find("#") + 1, 5).c_str());
       }
-      const size_t tpc = geo->FindTPCAtPosition(hitPos).TPC;
-      const size_t cryo = geo->FindCryostatAtPosition(hitPos);
-      if (tpc == t && cryo == c) { pl.SetPoint(vidx++, wireHit, tickHit); }
+      geo::TPCID const tpcid = geo->FindTPCAtPosition(hitPos);
+      if (tpcid.TPC == planeID.TPC && tpcid.Cryostat == planeID.Cryostat) {
+        pl.SetPoint(vidx++, wireHit, tickHit);
+      }
     }
     //pl.SetPolyLine(vidx);
 

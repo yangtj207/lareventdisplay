@@ -745,8 +745,7 @@ namespace evd {
 
       double xyz_vertex_fit[3] = {0.};
       double second_time = 0.;
-      double pos[3] = {0.};
-      const double origin[3] = {0., 0., 0.};
+      geo::PlaneGeo::LocalPoint_t const origin{0., 0., 0.};
       double y = 0.;
       double z = 0.;
 
@@ -779,10 +778,10 @@ namespace evd {
       if (wires_cross) {
         xyz_vertex_fit[1] = y;
         xyz_vertex_fit[2] = z;
-        geom->Plane(ppoints[0].plane).LocalToWorld(origin, pos);
-        xyz_vertex_fit[0] = (ppoints[0].t - trigger_offset(clockData)) * larv * ftimetick + pos[0];
-        geom->Plane(ppoints[1].plane).LocalToWorld(origin, pos);
-        second_time = (ppoints[1].t - trigger_offset(clockData)) * larv * ftimetick + pos[0];
+        auto pos = geom->Plane(ppoints[0].plane).toWorldCoords(origin);
+        xyz_vertex_fit[0] = (ppoints[0].t - trigger_offset(clockData)) * larv * ftimetick + pos.X();
+        pos = geom->Plane(ppoints[1].plane).toWorldCoords(origin);
+        second_time = (ppoints[1].t - trigger_offset(clockData)) * larv * ftimetick + pos.X();
 
         TGText* tt = new TGText(Form("z:%4.1f", z));
         tt->InsLine(1, Form("x:%4.1f,", (xyz_vertex_fit[0] + second_time) / 2));
@@ -818,18 +817,19 @@ namespace evd {
           }
         }
 
-        geom->Plane(wplane).LocalToWorld(origin, pos);
-        pos[1] = xyz_vertex_fit[1];
-        pos[2] = xyz_vertex_fit[2];
+        auto pos = geom->Plane(wplane).toWorldCoords(origin);
+        pos.SetY(xyz_vertex_fit[1]);
+        pos.SetZ(xyz_vertex_fit[2]);
 
-        wirevertex = geom->NearestWire(pos, wplane, rawOpt->fTPC, rawOpt->fCryostat);
+        wirevertex =
+          geom->NearestWireID(pos, geo::PlaneID{rawOpt->fCryostat, rawOpt->fTPC, wplane}).Wire;
 
         double drifttick =
           ((xyz_vertex_fit[0]) / detProp.DriftVelocity(detProp.Efield(), detProp.Temperature())) *
           (1. / ftimetick);
         double timestart =
           drifttick -
-          (pos[0] / detProp.DriftVelocity(detProp.Efield(), detProp.Temperature())) *
+          (pos.X() / detProp.DriftVelocity(detProp.Efield(), detProp.Temperature())) *
             (1. / ftimetick) +
           trigger_offset(clockData);
 

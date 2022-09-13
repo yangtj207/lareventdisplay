@@ -806,8 +806,7 @@ namespace evd {
 
       double xyz_vertex_fit[3] = {0.};
       double second_time = 0.;
-      double pos[3] = {0.};
-      const double origin[3] = {0., 0., 0.};
+      geo::PlaneGeo::LocalPoint_t const origin{0., 0., 0.};
       double y = 0.;
       double z = 0.;
 
@@ -879,14 +878,14 @@ namespace evd {
           }
         }
 
-        geom->Plane(wplane).LocalToWorld(origin, pos);
-        pos[1] = xyz_vertex_fit[1];
-        pos[2] = xyz_vertex_fit[2];
+        auto pos = geom->Plane(wplane).toWorldCoords(origin);
+        pos.SetY(xyz_vertex_fit[1]);
+        pos.SetZ(xyz_vertex_fit[2]);
 
-        wirevertex = geom->NearestWire(pos, wplane, rawOpt->fTPC, rawOpt->fCryostat);
+        geo::PlaneID const planeID{rawOpt->fCryostat, rawOpt->fTPC, wplane};
+        wirevertex = geom->NearestWireID(pos, planeID).Wire;
 
-        double timestart =
-          detProp.ConvertXToTicks(xyz_vertex_fit[0], wplane, rawOpt->fTPC, rawOpt->fCryostat);
+        double timestart = detProp.ConvertXToTicks(xyz_vertex_fit[0], planeID);
 
         fPlanes[wplane]->Pad()->cd();
         fPlanes[wplane]->View()->Clear();

@@ -68,8 +68,7 @@
 
 namespace {
   // Utility function to make uniform error messages.
-  void
-  writeErrMsg(const char* fcn, cet::exception const& e)
+  void writeErrMsg(const char* fcn, cet::exception const& e)
   {
     mf::LogWarning("RecoBaseDrawer") << "RecoBaseDrawer::" << fcn << " failed with message:\n" << e;
   }
@@ -118,8 +117,7 @@ namespace evd {
   RecoBaseDrawer::~RecoBaseDrawer() {}
 
   //......................................................................
-  void
-  RecoBaseDrawer::Wire2D(const art::Event& evt, evdb::View2D* view, unsigned int plane)
+  void RecoBaseDrawer::Wire2D(const art::Event& evt, evdb::View2D* view, unsigned int plane)
   {
     art::ServiceHandle<evd::RawDrawingOptions const> rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions const> recoOpt;
@@ -255,11 +253,10 @@ namespace evd {
   /// @param view   : Pointer to view to draw on
   /// @param plane  : plane number of view
   ///
-  int
-  RecoBaseDrawer::Hit2D(const art::Event& evt,
-                        detinfo::DetectorPropertiesData const& detProp,
-                        evdb::View2D* view,
-                        unsigned int plane)
+  int RecoBaseDrawer::Hit2D(const art::Event& evt,
+                            detinfo::DetectorPropertiesData const& detProp,
+                            evdb::View2D* view,
+                            unsigned int plane)
   {
     art::ServiceHandle<evd::RawDrawingOptions const> rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions const> recoOpt;
@@ -308,13 +305,12 @@ namespace evd {
   /// @param view   : Pointer to view to draw on
   ///
   /// assumes the hits are all from the correct plane for the given view
-  int
-  RecoBaseDrawer::Hit2D(std::vector<const recob::Hit*> hits,
-                        int color,
-                        evdb::View2D* view,
-                        bool allWireIDs,
-                        bool drawConnectingLines,
-                        int lineWidth)
+  int RecoBaseDrawer::Hit2D(std::vector<const recob::Hit*> hits,
+                            int color,
+                            evdb::View2D* view,
+                            bool allWireIDs,
+                            bool drawConnectingLines,
+                            int lineWidth)
   {
     art::ServiceHandle<evd::RawDrawingOptions const> rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions const> recoOpt;
@@ -393,8 +389,9 @@ namespace evd {
   }
 
   //........................................................................
-  int
-  RecoBaseDrawer::Hit2D(std::vector<const recob::Hit*> hits, evdb::View2D* view, float cosmicscore)
+  int RecoBaseDrawer::Hit2D(std::vector<const recob::Hit*> hits,
+                            evdb::View2D* view,
+                            float cosmicscore)
   {
     art::ServiceHandle<evd::RawDrawingOptions const> rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions const> recoOpt;
@@ -444,8 +441,7 @@ namespace evd {
   }
 
   //........................................................................
-  int
-  RecoBaseDrawer::GetRegionOfInterest(int plane, int& minw, int& maxw, int& mint, int& maxt)
+  int RecoBaseDrawer::GetRegionOfInterest(int plane, int& minw, int& maxw, int& mint, int& maxt)
   {
     art::ServiceHandle<evd::RawDrawingOptions const> rawOpt;
     art::ServiceHandle<geo::Geometry const> geo;
@@ -474,8 +470,7 @@ namespace evd {
   }
 
   //......................................................................
-  void
-  RecoBaseDrawer::GetChargeSum(int plane, double& charge, double& convcharge)
+  void RecoBaseDrawer::GetChargeSum(int plane, double& charge, double& convcharge)
   {
     charge = fRawCharge[plane];
     convcharge = fConvertedCharge[plane];
@@ -484,8 +479,7 @@ namespace evd {
   }
 
   //......................................................................
-  void
-  RecoBaseDrawer::EndPoint2D(const art::Event& evt, evdb::View2D* view, unsigned int plane)
+  void RecoBaseDrawer::EndPoint2D(const art::Event& evt, evdb::View2D* view, unsigned int plane)
   {
     art::ServiceHandle<evd::RawDrawingOptions const> rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions const> recoOpt;
@@ -539,12 +533,11 @@ namespace evd {
   }
 
   //......................................................................
-  void
-  RecoBaseDrawer::OpFlash2D(const art::Event& evt,
-                            detinfo::DetectorClocksData const& clockData,
-                            detinfo::DetectorPropertiesData const& detProp,
-                            evdb::View2D* view,
-                            unsigned int plane)
+  void RecoBaseDrawer::OpFlash2D(const art::Event& evt,
+                                 detinfo::DetectorClocksData const& clockData,
+                                 detinfo::DetectorPropertiesData const& detProp,
+                                 evdb::View2D* view,
+                                 unsigned int plane)
   {
     art::ServiceHandle<evd::RawDrawingOptions const> rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions const> recoOpt;
@@ -628,11 +621,10 @@ namespace evd {
   }
 
   //......................................................................
-  void
-  RecoBaseDrawer::Seed2D(const art::Event& evt,
-                         detinfo::DetectorPropertiesData const& detProp,
-                         evdb::View2D* view,
-                         unsigned int plane)
+  void RecoBaseDrawer::Seed2D(const art::Event& evt,
+                              detinfo::DetectorPropertiesData const& detProp,
+                              evdb::View2D* view,
+                              unsigned int plane)
   {
     art::ServiceHandle<evd::RawDrawingOptions const> rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions const> recoOpt;
@@ -722,11 +714,10 @@ namespace evd {
   }
 
   //......................................................................
-  void
-  RecoBaseDrawer::Slice2D(const art::Event& evt,
-                          detinfo::DetectorPropertiesData const& detProp,
-                          evdb::View2D* view,
-                          unsigned int plane)
+  void RecoBaseDrawer::Slice2D(const art::Event& evt,
+                               detinfo::DetectorPropertiesData const& detProp,
+                               evdb::View2D* view,
+                               unsigned int plane)
   {
     // Color code hits associated with Slices
     art::ServiceHandle<evd::RawDrawingOptions const> rawOpt;
@@ -814,12 +805,11 @@ namespace evd {
 
   } // Slice2D
   //......................................................................
-  void
-  RecoBaseDrawer::Cluster2D(const art::Event& evt,
-                            detinfo::DetectorClocksData const& clockData,
-                            detinfo::DetectorPropertiesData const& detProp,
-                            evdb::View2D* view,
-                            unsigned int plane)
+  void RecoBaseDrawer::Cluster2D(const art::Event& evt,
+                                 detinfo::DetectorClocksData const& clockData,
+                                 detinfo::DetectorPropertiesData const& detProp,
+                                 evdb::View2D* view,
+                                 unsigned int plane)
   {
     art::ServiceHandle<evd::RawDrawingOptions const> rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions const> recoOpt;
@@ -1026,14 +1016,13 @@ namespace evd {
   }
 
   //......................................................................
-  void
-  RecoBaseDrawer::Draw2DSlopeEndPoints(double xStart,
-                                       double yStart,
-                                       double xEnd,
-                                       double yEnd,
-                                       double slope,
-                                       int color,
-                                       evdb::View2D* view)
+  void RecoBaseDrawer::Draw2DSlopeEndPoints(double xStart,
+                                            double yStart,
+                                            double xEnd,
+                                            double yEnd,
+                                            double slope,
+                                            int color,
+                                            evdb::View2D* view)
   {
     art::ServiceHandle<evd::RawDrawingOptions const> rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions const> recoOpt;
@@ -1073,12 +1062,11 @@ namespace evd {
   }
 
   //......................................................................
-  void
-  RecoBaseDrawer::Draw2DSlopeEndPoints(double x,
-                                       double y,
-                                       double slope,
-                                       int color,
-                                       evdb::View2D* view)
+  void RecoBaseDrawer::Draw2DSlopeEndPoints(double x,
+                                            double y,
+                                            double slope,
+                                            int color,
+                                            evdb::View2D* view)
   {
     art::ServiceHandle<evd::RawDrawingOptions const> rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions const> recoOpt;
@@ -1113,13 +1101,12 @@ namespace evd {
   }
 
   //......................................................................
-  void
-  RecoBaseDrawer::Draw2DSlopeEndPoints(double x,
-                                       double y,
-                                       double cosx,
-                                       double cosy,
-                                       int color,
-                                       evdb::View2D* view)
+  void RecoBaseDrawer::Draw2DSlopeEndPoints(double x,
+                                            double y,
+                                            double cosx,
+                                            double cosy,
+                                            int color,
+                                            evdb::View2D* view)
   {
     art::ServiceHandle<evd::RawDrawingOptions const> rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions const> recoOpt;
@@ -1161,11 +1148,10 @@ namespace evd {
   /// @param tpts   : tdc values of the outlines
   /// @param plane  : plane number
   ///
-  void
-  RecoBaseDrawer::GetClusterOutlines(std::vector<const recob::Hit*>& hits,
-                                     std::vector<double>& wpts,
-                                     std::vector<double>& tpts,
-                                     unsigned int plane)
+  void RecoBaseDrawer::GetClusterOutlines(std::vector<const recob::Hit*>& hits,
+                                          std::vector<double>& wpts,
+                                          std::vector<double>& tpts,
+                                          unsigned int plane)
   {
     art::ServiceHandle<evd::RawDrawingOptions const> rawOpt;
 
@@ -1228,15 +1214,14 @@ namespace evd {
   }
 
   //......................................................................
-  void
-  RecoBaseDrawer::DrawProng2D(detinfo::DetectorPropertiesData const& detProp,
-                              std::vector<const recob::Hit*>& hits,
-                              evdb::View2D* view,
-                              unsigned int plane,
-                              TVector3 const& startPos,
-                              TVector3 const& startDir,
-                              int id,
-                              float cscore)
+  void RecoBaseDrawer::DrawProng2D(detinfo::DetectorPropertiesData const& detProp,
+                                   std::vector<const recob::Hit*>& hits,
+                                   evdb::View2D* view,
+                                   unsigned int plane,
+                                   TVector3 const& startPos,
+                                   TVector3 const& startDir,
+                                   int id,
+                                   float cscore)
   {
     art::ServiceHandle<evd::RawDrawingOptions const> rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions const> recoOpt;
@@ -1298,15 +1283,14 @@ namespace evd {
   }
 
   //......................................................................
-  void
-  RecoBaseDrawer::DrawTrack2D(detinfo::DetectorClocksData const& clockData,
-                              detinfo::DetectorPropertiesData const& detProp,
-                              std::vector<const recob::Hit*>& hits,
-                              evdb::View2D* view,
-                              unsigned int plane,
-                              const recob::Track* track,
-                              int color,
-                              int lineWidth)
+  void RecoBaseDrawer::DrawTrack2D(detinfo::DetectorClocksData const& clockData,
+                                   detinfo::DetectorPropertiesData const& detProp,
+                                   std::vector<const recob::Hit*>& hits,
+                                   evdb::View2D* view,
+                                   unsigned int plane,
+                                   const recob::Track* track,
+                                   int color,
+                                   int lineWidth)
   {
     art::ServiceHandle<evd::RawDrawingOptions const> rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions const> recoOpt;
@@ -1387,12 +1371,11 @@ namespace evd {
   }
 
   //......................................................................
-  void
-  RecoBaseDrawer::Prong2D(const art::Event& evt,
-                          detinfo::DetectorClocksData const& clockData,
-                          detinfo::DetectorPropertiesData const& detProp,
-                          evdb::View2D* view,
-                          unsigned int plane)
+  void RecoBaseDrawer::Prong2D(const art::Event& evt,
+                               detinfo::DetectorClocksData const& clockData,
+                               detinfo::DetectorPropertiesData const& detProp,
+                               evdb::View2D* view,
+                               unsigned int plane)
   {
     art::ServiceHandle<evd::RawDrawingOptions const> rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions const> recoOpt;
@@ -1608,12 +1591,11 @@ namespace evd {
   }
 
   //......................................................................
-  void
-  RecoBaseDrawer::DrawTrackVertexAssns2D(const art::Event& evt,
-                                         detinfo::DetectorClocksData const& clockData,
-                                         detinfo::DetectorPropertiesData const& detProp,
-                                         evdb::View2D* view,
-                                         unsigned int plane)
+  void RecoBaseDrawer::DrawTrackVertexAssns2D(const art::Event& evt,
+                                              detinfo::DetectorClocksData const& clockData,
+                                              detinfo::DetectorPropertiesData const& detProp,
+                                              evdb::View2D* view,
+                                              unsigned int plane)
   {
     art::ServiceHandle<evd::RecoDrawingOptions const> recoOpt;
     if (!recoOpt->fDrawTrackVertexAssns) return;
@@ -1757,11 +1739,10 @@ namespace evd {
   }
 
   //......................................................................
-  void
-  RecoBaseDrawer::Vertex2D(const art::Event& evt,
-                           detinfo::DetectorPropertiesData const& detProp,
-                           evdb::View2D* view,
-                           unsigned int plane)
+  void RecoBaseDrawer::Vertex2D(const art::Event& evt,
+                                detinfo::DetectorPropertiesData const& detProp,
+                                evdb::View2D* view,
+                                unsigned int plane)
   {
     art::ServiceHandle<evd::RawDrawingOptions const> rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions const> recoOpt;
@@ -1831,8 +1812,7 @@ namespace evd {
   }
 
   //......................................................................
-  void
-  RecoBaseDrawer::Event2D(const art::Event& evt, evdb::View2D* view, unsigned int plane)
+  void RecoBaseDrawer::Event2D(const art::Event& evt, evdb::View2D* view, unsigned int plane)
   {
     art::ServiceHandle<evd::RawDrawingOptions const> rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions const> recoOpt;
@@ -1876,8 +1856,7 @@ namespace evd {
   }
 
   //......................................................................
-  void
-  RecoBaseDrawer::Seed3D(const art::Event& evt, evdb::View3D* view)
+  void RecoBaseDrawer::Seed3D(const art::Event& evt, evdb::View3D* view)
   {
     art::ServiceHandle<evd::RawDrawingOptions const> rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions const> recoOpt;
@@ -1922,8 +1901,7 @@ namespace evd {
   }
 
   //......................................................................
-  void
-  RecoBaseDrawer::SeedOrtho(const art::Event& evt, evd::OrthoProj_t proj, evdb::View2D* view)
+  void RecoBaseDrawer::SeedOrtho(const art::Event& evt, evd::OrthoProj_t proj, evdb::View2D* view)
   {
     art::ServiceHandle<evd::RawDrawingOptions const> rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions const> recoOpt;
@@ -1982,8 +1960,7 @@ namespace evd {
   }
 
   //......................................................................
-  void
-  RecoBaseDrawer::SpacePoint3D(const art::Event& evt, evdb::View3D* view)
+  void RecoBaseDrawer::SpacePoint3D(const art::Event& evt, evdb::View3D* view)
   {
     art::ServiceHandle<evd::RawDrawingOptions const> rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions const> recoOpt;
@@ -2020,8 +1997,7 @@ namespace evd {
   }
 
   //......................................................................
-  void
-  RecoBaseDrawer::PFParticle3D(const art::Event& evt, evdb::View3D* view)
+  void RecoBaseDrawer::PFParticle3D(const art::Event& evt, evdb::View3D* view)
   {
     art::ServiceHandle<evd::RawDrawingOptions const> rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions const> recoOpt;
@@ -2108,8 +2084,7 @@ namespace evd {
     return;
   }
 
-  float
-  RecoBaseDrawer::SpacePointChiSq(const std::vector<art::Ptr<recob::Hit>>& hitVec) const
+  float RecoBaseDrawer::SpacePointChiSq(const std::vector<art::Ptr<recob::Hit>>& hitVec) const
   {
     float hitChiSq(0.);
 
@@ -2154,19 +2129,19 @@ namespace evd {
     return hitChiSq;
   }
 
-  void
-  RecoBaseDrawer::DrawPFParticle3D(const art::Ptr<recob::PFParticle>& pfPart,
-                                   const art::PtrVector<recob::PFParticle>& pfParticleVec,
-                                   const std::vector<art::Ptr<recob::SpacePoint>>& spacePointVec,
-                                   const art::FindManyP<recob::Edge>& edgeAssnsVec,
-                                   const art::FindManyP<recob::SpacePoint>& spacePointAssnVec,
-                                   const art::FindManyP<recob::SpacePoint>& edgeSPAssnVec,
-                                   const art::FindManyP<recob::Hit>& spHitAssnVec,
-                                   const art::FindMany<recob::Track>& trackAssnVec,
-                                   const art::FindMany<recob::PCAxis>& pcAxisAssnVec,
-                                   const art::FindMany<anab::CosmicTag>& cosmicTagAssnVec,
-                                   int depth,
-                                   evdb::View3D* view)
+  void RecoBaseDrawer::DrawPFParticle3D(
+    const art::Ptr<recob::PFParticle>& pfPart,
+    const art::PtrVector<recob::PFParticle>& pfParticleVec,
+    const std::vector<art::Ptr<recob::SpacePoint>>& spacePointVec,
+    const art::FindManyP<recob::Edge>& edgeAssnsVec,
+    const art::FindManyP<recob::SpacePoint>& spacePointAssnVec,
+    const art::FindManyP<recob::SpacePoint>& edgeSPAssnVec,
+    const art::FindManyP<recob::Hit>& spHitAssnVec,
+    const art::FindMany<recob::Track>& trackAssnVec,
+    const art::FindMany<recob::PCAxis>& pcAxisAssnVec,
+    const art::FindMany<anab::CosmicTag>& cosmicTagAssnVec,
+    int depth,
+    evdb::View3D* view)
   {
     art::ServiceHandle<evd::RecoDrawingOptions const> recoOpt;
     art::ServiceHandle<evd::ColorDrawingOptions const> cst;
@@ -2449,8 +2424,7 @@ namespace evd {
   }
 
   //......................................................................
-  void
-  RecoBaseDrawer::Edge3D(const art::Event& evt, evdb::View3D* view)
+  void RecoBaseDrawer::Edge3D(const art::Event& evt, evdb::View3D* view)
   {
     art::ServiceHandle<evd::RecoDrawingOptions const> recoOpt;
 
@@ -2556,8 +2530,7 @@ namespace evd {
   }
 
   //......................................................................
-  void
-  RecoBaseDrawer::Prong3D(const art::Event& evt, evdb::View3D* view)
+  void RecoBaseDrawer::Prong3D(const art::Event& evt, evdb::View3D* view)
   {
     art::ServiceHandle<evd::RawDrawingOptions const> rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions const> recoOpt;
@@ -2635,12 +2608,11 @@ namespace evd {
   }
 
   //......................................................................
-  void
-  RecoBaseDrawer::DrawTrack3D(const recob::Track& track,
-                              evdb::View3D* view,
-                              int color,
-                              int marker,
-                              float size)
+  void RecoBaseDrawer::DrawTrack3D(const recob::Track& track,
+                                   evdb::View3D* view,
+                                   int color,
+                                   int marker,
+                                   float size)
   {
     // Get options.
     art::ServiceHandle<evd::RecoDrawingOptions const> recoOpt;
@@ -2746,8 +2718,7 @@ namespace evd {
   }
 
   //......................................................................
-  void
-  RecoBaseDrawer::DrawShower3D(const recob::Shower& shower, int color, evdb::View3D* view)
+  void RecoBaseDrawer::DrawShower3D(const recob::Shower& shower, int color, evdb::View3D* view)
   {
     // Use brute force to find the module label and index of this
     // shower, so that we can find associated space points and draw
@@ -2824,8 +2795,9 @@ namespace evd {
   }
 
   //......................................................................
-  std::vector<std::array<double, 3>>
-  RecoBaseDrawer::Circle3D(const TVector3& centerPos, const TVector3& axisDir, const double& radius)
+  std::vector<std::array<double, 3>> RecoBaseDrawer::Circle3D(const TVector3& centerPos,
+                                                              const TVector3& axisDir,
+                                                              const double& radius)
   {
     // B. Baller Create a polyline circle in 3D
 
@@ -2853,8 +2825,7 @@ namespace evd {
   } // PolyLineCircle
 
   //......................................................................
-  void
-  RecoBaseDrawer::Vertex3D(const art::Event& evt, evdb::View3D* view)
+  void RecoBaseDrawer::Vertex3D(const art::Event& evt, evdb::View3D* view)
   {
     art::ServiceHandle<evd::RawDrawingOptions const> rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions const> recoOpt;
@@ -2903,8 +2874,7 @@ namespace evd {
   }
 
   //......................................................................
-  void
-  RecoBaseDrawer::Event3D(const art::Event& evt, evdb::View3D* view)
+  void RecoBaseDrawer::Event3D(const art::Event& evt, evdb::View3D* view)
   {
     art::ServiceHandle<evd::RawDrawingOptions const> rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions const> recoOpt;
@@ -2964,8 +2934,7 @@ namespace evd {
     return;
   }
   //......................................................................
-  void
-  RecoBaseDrawer::Slice3D(const art::Event& evt, evdb::View3D* view)
+  void RecoBaseDrawer::Slice3D(const art::Event& evt, evdb::View3D* view)
   {
     art::ServiceHandle<evd::RawDrawingOptions const> rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions const> recoOpt;
@@ -2988,12 +2957,11 @@ namespace evd {
     }
   }
   //......................................................................
-  void
-  RecoBaseDrawer::OpFlashOrtho(const art::Event& evt,
-                               detinfo::DetectorClocksData const& clockData,
-                               detinfo::DetectorPropertiesData const& detProp,
-                               evd::OrthoProj_t proj,
-                               evdb::View2D* view)
+  void RecoBaseDrawer::OpFlashOrtho(const art::Event& evt,
+                                    detinfo::DetectorClocksData const& clockData,
+                                    detinfo::DetectorPropertiesData const& detProp,
+                                    evd::OrthoProj_t proj,
+                                    evdb::View2D* view)
   {
     art::ServiceHandle<evd::RawDrawingOptions const> rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions const> recoOpt;
@@ -3065,11 +3033,10 @@ namespace evd {
     }   // Vector of OpFlash labels
   }
   //......................................................................
-  void
-  RecoBaseDrawer::VertexOrtho(const art::PtrVector<recob::Vertex>& vertex,
-                              evd::OrthoProj_t proj,
-                              evdb::View2D* view,
-                              int marker)
+  void RecoBaseDrawer::VertexOrtho(const art::PtrVector<recob::Vertex>& vertex,
+                                   evd::OrthoProj_t proj,
+                                   evdb::View2D* view,
+                                   int marker)
   {
     for (size_t v = 0; v < vertex.size(); ++v) {
 
@@ -3092,8 +3059,7 @@ namespace evd {
       }
     }
   }
-  void
-  RecoBaseDrawer::VertexOrtho(const art::Event& evt, evd::OrthoProj_t proj, evdb::View2D* view)
+  void RecoBaseDrawer::VertexOrtho(const art::Event& evt, evd::OrthoProj_t proj, evdb::View2D* view)
   {
     art::ServiceHandle<evd::RawDrawingOptions const> rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions const> recoOpt;
@@ -3119,11 +3085,10 @@ namespace evd {
   }
 
   //......................................................................
-  void
-  RecoBaseDrawer::SpacePointOrtho(const art::Event& evt,
-                                  evd::OrthoProj_t proj,
-                                  double msize,
-                                  evdb::View2D* view)
+  void RecoBaseDrawer::SpacePointOrtho(const art::Event& evt,
+                                       evd::OrthoProj_t proj,
+                                       double msize,
+                                       evdb::View2D* view)
   {
     art::ServiceHandle<evd::RawDrawingOptions const> rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions const> recoOpt;
@@ -3150,11 +3115,10 @@ namespace evd {
   }
 
   //......................................................................
-  void
-  RecoBaseDrawer::PFParticleOrtho(const art::Event& evt,
-                                  evd::OrthoProj_t proj,
-                                  double msize,
-                                  evdb::View2D* view)
+  void RecoBaseDrawer::PFParticleOrtho(const art::Event& evt,
+                                       evd::OrthoProj_t proj,
+                                       double msize,
+                                       evdb::View2D* view)
   {
     art::ServiceHandle<evd::RawDrawingOptions const> rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions const> recoOpt;
@@ -3202,14 +3166,14 @@ namespace evd {
     return;
   }
 
-  void
-  RecoBaseDrawer::DrawPFParticleOrtho(const art::Ptr<recob::PFParticle>& pfPart,
-                                      const art::PtrVector<recob::PFParticle>& pfParticleVec,
-                                      const art::FindMany<recob::SpacePoint>& spacePointAssnVec,
-                                      const art::FindMany<recob::PCAxis>& pcAxisAssnVec,
-                                      int depth,
-                                      evd::OrthoProj_t proj,
-                                      evdb::View2D* view)
+  void RecoBaseDrawer::DrawPFParticleOrtho(
+    const art::Ptr<recob::PFParticle>& pfPart,
+    const art::PtrVector<recob::PFParticle>& pfParticleVec,
+    const art::FindMany<recob::SpacePoint>& spacePointAssnVec,
+    const art::FindMany<recob::PCAxis>& pcAxisAssnVec,
+    int depth,
+    evd::OrthoProj_t proj,
+    evdb::View2D* view)
   {
     art::ServiceHandle<evd::RecoDrawingOptions const> recoOpt;
 
@@ -3446,11 +3410,10 @@ namespace evd {
   }
 
   //......................................................................
-  void
-  RecoBaseDrawer::ProngOrtho(const art::Event& evt,
-                             evd::OrthoProj_t proj,
-                             double msize,
-                             evdb::View2D* view)
+  void RecoBaseDrawer::ProngOrtho(const art::Event& evt,
+                                  evd::OrthoProj_t proj,
+                                  double msize,
+                                  evdb::View2D* view)
   {
     art::ServiceHandle<evd::RawDrawingOptions const> rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions const> recoOpt;
@@ -3500,13 +3463,12 @@ namespace evd {
   }
 
   //......................................................................
-  void
-  RecoBaseDrawer::DrawSpacePointOrtho(std::vector<art::Ptr<recob::SpacePoint>>& spts,
-                                      int color,
-                                      evd::OrthoProj_t proj,
-                                      double msize,
-                                      evdb::View2D* view,
-                                      int mode)
+  void RecoBaseDrawer::DrawSpacePointOrtho(std::vector<art::Ptr<recob::SpacePoint>>& spts,
+                                           int color,
+                                           evd::OrthoProj_t proj,
+                                           double msize,
+                                           evdb::View2D* view,
+                                           int mode)
   {
     // Get services.
 
@@ -3568,12 +3530,11 @@ namespace evd {
   }
 
   //......................................................................
-  void
-  RecoBaseDrawer::DrawTrackOrtho(const recob::Track& track,
-                                 int color,
-                                 evd::OrthoProj_t proj,
-                                 double msize,
-                                 evdb::View2D* view)
+  void RecoBaseDrawer::DrawTrackOrtho(const recob::Track& track,
+                                      int color,
+                                      evd::OrthoProj_t proj,
+                                      double msize,
+                                      evdb::View2D* view)
   {
     // Get options.
 
@@ -3671,12 +3632,11 @@ namespace evd {
   }
 
   //......................................................................
-  void
-  RecoBaseDrawer::DrawShowerOrtho(const recob::Shower& shower,
-                                  int color,
-                                  evd::OrthoProj_t proj,
-                                  double msize,
-                                  evdb::View2D* view)
+  void RecoBaseDrawer::DrawShowerOrtho(const recob::Shower& shower,
+                                       int color,
+                                       evd::OrthoProj_t proj,
+                                       double msize,
+                                       evdb::View2D* view)
   {
     // Use brute force to find the module label and index of this
     // shower, so that we can find associated space points and draw
@@ -3736,10 +3696,9 @@ namespace evd {
   }
 
   //......................................................................
-  int
-  RecoBaseDrawer::GetWires(const art::Event& evt,
-                           const art::InputTag& which,
-                           art::PtrVector<recob::Wire>& wires)
+  int RecoBaseDrawer::GetWires(const art::Event& evt,
+                               const art::InputTag& which,
+                               art::PtrVector<recob::Wire>& wires)
   {
     wires.clear();
 
@@ -3763,11 +3722,10 @@ namespace evd {
   }
 
   //......................................................................
-  int
-  RecoBaseDrawer::GetHits(const art::Event& evt,
-                          const art::InputTag& which,
-                          std::vector<const recob::Hit*>& hits,
-                          unsigned int plane)
+  int RecoBaseDrawer::GetHits(const art::Event& evt,
+                              const art::InputTag& which,
+                              std::vector<const recob::Hit*>& hits,
+                              unsigned int plane)
   {
     art::ServiceHandle<evd::RawDrawingOptions const> rawOpt;
     art::ServiceHandle<geo::Geometry const> geo;
@@ -3800,10 +3758,9 @@ namespace evd {
   }
 
   //......................................................................
-  int
-  RecoBaseDrawer::GetSlices(const art::Event& evt,
-                            const art::InputTag& which,
-                            art::PtrVector<recob::Slice>& slices)
+  int RecoBaseDrawer::GetSlices(const art::Event& evt,
+                                const art::InputTag& which,
+                                art::PtrVector<recob::Slice>& slices)
   {
     slices.clear();
     art::PtrVector<recob::Slice> temp;
@@ -3827,10 +3784,9 @@ namespace evd {
   }
 
   //......................................................................
-  int
-  RecoBaseDrawer::GetClusters(const art::Event& evt,
-                              const art::InputTag& which,
-                              art::PtrVector<recob::Cluster>& clust)
+  int RecoBaseDrawer::GetClusters(const art::Event& evt,
+                                  const art::InputTag& which,
+                                  art::PtrVector<recob::Cluster>& clust)
   {
     clust.clear();
     art::PtrVector<recob::Cluster> temp;
@@ -3854,10 +3810,9 @@ namespace evd {
   }
 
   //......................................................................
-  int
-  RecoBaseDrawer::GetPFParticles(const art::Event& evt,
-                                 const art::InputTag& which,
-                                 art::PtrVector<recob::PFParticle>& clust)
+  int RecoBaseDrawer::GetPFParticles(const art::Event& evt,
+                                     const art::InputTag& which,
+                                     art::PtrVector<recob::PFParticle>& clust)
   {
     clust.clear();
     art::PtrVector<recob::PFParticle> temp;
@@ -3880,10 +3835,9 @@ namespace evd {
   }
 
   //......................................................................
-  int
-  RecoBaseDrawer::GetEndPoint2D(const art::Event& evt,
-                                const art::InputTag& which,
-                                art::PtrVector<recob::EndPoint2D>& ep2d)
+  int RecoBaseDrawer::GetEndPoint2D(const art::Event& evt,
+                                    const art::InputTag& which,
+                                    art::PtrVector<recob::EndPoint2D>& ep2d)
   {
     ep2d.clear();
     art::PtrVector<recob::EndPoint2D> temp;
@@ -3907,10 +3861,9 @@ namespace evd {
 
   //......................................................................
 
-  int
-  RecoBaseDrawer::GetOpFlashes(const art::Event& evt,
-                               const art::InputTag& which,
-                               art::PtrVector<recob::OpFlash>& opflashes)
+  int RecoBaseDrawer::GetOpFlashes(const art::Event& evt,
+                                   const art::InputTag& which,
+                                   art::PtrVector<recob::OpFlash>& opflashes)
   {
     opflashes.clear();
     art::PtrVector<recob::OpFlash> temp;
@@ -3934,10 +3887,9 @@ namespace evd {
 
   //......................................................................
 
-  int
-  RecoBaseDrawer::GetSeeds(const art::Event& evt,
-                           const art::InputTag& which,
-                           art::PtrVector<recob::Seed>& seeds)
+  int RecoBaseDrawer::GetSeeds(const art::Event& evt,
+                               const art::InputTag& which,
+                               art::PtrVector<recob::Seed>& seeds)
   {
     seeds.clear();
     art::PtrVector<recob::Seed> temp;
@@ -3960,10 +3912,9 @@ namespace evd {
   }
 
   //......................................................................
-  int
-  RecoBaseDrawer::GetSpacePoints(const art::Event& evt,
-                                 const art::InputTag& which,
-                                 std::vector<art::Ptr<recob::SpacePoint>>& spts)
+  int RecoBaseDrawer::GetSpacePoints(const art::Event& evt,
+                                     const art::InputTag& which,
+                                     std::vector<art::Ptr<recob::SpacePoint>>& spts)
   {
     spts.clear();
     art::Handle<std::vector<recob::SpacePoint>> spcol;
@@ -3973,10 +3924,9 @@ namespace evd {
   }
 
   //......................................................................
-  int
-  RecoBaseDrawer::GetEdges(const art::Event& evt,
-                           const art::InputTag& which,
-                           std::vector<art::Ptr<recob::Edge>>& edges)
+  int RecoBaseDrawer::GetEdges(const art::Event& evt,
+                               const art::InputTag& which,
+                               std::vector<art::Ptr<recob::Edge>>& edges)
   {
     edges.clear();
 
@@ -3991,10 +3941,9 @@ namespace evd {
   }
 
   //......................................................................
-  int
-  RecoBaseDrawer::GetTracks(const art::Event& evt,
-                            const art::InputTag& which,
-                            art::View<recob::Track>& track)
+  int RecoBaseDrawer::GetTracks(const art::Event& evt,
+                                const art::InputTag& which,
+                                art::View<recob::Track>& track)
   {
     try {
       evt.getView(which, track);
@@ -4007,10 +3956,9 @@ namespace evd {
   }
 
   //......................................................................
-  int
-  RecoBaseDrawer::GetShowers(const art::Event& evt,
-                             const art::InputTag& which,
-                             art::View<recob::Shower>& shower)
+  int RecoBaseDrawer::GetShowers(const art::Event& evt,
+                                 const art::InputTag& which,
+                                 art::View<recob::Shower>& shower)
   {
     try {
       evt.getView(which, shower);
@@ -4023,10 +3971,9 @@ namespace evd {
   }
 
   //......................................................................
-  int
-  RecoBaseDrawer::GetVertices(const art::Event& evt,
-                              const art::InputTag& which,
-                              art::PtrVector<recob::Vertex>& vertex)
+  int RecoBaseDrawer::GetVertices(const art::Event& evt,
+                                  const art::InputTag& which,
+                                  art::PtrVector<recob::Vertex>& vertex)
   {
     vertex.clear();
     art::PtrVector<recob::Vertex> temp;
@@ -4049,10 +3996,9 @@ namespace evd {
   }
 
   //......................................................................
-  int
-  RecoBaseDrawer::GetEvents(const art::Event& evt,
-                            const art::InputTag& which,
-                            art::PtrVector<recob::Event>& event)
+  int RecoBaseDrawer::GetEvents(const art::Event& evt,
+                                const art::InputTag& which,
+                                art::PtrVector<recob::Event>& event)
   {
     event.clear();
     art::PtrVector<recob::Event> temp;
@@ -4075,12 +4021,11 @@ namespace evd {
   }
 
   //......................................................................
-  int
-  RecoBaseDrawer::CountHits(const art::Event& evt,
-                            const art::InputTag& which,
-                            unsigned int cryostat,
-                            unsigned int tpc,
-                            unsigned int plane)
+  int RecoBaseDrawer::CountHits(const art::Event& evt,
+                                const art::InputTag& which,
+                                unsigned int cryostat,
+                                unsigned int tpc,
+                                unsigned int plane)
   {
     std::vector<const recob::Hit*> temp;
     int NumberOfHitsBeforeThisPlane = 0;
@@ -4097,11 +4042,10 @@ namespace evd {
   }
 
   //......................................................................
-  void
-  RecoBaseDrawer::FillTQHisto(const art::Event& evt,
-                              unsigned int plane,
-                              unsigned int wire,
-                              TH1F* histo)
+  void RecoBaseDrawer::FillTQHisto(const art::Event& evt,
+                                   unsigned int plane,
+                                   unsigned int wire,
+                                   TH1F* histo)
   {
     art::ServiceHandle<evd::RawDrawingOptions const> rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions const> recoOpt;
@@ -4154,8 +4098,7 @@ namespace evd {
   }
 
   //......................................................................
-  void
-  RecoBaseDrawer::FillQHisto(const art::Event& evt, unsigned int plane, TH1F* histo)
+  void RecoBaseDrawer::FillQHisto(const art::Event& evt, unsigned int plane, TH1F* histo)
   {
     art::ServiceHandle<evd::RawDrawingOptions const> rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions const> recoOpt;
@@ -4196,19 +4139,18 @@ namespace evd {
   }
 
   //......................................................................
-  void
-  RecoBaseDrawer::FillTQHistoDP(const art::Event& evt,
-                                unsigned int plane,
-                                unsigned int wire,
-                                TH1F* histo,
-                                std::vector<double>& htau1,
-                                std::vector<double>& htau2,
-                                std::vector<double>& hitamplitudes,
-                                std::vector<double>& hpeaktimes,
-                                std::vector<int>& hstartT,
-                                std::vector<int>& hendT,
-                                std::vector<int>& hNMultiHit,
-                                std::vector<int>& hLocalHitIndex)
+  void RecoBaseDrawer::FillTQHistoDP(const art::Event& evt,
+                                     unsigned int plane,
+                                     unsigned int wire,
+                                     TH1F* histo,
+                                     std::vector<double>& htau1,
+                                     std::vector<double>& htau2,
+                                     std::vector<double>& hitamplitudes,
+                                     std::vector<double>& hpeaktimes,
+                                     std::vector<int>& hstartT,
+                                     std::vector<int>& hendT,
+                                     std::vector<int>& hNMultiHit,
+                                     std::vector<int>& hLocalHitIndex)
   {
     art::ServiceHandle<evd::RawDrawingOptions const> rawOpt;
     art::ServiceHandle<evd::RecoDrawingOptions const> recoOpt;

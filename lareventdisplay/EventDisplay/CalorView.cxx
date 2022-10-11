@@ -3,10 +3,10 @@
 /// \brief   Calorimetric view display window
 /// \author  msoderbe@syr.edu
 ///
-#include "TCanvas.h"
 #include "lareventdisplay/EventDisplay/CalorView.h"
-#include "lareventdisplay/EventDisplay/CalorPad.h"
+#include "TCanvas.h"
 #include "lareventdisplay/EventDisplay/AnalysisDrawingOptions.h"
+#include "lareventdisplay/EventDisplay/CalorPad.h"
 
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 
@@ -19,16 +19,16 @@ evd::CalorView::CalorView(TGMainFrame* mf) : evdb::Canvas(mf)
   art::ServiceHandle<evd::AnalysisDrawingOptions const> anaOpt;
 
   evdb::Canvas::fCanvas->cd();
-  if (anaOpt->fDrawShowerCalor){
-    fDeDxPad = new CalorPad("fDeDxPad","DeDx Pad",0.0,0.5,1.0,1.0,2);
+  if (anaOpt->fDrawShowerCalor) {
+    fDeDxPad = new CalorPad("fDeDxPad", "DeDx Pad", 0.0, 0.5, 1.0, 1.0, 2);
   }
-  else{
-    fDeDxPad = new CalorPad("fDeDxPad","DeDx Pad",0.0,0.5,1.0,1.0,1);
+  else {
+    fDeDxPad = new CalorPad("fDeDxPad", "DeDx Pad", 0.0, 0.5, 1.0, 1.0, 1);
   }
   evdb::Canvas::fCanvas->cd();
-  fKEPad = new CalorPad("fKEPad","Kinetic Energy Pad",0.0,0.0,1.0,0.5,0);
+  fKEPad = new CalorPad("fKEPad", "Kinetic Energy Pad", 0.0, 0.0, 1.0, 0.5, 0);
 
-  this->Connect("CloseWindow()","evd::CalorView",this,"CloseWindow()");
+  this->Connect("CloseWindow()", "evd::CalorView", this, "CloseWindow()");
 
   evdb::Canvas::fCanvas->Update();
 }

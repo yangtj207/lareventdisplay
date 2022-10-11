@@ -13,10 +13,10 @@ namespace evd {
   class Style {
   public:
     static const char* LatexName(int pdgcode);
-    static void        FromPDG(TLine& line, int pdgcode);
-    static int         ColorFromPDG(int pdgcode);
-    static int         LineStyleFromPDG(int pdgcode);
-    static int         LineWidthFromPDG(int pdgcode);
+    static void FromPDG(TLine& line, int pdgcode);
+    static int ColorFromPDG(int pdgcode);
+    static int LineStyleFromPDG(int pdgcode);
+    static int LineWidthFromPDG(int pdgcode);
   };
 }
 #endif

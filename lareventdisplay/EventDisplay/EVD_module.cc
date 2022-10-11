@@ -4,46 +4,47 @@
 /// \author  jpaley@anl.gov
 
 // Framework includes
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Core/EDAnalyzer.h"
+#include "art/Framework/Core/ModuleMacros.h"
 
 //LArSoft includes
-#include "nuevdb/EventDisplayBase/DisplayWindow.h"
-#include "lareventdisplay/EventDisplay/TWQProjectionView.h"
-#include "lareventdisplay/EventDisplay/TWQMultiTPCProjection.h"
+#include "lareventdisplay/EventDisplay/CalorView.h"
 #include "lareventdisplay/EventDisplay/Display3DView.h"
 #include "lareventdisplay/EventDisplay/Ortho3DView.h"
-#include "lareventdisplay/EventDisplay/CalorView.h"
+#include "lareventdisplay/EventDisplay/TWQMultiTPCProjection.h"
+#include "lareventdisplay/EventDisplay/TWQProjectionView.h"
+#include "nuevdb/EventDisplayBase/DisplayWindow.h"
 
 // Framework includes
-namespace art { class Event; }
-namespace fhicl { class ParameterSet; }
+namespace art {
+  class Event;
+}
+namespace fhicl {
+  class ParameterSet;
+}
 
 #if defined __clang__
-  #pragma clang diagnostic push
-  #pragma clang diagnostic ignored "-Wunused-private-field"
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-private-field"
 #endif
 
 /// The Event Display
-namespace evd{
+namespace evd {
 
   class Canvas;
 
   /// a class for transporting photons in a roughly realistic way
-  class EVD : public art::EDAnalyzer
-  {
-   public:
-     explicit EVD(fhicl::ParameterSet const &pset);
-     virtual ~EVD();
+  class EVD : public art::EDAnalyzer {
+  public:
+    explicit EVD(fhicl::ParameterSet const& pset);
+    virtual ~EVD();
 
-     void analyze(art::Event const& evt);
-     void beginJob();
+    void analyze(art::Event const& evt);
+    void beginJob();
 
   private:
-
     bool fWindowsDrawn; ///< flag for whether windows are already drawn
-
-   };
+  };
 }
 
 // Builder for the TWQProjectionView canvas
@@ -82,55 +83,35 @@ static evdb::Canvas* mk_calor_canvas(TGMainFrame* mf)
 //   return new evd::MCTrueView(mf);
 // }
 
-
-namespace evd{
-
-  //----------------------------------------------------
-  EVD::EVD(fhicl::ParameterSet const& pset)
-    : EDAnalyzer(pset)
-    , fWindowsDrawn(false)
-  {
-
-  }
+namespace evd {
 
   //----------------------------------------------------
-  EVD::~EVD()
-  {
-  }
+  EVD::EVD(fhicl::ParameterSet const& pset) : EDAnalyzer(pset), fWindowsDrawn(false) {}
+
+  //----------------------------------------------------
+  EVD::~EVD() {}
 
   //----------------------------------------------------
   void EVD::beginJob()
   {
     // Register the list of windows used by the event display
     evdb::DisplayWindow::Register("Time vs Wire, Charge View",
-				  "Time vs Wire, Charge View",
-				  700,
-				  700,
-				  mk_twqprojectionview_canvas);
+                                  "Time vs Wire, Charge View",
+                                  700,
+                                  700,
+                                  mk_twqprojectionview_canvas);
 
     evdb::DisplayWindow::Register("Time vs Wire, Charge View, Multi-TPC",
-				  "Time vs Wire, Charge View, Multi-TPC",
-				  700,
-				  700,
-				  mk_twqmtpcprojectionview_canvas);
+                                  "Time vs Wire, Charge View, Multi-TPC",
+                                  700,
+                                  700,
+                                  mk_twqmtpcprojectionview_canvas);
 
-    evdb::DisplayWindow::Register("Display3D",
-				  "Display3D",
-				  700,
-				  700,
-				  mk_display3d_canvas);
+    evdb::DisplayWindow::Register("Display3D", "Display3D", 700, 700, mk_display3d_canvas);
 
-    evdb::DisplayWindow::Register("Ortho3D",
-				  "Ortho3D",
-				  700,
-				  700,
-				  mk_ortho3d_canvas);
+    evdb::DisplayWindow::Register("Ortho3D", "Ortho3D", 700, 700, mk_ortho3d_canvas);
 
-    evdb::DisplayWindow::Register("Calorimetry",
-				  "Calorimetry",
-				  700,
-				  700,
-				  mk_calor_canvas);
+    evdb::DisplayWindow::Register("Calorimetry", "Calorimetry", 700, 700, mk_calor_canvas);
 
     //     evdb::ListWindow::Register("MC Particle List",
     // 			       "MC Particle List",
@@ -143,11 +124,9 @@ namespace evd{
   }
 
   //----------------------------------------------------
-  void EVD::analyze(const art::Event& /*evt*/)
-  {
-  }
+  void EVD::analyze(const art::Event& /*evt*/) {}
 
-}//namespace
+} //namespace
 
 namespace evd {
 
@@ -155,5 +134,5 @@ namespace evd {
 
 } // namespace evd
 #if defined __clang__
-  #pragma clang diagnostic pop
+#pragma clang diagnostic pop
 #endif

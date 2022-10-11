@@ -9,7 +9,6 @@
 /// LArSoft includes
 #include "lareventdisplay/EventDisplay/RecoDrawingOptions.h"
 
-
 namespace evd {
   DEFINE_ART_SERVICE(RecoDrawingOptions)
 } // namespace evd

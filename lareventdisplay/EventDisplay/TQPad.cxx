@@ -109,8 +109,7 @@ namespace evd {
   }
 
   //......................................................................
-  void
-  TQPad::Draw()
+  void TQPad::Draw()
   {
     art::ServiceHandle<evd::RawDrawingOptions const> drawopt;
 
@@ -241,8 +240,7 @@ namespace evd {
   }
 
   //......................................................................
-  void
-  TQPad::BookHistogram()
+  void TQPad::BookHistogram()
   {
     if (fFrameHist) {
       delete fFrameHist;

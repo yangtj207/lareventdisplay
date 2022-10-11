@@ -12,15 +12,14 @@
 #include "larcoreobj/SimpleTypesAndConstants/geo_types.h" // geo::PlaneID
 
 // framework libraries
-#include "canvas/Utilities/InputTag.h"
-#include "canvas/Persistency/Provenance/EventID.h"
 #include "art/Framework/Principal/Event.h"
+#include "canvas/Persistency/Provenance/EventID.h"
+#include "canvas/Utilities/InputTag.h"
 
 // C/C++ standard libraries
-#include <string> // std::to_string()
 #include <ostream>
+#include <string>      // std::to_string()
 #include <type_traits> // std::enable_if_t
-
 
 namespace util {
 
@@ -30,31 +29,29 @@ namespace util {
    * The state of this class describes the current event by its ID.
    */
   class EventChangeTracker_t {
-      public:
+  public:
     /// Default constructor: no current event, next event is a new one
     EventChangeTracker_t() = default;
 
     /// Constructor: current event as specified
-    EventChangeTracker_t(art::Event const& evt): state{evt.id()} {}
+    EventChangeTracker_t(art::Event const& evt) : state{evt.id()} {}
 
     /// Constructor: current event as specified by the event ID
-    EventChangeTracker_t(art::EventID const& evt_id): state{evt_id} {}
+    EventChangeTracker_t(art::EventID const& evt_id) : state{evt_id} {}
 
     /// @name State query
     /// @{
     /// Returns whether this tracker is in the same state as another
-    bool same(EventChangeTracker_t const& as) const
-      { return as.eventID() == eventID(); }
+    bool same(EventChangeTracker_t const& as) const { return as.eventID() == eventID(); }
 
     /// Returns whether there is a current event
     bool isValid() const { return eventID() != art::EventID(); }
 
     /// Returns whether this tracker is in the same state as another
-    bool operator== (EventChangeTracker_t const& as) const { return same(as); }
+    bool operator==(EventChangeTracker_t const& as) const { return same(as); }
 
     /// Returns whether this tracker is in a different state than another
-    bool operator!= (EventChangeTracker_t const& than) const
-      { return !same(than); }
+    bool operator!=(EventChangeTracker_t const& than) const { return !same(than); }
     /// @}
 
     /// @name State change
@@ -70,28 +67,25 @@ namespace util {
 
     /// Sets the current event, and returns true if it is changed
     bool update(EventChangeTracker_t const& trk)
-      {
-        if (same(trk)) return false;
-        *this = trk;
-        return true;
-      }
+    {
+      if (same(trk)) return false;
+      *this = trk;
+      return true;
+    }
     /// @}
 
     /// Returns a string representing the current state
     operator std::string() const
-      {
-        return "R:" + std::to_string(eventID().run())
-          + " S:" + std::to_string(eventID().subRun())
-          + " E:" + std::to_string(eventID().event());
-      }
+    {
+      return "R:" + std::to_string(eventID().run()) + " S:" + std::to_string(eventID().subRun()) +
+             " E:" + std::to_string(eventID().event());
+    }
 
-
-      protected:
+  protected:
     /// Returns the current event ID (it might be made public...)
     art::EventID const& eventID() const { return state.event_id; }
 
-
-      private:
+  private:
     struct LocalState_t {
       art::EventID event_id; ///< ID of the current event
     };
@@ -100,12 +94,11 @@ namespace util {
 
   }; // EventChangeTracker_t
 
-
-  inline std::ostream& operator<<
-    (std::ostream& out, EventChangeTracker_t const& trk)
-    { out << std::string(trk); return out; }
-
-
+  inline std::ostream& operator<<(std::ostream& out, EventChangeTracker_t const& trk)
+  {
+    out << std::string(trk);
+    return out;
+  }
 
   /** **************************************************************************
    * @brief Detects the presence of a new event or data product
@@ -113,24 +106,20 @@ namespace util {
    * The state of this class describes the current data product input as the
    * event it belongs to (by its ID) and the input tag.
    */
-  class DataProductChangeTracker_t: private EventChangeTracker_t {
-      public:
-
+  class DataProductChangeTracker_t : private EventChangeTracker_t {
+  public:
     /// Default constructor: no current data product
     DataProductChangeTracker_t() = default;
 
     /// Constructor: specifies current event and data product label
-    DataProductChangeTracker_t
-      (art::Event const& evt, art::InputTag const& label):
-      EventChangeTracker_t(evt), state{label}
-      {}
+    DataProductChangeTracker_t(art::Event const& evt, art::InputTag const& label)
+      : EventChangeTracker_t(evt), state{label}
+    {}
 
     /// Constructor: specifies current event ID and data product label
-    DataProductChangeTracker_t
-      (art::EventID const& evt_id, art::InputTag const& label):
-      EventChangeTracker_t(evt_id), state{label}
-      {}
-
+    DataProductChangeTracker_t(art::EventID const& evt_id, art::InputTag const& label)
+      : EventChangeTracker_t(evt_id), state{label}
+    {}
 
     /// @name State query
     /// @{
@@ -139,74 +128,77 @@ namespace util {
 
     /// Returns whether we are in the same event (the rest could differ)
     bool sameEvent(DataProductChangeTracker_t const& as) const
-      { return EventChangeTracker_t::same(as); }
+    {
+      return EventChangeTracker_t::same(as);
+    }
 
     /// Returns whether we have same data product as in "as"
     bool same(DataProductChangeTracker_t const& as) const
-      { return sameEvent(as) && (inputLabel() == as.inputLabel()); }
+    {
+      return sameEvent(as) && (inputLabel() == as.inputLabel());
+    }
 
     /// Returns whether there is a current event and data product
     bool isValid() const
-      {
-        return
-          EventChangeTracker_t::isValid() && !inputLabel().label().empty();
-      }
+    {
+      return EventChangeTracker_t::isValid() && !inputLabel().label().empty();
+    }
 
     /// Returns whether the event and input label are the same as in "as"
-    bool operator== (DataProductChangeTracker_t const& as) const
-      { return same(as); }
+    bool operator==(DataProductChangeTracker_t const& as) const { return same(as); }
 
     /// Returns whether the event or input label are different than in "than"
-    bool operator!= (DataProductChangeTracker_t const& than) const
-      { return !same(than); }
+    bool operator!=(DataProductChangeTracker_t const& than) const { return !same(than); }
     /// @}
-
 
     /// @name State change
     /// @{
     /// Forget the current data product
     void clear()
-      { EventChangeTracker_t::clear(); SetInputLabel(art::InputTag()); }
+    {
+      EventChangeTracker_t::clear();
+      SetInputLabel(art::InputTag());
+    }
 
     /// Set a new event and data product label as current
     void set(art::Event const& evt, art::InputTag const& label)
-      { EventChangeTracker_t::set(evt); SetInputLabel(label); }
+    {
+      EventChangeTracker_t::set(evt);
+      SetInputLabel(label);
+    }
 
     /// Update to a new data product, return true if it has changed
     bool update(DataProductChangeTracker_t const& new_prod)
-      {
-        if (same(new_prod)) return false;
-        *this = new_prod;
-        return true;
-      }
+    {
+      if (same(new_prod)) return false;
+      *this = new_prod;
+      return true;
+    }
 
     /// @}
 
     /// Returns a string representation of event and data product label
     operator std::string() const
-      {
-        return EventChangeTracker_t::operator std::string()
-          + " I{" + inputLabel().encode() + "}";
-      }
+    {
+      return EventChangeTracker_t::operator std::string() + " I{" + inputLabel().encode() + "}";
+    }
 
-      private:
+  private:
     struct LocalState_t {
       art::InputTag input_label;
     }; // LocalState_t
 
     LocalState_t state;
 
-    void SetInputLabel(art::InputTag const& label)
-      { state.input_label = label; }
+    void SetInputLabel(art::InputTag const& label) { state.input_label = label; }
 
   }; // DataProductChangeTracker_t
 
-
-  inline std::ostream& operator<<
-    (std::ostream& out, DataProductChangeTracker_t const& trk)
-    { out << std::string(trk); return out; }
-
-
+  inline std::ostream& operator<<(std::ostream& out, DataProductChangeTracker_t const& trk)
+  {
+    out << std::string(trk);
+    return out;
+  }
 
   /** **************************************************************************
    * @brief Detects the presence of a new event, data product or wire plane
@@ -215,27 +207,24 @@ namespace util {
    * event it belongs to (by its ID) and the input tag, and the current wire
    * plane in the TPC.
    */
-  class PlaneDataChangeTracker_t: private DataProductChangeTracker_t {
-      public:
-
+  class PlaneDataChangeTracker_t : private DataProductChangeTracker_t {
+  public:
     /// Default constructor: no current plane data
     PlaneDataChangeTracker_t() = default;
 
     /// Constructor: specifies current data product and TPC plane
-    PlaneDataChangeTracker_t(
-      art::Event const& evt, art::InputTag const& label, geo::PlaneID const& pid
-      ):
-      DataProductChangeTracker_t(evt, label), state{pid}
-      {}
+    PlaneDataChangeTracker_t(art::Event const& evt,
+                             art::InputTag const& label,
+                             geo::PlaneID const& pid)
+      : DataProductChangeTracker_t(evt, label), state{pid}
+    {}
 
     /// Constructor: specifies current data product and TPC plane
-    PlaneDataChangeTracker_t(
-      art::EventID const& evt_id, art::InputTag const& label,
-      geo::PlaneID const& pid
-      ):
-      DataProductChangeTracker_t(evt_id, label), state{pid}
-      {}
-
+    PlaneDataChangeTracker_t(art::EventID const& evt_id,
+                             art::InputTag const& label,
+                             geo::PlaneID const& pid)
+      : DataProductChangeTracker_t(evt_id, label), state{pid}
+    {}
 
     /// @name State query
     /// @{
@@ -247,63 +236,65 @@ namespace util {
 
     /// Returns whether we are in the same event (the rest could differ)
     bool sameProduct(PlaneDataChangeTracker_t const& as) const
-      { return DataProductChangeTracker_t::same(as); }
+    {
+      return DataProductChangeTracker_t::same(as);
+    }
 
     /// Returns whether we have the same data product and TPC as "as"
     bool sameTPC(PlaneDataChangeTracker_t const& as) const
-      {
-        return sameEvent(as)
-          && (static_cast<geo::TPCID const&>(planeID()) == as.planeID());
-      }
+    {
+      return sameEvent(as) && (static_cast<geo::TPCID const&>(planeID()) == as.planeID());
+    }
 
     /// Returns whether we have the same plane data as "as"
     bool same(PlaneDataChangeTracker_t const& as) const
-      { return sameEvent(as) && (planeID() == as.planeID()); }
+    {
+      return sameEvent(as) && (planeID() == as.planeID());
+    }
 
     /// Returns whether there is a data product and plane
-    bool isValid() const
-      { return DataProductChangeTracker_t::isValid() && planeID().isValid; }
+    bool isValid() const { return DataProductChangeTracker_t::isValid() && planeID().isValid; }
 
     /// Returns whether data product and TPC plane are the same as in "as"
-    bool operator== (PlaneDataChangeTracker_t const& as) const
-      { return same(as); }
+    bool operator==(PlaneDataChangeTracker_t const& as) const { return same(as); }
 
     /// Returns whether data product or TPC plane are different than in "than"
-    bool operator!= (PlaneDataChangeTracker_t const& than) const
-      { return !same(than); }
+    bool operator!=(PlaneDataChangeTracker_t const& than) const { return !same(than); }
     /// @}
-
 
     /// @name State change
     /// @{
     /// Forget the current data product
     void clear()
-      { DataProductChangeTracker_t::clear(); SetPlaneID(geo::PlaneID()); }
+    {
+      DataProductChangeTracker_t::clear();
+      SetPlaneID(geo::PlaneID());
+    }
 
     /// Set a new event and data product label as current
-    void set(
-      art::Event const& evt, art::InputTag const& label, geo::PlaneID const& pid
-      )
-      { DataProductChangeTracker_t::set(evt, label); SetPlaneID(pid); }
+    void set(art::Event const& evt, art::InputTag const& label, geo::PlaneID const& pid)
+    {
+      DataProductChangeTracker_t::set(evt, label);
+      SetPlaneID(pid);
+    }
 
     /// Update to a new data product, return true if it has changed
     bool update(PlaneDataChangeTracker_t const& new_prod)
-      {
-        if (same(new_prod)) return false;
-        *this = new_prod;
-        return true;
-      }
+    {
+      if (same(new_prod)) return false;
+      *this = new_prod;
+      return true;
+    }
 
     /// @}
 
     /// Returns a string representation of event and data product label
     operator std::string() const
-      {
-        return DataProductChangeTracker_t::operator std::string()
-          + " " + std::string(planeID());
-      }
+    {
+      return DataProductChangeTracker_t::operator std::string() + " " + std::string(planeID());
+    }
 
-      private:
+  private:
     struct LocalState_t {
       geo::PlaneID plane_id;
     }; // LocalState_t
@@ -314,11 +305,11 @@ namespace util {
 
   }; // PlaneDataChangeTracker_t
 
-
-  inline std::ostream& operator<<
-    (std::ostream& out, PlaneDataChangeTracker_t const& trk)
-    { out << std::string(trk); return out; }
-
+  inline std::ostream& operator<<(std::ostream& out, PlaneDataChangeTracker_t const& trk)
+  {
+    out << std::string(trk);
+    return out;
+  }
 
 } // namespace util
 

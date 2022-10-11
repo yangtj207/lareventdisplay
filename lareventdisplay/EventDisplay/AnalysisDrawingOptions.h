@@ -4,19 +4,20 @@
 #include <string>
 #include <vector>
 
-namespace fhicl { class ParameterSet; }
+namespace fhicl {
+  class ParameterSet;
+}
 
 #include "nuevdb/EventDisplayBase/Reconfigurable.h"
 
 #include "art/Framework/Services/Registry/ServiceDeclarationMacros.h"
 
 namespace evd {
-  class AnalysisDrawingOptions : public evdb::Reconfigurable
-  {
+  class AnalysisDrawingOptions : public evdb::Reconfigurable {
   public:
     explicit AnalysisDrawingOptions(fhicl::ParameterSet const& pset);
 
-    void reconfigure(fhicl::ParameterSet const& pset) ;
+    void reconfigure(fhicl::ParameterSet const& pset);
 
     int fDrawCalorimetry;
     int fDrawParticleID;
@@ -24,13 +25,12 @@ namespace evd {
     int fCaloPlane;
     int fTrackID;
 
-    std::vector<std::string> fCalorimetryLabels;         ///< module labels that produced calorimetry
-    std::vector<std::string> fParticleIDLabels;     	   ///< module labels that produced particleid
+    std::vector<std::string> fCalorimetryLabels; ///< module labels that produced calorimetry
+    std::vector<std::string> fParticleIDLabels;  ///< module labels that produced particleid
 
-    std::string fCalorTemplateFileName;    ///< files that have calorimetry template curves
-
+    std::string fCalorTemplateFileName; ///< files that have calorimetry template curves
   };
-}//namespace
+} //namespace
 #endif // __CINT__
 DECLARE_ART_SERVICE(evd::AnalysisDrawingOptions, LEGACY)
 #endif

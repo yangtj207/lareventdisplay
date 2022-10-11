@@ -4,12 +4,12 @@
 /// \author  messier@indiana.edu
 ///
 #include "lareventdisplay/EventDisplay/HeaderPad.h"
-#include "nuevdb/EventDisplayBase/View2D.h"
 #include "lareventdisplay/EventDisplay/HeaderDrawer.h"
+#include "nuevdb/EventDisplayBase/View2D.h"
 
 #include "TPad.h"
 
-namespace evd{
+namespace evd {
 
   //static const int kTPAD = 0;
   //static const int kQPAD = 1;
@@ -20,11 +20,14 @@ namespace evd{
 
   //......................................................................
 
-  HeaderPad::HeaderPad(const char* nm, const char* ti,
-		       double x1, double y1,
-		       double x2, double y2,
-		       const char* /*opt*/) :
-    DrawingPad(nm, ti, x1, y1, x2, y2)
+  HeaderPad::HeaderPad(const char* nm,
+                       const char* ti,
+                       double x1,
+                       double y1,
+                       double x2,
+                       double y2,
+                       const char* /*opt*/)
+    : DrawingPad(nm, ti, x1, y1, x2, y2)
   {
     fView = new evdb::View2D();
   }
@@ -33,7 +36,10 @@ namespace evd{
 
   HeaderPad::~HeaderPad()
   {
-    if (fView!=0) { delete fView; fView = 0; }
+    if (fView != 0) {
+      delete fView;
+      fView = 0;
+    }
   }
 
   //......................................................................
@@ -51,5 +57,5 @@ namespace evd{
 
   //......................................................................
 
-}// namespace
+} // namespace
 //////////////////////////////////////////////////////////////////////////

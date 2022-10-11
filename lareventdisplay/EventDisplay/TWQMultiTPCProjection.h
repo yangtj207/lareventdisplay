@@ -62,16 +62,8 @@ namespace evd {
     TWQMultiTPCProjectionView(TGMainFrame* mf);
     ~TWQMultiTPCProjectionView();
 
-    const char*
-    Description() const
-    {
-      return "Time/Wire/Charge Projections";
-    }
-    const char*
-    PrintTag() const
-    {
-      return "twq-multiTPC-proj";
-    }
+    const char* Description() const { return "Time/Wire/Charge Projections"; }
+    const char* PrintTag() const { return "twq-multiTPC-proj"; }
 
     void Draw(const char* opt = "");
 

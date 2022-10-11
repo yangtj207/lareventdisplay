@@ -6,37 +6,37 @@
 #include "lareventdisplay/EventDisplay/Style.h"
 #include "TLine.h"
 
-namespace evd{
+namespace evd {
 
   /// Convert PDG code to a latex string (root-style)
   const char* Style::LatexName(int pdgcode)
   {
     switch (pdgcode) {
-    case  22:   return "#gamma";
-    case -11:   return "e^{+}";
-    case  11:   return "e^{-}";
-    case  13:   return "#mu";
-    case -15:   return "#bar{#tau}";
-    case  15:   return "#tau";
-    case -13:   return "#bar{#mu}";
-    case  12:   return "#nu_{e}";
-    case  14:   return "#nu_{#mu}";
-    case  16:   return "#nu_{#tau}";
-    case -12:   return "#bar{#nu}_{e}";
-    case -14:   return "#bar{#nu}_{#mu}";
-    case -16:   return "#bar{#nu}_{#tau}";
-    case  111:  return "#pi^{0}";
-    case  211:  return "#pi^{+}";
-    case -211:  return "#pi^{-}";
-    case  321:  return "K^{+}";
-    case -321:  return "K^{-}";
-    case  130:  return "K^{0}_{L}";
-    case  310:  return "K^{0}_{S}";
-    case  2112: return "n";
-    case  2212: return "p";
+    case 22: return "#gamma";
+    case -11: return "e^{+}";
+    case 11: return "e^{-}";
+    case 13: return "#mu";
+    case -15: return "#bar{#tau}";
+    case 15: return "#tau";
+    case -13: return "#bar{#mu}";
+    case 12: return "#nu_{e}";
+    case 14: return "#nu_{#mu}";
+    case 16: return "#nu_{#tau}";
+    case -12: return "#bar{#nu}_{e}";
+    case -14: return "#bar{#nu}_{#mu}";
+    case -16: return "#bar{#nu}_{#tau}";
+    case 111: return "#pi^{0}";
+    case 211: return "#pi^{+}";
+    case -211: return "#pi^{-}";
+    case 321: return "K^{+}";
+    case -321: return "K^{-}";
+    case 130: return "K^{0}_{L}";
+    case 310: return "K^{0}_{S}";
+    case 2112: return "n";
+    case 2212: return "p";
     case -2112: return "#bar{n}";
     case -2212: return "#bar{p}";
-    case 2224:  return "#Delta^{++}";
+    case 2224: return "#Delta^{++}";
     case 1000060120: return "^{12}C";
     case 1000170350: return "^{35}Cl";
     case 1000260560: return "^{56}Fe";
@@ -54,7 +54,7 @@ namespace evd{
     case 2000000002: return "GENIE_{2}";
     default:
       static char buff[256];
-      sprintf(buff,"X_{%d}",pdgcode);
+      sprintf(buff, "X_{%d}", pdgcode);
       return buff;
     }
     return 0;
@@ -62,63 +62,57 @@ namespace evd{
 
   //......................................................................
 
-  int Style::ColorFromPDG(int pdgcode) {
+  int Style::ColorFromPDG(int pdgcode)
+  {
     switch (pdgcode) {
-      case 11:
-      case -11:
-      case 12:
-      case -12:
-        return kRed;
-      case 13:
-      case -13:
-      case 14:
-      case -14:
-        return kBlue;
-      case 15:
-      case -15:
-      case 16:
-      case -16:
-        return kGreen;
-      case 22:
-        return kYellow-1;
-      case 111:
-      case 211:
-      case -211:
-      case  321:
-      case -321:
-      case  130:
-      case  310:
-        return kMagenta-3;
-      case 2112:
-      case 2212:
-        return kMagenta+3;
-      default:
-        return kBlack;
+    case 11:
+    case -11:
+    case 12:
+    case -12: return kRed;
+    case 13:
+    case -13:
+    case 14:
+    case -14: return kBlue;
+    case 15:
+    case -15:
+    case 16:
+    case -16: return kGreen;
+    case 22: return kYellow - 1;
+    case 111:
+    case 211:
+    case -211:
+    case 321:
+    case -321:
+    case 130:
+    case 310: return kMagenta - 3;
+    case 2112:
+    case 2212: return kMagenta + 3;
+    default: return kBlack;
     }
   }
 
   //............................................................
 
-  int Style::LineWidthFromPDG(int pdgcode) {
+  int Style::LineWidthFromPDG(int pdgcode)
+  {
     if (pdgcode == 2112 || pdgcode == 2212) return 3;
     return 2;
   }
 
   //............................................................
 
-  int Style::LineStyleFromPDG(int pdgcode) {
+  int Style::LineStyleFromPDG(int pdgcode)
+  {
     switch (pdgcode) {
     case 11:
-    case -11:
-        return kDotted;
+    case -11: return kDotted;
     case 13:
     case -13:
     case 15:
     case -15:
     case 211:
     case -211:
-    case 2212:
-      return kSolid;
+    case 2212: return kSolid;
     case 12:
     case -12:
     case 14:
@@ -126,10 +120,8 @@ namespace evd{
     case 16:
     case -16:
     case 22:
-    case 2112:
-      return kDotted;
-    case 111:
-      return kDashed;
+    case 2112: return kDotted;
+    case 111: return kDashed;
     }
     return 0;
   }
@@ -140,35 +132,107 @@ namespace evd{
   {
     // Many cases handled here for most common particles. Extend list as
     // needed
-    int kSolid=1, kDashed=2, kDotted=3 /* kDashDot=4 */;
+    int kSolid = 1, kDashed = 2, kDotted = 3 /* kDashDot=4 */;
     int c = kGray;
     int s = kDotted;
     int w = 1;
 
     switch (pdgcode) {
-    case  11:  c=kRed;       s=kSolid;  w=2; break; // e-
-    case -11:  c=kRed;       s=kSolid;  w=2; break; // e+
-    case  12:  c=kRed;       s=kDotted; w=2; break; // nue
-    case -12:  c=kRed;       s=kDotted; w=2; break; // nue-bar
-    case  13:  c=kBlue;      s=kSolid;  w=2; break; // mu+
-    case -13:  c=kBlue;      s=kSolid;  w=2; break; // mu-
-    case  14:  c=kBlue;      s=kDotted; w=2; break; // numu
-    case -14:  c=kBlue;      s=kDotted; w=2; break; // numu-bar
-    case  15:  c=kGreen;     s=kSolid;  w=2; break; // tau+
-    case -15:  c=kGreen;     s=kSolid;  w=2; break; // tau-
-    case  16:  c=kGreen;     s=kDotted; w=2; break; // nutau
-    case -17:  c=kGreen;     s=kDotted; w=2; break; // nutau-bar
-    case  22:  c=kYellow-1;  s=kDotted; w=2; break; // gamma
-    case  111: c=kMagenta-3; s=kDashed; w=3; break; // pi0
-    case  211: c=kMagenta-3; s=kSolid;  w=3; break; // pi+
-    case -211: c=kMagenta-3; s=kSolid;  w=3; break; // pi-
-    case 2212: c=kMagenta+3; s=kSolid;  w=4; break; // proton
-    case 2112: c=kMagenta+3; s=kDotted; w=4; break; // neutron
+    case 11:
+      c = kRed;
+      s = kSolid;
+      w = 2;
+      break; // e-
+    case -11:
+      c = kRed;
+      s = kSolid;
+      w = 2;
+      break; // e+
+    case 12:
+      c = kRed;
+      s = kDotted;
+      w = 2;
+      break; // nue
+    case -12:
+      c = kRed;
+      s = kDotted;
+      w = 2;
+      break; // nue-bar
+    case 13:
+      c = kBlue;
+      s = kSolid;
+      w = 2;
+      break; // mu+
+    case -13:
+      c = kBlue;
+      s = kSolid;
+      w = 2;
+      break; // mu-
+    case 14:
+      c = kBlue;
+      s = kDotted;
+      w = 2;
+      break; // numu
+    case -14:
+      c = kBlue;
+      s = kDotted;
+      w = 2;
+      break; // numu-bar
+    case 15:
+      c = kGreen;
+      s = kSolid;
+      w = 2;
+      break; // tau+
+    case -15:
+      c = kGreen;
+      s = kSolid;
+      w = 2;
+      break; // tau-
+    case 16:
+      c = kGreen;
+      s = kDotted;
+      w = 2;
+      break; // nutau
+    case -17:
+      c = kGreen;
+      s = kDotted;
+      w = 2;
+      break; // nutau-bar
+    case 22:
+      c = kYellow - 1;
+      s = kDotted;
+      w = 2;
+      break; // gamma
+    case 111:
+      c = kMagenta - 3;
+      s = kDashed;
+      w = 3;
+      break; // pi0
+    case 211:
+      c = kMagenta - 3;
+      s = kSolid;
+      w = 3;
+      break; // pi+
+    case -211:
+      c = kMagenta - 3;
+      s = kSolid;
+      w = 3;
+      break; // pi-
+    case 2212:
+      c = kMagenta + 3;
+      s = kSolid;
+      w = 4;
+      break; // proton
+    case 2112:
+      c = kMagenta + 3;
+      s = kDotted;
+      w = 4;
+      break; // neutron
     default: break;
     };
     line.SetLineColor(c);
     line.SetLineStyle(s);
     line.SetLineWidth(w);
   }
-}//namespace
+} //namespace
 ////////////////////////////////////////////////////////////////////////

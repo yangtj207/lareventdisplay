@@ -6,7 +6,9 @@
 #include "lardataalg/DetectorInfo/DetectorProperties.h"
 #include "lareventdisplay/EventDisplay/3DDrawers/I3DDrawer.h"
 
-namespace art { class Event; }
+namespace art {
+  class Event;
+}
 #include "art/Utilities/ToolMacros.h"
 
 namespace evdb_tool {
@@ -35,8 +37,7 @@ namespace evdb_tool {
 
   PFParticle3DDrawer::~PFParticle3DDrawer() {}
 
-  void
-  PFParticle3DDrawer::Draw(const art::Event& evt, evdb::View3D* view) const
+  void PFParticle3DDrawer::Draw(const art::Event& evt, evdb::View3D* view) const
   {
     /*
     art::ServiceHandle<evd::SimulationDrawingOptions const> drawOpt;

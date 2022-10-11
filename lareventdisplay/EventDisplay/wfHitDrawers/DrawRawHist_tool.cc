@@ -3,20 +3,20 @@
 /// \author T. Usher
 ////////////////////////////////////////////////////////////////////////
 
+#include "larcore/Geometry/Geometry.h"
+#include "lardataobj/RawData/RawDigit.h"
+#include "lardataobj/RawData/raw.h"
 #include "lareventdisplay/EventDisplay/ColorDrawingOptions.h"
 #include "lareventdisplay/EventDisplay/RawDrawingOptions.h"
 #include "lareventdisplay/EventDisplay/wfHitDrawers/IWaveformDrawer.h"
 #include "larevt/CalibrationDBI/Interface/DetPedestalProvider.h"
 #include "larevt/CalibrationDBI/Interface/DetPedestalService.h"
-#include "larcore/Geometry/Geometry.h"
-#include "lardataobj/RawData/RawDigit.h"
-#include "lardataobj/RawData/raw.h"
 
 #include "nuevdb/EventDisplayBase/EventHolder.h"
 
-#include "art/Utilities/ToolMacros.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Utilities/ToolMacros.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "TH1F.h"
@@ -33,16 +33,8 @@ namespace evdb_tool {
     void Fill(evdb::View2D&, raw::ChannelID_t&, float, float) override;
     void Draw(const std::string&, float, float) override;
 
-    float
-    getMaximum() const override
-    {
-      return fMaximum;
-    };
-    float
-    getMinimum() const override
-    {
-      return fMinimum;
-    };
+    float getMaximum() const override { return fMaximum; };
+    float getMinimum() const override { return fMinimum; };
 
   private:
     void BookHistogram(raw::ChannelID_t&, float, float);
@@ -59,14 +51,12 @@ namespace evdb_tool {
 
   DrawRawHist::~DrawRawHist() {}
 
-  void
-  DrawRawHist::configure(const fhicl::ParameterSet& pset)
-  {
-    return;
-  }
+  void DrawRawHist::configure(const fhicl::ParameterSet& pset) { return; }
 
-  void
-  DrawRawHist::Fill(evdb::View2D& view2D, raw::ChannelID_t& channel, float lowBin, float numTicks)
+  void DrawRawHist::Fill(evdb::View2D& view2D,
+                         raw::ChannelID_t& channel,
+                         float lowBin,
+                         float numTicks)
   {
     art::ServiceHandle<evd::RawDrawingOptions const> rawOpt;
 
@@ -139,8 +129,7 @@ namespace evdb_tool {
     return;
   }
 
-  void
-  DrawRawHist::Draw(const std::string& options, float maxLowVal, float maxHiVal)
+  void DrawRawHist::Draw(const std::string& options, float maxLowVal, float maxHiVal)
   {
     TH1F* histPtr = fRawDigitHist.get();
 
@@ -154,8 +143,7 @@ namespace evdb_tool {
   }
 
   //......................................................................
-  void
-  DrawRawHist::BookHistogram(raw::ChannelID_t& channel, float startTick, float numTicks)
+  void DrawRawHist::BookHistogram(raw::ChannelID_t& channel, float startTick, float numTicks)
   {
     art::ServiceHandle<evd::ColorDrawingOptions const> cst;
     art::ServiceHandle<geo::Geometry const> geo;

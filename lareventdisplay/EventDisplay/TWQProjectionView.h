@@ -60,16 +60,8 @@ namespace evd {
     TWQProjectionView(TGMainFrame* mf);
     ~TWQProjectionView();
 
-    const char*
-    Description() const
-    {
-      return "Time/Wire/Charge Projections";
-    }
-    const char*
-    PrintTag() const
-    {
-      return "twq-proj";
-    }
+    const char* Description() const { return "Time/Wire/Charge Projections"; }
+    const char* PrintTag() const { return "twq-proj"; }
 
     void Draw(const char* opt = "");
 

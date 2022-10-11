@@ -92,8 +92,7 @@
 
 namespace {
   template <typename Stream, typename T>
-  void
-  PrintRange(Stream&& out, std::string header, lar::util::MinMaxCollector<T> const& range)
+  void PrintRange(Stream&& out, std::string header, lar::util::MinMaxCollector<T> const& range)
   {
     out << header << ": " << range.min() << " -- " << range.max() << " ("
         << (range.has_data() ? "valid" : "invalid") << ")";
@@ -133,60 +132,30 @@ namespace details {
     bool operator!() const { return !hasData(); }
 
     /// Returns whether we have data
-    bool
-    hasData() const
-    {
-      return bool(pData);
-    }
+    bool hasData() const { return bool(pData); }
 
     /// Returns whether we have data and we own it
-    bool
-    owned() const
-    {
-      return bOwned && hasData();
-    }
+    bool owned() const { return bOwned && hasData(); }
 
     /// Sets the data and the ownership
-    void
-    SetData(pointer data, bool owned)
+    void SetData(pointer data, bool owned)
     {
       Clear();
       bOwned = owned;
       pData = data;
     }
     /// Acquire ownership of the specified data
-    void
-    AcquireData(pointer data)
-    {
-      SetData(data, true);
-    }
+    void AcquireData(pointer data) { SetData(data, true); }
     /// Point to the specified data, not acquiring ownership
-    void
-    PointToData(pointer data)
-    {
-      SetData(data, false);
-    }
+    void PointToData(pointer data) { SetData(data, false); }
     /// Point to the specified data, not acquiring ownership
-    void
-    PointToData(reference data)
-    {
-      SetData(&data, false);
-    }
+    void PointToData(reference data) { SetData(&data, false); }
     /// Move data from the specified object, and own it
-    void
-    StealData(std::remove_const_t<T>&& data)
-    {
-      AcquireData(new T(std::move(data)));
-    }
+    void StealData(std::remove_const_t<T>&& data) { AcquireData(new T(std::move(data))); }
     /// Create a owned copy of the specified object
-    void
-    NewData(T const& data)
-    {
-      AcquireData(new T(data));
-    }
+    void NewData(T const& data) { AcquireData(new T(data)); }
     /// Stop pointing to the data; if owned, delete it
-    void
-    Clear()
+    void Clear()
     {
       if (bOwned) delete pData;
       pData = nullptr;
@@ -206,39 +175,19 @@ namespace evd {
     class RawDigitInfo_t {
     public:
       /// Returns an art pointer to the actual digit
-      art::Ptr<raw::RawDigit>
-      DigitPtr() const
-      {
-        return digit;
-      }
+      art::Ptr<raw::RawDigit> DigitPtr() const { return digit; }
 
       /// Returns an art pointer to the actual digit
-      raw::RawDigit const&
-      Digit() const
-      {
-        return *digit;
-      }
+      raw::RawDigit const& Digit() const { return *digit; }
 
       /// Returns the channel of this digit (for convenience)
-      raw::ChannelID_t
-      Channel() const
-      {
-        return digit ? digit->Channel() : raw::InvalidChannelID;
-      }
+      raw::ChannelID_t Channel() const { return digit ? digit->Channel() : raw::InvalidChannelID; }
 
       /// minimum charge
-      short
-      MinCharge() const
-      {
-        return SampleInfo().min_charge;
-      }
+      short MinCharge() const { return SampleInfo().min_charge; }
 
       /// maximum charge
-      short
-      MaxCharge() const
-      {
-        return SampleInfo().max_charge;
-      }
+      short MaxCharge() const { return SampleInfo().max_charge; }
 
       /// average charge
       //  short AverageCharge() const { return SampleInfo().average_charge; }
@@ -286,28 +235,16 @@ namespace evd {
     class RawDigitCacheDataClass {
     public:
       /// Returns the list of digit info
-      std::vector<RawDigitInfo_t> const&
-      Digits() const
-      {
-        return digits;
-      }
+      std::vector<RawDigitInfo_t> const& Digits() const { return digits; }
 
       /// Returns a pointer to the digit info of given channel, nullptr if none
       RawDigitInfo_t const* FindChannel(raw::ChannelID_t channel) const;
 
       /// Returns the largest number of samples in the unpacked raw digits
-      size_t
-      MaxSamples() const
-      {
-        return max_samples;
-      }
+      size_t MaxSamples() const { return max_samples; }
 
       /// Returns whether the cache is empty() (STL-like interface)
-      bool
-      empty() const
-      {
-        return digits.empty();
-      }
+      bool empty() const { return digits.empty(); }
 
       /// Empties the cache
       void Clear();
@@ -355,13 +292,13 @@ namespace evd {
 
     }; // struct RawDigitCacheDataClass
 
-    std::vector<evd::details::RawDigitInfo_t>::const_iterator
-    begin(RawDigitCacheDataClass const& cache)
+    std::vector<evd::details::RawDigitInfo_t>::const_iterator begin(
+      RawDigitCacheDataClass const& cache)
     {
       return cache.Digits().cbegin();
     }
-    std::vector<evd::details::RawDigitInfo_t>::const_iterator
-    end(RawDigitCacheDataClass const& cache)
+    std::vector<evd::details::RawDigitInfo_t>::const_iterator end(
+      RawDigitCacheDataClass const& cache)
     {
       return cache.Digits().cend();
     }
@@ -378,82 +315,41 @@ namespace evd {
       //@{
       /// Returns the index of the specified cell
       std::ptrdiff_t GetCell(float coord) const;
-      std::ptrdiff_t
-      operator()(float coord) const
-      {
-        return GetCell(coord);
-      }
+      std::ptrdiff_t operator()(float coord) const { return GetCell(coord); }
       //@}
 
       /// Returns whether the cell is present or not
-      bool
-      hasCell(std::ptrdiff_t iCell) const
+      bool hasCell(std::ptrdiff_t iCell) const
       {
         return (iCell >= 0) && ((size_t)iCell < NCells());
       }
 
       /// Returns whether the coordinate is included in the range or not
-      bool
-      hasCoord(float coord) const
-      {
-        return (coord >= Min()) && (coord < Max());
-      }
+      bool hasCoord(float coord) const { return (coord >= Min()) && (coord < Max()); }
 
       //@{
       /// Returns the extremes of the axis
-      float
-      Min() const
-      {
-        return min;
-      }
-      float
-      Max() const
-      {
-        return max;
-      }
+      float Min() const { return min; }
+      float Max() const { return max; }
       //@}
 
       /// Returns the length of the axis
-      float
-      Length() const
-      {
-        return max - min;
-      }
+      float Length() const { return max - min; }
 
       /// Returns the length of the axis
-      size_t
-      NCells() const
-      {
-        return n_cells;
-      }
+      size_t NCells() const { return n_cells; }
 
       /// Returns whether minimum and maximum match
-      bool
-      isEmpty() const
-      {
-        return max == min;
-      }
+      bool isEmpty() const { return max == min; }
 
       /// Returns the cell size
-      float
-      CellSize() const
-      {
-        return cell_size;
-      }
+      float CellSize() const { return cell_size; }
 
       /// Returns the lower edge of the cell
-      float
-      LowerEdge(std::ptrdiff_t iCell) const
-      {
-        return Min() + CellSize() * iCell;
-      }
+      float LowerEdge(std::ptrdiff_t iCell) const { return Min() + CellSize() * iCell; }
 
       /// Returns the upper edge of the cell
-      float
-      UpperEdge(std::ptrdiff_t iCell) const
-      {
-        return LowerEdge(iCell + 1);
-      }
+      float UpperEdge(std::ptrdiff_t iCell) const { return LowerEdge(iCell + 1); }
 
       /// Initialize the axis, returns whether cell size is finite
       bool Init(size_t nDiv, float new_min, float new_max);
@@ -471,8 +367,7 @@ namespace evd {
 
       /// Expands the cell (at fixed range) to meet maximum cell size
       /// @return Whether the cell size was changed
-      bool
-      SetCellSizeBoundary(float min_size, float max_size)
+      bool SetCellSizeBoundary(float min_size, float max_size)
       {
         return SetMinCellSize(min_size) || SetMaxCellSize(max_size);
       }
@@ -506,25 +401,13 @@ namespace evd {
                     unsigned int nTDC);
 
       /// Returns the total number of cells in the grid
-      size_t
-      NCells() const
-      {
-        return wire_axis.NCells() * tdc_axis.NCells();
-      }
+      size_t NCells() const { return wire_axis.NCells() * tdc_axis.NCells(); }
 
       /// Return the information about the wires
-      GridAxisClass const&
-      WireAxis() const
-      {
-        return wire_axis;
-      }
+      GridAxisClass const& WireAxis() const { return wire_axis; }
 
       /// Return the information about the TDCs
-      GridAxisClass const&
-      TDCAxis() const
-      {
-        return tdc_axis;
-      }
+      GridAxisClass const& TDCAxis() const { return tdc_axis; }
 
       /// Returns the index of specified cell, or -1 if out of range
       std::ptrdiff_t GetCell(float wire, float tick) const;
@@ -534,37 +417,20 @@ namespace evd {
 
       //@{
       /// Returns whether the range includes the specified wire
-      bool
-      hasWire(float wire) const
-      {
-        return wire_axis.hasCoord(wire);
-      }
-      bool
-      hasWire(int wire) const
-      {
-        return hasWire((float)wire);
-      }
+      bool hasWire(float wire) const { return wire_axis.hasCoord(wire); }
+      bool hasWire(int wire) const { return hasWire((float)wire); }
       //@}
 
       //@{
       /// Returns whether the range includes the specified wire
-      bool
-      hasTick(float tick) const
-      {
-        return tdc_axis.hasCoord(tick);
-      }
-      bool
-      hasTick(int tick) const
-      {
-        return hasTick((float)tick);
-      }
+      bool hasTick(float tick) const { return tdc_axis.hasCoord(tick); }
+      bool hasTick(int tick) const { return hasTick((float)tick); }
       //@}
 
       /// Increments the specified cell of cont with the value v
       /// @return whether there was such a cell
       template <typename CONT>
-      bool
-      Add(CONT& cont, float wire, float tick, typename CONT::value_type v)
+      bool Add(CONT& cont, float wire, float tick, typename CONT::value_type v)
       {
         std::ptrdiff_t cell = GetCell(wire, tick);
         if (cell < 0) return false;
@@ -575,58 +441,38 @@ namespace evd {
       /// @name Setters
       /// @{
       /// Sets a simple wire range: all the wires, one cell per wire
-      void
-      SetWireRange(unsigned int nWires)
-      {
-        SetWireRange(0., (float)nWires, nWires);
-      }
+      void SetWireRange(unsigned int nWires) { SetWireRange(0., (float)nWires, nWires); }
 
       /// Sets the wire range, leaving the number of wire cells unchanged
-      void
-      SetWireRange(float min_wire, float max_wire)
-      {
-        wire_axis.SetLimits(min_wire, max_wire);
-      }
+      void SetWireRange(float min_wire, float max_wire) { wire_axis.SetLimits(min_wire, max_wire); }
 
       /// Sets the complete wire range
-      void
-      SetWireRange(float min_wire, float max_wire, unsigned int nWires)
+      void SetWireRange(float min_wire, float max_wire, unsigned int nWires)
       {
         wire_axis.Init(nWires, min_wire, max_wire);
       }
 
       /// Sets the complete wire range, with minimum cell size
-      void
-      SetWireRange(float min_wire, float max_wire, unsigned int nWires, float min_size)
+      void SetWireRange(float min_wire, float max_wire, unsigned int nWires, float min_size)
       {
         wire_axis.Init(nWires, min_wire, max_wire);
         wire_axis.SetMinCellSize(min_size);
       }
 
       /// Sets a simple TDC range: all the ticks, one cell per tick
-      void
-      SetTDCRange(unsigned int nTDC)
-      {
-        SetTDCRange(0., (float)nTDC, nTDC);
-      }
+      void SetTDCRange(unsigned int nTDC) { SetTDCRange(0., (float)nTDC, nTDC); }
 
       /// Sets the complete TDC range
-      void
-      SetTDCRange(float min_tdc, float max_tdc, unsigned int nTDC)
+      void SetTDCRange(float min_tdc, float max_tdc, unsigned int nTDC)
       {
         tdc_axis.Init(nTDC, min_tdc, max_tdc);
       }
 
       /// Sets the TDC range, leaving the number of ticks unchanged
-      void
-      SetTDCRange(float min_tdc, float max_tdc)
-      {
-        tdc_axis.SetLimits(min_tdc, max_tdc);
-      }
+      void SetTDCRange(float min_tdc, float max_tdc) { tdc_axis.SetLimits(min_tdc, max_tdc); }
 
       /// Sets the complete TDC range, with minimum cell size
-      void
-      SetTDCRange(float min_tdc, float max_tdc, unsigned int nTDC, float min_size)
+      void SetTDCRange(float min_tdc, float max_tdc, unsigned int nTDC, float min_size)
       {
         tdc_axis.Init(nTDC, min_tdc, max_tdc);
         tdc_axis.SetMinCellSize(min_size);
@@ -635,18 +481,10 @@ namespace evd {
       /// @}
 
       /// Sets the minimum size for wire cells
-      bool
-      SetMinWireCellSize(float min_size)
-      {
-        return wire_axis.SetMinCellSize(min_size);
-      }
+      bool SetMinWireCellSize(float min_size) { return wire_axis.SetMinCellSize(min_size); }
 
       /// Sets the minimum size for TDC cells
-      bool
-      SetMinTDCCellSize(float min_size)
-      {
-        return tdc_axis.SetMinCellSize(min_size);
-      }
+      bool SetMinTDCCellSize(float min_size) { return tdc_axis.SetMinCellSize(min_size); }
 
       /// Prints the current axes on the specified stream
       template <typename Stream>
@@ -668,8 +506,7 @@ namespace evd {
       {}
 
       /// Applies Birks correction to the specified pedestal-subtracted charge
-      double
-      operator()(float adc) const
+      double operator()(float adc) const
       {
         if (adc < 0.) return 0.;
         double const dQdX = adc / wirePitch / electronsToADC;
@@ -726,8 +563,10 @@ namespace evd {
   }
 
   //......................................................................
-  void
-  RawDataDrawer::SetDrawingLimits(float low_wire, float high_wire, float low_tdc, float high_tdc)
+  void RawDataDrawer::SetDrawingLimits(float low_wire,
+                                       float high_wire,
+                                       float low_tdc,
+                                       float high_tdc)
   {
     MF_LOG_DEBUG("RawDataDrawer") << __func__ << "() setting drawing range as wires ( " << low_wire
                                   << " - " << high_wire << " ), ticks ( " << low_tdc << " - "
@@ -752,14 +591,13 @@ namespace evd {
 
   } // RawDataDrawer::SetDrawingLimits()
 
-  void
-  RawDataDrawer::SetDrawingLimitsFromRoI(geo::PlaneID::PlaneID_t plane)
+  void RawDataDrawer::SetDrawingLimitsFromRoI(geo::PlaneID::PlaneID_t plane)
   {
     SetDrawingLimits(fWireMin[plane], fWireMax[plane], fTimeMin[plane], fTimeMax[plane]);
   } // RawDataDrawer::SetDrawingLimitsFromRoI()
 
-  void
-  RawDataDrawer::ExtractRange(TVirtualPad* pPad, std::vector<double> const* zoom /* = nullptr */)
+  void RawDataDrawer::ExtractRange(TVirtualPad* pPad,
+                                   std::vector<double> const* zoom /* = nullptr */)
   {
     mf::LogDebug log("RawDataDrawer");
     log << "ExtractRange() on pad '" << pPad->GetName() << "'";
@@ -813,49 +651,24 @@ namespace evd {
 
     virtual ~OperationBaseClass() = default;
 
-    virtual bool
-    Initialize()
-    {
-      return true;
-    }
+    virtual bool Initialize() { return true; }
 
-    virtual bool
-    ProcessWire(geo::WireID const&)
-    {
-      return true;
-    }
+    virtual bool ProcessWire(geo::WireID const&) { return true; }
     virtual bool ProcessTick(size_t) { return true; }
 
     virtual bool Operate(geo::WireID const& wireID, size_t tick, float adc) = 0;
 
-    virtual bool
-    Finish()
-    {
-      return true;
-    }
+    virtual bool Finish() { return true; }
 
-    virtual std::string
-    Name() const
-    {
-      return cet::demangle_symbol(typeid(*this).name());
-    }
+    virtual std::string Name() const { return cet::demangle_symbol(typeid(*this).name()); }
 
-    bool
-    operator()(geo::WireID const& wireID, size_t tick, float adc)
+    bool operator()(geo::WireID const& wireID, size_t tick, float adc)
     {
       return Operate(wireID, tick, adc);
     }
 
-    geo::PlaneID const&
-    PlaneID() const
-    {
-      return planeID;
-    }
-    RawDataDrawer*
-    RawDataDrawerPtr() const
-    {
-      return pRawDataDrawer;
-    }
+    geo::PlaneID const& PlaneID() const { return planeID; }
+    RawDataDrawer* RawDataDrawerPtr() const { return pRawDataDrawer; }
 
   protected:
     RawDataDrawer* pRawDataDrawer = nullptr;
@@ -873,8 +686,7 @@ namespace evd {
       : OperationBaseClass(pid, data_drawer)
     {}
 
-    bool
-    Initialize() override
+    bool Initialize() override
     {
       bool bAllOk = true;
       for (std::unique_ptr<OperationBaseClass> const& op : operations)
@@ -882,31 +694,27 @@ namespace evd {
       return bAllOk;
     }
 
-    bool
-    ProcessWire(geo::WireID const& wireID) override
+    bool ProcessWire(geo::WireID const& wireID) override
     {
       for (std::unique_ptr<OperationBaseClass> const& op : operations)
         if (op->ProcessWire(wireID)) return true;
       return false;
     }
-    bool
-    ProcessTick(size_t tick) override
+    bool ProcessTick(size_t tick) override
     {
       for (std::unique_ptr<OperationBaseClass> const& op : operations)
         if (op->ProcessTick(tick)) return true;
       return false;
     }
 
-    bool
-    Operate(geo::WireID const& wireID, size_t tick, float adc) override
+    bool Operate(geo::WireID const& wireID, size_t tick, float adc) override
     {
       for (std::unique_ptr<OperationBaseClass> const& op : operations)
         if (!op->Operate(wireID, tick, adc)) return false;
       return true;
     }
 
-    bool
-    Finish() override
+    bool Finish() override
     {
       bool bAllOk = true;
       for (std::unique_ptr<OperationBaseClass> const& op : operations)
@@ -914,8 +722,7 @@ namespace evd {
       return bAllOk;
     }
 
-    std::string
-    Name() const override
+    std::string Name() const override
     {
       std::string msg = cet::demangle_symbol(typeid(*this).name());
       msg += (" [running " + std::to_string(operations.size()) + " operations:");
@@ -928,19 +735,10 @@ namespace evd {
       return msg + " ]";
     }
 
-    OperationBaseClass*
-    Operator(size_t iOp)
-    {
-      return operations.at(iOp).get();
-    }
-    OperationBaseClass const*
-    Operator(size_t iOp) const
-    {
-      return operations.at(iOp).get();
-    }
+    OperationBaseClass* Operator(size_t iOp) { return operations.at(iOp).get(); }
+    OperationBaseClass const* Operator(size_t iOp) const { return operations.at(iOp).get(); }
 
-    void
-    AddOperation(std::unique_ptr<OperationBaseClass> new_op)
+    void AddOperation(std::unique_ptr<OperationBaseClass> new_op)
     {
       if (!new_op) return;
       if (PlaneID() != new_op->PlaneID()) {
@@ -960,8 +758,7 @@ namespace evd {
   }; // class RawDataDrawer::ManyOperations
 
   //......................................................................
-  bool
-  RawDataDrawer::RunOperation(art::Event const& evt, OperationBaseClass* operation)
+  bool RawDataDrawer::RunOperation(art::Event const& evt, OperationBaseClass* operation)
   {
     geo::PlaneID const& pid = operation->PlaneID();
     art::ServiceHandle<evd::RawDrawingOptions const> rawopt;
@@ -1079,8 +876,7 @@ namespace evd {
       , ADCCorrector(detProp, PlaneID())
     {}
 
-    bool
-    Initialize() override
+    bool Initialize() override
     {
       art::ServiceHandle<evd::RawDrawingOptions const> rawopt;
 
@@ -1097,20 +893,14 @@ namespace evd {
       return true;
     }
 
-    bool
-    ProcessWire(geo::WireID const& wire) override
+    bool ProcessWire(geo::WireID const& wire) override
     {
       return drawingRange.hasWire((int)wire.Wire);
     }
 
-    bool
-    ProcessTick(size_t tick) override
-    {
-      return drawingRange.hasTick((float)tick);
-    }
+    bool ProcessTick(size_t tick) override { return drawingRange.hasTick((float)tick); }
 
-    bool
-    Operate(geo::WireID const& wireID, size_t tick, float adc) override
+    bool Operate(geo::WireID const& wireID, size_t tick, float adc) override
     {
       geo::WireID::WireID_t const wire = wireID.Wire;
       std::ptrdiff_t cell = drawingRange.GetCell(wire, tick);
@@ -1128,8 +918,7 @@ namespace evd {
       return true;
     }
 
-    bool
-    Finish() override
+    bool Finish() override
     {
       // write the information back
       geo::PlaneID::PlaneID_t const plane = PlaneID().Plane;
@@ -1155,10 +944,9 @@ namespace evd {
     details::ADCCorrectorClass ADCCorrector;
   }; // class RawDataDrawer::BoxDrawer
 
-  void
-  RawDataDrawer::QueueDrawingBoxes(evdb::View2D* view,
-                                   geo::PlaneID const& pid,
-                                   std::vector<BoxInfo_t> const& BoxInfo)
+  void RawDataDrawer::QueueDrawingBoxes(evdb::View2D* view,
+                                        geo::PlaneID const& pid,
+                                        std::vector<BoxInfo_t> const& BoxInfo)
   {
     //
     // All the information is now collected in BoxInfo.
@@ -1234,11 +1022,10 @@ namespace evd {
                                   << " boxes to be rendered";
   } // RawDataDrawer::QueueDrawingBoxes()
 
-  void
-  RawDataDrawer::RunDrawOperation(art::Event const& evt,
-                                  detinfo::DetectorPropertiesData const& detProp,
-                                  evdb::View2D* view,
-                                  unsigned int plane)
+  void RawDataDrawer::RunDrawOperation(art::Event const& evt,
+                                       detinfo::DetectorPropertiesData const& detProp,
+                                       evdb::View2D* view,
+                                       unsigned int plane)
   {
 
     // Check if we're supposed to draw raw hits at all
@@ -1264,8 +1051,7 @@ namespace evd {
       , RoIthreshold(art::ServiceHandle<evd::RawDrawingOptions const>()->RoIthreshold(PlaneID()))
     {}
 
-    bool
-    Operate(geo::WireID const& wireID, size_t tick, float adc) override
+    bool Operate(geo::WireID const& wireID, size_t tick, float adc) override
     {
       if (std::abs(adc) < RoIthreshold) return true;
       WireRange.add(wireID.Wire);
@@ -1273,8 +1059,7 @@ namespace evd {
       return true;
     } // Operate()
 
-    bool
-    Finish() override
+    bool Finish() override
     {
       geo::PlaneID::PlaneID_t const plane = PlaneID().Plane;
       int& WireMin = pRawDataDrawer->fWireMin[plane];
@@ -1305,8 +1090,7 @@ namespace evd {
     lar::util::MinMaxCollector<float> WireRange, TDCrange;
   }; // class RawDataDrawer::RoIextractorClass
 
-  void
-  RawDataDrawer::RunRoIextractor(art::Event const& evt, unsigned int plane)
+  void RawDataDrawer::RunRoIextractor(art::Event const& evt, unsigned int plane)
   {
     art::ServiceHandle<evd::RawDrawingOptions const> rawopt;
     geo::PlaneID const pid(rawopt->CurrentTPC(), plane);
@@ -1329,12 +1113,11 @@ namespace evd {
 
   //......................................................................
 
-  void
-  RawDataDrawer::RawDigit2D(art::Event const& evt,
-                            detinfo::DetectorPropertiesData const& detProp,
-                            evdb::View2D* view,
-                            unsigned int plane,
-                            bool bZoomToRoI /* = false */
+  void RawDataDrawer::RawDigit2D(art::Event const& evt,
+                                 detinfo::DetectorPropertiesData const& detProp,
+                                 evdb::View2D* view,
+                                 unsigned int plane,
+                                 bool bZoomToRoI /* = false */
   )
   {
     art::ServiceHandle<evd::RawDrawingOptions const> rawopt;
@@ -1443,8 +1226,7 @@ namespace evd {
   } // RawDataDrawer::RawDigit2D()
 
   //........................................................................
-  int
-  RawDataDrawer::GetRegionOfInterest(int plane, int& minw, int& maxw, int& mint, int& maxt)
+  int RawDataDrawer::GetRegionOfInterest(int plane, int& minw, int& maxw, int& mint, int& maxt)
   {
     art::ServiceHandle<geo::Geometry const> geo;
 
@@ -1472,16 +1254,14 @@ namespace evd {
   }
 
   //......................................................................
-  void
-  RawDataDrawer::GetChargeSum(int plane, double& charge, double& convcharge)
+  void RawDataDrawer::GetChargeSum(int plane, double& charge, double& convcharge)
   {
     charge = fRawCharge[plane];
     convcharge = fConvertedCharge[plane];
   }
 
   //......................................................................
-  void
-  RawDataDrawer::FillQHisto(const art::Event& evt, unsigned int plane, TH1F* histo)
+  void RawDataDrawer::FillQHisto(const art::Event& evt, unsigned int plane, TH1F* histo)
   {
 
     // Check if we're supposed to draw raw hits at all
@@ -1550,11 +1330,10 @@ namespace evd {
   }
 
   //......................................................................
-  void
-  RawDataDrawer::FillTQHisto(const art::Event& evt,
-                             unsigned int plane,
-                             unsigned int wire,
-                             TH1F* histo)
+  void RawDataDrawer::FillTQHisto(const art::Event& evt,
+                                  unsigned int plane,
+                                  unsigned int wire,
+                                  TH1F* histo)
   {
 
     // Check if we're supposed to draw raw hits at all
@@ -1724,8 +1503,7 @@ namespace evd {
   //   }
 
   //......................................................................
-  bool
-  RawDataDrawer::hasRegionOfInterest(geo::PlaneID::PlaneID_t plane) const
+  bool RawDataDrawer::hasRegionOfInterest(geo::PlaneID::PlaneID_t plane) const
   {
 
     return (fWireMax[plane] != -1) && (fTimeMax[plane] != -1);
@@ -1733,8 +1511,7 @@ namespace evd {
   } // RawDataDrawer::hasRegionOfInterest()
 
   //......................................................................
-  void
-  RawDataDrawer::ResetRegionOfInterest()
+  void RawDataDrawer::ResetRegionOfInterest()
   {
 
     MF_LOG_DEBUG("RawDataDrawer") << "RawDataDrawer[" << ((void*)this)
@@ -1749,8 +1526,7 @@ namespace evd {
 
   //......................................................................
 
-  void
-  RawDataDrawer::GetRawDigits(art::Event const& evt, details::CacheID_t const& new_timestamp)
+  void RawDataDrawer::GetRawDigits(art::Event const& evt, details::CacheID_t const& new_timestamp)
   {
     MF_LOG_DEBUG("RawDataDrawer") << "GetRawDigits() for " << new_timestamp
                                   << " (last for: " << *fCacheID << ")";
@@ -1769,8 +1545,7 @@ namespace evd {
   } // RawDataDrawer::GetRawDigits()
 
   //......................................................................
-  bool
-  RawDataDrawer::ProcessChannelWithStatus(
+  bool RawDataDrawer::ProcessChannelWithStatus(
     lariov::ChannelStatusProvider::Status_t channel_status) const
   {
     // if we don't have a valid status, we can't reject the channel
@@ -1791,29 +1566,25 @@ namespace evd {
     //--------------------------------------------------------------------------
     //--- RawDigitInfo_t
     //---
-    raw::RawDigit::ADCvector_t const&
-    RawDigitInfo_t::Data() const
+    raw::RawDigit::ADCvector_t const& RawDigitInfo_t::Data() const
     {
       if (!data.hasData()) UncompressData();
       return *data;
     } // RawDigitInfo_t::Data()
 
-    void
-    RawDigitInfo_t::Fill(art::Ptr<raw::RawDigit> const& src)
+    void RawDigitInfo_t::Fill(art::Ptr<raw::RawDigit> const& src)
     {
       data.Clear();
       digit = src;
     } // RawDigitInfo_t::Fill()
 
-    void
-    RawDigitInfo_t::Clear()
+    void RawDigitInfo_t::Clear()
     {
       data.Clear();
       sample_info.reset();
     }
 
-    void
-    RawDigitInfo_t::UncompressData() const
+    void RawDigitInfo_t::UncompressData() const
     {
       data.Clear();
 
@@ -1843,8 +1614,7 @@ namespace evd {
       }
     } // RawDigitInfo_t::UncompressData()
 
-    void
-    RawDigitInfo_t::CollectSampleInfo() const
+    void RawDigitInfo_t::CollectSampleInfo() const
     {
       raw::RawDigit::ADCvector_t const& samples = Data();
 
@@ -1861,16 +1631,14 @@ namespace evd {
 
     } // RawDigitInfo_t::CollectSampleInfo()
 
-    RawDigitInfo_t::SampleInfo_t const&
-    RawDigitInfo_t::SampleInfo() const
+    RawDigitInfo_t::SampleInfo_t const& RawDigitInfo_t::SampleInfo() const
     {
       if (!sample_info) CollectSampleInfo();
       return *sample_info;
     } // SampleInfo()
 
     template <typename Stream>
-    void
-    RawDigitInfo_t::Dump(Stream&& out) const
+    void RawDigitInfo_t::Dump(Stream&& out) const
     {
       out << "  digit at " << ((void*)digit.get()) << " on channel #" << digit->Channel()
           << " with " << digit->NADC();
@@ -1888,8 +1656,7 @@ namespace evd {
     //--- RawDigitCacheDataClass
     //---
 
-    RawDigitInfo_t const*
-    RawDigitCacheDataClass::FindChannel(raw::ChannelID_t channel) const
+    RawDigitInfo_t const* RawDigitCacheDataClass::FindChannel(raw::ChannelID_t channel) const
     {
       auto iDigit = std::find_if(
         digits.cbegin(), digits.cend(), [channel](evd::details::RawDigitInfo_t const& digit) {
@@ -1898,16 +1665,15 @@ namespace evd {
       return (iDigit == digits.cend()) ? nullptr : &*iDigit;
     } // RawDigitCacheDataClass::FindChannel()
 
-    std::vector<raw::RawDigit> const*
-    RawDigitCacheDataClass::ReadProduct(art::Event const& evt, art::InputTag label)
+    std::vector<raw::RawDigit> const* RawDigitCacheDataClass::ReadProduct(art::Event const& evt,
+                                                                          art::InputTag label)
     {
       art::Handle<std::vector<raw::RawDigit>> rdcol;
       if (!evt.getByLabel(label, rdcol)) return nullptr;
       return &*rdcol;
     } // RawDigitCacheDataClass::ReadProduct()
 
-    void
-    RawDigitCacheDataClass::Refill(art::Handle<std::vector<raw::RawDigit>>& rdcol)
+    void RawDigitCacheDataClass::Refill(art::Handle<std::vector<raw::RawDigit>>& rdcol)
     {
       digits.resize(rdcol->size());
       for (size_t iDigit = 0; iDigit < rdcol->size(); ++iDigit) {
@@ -1918,23 +1684,21 @@ namespace evd {
       } // for
     }   // RawDigitCacheDataClass::Refill()
 
-    void
-    RawDigitCacheDataClass::Invalidate()
+    void RawDigitCacheDataClass::Invalidate()
     {
       timestamp.clear();
     } // RawDigitCacheDataClass::Invalidate()
 
-    void
-    RawDigitCacheDataClass::Clear()
+    void RawDigitCacheDataClass::Clear()
     {
       Invalidate();
       digits.clear();
       max_samples = 0;
     } // RawDigitCacheDataClass::Clear()
 
-    RawDigitCacheDataClass::BoolWithUpToDateMetadata
-    RawDigitCacheDataClass::CheckUpToDate(CacheID_t const& ts,
-                                          art::Event const* evt /* = nullptr */) const
+    RawDigitCacheDataClass::BoolWithUpToDateMetadata RawDigitCacheDataClass::CheckUpToDate(
+      CacheID_t const& ts,
+      art::Event const* evt /* = nullptr */) const
     {
       BoolWithUpToDateMetadata res{false, nullptr};
 
@@ -1973,8 +1737,7 @@ namespace evd {
       return res; // cache still valid
     }             // RawDigitCacheDataClass::CheckUpToDate()
 
-    bool
-    RawDigitCacheDataClass::Update(art::Event const& evt, CacheID_t const& new_timestamp)
+    bool RawDigitCacheDataClass::Update(art::Event const& evt, CacheID_t const& new_timestamp)
     {
       BoolWithUpToDateMetadata update_info = CheckUpToDate(new_timestamp, &evt);
 
@@ -1999,8 +1762,7 @@ namespace evd {
     } // RawDigitCacheDataClass::Update()
 
     template <typename Stream>
-    void
-    RawDigitCacheDataClass::Dump(Stream&& out) const
+    void RawDigitCacheDataClass::Dump(Stream&& out) const
     {
       out << "Cache at " << ((void*)this) << " with time stamp " << std::string(timestamp)
           << " and " << digits.size() << " entries (maximum sample: " << max_samples << ");"
@@ -2015,15 +1777,13 @@ namespace evd {
     //--------------------------------------------------------------------------
     //--- GridAxisClass
     //---
-    std::ptrdiff_t
-    GridAxisClass::GetCell(float coord) const
+    std::ptrdiff_t GridAxisClass::GetCell(float coord) const
     {
       return std::ptrdiff_t((coord - min) / cell_size); // truncate
     }                                                   // GridAxisClass::GetCell()
 
     //--------------------------------------------------------------------------
-    bool
-    GridAxisClass::Init(size_t nDiv, float new_min, float new_max)
+    bool GridAxisClass::Init(size_t nDiv, float new_min, float new_max)
     {
 
       n_cells = std::max(nDiv, size_t(1));
@@ -2032,8 +1792,7 @@ namespace evd {
     } // GridAxisClass::Init()
 
     //--------------------------------------------------------------------------
-    bool
-    GridAxisClass::SetLimits(float new_min, float new_max)
+    bool GridAxisClass::SetLimits(float new_min, float new_max)
     {
       min = new_min;
       max = new_max;
@@ -2043,8 +1802,7 @@ namespace evd {
     } // GridAxisClass::SetLimits()
 
     //--------------------------------------------------------------------------
-    bool
-    GridAxisClass::SetMinCellSize(float min_size)
+    bool GridAxisClass::SetMinCellSize(float min_size)
     {
       if (cell_size >= min_size) return false;
 
@@ -2058,8 +1816,7 @@ namespace evd {
     } // GridAxisClass::SetMinCellSize()
 
     //--------------------------------------------------------------------------
-    bool
-    GridAxisClass::SetMaxCellSize(float max_size)
+    bool GridAxisClass::SetMaxCellSize(float max_size)
     {
       if (cell_size <= max_size) return false;
 
@@ -2074,8 +1831,7 @@ namespace evd {
 
     //--------------------------------------------------------------------------
     template <typename Stream>
-    void
-    GridAxisClass::Dump(Stream&& out) const
+    void GridAxisClass::Dump(Stream&& out) const
     {
       out << NCells() << " cells from " << Min() << " to " << Max() << " (length: " << Length()
           << ")";
@@ -2099,8 +1855,7 @@ namespace evd {
     {} // CellGridClass::CellGridClass({ float, float, int } x 2)
 
     //--------------------------------------------------------------------------
-    std::ptrdiff_t
-    CellGridClass::GetCell(float wire, float tick) const
+    std::ptrdiff_t CellGridClass::GetCell(float wire, float tick) const
     {
       std::ptrdiff_t iWireCell = wire_axis.GetCell(wire);
       if (!wire_axis.hasCell(iWireCell)) return std::ptrdiff_t(-1);
@@ -2110,8 +1865,7 @@ namespace evd {
     } // CellGridClass::GetCell()
 
     //--------------------------------------------------------------------------
-    std::tuple<float, float, float, float>
-    CellGridClass::GetCellBox(std::ptrdiff_t iCell) const
+    std::tuple<float, float, float, float> CellGridClass::GetCellBox(std::ptrdiff_t iCell) const
     {
       // { w1, t1, w2, t2 }
       size_t const nTDCCells = TDCAxis().NCells();
@@ -2126,8 +1880,7 @@ namespace evd {
 
     //--------------------------------------------------------------------------
     template <typename Stream>
-    void
-    CellGridClass::Dump(Stream&& out) const
+    void CellGridClass::Dump(Stream&& out) const
     {
       out << "Wire axis: ";
       WireAxis().Dump(out);

@@ -8,19 +8,22 @@
 #include "art/Framework/Principal/fwd.h"
 
 #include "lareventdisplay/EventDisplay/MCBriefPad.h"
-#include "nuevdb/EventDisplayBase/View2D.h"
-#include "nuevdb/EventDisplayBase/EventHolder.h"
 #include "lareventdisplay/EventDisplay/SimulationDrawer.h"
+#include "nuevdb/EventDisplayBase/EventHolder.h"
+#include "nuevdb/EventDisplayBase/View2D.h"
 
-namespace evd{
+namespace evd {
 
   //......................................................................
 
-  MCBriefPad::MCBriefPad(const char* nm, const char* ti,
-			 double x1, double y1,
-			 double x2, double y2,
-			 const char* /*opt*/) :
-    DrawingPad(nm, ti, x1, y1, x2, y2)
+  MCBriefPad::MCBriefPad(const char* nm,
+                         const char* ti,
+                         double x1,
+                         double y1,
+                         double x2,
+                         double y2,
+                         const char* /*opt*/)
+    : DrawingPad(nm, ti, x1, y1, x2, y2)
   {
     this->Pad()->cd();
 
@@ -31,7 +34,10 @@ namespace evd{
 
   MCBriefPad::~MCBriefPad()
   {
-    if (fView) { delete fView; fView = 0; }
+    if (fView) {
+      delete fView;
+      fView = 0;
+    }
   }
 
   //......................................................................
@@ -41,13 +47,13 @@ namespace evd{
     fView->Clear();
     this->Pad()->Clear();
 
-    const art::Event *evt = evdb::EventHolder::Instance()->GetEvent();
-    if(evt){
+    const art::Event* evt = evdb::EventHolder::Instance()->GetEvent();
+    if (evt) {
       this->SimulationDraw()->MCTruthShortText(*evt, fView);
-      this->SimulationDraw()->MCTruthLongText (*evt, fView);
+      this->SimulationDraw()->MCTruthLongText(*evt, fView);
     }
     fPad->cd();
     fView->Draw();
   }
-}//namespace
+} //namespace
 //////////////////////////////////////////////////////////////////////////

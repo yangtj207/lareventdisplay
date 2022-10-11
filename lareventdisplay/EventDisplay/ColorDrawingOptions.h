@@ -12,31 +12,31 @@
 
 #include "art/Framework/Services/Registry/ServiceDeclarationMacros.h"
 
-namespace fhicl { class ParameterSet; }
+namespace fhicl {
+  class ParameterSet;
+}
 
 namespace evd {
-  class ColorDrawingOptions : public evdb::Reconfigurable{
+  class ColorDrawingOptions : public evdb::Reconfigurable {
   public:
-
     explicit ColorDrawingOptions(fhicl::ParameterSet const& pset);
 
-    void reconfigure(fhicl::ParameterSet const& pset) ;
+    void reconfigure(fhicl::ParameterSet const& pset);
 
     const evdb::ColorScale& RawQ(geo::SigType_t st) const;
     const evdb::ColorScale& CalQ(geo::SigType_t st) const;
     const evdb::ColorScale& RawT(geo::SigType_t st) const;
     const evdb::ColorScale& CalT(geo::SigType_t st) const;
 
-    int                 fColorOrGray; ///< 0 = color, 1 = gray
-    std::vector<int   > fRawDiv;      ///< number of divisions in raw
-    std::vector<int   > fRecoDiv;     ///< number of divisions in raw
-    std::vector<double> fRawQLow;     ///< low  edge of ADC values for drawing raw digits
-    std::vector<double> fRawQHigh;    ///< high edge of ADC values for drawing raw digits
-    std::vector<double> fRecoQLow;    ///< low  edge of ADC values for drawing raw digits
-    std::vector<double> fRecoQHigh;   ///< high edge of ADC values for drawing raw digits
+    int fColorOrGray;               ///< 0 = color, 1 = gray
+    std::vector<int> fRawDiv;       ///< number of divisions in raw
+    std::vector<int> fRecoDiv;      ///< number of divisions in raw
+    std::vector<double> fRawQLow;   ///< low  edge of ADC values for drawing raw digits
+    std::vector<double> fRawQHigh;  ///< high edge of ADC values for drawing raw digits
+    std::vector<double> fRecoQLow;  ///< low  edge of ADC values for drawing raw digits
+    std::vector<double> fRecoQHigh; ///< high edge of ADC values for drawing raw digits
 
   private:
-
     void CheckInputVectorSizes();
 
     std::vector<evdb::ColorScale> fColorScaleRaw;

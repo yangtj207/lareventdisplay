@@ -11,13 +11,17 @@
 
 #include <vector>
 
-namespace art { class Event; }
+namespace art {
+  class Event;
+}
 #include "canvas/Persistency/Common/PtrVector.h"
 
-namespace fhicl { class ParameterSet; }
+namespace fhicl {
+  class ParameterSet;
+}
 
 namespace util {
- class PxLine;
+  class PxLine;
 }
 
 namespace recob {
@@ -29,28 +33,25 @@ namespace evd {
   class GraphClusterAlg {
 
   public:
+    GraphClusterAlg(fhicl::ParameterSet const& pset);
 
-  GraphClusterAlg(fhicl::ParameterSet const& pset);
+    void reconfigure(fhicl::ParameterSet const& pset);
 
-  void reconfigure(fhicl::ParameterSet const& pset);
-
-//   void GetStartEndHits(unsigned int plane, recob::Hit * starthit,recob::Hit * endhit);
-//   void GetStartEndHits(unsigned int plane);
-  void GetStartEndHits(unsigned int plane,util::PxLine &startendpoints);
-
-
+    //   void GetStartEndHits(unsigned int plane, recob::Hit * starthit,recob::Hit * endhit);
+    //   void GetStartEndHits(unsigned int plane);
+    void GetStartEndHits(unsigned int plane, util::PxLine& startendpoints);
 
     //void GetHitList(unsigned int plane,std::vector< art::Ptr <recob::Hit> > ptrhitlist);
-  void GetHitList(unsigned int plane, art::PtrVector <recob::Hit>  &ptrhitlist);
+    void GetHitList(unsigned int plane, art::PtrVector<recob::Hit>& ptrhitlist);
 
-  void GetHitListAndEndPoints(unsigned int plane, art::PtrVector <recob::Hit>  &ptrhitlist,util::PxLine &startendpoints);
+    void GetHitListAndEndPoints(unsigned int plane,
+                                art::PtrVector<recob::Hit>& ptrhitlist,
+                                util::PxLine& startendpoints);
 
-  int CheckValidity(art::Event& evt);
+    int CheckValidity(art::Event& evt);
 
   private:
-    std::vector < util::PxLine > GetSeedLines();
-
-
+    std::vector<util::PxLine> GetSeedLines();
 
     unsigned int fNPlanes;
 
@@ -59,30 +60,22 @@ namespace evd {
     int fSubRun;
     int fEvent;
 
-
-
     /*
     std::vector< recob::Hit * > starthit;
     std::vector< recob::Hit * > endhit;
     */
-//     std::vector < std::vector< recob::Hit * > > hitlist;
+    //     std::vector < std::vector< recob::Hit * > > hitlist;
 
-//     std::vector < util::PxLine > plines;
-//
-//     std::vector <unsigned int> swire;
-//     std::vector <unsigned int> ewire;
-//     std::vector <double> stime;
-//     std::vector <double> etime;
-//
-
-
+    //     std::vector < util::PxLine > plines;
+    //
+    //     std::vector <unsigned int> swire;
+    //     std::vector <unsigned int> ewire;
+    //     std::vector <double> stime;
+    //     std::vector <double> etime;
+    //
 
   }; //class GraphClusterAlg
 
 } //namespace evd
-
-
-
-
 
 #endif

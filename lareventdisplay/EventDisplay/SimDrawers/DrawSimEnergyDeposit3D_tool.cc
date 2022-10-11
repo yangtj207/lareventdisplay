@@ -3,14 +3,14 @@
 /// \author T. Usher
 ////////////////////////////////////////////////////////////////////////
 
+#include "larcore/Geometry/Geometry.h"
+#include "lardata/DetectorInfoServices/DetectorClocksService.h"
+#include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
+#include "lardataalg/DetectorInfo/DetectorProperties.h"
+#include "lardataobj/Simulation/SimEnergyDeposit.h"
 #include "lareventdisplay/EventDisplay/SimDrawers/ISim3DDrawer.h"
 #include "lareventdisplay/EventDisplay/SimulationDrawingOptions.h"
 #include "lareventdisplay/EventDisplay/Style.h"
-#include "lardata/DetectorInfoServices/DetectorClocksService.h"
-#include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
-#include "larcore/Geometry/Geometry.h"
-#include "lardataobj/Simulation/SimEnergyDeposit.h"
-#include "lardataalg/DetectorInfo/DetectorProperties.h"
 
 #include "nuevdb/EventDisplayBase/View3D.h"
 #include "nusimdata/SimulationBase/MCParticle.h"
@@ -44,8 +44,7 @@ namespace evdb_tool {
     fDrawAllSimEnergy = pset.get<bool>("DrawAllSimEnergyDeposits", false);
   }
 
-  void
-  DrawSimEnergyDeposit3D::Draw(const art::Event& evt, evdb::View3D* view) const
+  void DrawSimEnergyDeposit3D::Draw(const art::Event& evt, evdb::View3D* view) const
   {
     art::ServiceHandle<evd::SimulationDrawingOptions const> drawOpt;
 
@@ -61,8 +60,7 @@ namespace evdb_tool {
     return;
   }
 
-  void
-  DrawSimEnergyDeposit3D::drawMCPartAssociated(const art::Event& evt, evdb::View3D* view) const
+  void DrawSimEnergyDeposit3D::drawMCPartAssociated(const art::Event& evt, evdb::View3D* view) const
   {
     art::ServiceHandle<evd::SimulationDrawingOptions const> drawOpt;
 
@@ -182,8 +180,7 @@ namespace evdb_tool {
     return;
   }
 
-  void
-  DrawSimEnergyDeposit3D::drawAll(const art::Event& evt, evdb::View3D* view) const
+  void DrawSimEnergyDeposit3D::drawAll(const art::Event& evt, evdb::View3D* view) const
   {
     art::ServiceHandle<evd::SimulationDrawingOptions const> drawOpt;
 

@@ -21,8 +21,7 @@
 #include "lareventdisplay/EventDisplay/RecoDrawingOptions.h"
 
 namespace {
-  void
-  WriteMsg(const char* fcn)
+  void WriteMsg(const char* fcn)
   {
     mf::LogVerbatim("HitSelector") << "HitSelector::" << fcn << " \n";
   }
@@ -46,10 +45,9 @@ namespace evd {
   ///
   /// Return value is the kinetic enegry of the track
   //
-  double
-  HitSelector::SaveSeedLines(const art::Event& evt,
-                             std::vector<util::PxLine> seedlines,
-                             double distance)
+  double HitSelector::SaveSeedLines(const art::Event& evt,
+                                    std::vector<util::PxLine> seedlines,
+                                    double distance)
   {
     art::ServiceHandle<evd::InfoTransfer> infot;
     art::ServiceHandle<geo::Geometry const> geom;
@@ -84,15 +82,14 @@ namespace evd {
   /// @param view   : Pointer to view to draw on
   /// @param plane  : plane number of view
   ///
-  void
-  HitSelector::SaveHits(const art::Event& evt,
-                        unsigned int plane,
-                        double xin,
-                        double yin,
-                        double x1in,
-                        double y1in,
-                        double distance,
-                        bool good_plane)
+  void HitSelector::SaveHits(const art::Event& evt,
+                             unsigned int plane,
+                             double xin,
+                             double yin,
+                             double x1in,
+                             double y1in,
+                             double distance,
+                             bool good_plane)
   {
     art::ServiceHandle<evd::RecoDrawingOptions const> recoOpt;
     art::ServiceHandle<geo::Geometry const> geo;
@@ -160,7 +157,8 @@ namespace evd {
       starthitout[plane][1] = hit.PeakTime();
       starthitout[plane][0] = hit.WireID().Wire;
 
-      recob::Hit const& endhit = hit; // this obviously not correct, the fact that x,y are used for both start and end point, A.S. -> to debug
+      recob::Hit const& endhit =
+        hit; // this obviously not correct, the fact that x,y are used for both start and end point, A.S. -> to debug
       endhitout[plane][1] = endhit.PeakTime();
       endhitout[plane][0] = endhit.WireID().Wire;
     }
@@ -183,8 +181,7 @@ namespace evd {
   /// @param view   : Pointer to view to draw on
   /// @param plane  : plane number of view
   ///
-  void
-  HitSelector::ChangeHit(const art::Event& evt, unsigned int plane, double xin, double yin)
+  void HitSelector::ChangeHit(const art::Event& evt, unsigned int plane, double xin, double yin)
   {
     art::ServiceHandle<evd::RecoDrawingOptions const> recoOpt;
     art::ServiceHandle<geo::Geometry const> geo;
@@ -251,15 +248,13 @@ namespace evd {
   /// @param view   : Pointer to view to draw on
   /// @param plane  : plane number of view
   ///
-  std::vector<art::Ptr<recob::Hit>>
-  HitSelector::GetSelectedHitPtrs(unsigned int plane)
+  std::vector<art::Ptr<recob::Hit>> HitSelector::GetSelectedHitPtrs(unsigned int plane)
   {
     art::ServiceHandle<evd::InfoTransfer const> infot;
     return infot->GetSelectedHitList(plane);
   }
 
-  std::vector<const recob::Hit*>
-  HitSelector::GetSelectedHits(unsigned int plane)
+  std::vector<const recob::Hit*> HitSelector::GetSelectedHits(unsigned int plane)
   {
     std::vector<art::Ptr<recob::Hit>> hits_saved;
     std::vector<const recob::Hit*> hits_to_draw; //draw selected hits in a different color
@@ -274,18 +269,13 @@ namespace evd {
   }
 
   //......................................................................
-  void
-  HitSelector::ClearHitList(unsigned int plane)
+  void HitSelector::ClearHitList(unsigned int plane)
   {
     art::ServiceHandle<evd::InfoTransfer> infot;
     infot->ClearSelectedHitList(plane);
   }
 
   //----------------------------------------------------------------------------
-  std::vector<recob::Seed>&
-  HitSelector::SeedVector()
-  {
-    return fSeedVector;
-  }
+  std::vector<recob::Seed>& HitSelector::SeedVector() { return fSeedVector; }
 
 } //end namespace

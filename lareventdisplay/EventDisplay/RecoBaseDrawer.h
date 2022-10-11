@@ -47,13 +47,17 @@ namespace anab {
   class CosmicTag;
 }
 
-namespace art { class Event; }
+namespace art {
+  class Event;
+}
 #include "art/Framework/Principal/DataViewImpl.h" // Missing from View.h
 #include "art/Framework/Principal/View.h"
 #include "canvas/Persistency/Common/FindMany.h"
 #include "canvas/Persistency/Common/FindManyP.h"
 #include "canvas/Persistency/Common/PtrVector.h"
-namespace fhicl { class ParameterSet; }
+namespace fhicl {
+  class ParameterSet;
+}
 
 class TVector3;
 class TH1F;

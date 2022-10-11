@@ -4,8 +4,8 @@
 /// \author  messier@indiana.edu
 ///
 #include "lareventdisplay/EventDisplay/HeaderDrawer.h"
-#include "nuevdb/EventDisplayBase/View2D.h"
 #include "nuevdb/EventDisplayBase/EventHolder.h"
+#include "nuevdb/EventDisplayBase/View2D.h"
 
 #include "TText.h"
 #include "TTimeStamp.h"
@@ -14,29 +14,29 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "lareventdisplay/EventDisplay/EvdLayoutOptions.h"
 
-namespace evd{
+namespace evd {
 
-//......................................................................
+  //......................................................................
 
-void HeaderDrawer::Header(evdb::View2D* view)
-{
+  void HeaderDrawer::Header(evdb::View2D* view)
+  {
     art::ServiceHandle<evd::EvdLayoutOptions const> layoutopt;
 
-    TText& titlet = view->AddText(0.03,0.80,layoutopt->fDisplayName.c_str());
+    TText& titlet = view->AddText(0.03, 0.80, layoutopt->fDisplayName.c_str());
     titlet.SetTextSize(0.13);
     titlet.SetTextFont(72);
 
     // get the event
     const art::Event* evt = evdb::EventHolder::Instance()->GetEvent();
-    if(!evt) return;
+    if (!evt) return;
 
-    int run   = evt->run();
-    int srun  = evt->subRun();
+    int run = evt->run();
+    int srun = evt->subRun();
     int event = evt->id().event();
 
     unsigned int year, month, day, dayofweek;
     unsigned int hour, minute, second;
-    int          nano;
+    int nano;
 
     // get the time stamp.  art::Timestamp::value() returns a TimeValue_t which is a typedef to unsigned long long.
     // The conventional use is for the upper 32 bits to have the seconds since 1970 epoch and the lower 32 bits to be
@@ -47,12 +47,12 @@ void HeaderDrawer::Header(evdb::View2D* view)
     // the masking isn't strictly necessary *if* "long" is truly 32bits
     // but this can vary w/ compiler/platform
     const unsigned long int mask32 = 0xFFFFFFFFUL;
-    unsigned long int lup = ( tsval >> 32 ) & mask32;
+    unsigned long int lup = (tsval >> 32) & mask32;
     unsigned long int llo = tsval & mask32;
     TTimeStamp ts(lup, (int)llo);
 
-    ts.GetDate(kTRUE,0,&year,&month,&day);
-    ts.GetTime(kTRUE,0,&hour,&minute,&second);
+    ts.GetDate(kTRUE, 0, &year, &month, &day);
+    ts.GetTime(kTRUE, 0, &hour, &minute, &second);
     nano = ts.GetNanoSec();
     dayofweek = ts.GetDayOfWeek();
     char eventbuff[256];
@@ -61,25 +61,19 @@ void HeaderDrawer::Header(evdb::View2D* view)
     char timebuff[256];
 
     // Skip first one since ROOT returns these numbers starting from 1 not 0
-    static const char* days[] = {"","Mon","Tue","Wed","Thu","Fri","Sat","Sun"};
-    static const char* months[] = {"","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"};
+    static const char* days[] = {"", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"};
+    static const char* months[] = {
+      "", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
 
-    sprintf(runbuff,  "Run:   %d/%d",run,srun);
-    sprintf(eventbuff,"Event: %d",event);
-    sprintf(datebuff, "UTC %s %s %d, %d",
-            days[dayofweek],
-            months[month],
-            day,
-            year);
-    sprintf(timebuff, "%.2d:%.2d:%2.9f",
-            hour,
-            minute,
-            (float)second+(float)nano/1.0E9);
+    sprintf(runbuff, "Run:   %d/%d", run, srun);
+    sprintf(eventbuff, "Event: %d", event);
+    sprintf(datebuff, "UTC %s %s %d, %d", days[dayofweek], months[month], day, year);
+    sprintf(timebuff, "%.2d:%.2d:%2.9f", hour, minute, (float)second + (float)nano / 1.0E9);
 
-    TText& runt   = view->AddText(0.04,0.60, runbuff);
-    TText& eventt = view->AddText(0.04,0.45, eventbuff);
-    TText& datet  = view->AddText(0.04,0.25, datebuff);
-    TText& timet  = view->AddText(0.04,0.10, timebuff);
+    TText& runt = view->AddText(0.04, 0.60, runbuff);
+    TText& eventt = view->AddText(0.04, 0.45, eventbuff);
+    TText& datet = view->AddText(0.04, 0.25, datebuff);
+    TText& timet = view->AddText(0.04, 0.10, timebuff);
 
     runt.SetTextSize(0.13);
     runt.SetTextFont(42);
@@ -92,7 +86,7 @@ void HeaderDrawer::Header(evdb::View2D* view)
 
     timet.SetTextSize(0.12);
     timet.SetTextFont(42);
-}
+  }
 
-}// namespace
+} // namespace
 ////////////////////////////////////////////////////////////////////////

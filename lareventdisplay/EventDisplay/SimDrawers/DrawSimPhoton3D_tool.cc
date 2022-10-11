@@ -53,8 +53,7 @@ namespace evdb_tool {
 
   DrawSimPhoton3D::~DrawSimPhoton3D() {}
 
-  void
-  DrawSimPhoton3D::Draw(const art::Event& evt, evdb::View3D* view) const
+  void DrawSimPhoton3D::Draw(const art::Event& evt, evdb::View3D* view) const
   {
     art::ServiceHandle<evd::SimulationDrawingOptions> drawOpt;
 
@@ -203,13 +202,12 @@ namespace evdb_tool {
     return;
   }
 
-  void
-  DrawSimPhoton3D::DrawRectangularBox(evdb::View3D* view,
-                                      const Eigen::Vector3f& coordsLo,
-                                      const Eigen::Vector3f& coordsHi,
-                                      int color,
-                                      int width,
-                                      int style) const
+  void DrawSimPhoton3D::DrawRectangularBox(evdb::View3D* view,
+                                           const Eigen::Vector3f& coordsLo,
+                                           const Eigen::Vector3f& coordsHi,
+                                           int color,
+                                           int width,
+                                           int style) const
   {
     TPolyLine3D& top = view->AddPolyLine3D(5, color, width, style);
     top.SetPoint(0, coordsLo[0], coordsHi[1], coordsLo[2]);

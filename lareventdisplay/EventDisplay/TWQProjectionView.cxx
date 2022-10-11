@@ -338,16 +338,14 @@ namespace evd {
   }
 
   //......................................................................
-  void
-  TWQProjectionView::ResetRegionsOfInterest()
+  void TWQProjectionView::ResetRegionsOfInterest()
   {
     for (TWireProjPad* planePad : fPlanes)
       planePad->RawDataDraw()->ResetRegionOfInterest();
   } // TWQProjectionView::ResetRegionsOfInterest()
 
   //......................................................................
-  void
-  TWQProjectionView::DrawPads(const char* /*opt*/)
+  void TWQProjectionView::DrawPads(const char* /*opt*/)
   {
 
     OnNewEvent(); // if the current event is a new one, we need some resetting
@@ -365,8 +363,7 @@ namespace evd {
   }
 
   //......................................................................
-  void
-  TWQProjectionView::SetAutomaticZoomMode(bool bSet /* = true */)
+  void TWQProjectionView::SetAutomaticZoomMode(bool bSet /* = true */)
   {
     isZoomAutomatic = bSet;
     for (TWireProjPad* pPlane : fPlanes)
@@ -374,8 +371,7 @@ namespace evd {
   } // TWQProjectionView::SetAutomaticZoomMode()
 
   //......................................................................
-  void
-  TWQProjectionView::Draw(const char* opt)
+  void TWQProjectionView::Draw(const char* opt)
   {
     mf::LogDebug("TWQProjectionView") << "Starting to draw";
 
@@ -496,16 +492,14 @@ namespace evd {
   //......................................................................
 
   //......................................................................
-  void
-  TWQProjectionView::SetTestFlag(int number)
+  void TWQProjectionView::SetTestFlag(int number)
   {
     art::ServiceHandle<evd::InfoTransfer> infot;
     infot->SetTestFlag(number);
   }
 
   //......................................................................
-  void
-  TWQProjectionView::PrintCharge()
+  void TWQProjectionView::PrintCharge()
   {
 
     art::ServiceHandle<geo::Geometry const> geo;
@@ -531,8 +525,7 @@ namespace evd {
 
   //-------------------------------------------------------------------
   //......................................................................
-  void
-  TWQProjectionView::MouseDispatch(int plane, void* wqpv)
+  void TWQProjectionView::MouseDispatch(int plane, void* wqpv)
   {
     //initial check for a mouse click on a TBox object
     int event = gPad->GetEvent();
@@ -563,8 +556,7 @@ namespace evd {
   }
 
   //......................................................................
-  void
-  TWQProjectionView::ChangeWire(int plane)
+  void TWQProjectionView::ChangeWire(int plane)
   {
     //initial check for a mouse click on a TBox object
     int event = gPad->GetEvent();
@@ -587,8 +579,7 @@ namespace evd {
   }
 
   //......................................................................
-  void
-  TWQProjectionView::SelectPoint(int plane)
+  void TWQProjectionView::SelectPoint(int plane)
   {
     //initial check for a mouse click on a TBox object
     int event = gPad->GetEvent();
@@ -648,8 +639,7 @@ namespace evd {
   }
 
   //......................................................................
-  void
-  TWQProjectionView::ClearEndPoints()
+  void TWQProjectionView::ClearEndPoints()
   {
     for (size_t x = 0; x < fPlanes.size(); ++x) {
       fPlanes[x]->Pad()->cd();
@@ -665,9 +655,8 @@ namespace evd {
   }
 
   //......................................................................
-  double
-  TWQProjectionView::FindLineLength(detinfo::DetectorClocksData const& clockData,
-                                    detinfo::DetectorPropertiesData const& detProp)
+  double TWQProjectionView::FindLineLength(detinfo::DetectorClocksData const& clockData,
+                                           detinfo::DetectorPropertiesData const& detProp)
   {
     // if list is larger than or equal to two, can project to XYZ and extrapolate to third plane (if exists)
 
@@ -801,8 +790,7 @@ namespace evd {
   }
 
   //......................................................................
-  void
-  TWQProjectionView::FindEndPoint()
+  void TWQProjectionView::FindEndPoint()
   {
     art::Event const* pEvent = evdb::EventHolder::Instance()->GetEvent();
     if (not pEvent) {
@@ -924,8 +912,7 @@ namespace evd {
 
   //......................................................................
   // SaveSelection
-  void
-  TWQProjectionView::SaveSelection()
+  void TWQProjectionView::SaveSelection()
   {
     art::Event const* pEvent = evdb::EventHolder::Instance()->GetEvent();
     if (not pEvent) {
@@ -935,7 +922,8 @@ namespace evd {
 
     art::ServiceHandle<geo::Geometry const> geom;
     auto const clockData = art::ServiceHandle<detinfo::DetectorClocksService>()->DataFor(*pEvent);
-    auto const detProp = art::ServiceHandle<detinfo::DetectorPropertiesService>()->DataFor(*pEvent, clockData);
+    auto const detProp =
+      art::ServiceHandle<detinfo::DetectorPropertiesService>()->DataFor(*pEvent, clockData);
     util::GeometryUtilities const gser{*geom, clockData, detProp};
 
     art::ServiceHandle<evd::EvdLayoutOptions const> evdlayoutoptions;
@@ -997,8 +985,7 @@ namespace evd {
   }
 
   //.......................................................................
-  void
-  TWQProjectionView::ClearSelection()
+  void TWQProjectionView::ClearSelection()
   {
     art::ServiceHandle<evd::EvdLayoutOptions const> evdlayoutopt;
 
@@ -1015,8 +1002,7 @@ namespace evd {
   }
 
   //.......................................................................
-  void
-  TWQProjectionView::SetMouseZoomRegion(int plane)
+  void TWQProjectionView::SetMouseZoomRegion(int plane)
   {
     //*-*-*-*-*-*-*-*-*-*-*Create a new arrow in this pad*-*-*-*-*-*-*-*-*-*-*-*-*
     //*-*                  ==============================
@@ -1133,8 +1119,7 @@ namespace evd {
   }
 
   //......................................................................
-  int
-  TWQProjectionView::DrawLine(int plane, util::PxLine& pline)
+  int TWQProjectionView::DrawLine(int plane, util::PxLine& pline)
   {
     static Float_t w0 = -1, t0 = -1, w1 = -1, t1 = -1;
 
@@ -1209,8 +1194,7 @@ namespace evd {
   }
 
   //.......................................................................
-  void
-  TWQProjectionView::SetClusters(int plane)
+  void TWQProjectionView::SetClusters(int plane)
   {
 
     TObject* select = gPad->GetSelected();
@@ -1274,8 +1258,7 @@ namespace evd {
   }
 
   //......................................................................
-  void
-  TWQProjectionView::SelectHit(int plane)
+  void TWQProjectionView::SelectHit(int plane)
   {
     art::ServiceHandle<evd::RecoDrawingOptions const> recoopt;
     if (!recoopt->fUseHitSelector) return;
@@ -1304,8 +1287,7 @@ namespace evd {
 
   //......................................................................
   // if flag is true then zoom. If flag is false then unzoom.
-  void
-  TWQProjectionView::ZoomInterest(bool flag)
+  void TWQProjectionView::ZoomInterest(bool flag)
   {
     mf::LogVerbatim("TWQProjectionView") << "ZoomInterest called";
 
@@ -1350,8 +1332,7 @@ namespace evd {
   }
 
   //......................................................................
-  void
-  TWQProjectionView::SetUpSideBar()
+  void TWQProjectionView::SetUpSideBar()
   {
     SetUpZoomButtons();
     SetUpPositionFind();
@@ -1361,8 +1342,7 @@ namespace evd {
   }
 
   //......................................................................
-  void
-  TWQProjectionView::SetZoomInterest()
+  void TWQProjectionView::SetZoomInterest()
   {
     art::ServiceHandle<evd::EvdLayoutOptions> evdlayoutopt;
     evdlayoutopt->fAutoZoomInterest = fToggleAutoZoom->GetState();
@@ -1370,32 +1350,28 @@ namespace evd {
   }
 
   //......................................................................
-  void
-  TWQProjectionView::SetZoomFromView()
+  void TWQProjectionView::SetZoomFromView()
   {
     for (TWireProjPad* pPlane : fPlanes)
       pPlane->SetZoomFromView();
   }
 
   //......................................................................
-  void
-  TWQProjectionView::SetClusterInterest()
+  void TWQProjectionView::SetClusterInterest()
   {
     art::ServiceHandle<evd::EvdLayoutOptions> evdlayoutopt;
     evdlayoutopt->fMakeClusters = fToggleClusters->GetState();
   }
 
   //......................................................................
-  void
-  TWQProjectionView::ToggleEndPointMarkers()
+  void TWQProjectionView::ToggleEndPointMarkers()
   {
     art::ServiceHandle<evd::EvdLayoutOptions> evdlayoutopt;
     evdlayoutopt->fShowEndPointMarkers = fToggleShowMarkers->GetState();
   }
 
   //......................................................................
-  void
-  TWQProjectionView::ForceRedraw()
+  void TWQProjectionView::ForceRedraw()
   {
     MF_LOG_DEBUG("TWQProjectionView") << "Explicit request for redrawing";
 
@@ -1406,8 +1382,7 @@ namespace evd {
   } // TWQProjectionView::ForceRedraw()
 
   //......................................................................
-  void
-  TWQProjectionView::SetUpZoomButtons()
+  void TWQProjectionView::SetUpZoomButtons()
   {
     // enter zoom buttons
     art::ServiceHandle<evd::EvdLayoutOptions const> evdlayoutopt;
@@ -1434,8 +1409,7 @@ namespace evd {
   }
 
   //......................................................................
-  void
-  TWQProjectionView::SetUpClusterButtons()
+  void TWQProjectionView::SetUpClusterButtons()
   {
     art::ServiceHandle<evd::EvdLayoutOptions const> evdlayoutopt;
     if (!evdlayoutopt->fShowClusterSection) return;
@@ -1502,8 +1476,7 @@ namespace evd {
   }
 
   //......................................................................
-  void
-  TWQProjectionView::SetUpDrawingButtons()
+  void TWQProjectionView::SetUpDrawingButtons()
   {
     fRedraw = new TGTextButton(fVFrame, "&Redraw", 120);
     fRedraw->Connect("Clicked()", "evd::TWQProjectionView", this, "ForceRedraw()");
@@ -1512,14 +1485,12 @@ namespace evd {
   } // SetUpDrawingButtons()
 
   //......................................................................
-  std::string
-  TWQProjectionView::TotalElementsString(unsigned int NElements)
+  std::string TWQProjectionView::TotalElementsString(unsigned int NElements)
   {
     return "(" + std::to_string(NElements) + " total)";
   }
 
-  void
-  TWQProjectionView::SetUpTPCselection()
+  void TWQProjectionView::SetUpTPCselection()
   {
     geo::GeometryCore const& geom = *(art::ServiceHandle<geo::Geometry const>());
     art::ServiceHandle<evd::RawDrawingOptions const> rawOpt;
@@ -1624,8 +1595,7 @@ namespace evd {
   } // TWQProjectionView::SetUpTPCselection()
 
   //----------------------------------------------------------------------------
-  void
-  TWQProjectionView::SelectTPC()
+  void TWQProjectionView::SelectTPC()
   {
     /*
      * This function takes care of the input in the cryostat and TPC fields.
@@ -1718,8 +1688,7 @@ namespace evd {
   } // TWQProjectionView::SelectTPC()
 
   //----------------------------------------------------------------------------
-  void
-  TWQProjectionView::RadioButtonsDispatch(int parameter)
+  void TWQProjectionView::RadioButtonsDispatch(int parameter)
   {
     art::ServiceHandle<evd::EvdLayoutOptions> evdlayoutopt;
     if (parameter == 0) {
@@ -1733,8 +1702,7 @@ namespace evd {
   }
 
   //......................................................................
-  void
-  TWQProjectionView::SetUpPositionFind()
+  void TWQProjectionView::SetUpPositionFind()
   {
     // enter zoom buttons
     art::ServiceHandle<evd::EvdLayoutOptions const> evdlayoutopt;
@@ -1769,8 +1737,7 @@ namespace evd {
   /////////////////////////////////////////
   //  Go back one step in zoom
 
-  void
-  TWQProjectionView::ZoomBack()
+  void TWQProjectionView::ZoomBack()
   {
     if (fPrevZoomOpt.size() > 0) {
       ZoomOptions ThePrevZoomOpt = fPrevZoomOpt.at(fPrevZoomOpt.size() - 1);
@@ -1802,13 +1769,12 @@ namespace evd {
   }
 
   //------------------------------------
-  void
-  TWQProjectionView::SetZoom(int plane,
-                             int wirelow,
-                             int wirehi,
-                             int timelow,
-                             int timehi,
-                             bool StoreZoom)
+  void TWQProjectionView::SetZoom(int plane,
+                                  int wirelow,
+                                  int wirehi,
+                                  int timelow,
+                                  int timehi,
+                                  bool StoreZoom)
   {
 
     if (StoreZoom) {
@@ -1854,8 +1820,7 @@ namespace evd {
   }
 
   //-----------------------------------------------------------------
-  void
-  TWQProjectionView::SetPlaneWire()
+  void TWQProjectionView::SetPlaneWire()
   {
     TVirtualPad* ori = gPad;
 
@@ -1879,8 +1844,7 @@ namespace evd {
   }
 
   //-----------------------------------------------------------------
-  void
-  TWQProjectionView::SetPlane()
+  void TWQProjectionView::SetPlane()
   {
     kPlane = (unsigned int)fPlaneEntry->GetNumberEntry()->GetNumber();
 
@@ -1888,8 +1852,7 @@ namespace evd {
   }
 
   //-----------------------------------------------------------------
-  void
-  TWQProjectionView::SetWire()
+  void TWQProjectionView::SetWire()
   {
     art::ServiceHandle<geo::Geometry const> geo;
     kWire = (geo->Nwires(kPlane) - 1 > (unsigned int)fWireEntry->GetNumberEntry()->GetNumber()) ?
@@ -1900,15 +1863,13 @@ namespace evd {
   }
 
   //-----------------------------------------------------------------
-  void
-  TWQProjectionView::SetDistance()
+  void TWQProjectionView::SetDistance()
   {
     kDistance = (double)fDistance->GetNumberEntry()->GetNumber();
   }
 
   //-----------------------------------------------------------------
-  void
-  TWQProjectionView::SetThreshold()
+  void TWQProjectionView::SetThreshold()
   {
     double threshold = fThresEntry->GetNumberEntry()->GetNumber();
 
@@ -1931,8 +1892,7 @@ namespace evd {
   }
 
   //-----------------------------------------------------------------
-  void
-  TWQProjectionView::SetGreyscale()
+  void TWQProjectionView::SetGreyscale()
   {
     art::ServiceHandle<evd::ColorDrawingOptions> cst;
 
@@ -1954,8 +1914,7 @@ namespace evd {
   }
 
   //-----------------------------------------------------------------
-  void
-  TWQProjectionView::SetRawCalib()
+  void TWQProjectionView::SetRawCalib()
   {
     art::ServiceHandle<evd::RawDrawingOptions> rawopt;
 
@@ -2000,8 +1959,7 @@ namespace evd {
   }
 
   //-----------------------------------------------------------------
-  void
-  TWQProjectionView::SetMCInfo()
+  void TWQProjectionView::SetMCInfo()
   {
     art::ServiceHandle<evd::SimulationDrawingOptions> sdo;
 
@@ -2026,8 +1984,7 @@ namespace evd {
   }
 
   //-----------------------------------------------------------------
-  bool
-  TWQProjectionView::OnNewEvent()
+  bool TWQProjectionView::OnNewEvent()
   {
 
     // first check if it's new...

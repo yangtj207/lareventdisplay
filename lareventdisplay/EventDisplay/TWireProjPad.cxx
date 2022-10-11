@@ -39,8 +39,7 @@
 namespace {
 
   template <typename Stream>
-  void
-  DumpPad(Stream&& log, TVirtualPad* pPad)
+  void DumpPad(Stream&& log, TVirtualPad* pPad)
   {
     if (!pPad) {
       log << "pad not available";
@@ -63,8 +62,9 @@ namespace {
 
   } // DumpPad()
 
-  [[maybe_unused]] void
-  DumpPadsInCanvas(TVirtualPad* pPad, std::string caller, std::string msg = "")
+  [[maybe_unused]] void DumpPadsInCanvas(TVirtualPad* pPad,
+                                         std::string caller,
+                                         std::string msg = "")
   {
     mf::LogDebug log(caller);
     if (!msg.empty()) log << msg << ": ";
@@ -208,8 +208,7 @@ namespace evd {
   }
 
   //......................................................................
-  void
-  TWireProjPad::Draw(const char* opt)
+  void TWireProjPad::Draw(const char* opt)
   {
     // DumpPadsInCanvas(fPad, "TWireProjPad", "Draw()");
     MF_LOG_DEBUG("TWireProjPad") << "Started to draw plane " << fPlane;
@@ -294,8 +293,7 @@ namespace evd {
   }
 
   //......................................................................
-  void
-  TWireProjPad::ClearHitList()
+  void TWireProjPad::ClearHitList()
   {
     art::ServiceHandle<evd::RecoDrawingOptions const> recoOpt;
     if (recoOpt->fUseHitSelector) {
@@ -307,8 +305,7 @@ namespace evd {
   //......................................................................
   // the override parameter is needed to unzoom to full range when the fAutoZoomInterest is on.
 
-  void
-  TWireProjPad::ShowFull(int override)
+  void TWireProjPad::ShowFull(int override)
   {
     // x values are wire numbers, y values are ticks of the clock
     int xmin = fXLo;
@@ -333,8 +330,7 @@ namespace evd {
   }
 
   //......................................................................
-  void
-  TWireProjPad::GetWireRange(int* i1, int* i2) const
+  void TWireProjPad::GetWireRange(int* i1, int* i2) const
   {
     if (fOri < 1) {
       *i1 = fHisto->GetXaxis()->GetFirst();
@@ -349,8 +345,7 @@ namespace evd {
   //......................................................................
   // Set the X axis range only
   //
-  void
-  TWireProjPad::SetWireRange(int i1, int i2)
+  void TWireProjPad::SetWireRange(int i1, int i2)
   {
     if (fOri < 1) { fHisto->GetXaxis()->SetRange(i1, i2); }
     else {
@@ -363,8 +358,7 @@ namespace evd {
   //......................................................................
   // Set the visible range of the wire / time view
   //
-  void
-  TWireProjPad::SetZoomRange(int i1, int i2, int y1, int y2)
+  void TWireProjPad::SetZoomRange(int i1, int i2, int y1, int y2)
   {
     MF_LOG_DEBUG("TWireProjPad") << "SetZoomRange(" << i1 << ", " << i2 << ", " << y1 << ", " << y2
                                  << ") on plane #" << fPlane;
@@ -380,8 +374,7 @@ namespace evd {
   //......................................................................
   // Set the visible range of the wire / time view from the view
   //
-  void
-  TWireProjPad::SetZoomFromView()
+  void TWireProjPad::SetZoomFromView()
   {
     TAxis const& xaxis = *(fHisto->GetXaxis());
     fCurrentZoom[0] = xaxis.GetBinLowEdge(xaxis.GetFirst());
@@ -393,14 +386,13 @@ namespace evd {
                                  << fCurrentZoom[3] << ") for plane #" << fPlane;
   } // TWireProjPad::SetZoomFromView()
   //......................................................................
-  void
-  TWireProjPad::SaveHitList(double i1,
-                            double i2,
-                            double y1,
-                            double y2,
-                            double distance,
-                            const char* zoom_opt,
-                            bool good_plane)
+  void TWireProjPad::SaveHitList(double i1,
+                                 double i2,
+                                 double y1,
+                                 double y2,
+                                 double distance,
+                                 const char* zoom_opt,
+                                 bool good_plane)
   {
     const art::Event* evtPtr = evdb::EventHolder::Instance()->GetEvent();
     if (evtPtr) {
@@ -416,8 +408,7 @@ namespace evd {
   /////////////////////////////////////////////////
   // Pass the seed list onwards to InfoTransfer
   //
-  double
-  TWireProjPad::SaveSeedList(std::vector<util::PxLine> seedlines, double distance)
+  double TWireProjPad::SaveSeedList(std::vector<util::PxLine> seedlines, double distance)
   {
     double KineticEnergy = util::kBogusD;
     const art::Event* evt = evdb::EventHolder::Instance()->GetEvent();
@@ -430,8 +421,7 @@ namespace evd {
   }
 
   //......................................................................
-  void
-  TWireProjPad::SelectOneHit(double x, double y, const char* zoom_opt)
+  void TWireProjPad::SelectOneHit(double x, double y, const char* zoom_opt)
   {
 
     const art::Event* evt = evdb::EventHolder::Instance()->GetEvent();
@@ -445,8 +435,7 @@ namespace evd {
   }
 
   //......................................................................
-  void
-  TWireProjPad::ClearandUpdatePad()
+  void TWireProjPad::ClearandUpdatePad()
   {
     fPad->Clear();
     this->UpdatePad();
@@ -455,8 +444,7 @@ namespace evd {
   }
 
   //......................................................................
-  void
-  TWireProjPad::UpdatePad()
+  void TWireProjPad::UpdatePad()
   {
     fPad->cd();
     fPad->Modified();
@@ -468,10 +456,9 @@ namespace evd {
   }
 
   //......................................................................
-  void
-  TWireProjPad::DrawLinesinView(std::vector<util::PxLine> lines,
-                                bool deleting,
-                                const char* zoom_opt)
+  void TWireProjPad::DrawLinesinView(std::vector<util::PxLine> lines,
+                                     bool deleting,
+                                     const char* zoom_opt)
   {
     fPad->cd();
     if (deleting) {

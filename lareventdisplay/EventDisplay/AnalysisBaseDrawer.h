@@ -7,12 +7,11 @@ namespace art {
   class Event;
 }
 
-namespace evdb{
-   class View2D;
+namespace evdb {
+  class View2D;
 }
 
-namespace trkf
-{
+namespace trkf {
   class BezierTrack;
   class HitPtrVec;
 }
@@ -26,24 +25,18 @@ namespace evd {
     ~AnalysisBaseDrawer();
 
   public:
+    void DrawDeDx(const art::Event& evt, evdb::View2D* view);
 
-    void DrawDeDx(const art::Event& evt,
-               evdb::View2D* view);
+    void DrawKineticEnergy(const art::Event& evt, evdb::View2D* view);
 
-    void DrawKineticEnergy(const art::Event& evt,
-                           evdb::View2D* view);
-
-    void CalorShower(const art::Event& evt,
-					     evdb::View2D* view   );
+    void CalorShower(const art::Event& evt, evdb::View2D* view);
 
     void CalorInteractive(const art::Event& evt,
-			  evdb::View2D* view,
-			  trkf::BezierTrack BTrack,
-			  trkf::HitPtrVec Hits );
-
+                          evdb::View2D* view,
+                          trkf::BezierTrack BTrack,
+                          trkf::HitPtrVec Hits);
 
   private:
-
   };
 }
 

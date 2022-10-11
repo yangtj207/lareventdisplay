@@ -15,28 +15,28 @@
 #include "canvas/Persistency/Common/FindManyP.h"
 #include "canvas/Persistency/Common/Ptr.h"
 
-namespace evdb { class View3D; }
+namespace evdb {
+  class View3D;
+}
 
 namespace recob {
   class Hit;
   class SpacePoint;
 }
 
-namespace evdb_tool
-{
-    class ISpacePoints3D
-    {
-    public:
-        virtual ~ISpacePoints3D() noexcept = default;
+namespace evdb_tool {
+  class ISpacePoints3D {
+  public:
+    virtual ~ISpacePoints3D() noexcept = default;
 
-        virtual void Draw(const std::vector<art::Ptr<recob::SpacePoint>>&,   // Space points
-                          evdb::View3D*,                                     // 3D display
-                          int = 1,                                           // Color
-                          int = 1,                                           // Marker
-                          float = 1.,                                        // Size
-                          const art::FindManyP<recob::Hit>* = nullptr        // pointer
-                         ) const = 0;
-    };
+    virtual void Draw(const std::vector<art::Ptr<recob::SpacePoint>>&, // Space points
+                      evdb::View3D*,                                   // 3D display
+                      int = 1,                                         // Color
+                      int = 1,                                         // Marker
+                      float = 1.,                                      // Size
+                      const art::FindManyP<recob::Hit>* = nullptr      // pointer
+                      ) const = 0;
+  };
 }
 
 #endif

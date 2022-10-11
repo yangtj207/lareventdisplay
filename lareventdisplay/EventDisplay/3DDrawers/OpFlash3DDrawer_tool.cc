@@ -46,8 +46,7 @@ namespace evdb_tool {
   // Constructor.
   OpFlash3DDrawer::OpFlash3DDrawer(const fhicl::ParameterSet& pset) {}
 
-  void
-  OpFlash3DDrawer::Draw(const art::Event& event, evdb::View3D* view) const
+  void OpFlash3DDrawer::Draw(const art::Event& event, evdb::View3D* view) const
   {
     art::ServiceHandle<evd::RecoDrawingOptions> recoOpt;
 
@@ -209,13 +208,12 @@ namespace evdb_tool {
     return;
   }
 
-  void
-  OpFlash3DDrawer::DrawRectangularBox(evdb::View3D* view,
-                                      const Eigen::Vector3f& coordsLo,
-                                      const Eigen::Vector3f& coordsHi,
-                                      int color,
-                                      int width,
-                                      int style) const
+  void OpFlash3DDrawer::DrawRectangularBox(evdb::View3D* view,
+                                           const Eigen::Vector3f& coordsLo,
+                                           const Eigen::Vector3f& coordsHi,
+                                           int color,
+                                           int width,
+                                           int style) const
   {
     TPolyLine3D& top = view->AddPolyLine3D(5, color, width, style);
     top.SetPoint(0, coordsLo[0], coordsHi[1], coordsLo[2]);

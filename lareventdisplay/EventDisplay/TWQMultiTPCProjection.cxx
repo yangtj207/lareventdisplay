@@ -337,8 +337,7 @@ namespace evd {
   }
 
   //......................................................................
-  void
-  TWQMultiTPCProjectionView::DrawPads(const char* /*opt*/)
+  void TWQMultiTPCProjectionView::DrawPads(const char* /*opt*/)
   {
     for (unsigned int i = 0; i < fPlanes.size(); ++i) {
       fPlanes[i]->Draw();
@@ -352,8 +351,7 @@ namespace evd {
     }
   }
   //......................................................................
-  void
-  TWQMultiTPCProjectionView::Draw(const char* opt)
+  void TWQMultiTPCProjectionView::Draw(const char* opt)
   {
     art::ServiceHandle<geo::Geometry const> geo;
 
@@ -440,8 +438,7 @@ namespace evd {
   //   }
   //......................................................................
   //......................................................................
-  void
-  TWQMultiTPCProjectionView::PrintCharge()
+  void TWQMultiTPCProjectionView::PrintCharge()
   {
 
     art::ServiceHandle<geo::Geometry const> geo;
@@ -468,8 +465,7 @@ namespace evd {
 
   //-------------------------------------------------------------------
   //......................................................................
-  void
-  TWQMultiTPCProjectionView::MouseDispatch(int plane, void* wqpv)
+  void TWQMultiTPCProjectionView::MouseDispatch(int plane, void* wqpv)
   {
     //initial check for a mouse click on a TBox object
     int event = gPad->GetEvent();
@@ -497,8 +493,7 @@ namespace evd {
   }
 
   //......................................................................
-  void
-  TWQMultiTPCProjectionView::ChangeWire(int plane)
+  void TWQMultiTPCProjectionView::ChangeWire(int plane)
   {
     //initial check for a mouse click on a TBox object
     int event = gPad->GetEvent();
@@ -521,8 +516,7 @@ namespace evd {
   }
 
   //......................................................................
-  void
-  TWQMultiTPCProjectionView::SelectPoint(int plane)
+  void TWQMultiTPCProjectionView::SelectPoint(int plane)
   {
     //initial check for a mouse click on a TBox object
     int event = gPad->GetEvent();
@@ -582,8 +576,7 @@ namespace evd {
   }
 
   //......................................................................
-  void
-  TWQMultiTPCProjectionView::ClearEndPoints()
+  void TWQMultiTPCProjectionView::ClearEndPoints()
   {
     for (size_t x = 0; x < fPlanes.size(); ++x) {
       fPlanes[x]->Pad()->cd();
@@ -599,9 +592,8 @@ namespace evd {
   }
 
   //......................................................................
-  double
-  TWQMultiTPCProjectionView::FindLineLength(detinfo::DetectorClocksData const& clockData,
-                                            detinfo::DetectorPropertiesData const& detProp)
+  double TWQMultiTPCProjectionView::FindLineLength(detinfo::DetectorClocksData const& clockData,
+                                                   detinfo::DetectorPropertiesData const& detProp)
   {
     // if list is larger than or equal to two, can project to XYZ and extrapolate to third plane (if exists)
 
@@ -735,8 +727,7 @@ namespace evd {
   }
 
   //......................................................................
-  void
-  TWQMultiTPCProjectionView::FindEndPoint()
+  void TWQMultiTPCProjectionView::FindEndPoint()
   {
     art::Event const* pEvent = evdb::EventHolder::Instance()->GetEvent();
     if (not pEvent) {
@@ -745,7 +736,8 @@ namespace evd {
     }
 
     auto const clockData = art::ServiceHandle<detinfo::DetectorClocksService>()->DataFor(*pEvent);
-    auto const detProp = art::ServiceHandle<detinfo::DetectorPropertiesService>()->DataFor(*pEvent, clockData);
+    auto const detProp =
+      art::ServiceHandle<detinfo::DetectorPropertiesService>()->DataFor(*pEvent, clockData);
 
     // if list is larger than or equal to two, can project to XYZ and extrapolate to third plane (if exists)
 
@@ -866,8 +858,7 @@ namespace evd {
   }
 
   //.......................................................................
-  void
-  TWQMultiTPCProjectionView::SetMouseZoomRegion(int plane)
+  void TWQMultiTPCProjectionView::SetMouseZoomRegion(int plane)
   {
     //*-*-*-*-*-*-*-*-*-*-*Create a new arrow in this pad*-*-*-*-*-*-*-*-*-*-*-*-*
     //*-*                  ==============================
@@ -989,8 +980,7 @@ namespace evd {
 
   //......................................................................
   // if flag is true then zoom. If flag is false then unzoom.
-  void
-  TWQMultiTPCProjectionView::ZoomInterest(bool flag)
+  void TWQMultiTPCProjectionView::ZoomInterest(bool flag)
   {
     mf::LogVerbatim("TWQMultiTPCProjectionView") << "ZoomInterest called";
 
@@ -1035,32 +1025,28 @@ namespace evd {
   }
 
   //......................................................................
-  void
-  TWQMultiTPCProjectionView::SetUpSideBar()
+  void TWQMultiTPCProjectionView::SetUpSideBar()
   {
     SetUpZoomButtons();
     SetUpPositionFind();
   }
 
   //......................................................................
-  void
-  TWQMultiTPCProjectionView::SetZoomInterest()
+  void TWQMultiTPCProjectionView::SetZoomInterest()
   {
     art::ServiceHandle<evd::EvdLayoutOptions> evdlayoutopt;
     evdlayoutopt->fAutoZoomInterest = fToggleAutoZoom->GetState();
   }
 
   //......................................................................
-  void
-  TWQMultiTPCProjectionView::ToggleEndPointMarkers()
+  void TWQMultiTPCProjectionView::ToggleEndPointMarkers()
   {
     art::ServiceHandle<evd::EvdLayoutOptions> evdlayoutopt;
     evdlayoutopt->fShowEndPointMarkers = fToggleShowMarkers->GetState();
   }
 
   //......................................................................
-  void
-  TWQMultiTPCProjectionView::SetUpZoomButtons()
+  void TWQMultiTPCProjectionView::SetUpZoomButtons()
   {
     // enter zoom buttons
     art::ServiceHandle<evd::EvdLayoutOptions const> evdlayoutopt;
@@ -1090,15 +1076,13 @@ namespace evd {
   }
 
   //----------------------------------------------------------------------------
-  void
-  TWQMultiTPCProjectionView::RadioButtonsDispatch(int parameter)
+  void TWQMultiTPCProjectionView::RadioButtonsDispatch(int parameter)
   {
     if (parameter == 1 || parameter == 2) { fToggleZoom->SetState(kButtonUp); }
   }
 
   //......................................................................
-  void
-  TWQMultiTPCProjectionView::SetUpPositionFind()
+  void TWQMultiTPCProjectionView::SetUpPositionFind()
   {
     // enter zoom buttons
     art::ServiceHandle<evd::EvdLayoutOptions const> evdlayoutopt;
@@ -1134,8 +1118,7 @@ namespace evd {
   /////////////////////////////////////////
   //  Go back one step in zoom
 
-  void
-  TWQMultiTPCProjectionView::ZoomBack()
+  void TWQMultiTPCProjectionView::ZoomBack()
   {
     if (fPrevZoomOpt.size() > 0) {
       ZoomOptionsMultiTPC ThePrevZoomOpt = fPrevZoomOpt.at(fPrevZoomOpt.size() - 1);
@@ -1167,13 +1150,12 @@ namespace evd {
   }
 
   //------------------------------------
-  void
-  TWQMultiTPCProjectionView::SetZoom(int plane,
-                                     int wirelow,
-                                     int wirehi,
-                                     int timelow,
-                                     int timehi,
-                                     bool StoreZoom)
+  void TWQMultiTPCProjectionView::SetZoom(int plane,
+                                          int wirelow,
+                                          int wirehi,
+                                          int timelow,
+                                          int timehi,
+                                          bool StoreZoom)
   {
 
     if (StoreZoom) {
@@ -1221,8 +1203,7 @@ namespace evd {
   }
 
   //-----------------------------------------------------------------
-  void
-  TWQMultiTPCProjectionView::SetPlaneWire()
+  void TWQMultiTPCProjectionView::SetPlaneWire()
   {
     TVirtualPad* ori = gPad;
 
@@ -1246,8 +1227,7 @@ namespace evd {
   }
 
   //-----------------------------------------------------------------
-  void
-  TWQMultiTPCProjectionView::SetPlane()
+  void TWQMultiTPCProjectionView::SetPlane()
   {
     kPlane = (unsigned int)fPlaneEntry->GetNumberEntry()->GetNumber();
 
@@ -1255,8 +1235,7 @@ namespace evd {
   }
 
   //-----------------------------------------------------------------
-  void
-  TWQMultiTPCProjectionView::SetWire()
+  void TWQMultiTPCProjectionView::SetWire()
   {
     kWire = (unsigned int)fWireEntry->GetNumberEntry()->GetNumber();
 
@@ -1264,15 +1243,13 @@ namespace evd {
   }
 
   //-----------------------------------------------------------------
-  void
-  TWQMultiTPCProjectionView::SetDistance()
+  void TWQMultiTPCProjectionView::SetDistance()
   {
     kDistance = (double)fDistance->GetNumberEntry()->GetNumber();
   }
 
   //-----------------------------------------------------------------
-  void
-  TWQMultiTPCProjectionView::SetThreshold()
+  void TWQMultiTPCProjectionView::SetThreshold()
   {
     double threshold = fThresEntry->GetNumberEntry()->GetNumber();
 
@@ -1291,8 +1268,7 @@ namespace evd {
   }
 
   //-----------------------------------------------------------------
-  void
-  TWQMultiTPCProjectionView::SetGreyscale()
+  void TWQMultiTPCProjectionView::SetGreyscale()
   {
     art::ServiceHandle<evd::ColorDrawingOptions> cst;
 
@@ -1314,8 +1290,7 @@ namespace evd {
   }
 
   //-----------------------------------------------------------------
-  void
-  TWQMultiTPCProjectionView::SetRawCalib()
+  void TWQMultiTPCProjectionView::SetRawCalib()
   {
     art::ServiceHandle<evd::RawDrawingOptions> rawopt;
 
@@ -1360,8 +1335,7 @@ namespace evd {
   }
 
   //-----------------------------------------------------------------
-  void
-  TWQMultiTPCProjectionView::SetMCInfo()
+  void TWQMultiTPCProjectionView::SetMCInfo()
   {
     art::ServiceHandle<evd::SimulationDrawingOptions> sdo;
 

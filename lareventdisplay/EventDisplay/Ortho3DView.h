@@ -21,7 +21,6 @@ namespace evd {
   class Ortho3DView : public evdb::Canvas {
 
   public:
-
     // Constructor, destructor.
 
     Ortho3DView(TGMainFrame* mf);
@@ -30,11 +29,10 @@ namespace evd {
     // Required methods.
 
     const char* Description() const { return "Orthographic 3D Detector Display"; }
-    const char* PrintTag()    const { return "larortho3d";               }
-    void Draw(const char* opt="");
+    const char* PrintTag() const { return "larortho3d"; }
+    void Draw(const char* opt = "");
 
   private:
-
     // Attributes.
 
     // Graphics pads.
@@ -43,8 +41,8 @@ namespace evd {
 
     // Frames.
 
-    TGCompositeFrame* fMetaFrame;    ///< Frame holding root canvas and widget frame.
-    TGCompositeFrame* fWidgetFrame;  ///< Frame holding widgets.
+    TGCompositeFrame* fMetaFrame;   ///< Frame holding root canvas and widget frame.
+    TGCompositeFrame* fWidgetFrame; ///< Frame holding widgets.
     std::vector<TGCompositeFrame*> fWidgetSubFrames; // Frame holding widgets for one pad.
   };
 }

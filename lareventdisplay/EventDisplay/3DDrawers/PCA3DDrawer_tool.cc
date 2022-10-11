@@ -3,9 +3,13 @@
 /// \author T. Usher
 ////////////////////////////////////////////////////////////////////////
 
-namespace art { class Event; }
+namespace art {
+  class Event;
+}
 #include "art/Utilities/ToolMacros.h"
-namespace fhicl { class ParameterSet; }
+namespace fhicl {
+  class ParameterSet;
+}
 #include "lareventdisplay/EventDisplay/3DDrawers/I3DDrawer.h"
 namespace evdb {
   class View3D;
@@ -37,8 +41,7 @@ namespace evdb_tool {
 
   PCA3DDrawer::~PCA3DDrawer() {}
 
-  void
-  PCA3DDrawer::Draw(const art::Event& evt, evdb::View3D* view) const
+  void PCA3DDrawer::Draw(const art::Event& evt, evdb::View3D* view) const
   {
     /*
     art::ServiceHandle<evd::SimulationDrawingOptions const> drawOpt;

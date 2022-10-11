@@ -10,7 +10,9 @@
 #include <string>
 #include <vector>
 
-namespace art { class Event; }
+namespace art {
+  class Event;
+}
 #include "lareventdisplay/EventDisplay/OrthoProj.h"
 
 namespace evdb {

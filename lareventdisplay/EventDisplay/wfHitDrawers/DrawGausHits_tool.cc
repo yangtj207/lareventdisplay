@@ -58,8 +58,7 @@ namespace evdb_tool {
 
   DrawGausHits::~DrawGausHits() {}
 
-  void
-  DrawGausHits::configure(const fhicl::ParameterSet& pset)
+  void DrawGausHits::configure(const fhicl::ParameterSet& pset)
   {
     fNumPoints = pset.get<int>("NumPoints", 1000);
     fFloatBaseline = pset.get<bool>("FloatBaseline", false);
@@ -75,8 +74,7 @@ namespace evdb_tool {
     return;
   }
 
-  void
-  DrawGausHits::Draw(evdb::View2D& view2D, raw::ChannelID_t& channel) const
+  void DrawGausHits::Draw(evdb::View2D& view2D, raw::ChannelID_t& channel) const
   {
     art::ServiceHandle<evd::RecoDrawingOptions const> recoOpt;
 

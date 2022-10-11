@@ -11,8 +11,8 @@
 #include "TLatex.h"
 #include "TPad.h"
 #include "TPolyMarker.h"
-#include "TVirtualX.h"
 #include "TVirtualPadPainter.h"
+#include "TVirtualX.h"
 
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "cetlib_except/exception.h"
@@ -224,8 +224,7 @@ evd::Ortho3DPad::~Ortho3DPad()
 //......................................................................
 // Draw selected objects.
 
-void
-evd::Ortho3DPad::Draw(const char* /*opt*/)
+void evd::Ortho3DPad::Draw(const char* /*opt*/)
 {
   fPad->Clear();
   fView->Clear();
@@ -281,8 +280,7 @@ evd::Ortho3DPad::Draw(const char* /*opt*/)
 //......................................................................
 // Set zoom region.  Limits are specified in user coordinates.
 
-void
-evd::Ortho3DPad::SetZoom(double xlo, double ylo, double xhi, double yhi, bool update)
+void evd::Ortho3DPad::SetZoom(double xlo, double ylo, double xhi, double yhi, bool update)
 {
   fHisto->GetXaxis()->SetRangeUser(xlo, xhi);
   fHisto->GetYaxis()->SetRangeUser(ylo, yhi);
@@ -296,8 +294,7 @@ evd::Ortho3DPad::SetZoom(double xlo, double ylo, double xhi, double yhi, bool up
 //......................................................................
 // Set zoom region to full range.
 
-void
-evd::Ortho3DPad::UnZoom(bool update)
+void evd::Ortho3DPad::UnZoom(bool update)
 {
   fHisto->GetXaxis()->SetRangeUser(fXLo, fXHi);
   fHisto->GetYaxis()->SetRangeUser(fYLo, fYHi);
@@ -316,8 +313,7 @@ evd::Ortho3DPad::UnZoom(bool update)
 //......................................................................
 // Set the marker size (measured in pixels).
 
-void
-evd::Ortho3DPad::SetMarkerSize(double size, bool update)
+void evd::Ortho3DPad::SetMarkerSize(double size, bool update)
 {
   // Update marker size.
 
@@ -356,8 +352,7 @@ evd::Ortho3DPad::SetMarkerSize(double size, bool update)
 // via the gui.  It also sets the number in the widget if it is changed
 // not from the gui.
 
-void
-evd::Ortho3DPad::SetMSizeEntry(TGNumberEntry* p)
+void evd::Ortho3DPad::SetMSizeEntry(TGNumberEntry* p)
 {
   fMSizeEntry = p;
   if (fMSizeEntry) fMSizeEntry->SetNumber(4. * fMSize);
@@ -367,8 +362,7 @@ evd::Ortho3DPad::SetMSizeEntry(TGNumberEntry* p)
 // Slot method for marker size number entry widget.
 // This method is called when the user changes the marker size via the gui.
 
-void
-evd::Ortho3DPad::SetMSize()
+void evd::Ortho3DPad::SetMSize()
 {
 
   // Get marker size from number entry widget.
@@ -386,8 +380,7 @@ evd::Ortho3DPad::SetMSize()
 // Static mouse event handler.
 // This method is called by the gui for mouse events in the graphics pad.
 
-void
-evd::Ortho3DPad::MouseEvent(evd::Ortho3DPad* p)
+void evd::Ortho3DPad::MouseEvent(evd::Ortho3DPad* p)
 {
   TObject* select = gPad->GetSelected();
   if (!select) return;
@@ -405,8 +398,7 @@ evd::Ortho3DPad::MouseEvent(evd::Ortho3DPad* p)
 //......................................................................
 // Mouse event handler (called from static handler).
 
-void
-evd::Ortho3DPad::MouseEvent()
+void evd::Ortho3DPad::MouseEvent()
 {
   // Get event type and location.
 

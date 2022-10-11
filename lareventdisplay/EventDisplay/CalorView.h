@@ -20,7 +20,6 @@ namespace evd {
   class CalorView : public evdb::Canvas {
 
   public:
-
     RQ_OBJECT("evd::CalorView")
 
   public:
@@ -30,15 +29,13 @@ namespace evd {
 
     // Required methods.
     const char* Description() const { return "Calorimetric PID Display"; }
-    const char* PrintTag()    const { return "larcalor";               }
-    void Draw(const char* opt="");
+    const char* PrintTag() const { return "larcalor"; }
+    void Draw(const char* opt = "");
     void CloseWindow();
 
   private:
-
     CalorPad* fDeDxPad; ///< Graphics pad for dEdx vs. Res. range
-    CalorPad* fKEPad;    ///< Graphics pad for KE vs. Total range
-
+    CalorPad* fKEPad;   ///< Graphics pad for KE vs. Total range
   };
 }
 

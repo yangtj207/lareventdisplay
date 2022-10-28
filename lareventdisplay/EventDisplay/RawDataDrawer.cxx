@@ -1247,7 +1247,8 @@ namespace evd {
     minw = (minw - 30 < 0) ? 0 : minw - 30;
     mint = (mint - 10 < 0) ? 0 : mint - 10;
 
-    maxw = (maxw + 10 > (int)geo->Nwires(plane)) ? geo->Nwires(plane) : maxw + 10;
+    geo::PlaneID const planeid(0, 0, plane);
+    maxw = (maxw + 10 > (int)geo->Nwires(planeid)) ? geo->Nwires(planeid) : maxw + 10;
     maxt = (maxt + 10 > TotalClockTicks()) ? TotalClockTicks() : maxt + 10;
 
     return 0;

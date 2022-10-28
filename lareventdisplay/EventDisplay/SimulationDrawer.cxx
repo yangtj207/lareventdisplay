@@ -65,38 +65,27 @@ namespace evd {
 
     // This is looking to find the range of the complete active volume... this may not be the
     // best way to do this...
-    for (size_t cryoIdx = 0; cryoIdx < geom->Ncryostats(); cryoIdx++) {
-      const geo::CryostatGeo& cryoGeo = geom->Cryostat(cryoIdx);
+    for (auto const& tpc : geom->Iterate<geo::TPCGeo>()) {
+      auto const tpc_center = tpc.Center();
+      auto const active_volume_center = tpc.GetActiveVolumeCenter();
+      mf::LogDebug("SimulationDrawer") << tpc.ID() << ", TPC center: " << tpc_center.X() << ", "
+                                       << tpc_center.Y() << ", " << tpc_center.Z() << std::endl;
+      mf::LogDebug("SimulationDrawer")
+        << "         TPC Active center: " << active_volume_center.X() << ", "
+        << active_volume_center.Y() << ", " << active_volume_center.Z()
+        << ", H/W/L: " << tpc.ActiveHalfHeight() << "/" << tpc.ActiveHalfWidth() << "/"
+        << tpc.ActiveLength() << std::endl;
 
-      for (size_t tpcIdx = 0; tpcIdx < cryoGeo.NTPC(); tpcIdx++) {
-        const geo::TPCGeo& tpc = cryoGeo.TPC(tpcIdx);
+      if (minx > tpc_center.X() - tpc.HalfWidth()) minx = tpc_center.X() - tpc.HalfWidth();
+      if (maxx < tpc_center.X() + tpc.HalfWidth()) maxx = tpc_center.X() + tpc.HalfWidth();
+      if (miny > tpc_center.Y() - tpc.HalfHeight()) miny = tpc_center.Y() - tpc.HalfHeight();
+      if (maxy < tpc_center.Y() + tpc.HalfHeight()) maxy = tpc_center.Y() + tpc.HalfHeight();
+      if (minz > tpc_center.Z() - tpc.Length() / 2.) minz = tpc_center.Z() - tpc.Length() / 2.;
+      if (maxz < tpc_center.Z() + tpc.Length() / 2.) maxz = tpc_center.Z() + tpc.Length() / 2.;
 
-        mf::LogDebug("SimulationDrawer")
-          << "Cryo/TPC idx: " << cryoIdx << "/" << tpcIdx << ", TPC center: " << tpc.GetCenter()[0]
-          << ", " << tpc.GetCenter()[1] << ", " << tpc.GetCenter()[2] << std::endl;
-        mf::LogDebug("SimulationDrawer")
-          << "         TPC Active center: " << tpc.GetActiveVolumeCenter()[0] << ", "
-          << tpc.GetActiveVolumeCenter()[1] << ", " << tpc.GetActiveVolumeCenter()[2]
-          << ", H/W/L: " << tpc.ActiveHalfHeight() << "/" << tpc.ActiveHalfWidth() << "/"
-          << tpc.ActiveLength() << std::endl;
-
-        if (minx > tpc.GetCenter()[0] - tpc.HalfWidth())
-          minx = tpc.GetCenter()[0] - tpc.HalfWidth();
-        if (maxx < tpc.GetCenter()[0] + tpc.HalfWidth())
-          maxx = tpc.GetCenter()[0] + tpc.HalfWidth();
-        if (miny > tpc.GetCenter()[1] - tpc.HalfHeight())
-          miny = tpc.GetCenter()[1] - tpc.HalfHeight();
-        if (maxy < tpc.GetCenter()[1] + tpc.HalfHeight())
-          maxy = tpc.GetCenter()[1] + tpc.HalfHeight();
-        if (minz > tpc.GetCenter()[2] - tpc.Length() / 2.)
-          minz = tpc.GetCenter()[2] - tpc.Length() / 2.;
-        if (maxz < tpc.GetCenter()[2] + tpc.Length() / 2.)
-          maxz = tpc.GetCenter()[2] + tpc.Length() / 2.;
-
-        mf::LogDebug("SimulationDrawer")
-          << "        minx/maxx: " << minx << "/" << maxx << ", miny/maxy: " << miny << "/" << maxy
-          << ", minz/miny: " << minz << "/" << maxz << std::endl;
-      }
+      mf::LogDebug("SimulationDrawer")
+        << "        minx/maxx: " << minx << "/" << maxx << ", miny/maxy: " << miny << "/" << maxy
+        << ", minz/miny: " << minz << "/" << maxz << std::endl;
     }
   }
 
@@ -188,12 +177,6 @@ namespace evd {
                     << std::setw(7) << int(1000 * p.P()) << std::setw(7) << KE << std::setw(7)
                     << p.Mother() << " " << p.Process() << "\n";
         }
-        /*
-                std::cout << Style::LatexName(p.PdgCode())
-                  << "\t\t" << p.E() << " GeV"
-                  << "\t"   << "(" << p.P() << " GeV/c)"
-                  << std::endl;
-*/
       } // loop on j particles in list
     }
     std::cout << "Note: Momentum, P, and kinetic energy, T, in MeV/c\n";

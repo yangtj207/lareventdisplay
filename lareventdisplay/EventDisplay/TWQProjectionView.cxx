@@ -123,7 +123,8 @@ namespace evd {
                                     geo->Nplanes() - 1);
 
     kPlane = 0;
-    kWire = TMath::Nint(0.5 * geo->Nwires(0));
+    constexpr geo::TPCID tpcid{0, 0};
+    kWire = TMath::Nint(0.5 * geo->Nwires(geo::PlaneID{tpcid, 0}));
     kDistance = 1.5;
     fWireQ->SetPlaneWire(kPlane, kWire);
 
@@ -141,8 +142,9 @@ namespace evd {
 
     // wire number entry
     unsigned int maxwire = 0;
-    for (unsigned int ip = 0; ip < geo->Nplanes(); ip++)
-      maxwire = (geo->Nwires(ip) - 1 > maxwire) ? geo->Nwires(ip) - 1 : maxwire;
+    for (auto const& plane : geo->Iterate<geo::PlaneGeo>(tpcid)) {
+      maxwire = (plane.Nwires() - 1 > maxwire) ? plane.Nwires() - 1 : maxwire;
+    }
 
     fWireEntry = new TGNumberEntry(fFrame,
                                    0,
@@ -175,7 +177,7 @@ namespace evd {
                                     TGNumberFormat::kNEAAnyNumber,
                                     TGNumberFormat::kNELLimitMinMax,
                                     0,
-                                    geo->Nwires(0) - 1);
+                                    geo->Nwires(geo::PlaneID{tpcid, 0}) - 1);
     // Initial value
     art::ServiceHandle<evd::ColorDrawingOptions const> cst;
     art::ServiceHandle<evd::SimulationDrawingOptions> sdo;
@@ -664,8 +666,6 @@ namespace evd {
 
       double xyz_vertex_fit[3];
       double second_time;
-      double pos[3];
-      const double origin[3] = {0., 0., 0.};
       double xx0 = 0., yy0 = 0., zz0 = 0.;
       double xx1 = 0., yy1 = 0., zz1 = 0.;
       double length;
@@ -698,16 +698,17 @@ namespace evd {
         fXYZPosition->Update();
       }
 
+      constexpr geo::TPCID tpcid{0, 0};
       if (wires_cross) {
         TGText* tt = new TGText("wires cross");
         fXYZPosition->SetText(tt);
         fXYZPosition->Update();
         xyz_vertex_fit[1] = y;
         xyz_vertex_fit[2] = z;
-        geom->Plane(pline[0].plane).LocalToWorld(origin, pos);
-        xyz_vertex_fit[0] = (pline[0].t0 - trigger_offset(clockData)) * larv * ftimetick + pos[0];
-        geom->Plane(pline[1].plane).LocalToWorld(origin, pos);
-        second_time = (pline[1].t0 - trigger_offset(clockData)) * larv * ftimetick + pos[0];
+        auto pos = geom->Plane(geo::PlaneID(tpcid, pline[0].plane)).GetBoxCenter();
+        xyz_vertex_fit[0] = (pline[0].t0 - trigger_offset(clockData)) * larv * ftimetick + pos.X();
+        pos = geom->Plane(geo::PlaneID(tpcid, pline[1].plane)).GetBoxCenter();
+        second_time = (pline[1].t0 - trigger_offset(clockData)) * larv * ftimetick + pos.X();
 
         xx0 = (xyz_vertex_fit[0] + second_time) / 2;
         yy0 = y;
@@ -751,10 +752,10 @@ namespace evd {
         fXYZPosition->Update();
         xyz_vertex_fit[1] = y;
         xyz_vertex_fit[2] = z;
-        geom->Plane(pline[0].plane).LocalToWorld(origin, pos);
-        xyz_vertex_fit[0] = (pline[0].t1 - trigger_offset(clockData)) * larv * ftimetick + pos[0];
-        geom->Plane(pline[1].plane).LocalToWorld(origin, pos);
-        second_time = (pline[1].t1 - trigger_offset(clockData)) * larv * ftimetick + pos[0];
+        auto pos = geom->Plane(geo::PlaneID(tpcid, pline[0].plane)).GetBoxCenter();
+        xyz_vertex_fit[0] = (pline[0].t1 - trigger_offset(clockData)) * larv * ftimetick + pos.X();
+        pos = geom->Plane(geo::PlaneID(tpcid, pline[1].plane)).GetBoxCenter();
+        second_time = (pline[1].t1 - trigger_offset(clockData)) * larv * ftimetick + pos.X();
 
         xx1 = (xyz_vertex_fit[0] + second_time) / 2;
         yy1 = y;
@@ -878,11 +879,11 @@ namespace evd {
           }
         }
 
-        auto pos = geom->Plane(wplane).toWorldCoords(origin);
+        geo::PlaneID const planeID{rawOpt->fCryostat, rawOpt->fTPC, wplane};
+        auto pos = geom->Plane(planeID).toWorldCoords(origin);
         pos.SetY(xyz_vertex_fit[1]);
         pos.SetZ(xyz_vertex_fit[2]);
 
-        geo::PlaneID const planeID{rawOpt->fCryostat, rawOpt->fTPC, wplane};
         wirevertex = geom->NearestWireID(pos, planeID).Wire;
 
         double timestart = detProp.ConvertXToTicks(xyz_vertex_fit[0], planeID);
@@ -1314,8 +1315,9 @@ namespace evd {
         if (test != 0) continue;
       }
       else {
-        minw = -0.005 * (geo->Nwires(iplane) - 1);
-        maxw = 1.005 * (geo->Nwires(iplane) - 1);
+        auto const num_wires = geo->Nwires(geo::PlaneID(0, 0, iplane));
+        minw = -0.005 * (num_wires - 1);
+        maxw = 1.005 * (num_wires - 1);
         mint = -0.005 * fPlanes[iplane]->RawDataDraw()->TotalClockTicks();
         maxt = 1.01 * fPlanes[iplane]->RawDataDraw()->TotalClockTicks();
       }
@@ -1854,9 +1856,10 @@ namespace evd {
   void TWQProjectionView::SetWire()
   {
     art::ServiceHandle<geo::Geometry const> geo;
-    kWire = (geo->Nwires(kPlane) - 1 > (unsigned int)fWireEntry->GetNumberEntry()->GetNumber()) ?
+    auto const num_wires = geo->Nwires(geo::PlaneID(0, 0, kPlane));
+    kWire = (num_wires - 1 > (unsigned int)fWireEntry->GetNumberEntry()->GetNumber()) ?
               (unsigned int)fWireEntry->GetNumberEntry()->GetNumber() :
-              geo->Nwires(kPlane) - 1;
+              num_wires - 1;
 
     this->SetPlaneWire();
   }

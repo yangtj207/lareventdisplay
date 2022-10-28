@@ -91,17 +91,18 @@ namespace evd {
     fConvertedCharge.resize(0);
 
     // set the list of channels in this detector
-    for (size_t t = 0; t < geo->NTPC(); ++t) {
-      unsigned int nplanes = geo->Nplanes(t);
+    for (auto const& tpc : geo->Iterate<geo::TPCGeo>(geo::CryostatID{0})) {
+      unsigned int nplanes = tpc.Nplanes();
       fWireMin.resize(nplanes, -1);
       fWireMax.resize(nplanes, -1);
       fTimeMin.resize(nplanes, -1);
       fTimeMax.resize(nplanes, -1);
       fRawCharge.resize(nplanes, 0);
       fConvertedCharge.resize(nplanes, 0);
-      for (size_t p = 0; p < geo->Nplanes(t); ++p) {
+      for (auto const& plane : geo->Iterate<geo::PlaneGeo>(tpc.ID())) {
+        auto const p = plane.ID().Plane;
         fWireMin[p] = 0;
-        fWireMax[p] = geo->TPC(t).Plane(p).Nwires();
+        fWireMax[p] = plane.Nwires();
         fTimeMin[p] = 0;
         fTimeMax[p] = rawOptions->fTicks;
       } // end loop over planes
@@ -463,7 +464,8 @@ namespace evd {
 
     int fTicks = rawOpt->fTicks;
 
-    maxw = (maxw + 10 > (int)geo->Nwires(plane)) ? geo->Nwires(plane) : maxw + 10;
+    geo::PlaneID const planeid(0, 0, plane);
+    maxw = (maxw + 10 > (int)geo->Nwires(planeid)) ? geo->Nwires(planeid) : maxw + 10;
     maxt = (maxt + 10 > fTicks) ? fTicks : maxt + 10;
 
     return 0;
@@ -488,7 +490,8 @@ namespace evd {
     if (rawOpt->fDrawRawDataOrCalibWires < 1) return;
     if (recoOpt->fDraw2DEndPoints == 0) return;
 
-    geo::View_t gview = geo->TPC(rawOpt->fTPC).Plane(plane).View();
+    geo::PlaneID const planeid{0, rawOpt->fTPC, plane};
+    geo::View_t gview = geo->Plane(planeid).View();
 
     for (size_t imod = 0; imod < recoOpt->fEndPoint2DLabels.size(); ++imod) {
       art::InputTag const which = recoOpt->fEndPoint2DLabels[imod];
@@ -820,7 +823,8 @@ namespace evd {
     if (rawOpt->fDrawRawDataOrCalibWires < 1) return;
     if (recoOpt->fDrawClusters == 0) return;
 
-    geo::View_t gview = geo->TPC(rawOpt->fTPC).Plane(plane).View();
+    geo::PlaneID const planeid{0, rawOpt->fTPC, plane};
+    geo::View_t gview = geo->Plane(planeid).View();
 
     // if user sets "DrawClusters" to 2, draw the clusters differently:
     //    bool drawAsMarkers = (recoOpt->fDrawClusters == 1 ||
@@ -1384,15 +1388,13 @@ namespace evd {
 
     if (rawOpt->fDrawRawDataOrCalibWires < 1) return;
 
-    geo::View_t gview = geo->TPC(rawOpt->fTPC).Plane(plane).View();
+    geo::PlaneID const planeID{rawOpt->fCryostat, rawOpt->fTPC, plane};
+    geo::View_t gview = geo->Plane(planeID).View();
 
     // annoying for now, but have to have multiple copies of basically the
     // same code to draw prongs, showers and tracks so that we can use
     // the art::Assns to get the hits and clusters.
 
-    unsigned int cstat = rawOpt->fCryostat;
-    unsigned int tpc = rawOpt->fTPC;
-    geo::PlaneID planeID(cstat, tpc, plane);
     int tid = 0;
 
     if (recoOpt->fDrawTracks != 0) {
@@ -1426,8 +1428,8 @@ namespace evd {
             geo::Point_t trackPos(track.vals().at(t)->End().X(),
                                   track.vals().at(t)->End().Y(),
                                   track.vals().at(t)->End().Z());
-            double tick = 30 + detProp.ConvertXToTicks(trackPos.X(), plane, tpc, cstat);
-            double wire = geo->WireCoordinate(trackPos, geo::PlaneID(cstat, tpc, plane));
+            double tick = 30 + detProp.ConvertXToTicks(trackPos.X(), planeID);
+            double wire = geo->WireCoordinate(trackPos, planeID);
             tid =
               track.vals().at(t)->ID() &
               65535; //this is a hack for PMA track id which uses the 16th bit to identify shower-like track.;
@@ -1604,15 +1606,13 @@ namespace evd {
     art::ServiceHandle<evd::RawDrawingOptions const> rawOpt;
     art::ServiceHandle<geo::Geometry const> geo;
 
-    geo::View_t gview = geo->TPC(rawOpt->fTPC).Plane(plane).View();
+    geo::PlaneID const planeID{rawOpt->fCryostat, rawOpt->fTPC, plane};
+    geo::View_t gview = geo->Plane(planeID).View();
 
     // annoying for now, but have to have multiple copies of basically the
     // same code to draw prongs, showers and tracks so that we can use
     // the art::Assns to get the hits and clusters.
 
-    unsigned int cstat = rawOpt->fCryostat;
-    unsigned int tpc = rawOpt->fTPC;
-    geo::PlaneID planeID(cstat, tpc, plane);
     int tid = 0;
 
     for (size_t imod = 0; imod < recoOpt->fTrkVtxTrackLabels.size(); ++imod) {
@@ -1760,6 +1760,8 @@ namespace evd {
       first = false;
     }
 
+    geo::PlaneID const planeID{rawOpt->fCryostat, rawOpt->fTPC, plane};
+
     for (size_t imod = 0; imod < recoOpt->fVertexLabels.size(); ++imod) {
       art::InputTag const which = recoOpt->fVertexLabels[imod];
 
@@ -1768,17 +1770,15 @@ namespace evd {
 
       if (vertex.size() < 1) continue;
 
-      double local[3] = {0., 0., 0.};
-      double world[3] = {0., 0., 0.};
-      const geo::TPCGeo& tpc = geo->TPC(rawOpt->fTPC);
-      tpc.LocalToWorld(local, world);
+      const geo::TPCGeo& tpc = geo->TPC(planeID);
+      auto const world = tpc.GetCenter();
       double minxyz[3], maxxyz[3];
-      minxyz[0] = world[0] - geo->DetHalfWidth(rawOpt->fTPC, rawOpt->fCryostat);
-      maxxyz[0] = world[0] + geo->DetHalfWidth(rawOpt->fTPC, rawOpt->fCryostat);
-      minxyz[1] = world[1] - geo->DetHalfWidth(rawOpt->fTPC, rawOpt->fCryostat);
-      maxxyz[1] = world[1] + geo->DetHalfWidth(rawOpt->fTPC, rawOpt->fCryostat);
-      minxyz[2] = world[2] - geo->DetLength(rawOpt->fTPC, rawOpt->fCryostat) / 2;
-      maxxyz[2] = world[2] + geo->DetLength(rawOpt->fTPC, rawOpt->fCryostat) / 2;
+      minxyz[0] = world.X() - tpc.HalfWidth();
+      maxxyz[0] = world.X() + tpc.HalfWidth();
+      minxyz[1] = world.Y() - tpc.HalfWidth();
+      maxxyz[1] = world.Y() + tpc.HalfWidth();
+      minxyz[2] = world.Z() - tpc.Length() / 2;
+      maxxyz[2] = world.Z() + tpc.Length() / 2;
 
       for (size_t v = 0; v < vertex.size(); ++v) {
         // ensure the vertex is inside the current tpc
@@ -1791,9 +1791,8 @@ namespace evd {
         geo::Point_t localPos(xyz[0], xyz[1], xyz[2]);
 
         // BB: draw polymarker at the vertex position in this plane
-        double wire =
-          geo->WireCoordinate(localPos, geo::PlaneID(rawOpt->fCryostat, rawOpt->fTPC, plane));
-        double time = detProp.ConvertXToTicks(xyz[0], plane, rawOpt->fTPC, rawOpt->fCryostat);
+        double wire = geo->WireCoordinate(localPos, planeID);
+        double time = detProp.ConvertXToTicks(xyz[0], planeID);
         int color = evd::kColor[vertex[v]->ID() % evd::kNCOLS];
         TMarker& strt = view->AddMarker(wire, time, color, 24, 1.0);
         strt.SetMarkerColor(color);
@@ -1822,7 +1821,8 @@ namespace evd {
     if (rawOpt->fDrawRawDataOrCalibWires < 1) return;
 
     if (recoOpt->fDrawEvents != 0) {
-      geo::View_t gview = geo->TPC(rawOpt->fTPC).Plane(plane).View();
+      geo::PlaneID const planeID{rawOpt->fCryostat, rawOpt->fTPC, plane};
+      geo::View_t gview = geo->Plane(planeID).View();
 
       for (unsigned int imod = 0; imod < recoOpt->fEventLabels.size(); ++imod) {
         art::InputTag const which = recoOpt->fEventLabels[imod];
@@ -2971,18 +2971,15 @@ namespace evd {
     if (rawOpt->fDrawRawDataOrCalibWires < 1) return;
     if (recoOpt->fDrawOpFlashes == 0) return;
 
-    geo::PlaneID pid(rawOpt->fCryostat, rawOpt->fTPC, 0);
-
     double minx = 1e9;
     double maxx = -1e9;
-    for (size_t i = 0; i < geo->NTPC(); ++i) {
-      double local[3] = {0., 0., 0.};
-      double world[3] = {0., 0., 0.};
-      const geo::TPCGeo& tpc = geo->TPC(i);
-      tpc.LocalToWorld(local, world);
-      if (minx > world[0] - geo->DetHalfWidth(i)) minx = world[0] - geo->DetHalfWidth(i);
-      if (maxx < world[0] + geo->DetHalfWidth(i)) maxx = world[0] + geo->DetHalfWidth(i);
+    for (auto const& tpc : geo->Iterate<geo::TPCGeo>(geo::CryostatID{0})) {
+      auto const world = tpc.GetCenter();
+      if (minx > world.X() - tpc.HalfWidth()) minx = world.X() - tpc.HalfWidth();
+      if (maxx < world.X() + tpc.HalfWidth()) maxx = world.X() + tpc.HalfWidth();
     }
+
+    geo::PlaneID const planeID{rawOpt->fCryostat, rawOpt->fTPC, 0};
 
     for (size_t imod = 0; imod < recoOpt->fOpFlashLabels.size(); ++imod) {
       const art::InputTag which = recoOpt->fOpFlashLabels[imod];
@@ -3014,9 +3011,10 @@ namespace evd {
           b1.SetFillColor(Colour);
         }
         else if (proj == evd::kXZ) {
-          float xflash = detProp.ConvertTicksToX(
-            opflashes[iof]->Time() / sampling_rate(clockData) * 1e3 + detProp.GetXTicksOffset(pid),
-            pid);
+          float xflash =
+            detProp.ConvertTicksToX(opflashes[iof]->Time() / sampling_rate(clockData) * 1e3 +
+                                      detProp.GetXTicksOffset(planeID),
+                                    planeID);
           TLine& line = view->AddLine(ZCentre - ZHalfWidth, xflash, ZCentre + ZHalfWidth, xflash);
           line.SetLineWidth(2);
           line.SetLineStyle(2);

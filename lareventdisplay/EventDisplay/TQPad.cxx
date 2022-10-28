@@ -125,8 +125,8 @@ namespace evd {
     // Note this handles drawing waveforms for both SP and DP where the difference is handled by the tools
     if (fTQ == kTQ) {
       // Recover a channel number from current information
-      raw::ChannelID_t channel =
-        geoSvc->PlaneWireToChannel(fPlane, fWire, drawopt->fTPC, drawopt->fCryostat);
+      geo::WireID const wireid{drawopt->fCryostat, drawopt->fTPC, fPlane, fWire};
+      raw::ChannelID_t channel = geoSvc->PlaneWireToChannel(wireid);
 
       // Call the tools to fill the histograms for RawDigits and Wire data
       fRawDigitDrawerTool->Fill(

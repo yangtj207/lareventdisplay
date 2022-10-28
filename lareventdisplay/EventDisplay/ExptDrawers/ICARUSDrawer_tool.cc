@@ -83,10 +83,7 @@ namespace evd_tool {
               << ", hi coord: " << xu << ", " << yu << ", " << zu << std::endl;
 
     // Loop over the number of cryostats
-    for (geo::cryostat_iterator cryoItr = geo->begin_cryostat(); cryoItr != geo->end_cryostat();
-         cryoItr++) {
-      const geo::CryostatGeo& cryoGeo = *cryoItr;
-
+    for (auto const& cryoGeo : geo->Iterate<geo::CryostatGeo>()) {
       double cryoCoordsLo[] = {cryoGeo.MinX(), cryoGeo.MinY(), cryoGeo.MinZ()};
       double cryoCoordsHi[] = {cryoGeo.MaxX(), cryoGeo.MaxY(), cryoGeo.MaxZ()};
 
@@ -106,7 +103,7 @@ namespace evd_tool {
         const geo::TPCGeo& tpcGeo = cryoGeo.TPC(tpcIdx);
 
         // Find the center of the current TPC
-        TVector3 tpcCenter = tpcGeo.GetCenter();
+        auto const tpcCenter = tpcGeo.GetCenter();
 
         // Now draw the standard volume
         double coordsLo[] = {tpcCenter.X() - tpcGeo.HalfWidth(),
@@ -301,8 +298,9 @@ namespace evd_tool {
 
     // We want to translate the wire position to the opposite side of the TPC...
     for (size_t viewNo = 0; viewNo < geo->Nviews(); viewNo++) {
-      for (size_t wireNo = 0; wireNo < geo->Nwires(viewNo); wireNo++) {
-        geo::WireID wireID = geo::WireID(rawOpt->fCryostat, rawOpt->fTPC, viewNo, wireNo);
+      geo::PlaneID const planeID(rawOpt->fCryostat, rawOpt->fTPC, viewNo);
+      for (size_t wireNo = 0; wireNo < geo->Nwires(planeID); wireNo++) {
+        geo::WireID wireID = geo::WireID(planeID, wireNo);
 
         raw::ChannelID_t channel = geo->PlaneWireToChannel(wireID);
 
@@ -313,8 +311,8 @@ namespace evd_tool {
           auto const wireEnd = wireGeo->GetEnd();
 
           TPolyLine3D& pl = view->AddPolyLine3D(2, color, style, width);
-          pl.SetPoint(0, coords[0] - 0.5, wireStart[1], wireStart[2]);
-          pl.SetPoint(1, coords[0] - 0.5, wireEnd[1], wireEnd[2]);
+          pl.SetPoint(0, coords[0] - 0.5, wireStart.Y(), wireStart.Z());
+          pl.SetPoint(1, coords[0] - 0.5, wireEnd.Y(), wireEnd.Z());
         }
       }
     }

@@ -105,7 +105,8 @@ namespace evd {
                                     geo->Nplanes() - 1);
 
     kPlane = 0;
-    kWire = TMath::Nint(0.5 * geo->Nwires(0));
+    constexpr geo::PlaneID planeid{0, 0, 0};
+    kWire = TMath::Nint(0.5 * geo->Nwires(planeid));
     kDistance = 1.5;
     fWireQ->SetPlaneWire(kPlane, kWire);
 
@@ -130,7 +131,7 @@ namespace evd {
                                    TGNumberFormat::kNEAAnyNumber,
                                    TGNumberFormat::kNELLimitMinMax,
                                    0,
-                                   geo->Nwires(0) - 1);
+                                   geo->Nwires(planeid) - 1);
     // Initial value
     fWireEntry->SetNumber(kWire);
 
@@ -153,7 +154,7 @@ namespace evd {
                                     TGNumberFormat::kNEAAnyNumber,
                                     TGNumberFormat::kNELLimitMinMax,
                                     0,
-                                    geo->Nwires(0) - 1);
+                                    geo->Nwires(planeid) - 1);
     // Initial value
     art::ServiceHandle<evd::ColorDrawingOptions const> cst;
     art::ServiceHandle<evd::SimulationDrawingOptions const> sdo;
@@ -601,8 +602,6 @@ namespace evd {
 
       double xyz_vertex_fit[3];
       double second_time;
-      double pos[3];
-      const double origin[3] = {0., 0., 0.};
       double xx0 = 0., yy0 = 0., zz0 = 0.;
       double xx1 = 0., yy1 = 0., zz1 = 0.;
       double length;
@@ -615,10 +614,11 @@ namespace evd {
       double larv = detProp.DriftVelocity(detProp.Efield(), detProp.Temperature());
 
       //find channels corresponding to found wires.
-      int chan1 =
-        geom->PlaneWireToChannel(pline[0].plane, pline[0].w0, rawOpt->fTPC, rawOpt->fCryostat);
-      int chan2 =
-        geom->PlaneWireToChannel(pline[1].plane, pline[1].w0, rawOpt->fTPC, rawOpt->fCryostat);
+      geo::TPCID const tpcid{rawOpt->fCryostat, rawOpt->fTPC};
+      geo::PlaneID const plane_0{tpcid, pline[0].plane};
+      geo::PlaneID const plane_1{tpcid, pline[1].plane};
+      int chan1 = geom->PlaneWireToChannel(geo::WireID(plane_0, pline[0].w0));
+      int chan2 = geom->PlaneWireToChannel(geo::WireID(plane_1, pline[1].w0));
 
       bool wires_cross = false;
       bool time_good = false;
@@ -641,10 +641,10 @@ namespace evd {
         fXYZPosition->Update();
         xyz_vertex_fit[1] = y;
         xyz_vertex_fit[2] = z;
-        geom->Plane(pline[0].plane).LocalToWorld(origin, pos);
-        xyz_vertex_fit[0] = (pline[0].t0 - trigger_offset(clockData)) * larv * ftimetick + pos[0];
-        geom->Plane(pline[1].plane).LocalToWorld(origin, pos);
-        second_time = (pline[1].t0 - trigger_offset(clockData)) * larv * ftimetick + pos[0];
+        auto pos = geom->Plane(plane_0).GetBoxCenter();
+        xyz_vertex_fit[0] = (pline[0].t0 - trigger_offset(clockData)) * larv * ftimetick + pos.X();
+        pos = geom->Plane(plane_1).GetBoxCenter();
+        second_time = (pline[1].t0 - trigger_offset(clockData)) * larv * ftimetick + pos.X();
 
         xx0 = (xyz_vertex_fit[0] + second_time) / 2;
         yy0 = y;
@@ -662,10 +662,8 @@ namespace evd {
         // return; //not returning, because may need to delete marker from wplanereturn;
       }
       //find channels corresponding to found wires AT END OF LINE.
-      chan1 =
-        geom->PlaneWireToChannel(pline[0].plane, pline[0].w1, rawOpt->fTPC, rawOpt->fCryostat);
-      chan2 =
-        geom->PlaneWireToChannel(pline[1].plane, pline[1].w1, rawOpt->fTPC, rawOpt->fCryostat);
+      chan1 = geom->PlaneWireToChannel(geo::WireID(plane_0, pline[0].w1));
+      chan2 = geom->PlaneWireToChannel(geo::WireID(plane_1, pline[1].w1));
 
       wires_cross = false;
       time_good = false;
@@ -688,10 +686,11 @@ namespace evd {
         fXYZPosition->Update();
         xyz_vertex_fit[1] = y;
         xyz_vertex_fit[2] = z;
-        geom->Plane(pline[0].plane).LocalToWorld(origin, pos);
-        xyz_vertex_fit[0] = (pline[0].t1 - trigger_offset(clockData)) * larv * ftimetick + pos[0];
-        geom->Plane(pline[1].plane).LocalToWorld(origin, pos);
-        second_time = (pline[1].t1 - trigger_offset(clockData)) * larv * ftimetick + pos[0];
+        constexpr geo::TPCID tpcid{0, 0};
+        auto pos = geom->Plane(geo::PlaneID(tpcid, pline[0].plane)).GetBoxCenter();
+        xyz_vertex_fit[0] = (pline[0].t1 - trigger_offset(clockData)) * larv * ftimetick + pos.X();
+        pos = geom->Plane(geo::PlaneID(tpcid, pline[1].plane)).GetBoxCenter();
+        second_time = (pline[1].t1 - trigger_offset(clockData)) * larv * ftimetick + pos.X();
 
         xx1 = (xyz_vertex_fit[0] + second_time) / 2;
         yy1 = y;
@@ -754,11 +753,13 @@ namespace evd {
       double ftimetick = sampling_rate(clockData) / 1000.;
       double larv = detProp.DriftVelocity(detProp.Efield(), detProp.Temperature());
 
+      geo::TPCID const tpcid{rawOpt->fCryostat, rawOpt->fTPC};
+      geo::PlaneID const plane_0{tpcid, ppoints[0].plane};
+      geo::PlaneID const plane_1{tpcid, ppoints[1].plane};
+
       //find channels corresponding to found wires.
-      int chan1 =
-        geom->PlaneWireToChannel(ppoints[0].plane, ppoints[0].w, rawOpt->fTPC, rawOpt->fCryostat);
-      int chan2 =
-        geom->PlaneWireToChannel(ppoints[1].plane, ppoints[1].w, rawOpt->fTPC, rawOpt->fCryostat);
+      int chan1 = geom->PlaneWireToChannel(geo::WireID(plane_0, ppoints[0].w));
+      int chan2 = geom->PlaneWireToChannel(geo::WireID(plane_1, ppoints[1].w));
 
       bool wires_cross = false;
       bool time_good = false;
@@ -778,9 +779,9 @@ namespace evd {
       if (wires_cross) {
         xyz_vertex_fit[1] = y;
         xyz_vertex_fit[2] = z;
-        auto pos = geom->Plane(ppoints[0].plane).toWorldCoords(origin);
+        auto pos = geom->Plane(plane_0).toWorldCoords(origin);
         xyz_vertex_fit[0] = (ppoints[0].t - trigger_offset(clockData)) * larv * ftimetick + pos.X();
-        pos = geom->Plane(ppoints[1].plane).toWorldCoords(origin);
+        pos = geom->Plane(plane_1).toWorldCoords(origin);
         second_time = (ppoints[1].t - trigger_offset(clockData)) * larv * ftimetick + pos.X();
 
         TGText* tt = new TGText(Form("z:%4.1f", z));
@@ -817,12 +818,12 @@ namespace evd {
           }
         }
 
-        auto pos = geom->Plane(wplane).toWorldCoords(origin);
+        geo::PlaneID const planeID{tpcid, wplane};
+        auto pos = geom->Plane(planeID).toWorldCoords(origin);
         pos.SetY(xyz_vertex_fit[1]);
         pos.SetZ(xyz_vertex_fit[2]);
 
-        wirevertex =
-          geom->NearestWireID(pos, geo::PlaneID{rawOpt->fCryostat, rawOpt->fTPC, wplane}).Wire;
+        wirevertex = geom->NearestWireID(pos, planeID).Wire;
 
         double drifttick =
           ((xyz_vertex_fit[0]) / detProp.DriftVelocity(detProp.Efield(), detProp.Temperature())) *
@@ -1008,8 +1009,9 @@ namespace evd {
         if (test == -1) continue;
       }
       else {
-        minw = -0.005 * (geo->Nwires(iplane) - 1);
-        maxw = 1.005 * (geo->Nwires(iplane) - 1);
+        geo::PlaneID const planeID(0, 0, iplane);
+        minw = -0.005 * (geo->Nwires(planeID) - 1);
+        maxw = 1.005 * (geo->Nwires(planeID) - 1);
         mint = -0.005 * fPlanes[iplane]->RawDataDraw()->TotalClockTicks();
         maxt = 1.01 * fPlanes[iplane]->RawDataDraw()->TotalClockTicks();
       }

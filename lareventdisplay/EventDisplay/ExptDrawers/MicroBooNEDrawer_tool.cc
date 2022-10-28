@@ -271,8 +271,9 @@ namespace evd_tool {
 
     // We want to translate the wire position to the opposite side of the TPC...
     for (size_t viewNo = 0; viewNo < geo->Nviews(); viewNo++) {
-      for (size_t wireNo = 0; wireNo < geo->Nwires(viewNo); wireNo++) {
-        geo::WireID wireID = geo::WireID(rawOpt->fCryostat, rawOpt->fTPC, viewNo, wireNo);
+      geo::PlaneID const planeID(rawOpt->fCryostat, rawOpt->fTPC, viewNo);
+      for (size_t wireNo = 0; wireNo < geo->Nwires(planeID); wireNo++) {
+        geo::WireID wireID = geo::WireID(planeID, wireNo);
 
         raw::ChannelID_t channel = geo->PlaneWireToChannel(wireID);
 
@@ -283,8 +284,8 @@ namespace evd_tool {
           auto const wireEnd = wireGeo->GetEnd();
 
           TPolyLine3D& pl = view->AddPolyLine3D(2, color, style, width);
-          pl.SetPoint(0, coords[0] - 0.5, wireStart[1], wireStart[2]);
-          pl.SetPoint(1, coords[0] - 0.5, wireEnd[1], wireEnd[2]);
+          pl.SetPoint(0, coords[0] - 0.5, wireStart.Y(), wireStart.Z());
+          pl.SetPoint(1, coords[0] - 0.5, wireEnd.Y(), wireEnd.Z());
         }
       }
     }

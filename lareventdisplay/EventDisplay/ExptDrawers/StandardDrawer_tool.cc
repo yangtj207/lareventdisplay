@@ -105,7 +105,7 @@ namespace evd_tool {
 
     // Draw a box for each cryostat, and, within it, for each TPC;
     // the outlined volumes are the ones from the geometry boxes
-    for (geo::CryostatGeo const& cryo : geom.IterateCryostats()) {
+    for (geo::CryostatGeo const& cryo : geom.Iterate<geo::CryostatGeo>()) {
 
       // include this cryostat in the detector volume
       detector.ExtendToInclude(cryo);

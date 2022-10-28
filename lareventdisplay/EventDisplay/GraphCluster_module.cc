@@ -66,15 +66,6 @@ namespace geo {
   class Geometry;
 }
 
-/* unused function
-namespace{
-  void WriteMsg(const char* fcn)
-  {
-	mf::LogWarning("GraphCluster") << "GraphCluster::" << fcn << " \n";
-  }
-}
-*/
-
 namespace evd {
 
   class InfoTransfer;
@@ -88,18 +79,12 @@ namespace evd {
   private:
     GraphClusterAlg fGClAlg;
 
-    //  art::ServiceHandle<evd::InfoTransfer const> intr;
-    //  art::ServiceHandle<geo::Geometry const>  geo;
-
     void GetStartEndHits(unsigned int plane, recob::Hit* starthit, recob::Hit* endhit);
     void GetStartEndHits(unsigned int plane);
 
-    //void GetHitList(unsigned int plane,std::vector< art::Ptr <recob::Hit> > ptrhitlist);
     void GetHitList(unsigned int plane, art::PtrVector<recob::Hit>& ptrhitlist);
 
     std::vector<util::PxLine> GetSeedLines();
-
-    //  int GetMetaInfo(art::Event& evt);
 
     unsigned int fNPlanes;
 
@@ -111,15 +96,7 @@ namespace evd {
     std::vector<recob::Hit*> starthit;
     std::vector<recob::Hit*> endhit;
 
-    //     std::vector < std::vector< recob::Hit * > > hitlist;
-
     std::vector<util::PxLine> startendpoints;
-
-    //     std::vector <unsigned int> swire;
-    //     std::vector <unsigned int> ewire;
-    //     std::vector <double> stime;
-    //     std::vector <double> etime;
-
   }; // class GraphCluster
 
   //-------------------------------------------------
@@ -137,10 +114,6 @@ namespace evd {
     endhit.resize(fNPlanes);
 
     startendpoints.resize(fNPlanes);
-    //     swire.resize(fNPlanes);
-    //     ewire.resize(fNPlanes);
-    //     stime.resize(fNPlanes);
-    //     etime.resize(fNPlanes);
   }
 
   //
@@ -153,7 +126,6 @@ namespace evd {
     std::unique_ptr<std::vector<recob::Cluster>> Graphcol(new std::vector<recob::Cluster>);
     std::unique_ptr<art::Assns<recob::Cluster, recob::Hit>> hassn(
       new art::Assns<recob::Cluster, recob::Hit>);
-    // 	std::unique_ptr< art::Assns<recob::Cluster, recob::Cluster>     > classn(new art::Assns<recob::Cluster, recob::Cluster>);
     std::unique_ptr<std::vector<art::PtrVector<recob::Cluster>>> classn(
       new std::vector<art::PtrVector<recob::Cluster>>);
 
@@ -172,14 +144,8 @@ namespace evd {
     for (unsigned int ip = 0; ip < fNPlanes; ip++) {
 
       fGClAlg.GetHitListAndEndPoints(ip, hitlist[ip], startendpoints[ip]);
-      // Read in the Hit List object(s).
-      //fGClAlg.GetHitList(ip,hitlist[ip]);
 
       if (hitlist[ip].size() == 0) continue;
-      //Read in the starthit:
-      // GetStartEndHits(ip, starthit[ip],endhit[ip]);
-
-      //fGClAlg.GetStartEndHits(&startendpoints[ip]);
 
       if (hitlist[ip].size() > 0 && !(TestFlag == -1)) //old event or transfer not ready
       {
@@ -226,7 +192,7 @@ namespace evd {
                                0.,                 // multiple_hit_density
                                0.,                 // width
                                ip,
-                               geo->Plane(ip, planeID.TPC, planeID.Cryostat).View(),
+                               geo->Plane({planeID.asTPCID(), ip}).View(),
                                planeID,
                                recob::Cluster::Sentry);
 
@@ -246,14 +212,6 @@ namespace evd {
     }
 
     classn->push_back(cvec);
-
-    // 	for(unsigned int ip=0;ip<fNPlanes;ip++) {
-    // 	  for(unsigned int jp=ip+1;jp<fNPlanes;jp++) {
-    // 	    util::CreateSameAssn(*this, evt, *Graphcol, *Graphcol, *classn,ip,ip+1,jp );
-    // 	  //  std::cout << "associating cluster" << ip <<" with cluster " << jp << std::endl;
-    // 	  }
-    // 	}
-    //
 
     evt.put(std::move(Graphcol));
     evt.put(std::move(hassn));

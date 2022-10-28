@@ -154,7 +154,7 @@ namespace evd {
     TString xtitle = ";Induction Wire;t (tdc)";
     if (signalType == geo::kCollection) xtitle = ";Collection Wire;t (tdc)";
 
-    unsigned int const nWires = geo->Nwires(fPlane);
+    unsigned int const nWires = geo->Nwires({rawopt->CurrentTPC(), fPlane});
     unsigned int const nTicks = RawDataDraw()->TotalClockTicks();
 
     fXLo = -0.005 * (nWires - 1);

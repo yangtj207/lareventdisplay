@@ -18,6 +18,7 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Utilities/ToolMacros.h"
+#include "canvas/Persistency/Common/PtrVector.h"
 
 #include "TPolyLine.h"
 

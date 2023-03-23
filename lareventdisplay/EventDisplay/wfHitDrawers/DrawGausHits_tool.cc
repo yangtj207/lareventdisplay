@@ -15,6 +15,7 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Utilities/ToolMacros.h"
 #include "canvas/Persistency/Common/FindManyP.h"
+#include "canvas/Persistency/Common/PtrVector.h"
 #include "cetlib_except/exception.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
@@ -35,7 +36,7 @@ namespace evdb_tool {
     void Draw(evdb::View2D&, raw::ChannelID_t&) const override;
 
   private:
-    using HitParams_t = struct HitParams_t {
+    struct HitParams_t {
       float hitCenter;
       float hitSigma;
       float hitHeight;

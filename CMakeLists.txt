@@ -9,9 +9,10 @@
 cmake_minimum_required(VERSION 3.20 FATAL_ERROR)
 
 find_package(cetmodules REQUIRED)
-project(lareventdisplay VERSION 09.08.10 LANGUAGES CXX)
+project(lareventdisplay LANGUAGES CXX)
 
 include(CetCMakeEnv)
+set(${PROJECT_NAME}_CMAKE_PROJECT_VERSION_STRING 09.80.00-rc0)
 cet_cmake_env()
 
 cet_set_compiler_flags(DIAGS CAUTIOUS

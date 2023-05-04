@@ -101,12 +101,12 @@ namespace evd {
     void GetChargeSum(int plane, double& charge, double& convcharge);
 
   private:
-    typedef struct {
+    struct BoxInfo_t {
       int adc = 0;       ///< total ADC count in this box
       bool good = false; ///< whether the channel is not bad
-    } BoxInfo_t;
+    };
 
-    typedef struct {
+    struct PadResolution_t {
       unsigned int width = 0;  // width of pad in pixels
       unsigned int height = 0; // heigt of pad in pixels
 
@@ -116,7 +116,7 @@ namespace evd {
       /// Returns whether the stored value is valid
       operator bool() const { return isFilled(); }
 
-    } PadResolution_t; ///< Stores the information about the drawing area
+    }; ///< Stores the information about the drawing area
 
     /// Helper class to be used with ChannelLooper()
     class OperationBaseClass;

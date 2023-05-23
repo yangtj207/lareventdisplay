@@ -197,7 +197,7 @@ namespace evd {
                                recob::Cluster::Sentry);
 
         // associate the hits to this cluster
-        util::CreateAssn(*this, evt, *Graphcol, hitlist[ip], *hassn);
+        util::CreateAssn(evt, *Graphcol, hitlist[ip], *hassn);
       }
 
     } // end of loop on planes

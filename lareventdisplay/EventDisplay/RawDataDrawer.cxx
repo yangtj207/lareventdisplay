@@ -206,11 +206,10 @@ namespace evd {
       void Dump(Stream&& out) const;
 
     private:
-      typedef struct {
+      struct SampleInfo_t {
         short min_charge = std::numeric_limits<short>::max(); ///< minimum charge
         short max_charge = std::numeric_limits<short>::max(); ///< maximum charge
-        //  float average_charge = 0.; ///< average charge
-      } SampleInfo_t; // SampleInfo_t
+      };
 
       art::Ptr<raw::RawDigit> digit; ///< a pointer to the actual digit
 

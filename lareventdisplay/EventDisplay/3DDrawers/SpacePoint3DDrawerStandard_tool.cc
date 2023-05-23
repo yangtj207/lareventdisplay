@@ -97,9 +97,7 @@ namespace evdb_tool {
     // Note that larger (=better) space points are plotted on
     // top for optimal visibility.
 
-    for (auto const icolor : spmap) {
-      int spcolor = icolor.first;
-      const std::vector<const recob::SpacePoint*>& psps = icolor.second;
+    for (auto const& [spcolor, psps] : spmap) {
 
       // Make and fill a polymarker.
 

@@ -35,8 +35,8 @@
 #include "nusimdata/SimulationBase/MCParticle.h"
 #include "nusimdata/SimulationBase/MCTruth.h"
 
-#include "art/Framework/Principal/ProductRetriever.h" // Missing from View.h
 #include "art/Framework/Principal/Event.h"
+#include "art/Framework/Principal/ProductRetriever.h" // Missing from View.h
 #include "art/Framework/Principal/View.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
@@ -941,7 +941,10 @@ namespace evd {
 
   //......................................................................
 
-  void SimulationDrawer::HiLite(int trkId, bool dohilite) { fHighlite[trkId] = dohilite; }
+  void SimulationDrawer::HiLite(int trkId, bool dohilite)
+  {
+    fHighlite[trkId] = dohilite;
+  }
 
 } // namespace
 ////////////////////////////////////////////////////////////////////////

@@ -82,7 +82,10 @@ namespace evd_tool {
 
   //----------------------------------------------------------------------
   // Constructor.
-  StandardDrawer::StandardDrawer(const fhicl::ParameterSet& pset) { configure(pset); }
+  StandardDrawer::StandardDrawer(const fhicl::ParameterSet& pset)
+  {
+    configure(pset);
+  }
 
   void StandardDrawer::configure(const fhicl::ParameterSet& pset)
   {

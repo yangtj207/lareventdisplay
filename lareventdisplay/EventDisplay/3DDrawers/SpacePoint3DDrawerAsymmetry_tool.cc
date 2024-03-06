@@ -30,7 +30,7 @@ namespace evdb_tool {
               int,                                             // Marker
               float,                                           // Size) const override;
               const art::FindManyP<recob::Hit>*                // pointer to associated hits
-              ) const;
+    ) const;
 
   private:
     float fMinAsymmetry;
@@ -50,7 +50,10 @@ namespace evdb_tool {
     return;
   }
 
-  SpacePoint3DDrawerHitAsymmetry::~SpacePoint3DDrawerHitAsymmetry() { return; }
+  SpacePoint3DDrawerHitAsymmetry::~SpacePoint3DDrawerHitAsymmetry()
+  {
+    return;
+  }
 
   void SpacePoint3DDrawerHitAsymmetry::Draw(const std::vector<art::Ptr<recob::SpacePoint>>& hitsVec,
                                             evdb::View3D* view,

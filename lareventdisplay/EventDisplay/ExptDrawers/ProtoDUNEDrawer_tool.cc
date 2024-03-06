@@ -83,7 +83,10 @@ namespace evd_tool {
 
   //----------------------------------------------------------------------
   // Constructor.
-  ProtoDUNEDrawer::ProtoDUNEDrawer(const fhicl::ParameterSet& pset) { configure(pset); }
+  ProtoDUNEDrawer::ProtoDUNEDrawer(const fhicl::ParameterSet& pset)
+  {
+    configure(pset);
+  }
 
   void ProtoDUNEDrawer::configure(const fhicl::ParameterSet& pset)
   {

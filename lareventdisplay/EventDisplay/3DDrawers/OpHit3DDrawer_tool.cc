@@ -41,7 +41,10 @@ namespace evdb_tool {
 
   //----------------------------------------------------------------------
   // Constructor.
-  OpHit3DDrawer::OpHit3DDrawer(const fhicl::ParameterSet& pset) { return; }
+  OpHit3DDrawer::OpHit3DDrawer(const fhicl::ParameterSet& pset)
+  {
+    return;
+  }
 
   OpHit3DDrawer::~OpHit3DDrawer() {}
 

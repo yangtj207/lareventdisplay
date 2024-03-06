@@ -55,7 +55,10 @@ namespace evdb_tool {
 
   //----------------------------------------------------------------------
   // Constructor.
-  DrawGausHits::DrawGausHits(const fhicl::ParameterSet& pset) { configure(pset); }
+  DrawGausHits::DrawGausHits(const fhicl::ParameterSet& pset)
+  {
+    configure(pset);
+  }
 
   DrawGausHits::~DrawGausHits() {}
 

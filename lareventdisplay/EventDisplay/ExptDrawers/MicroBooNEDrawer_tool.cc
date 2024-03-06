@@ -56,7 +56,10 @@ namespace evd_tool {
 
   //----------------------------------------------------------------------
   // Constructor.
-  MicroBooNEDrawer::MicroBooNEDrawer(const fhicl::ParameterSet& pset) { configure(pset); }
+  MicroBooNEDrawer::MicroBooNEDrawer(const fhicl::ParameterSet& pset)
+  {
+    configure(pset);
+  }
 
   void MicroBooNEDrawer::configure(const fhicl::ParameterSet& pset)
   {

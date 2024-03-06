@@ -41,7 +41,10 @@ namespace evdb_tool {
 
   //----------------------------------------------------------------------
   // Constructor.
-  DrawWireData::DrawWireData(const fhicl::ParameterSet& pset) { configure(pset); }
+  DrawWireData::DrawWireData(const fhicl::ParameterSet& pset)
+  {
+    configure(pset);
+  }
 
   DrawWireData::~DrawWireData() {}
 
@@ -98,7 +101,10 @@ namespace evdb_tool {
     return;
   }
 
-  void DrawWireData::Draw(const std::string&, float, float) { return; }
+  void DrawWireData::Draw(const std::string&, float, float)
+  {
+    return;
+  }
 
   DEFINE_ART_CLASS_TOOL(DrawWireData)
 }

@@ -49,11 +49,17 @@ namespace evdb_tool {
 
   //----------------------------------------------------------------------
   // Constructor.
-  DrawSkewHits::DrawSkewHits(const fhicl::ParameterSet& pset) { configure(pset); }
+  DrawSkewHits::DrawSkewHits(const fhicl::ParameterSet& pset)
+  {
+    configure(pset);
+  }
 
   DrawSkewHits::~DrawSkewHits() {}
 
-  void DrawSkewHits::configure(const fhicl::ParameterSet& pset) { return; }
+  void DrawSkewHits::configure(const fhicl::ParameterSet& pset)
+  {
+    return;
+  }
 
   void DrawSkewHits::Draw(evdb::View2D& view2D, raw::ChannelID_t& channel) const
   {

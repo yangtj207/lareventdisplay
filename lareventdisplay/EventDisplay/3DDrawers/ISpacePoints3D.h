@@ -35,7 +35,7 @@ namespace evdb_tool {
                       int = 1,                                         // Marker
                       float = 1.,                                      // Size
                       const art::FindManyP<recob::Hit>* = nullptr      // pointer
-                      ) const = 0;
+    ) const = 0;
   };
 }
 

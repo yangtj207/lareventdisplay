@@ -46,7 +46,10 @@ namespace evdb_tool {
 
   //----------------------------------------------------------------------
   // Constructor.
-  DrawWireHist::DrawWireHist(const fhicl::ParameterSet& pset) { configure(pset); }
+  DrawWireHist::DrawWireHist(const fhicl::ParameterSet& pset)
+  {
+    configure(pset);
+  }
 
   DrawWireHist::~DrawWireHist() {}
 

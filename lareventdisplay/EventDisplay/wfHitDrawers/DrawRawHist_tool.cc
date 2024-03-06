@@ -48,11 +48,17 @@ namespace evdb_tool {
 
   //----------------------------------------------------------------------
   // Constructor.
-  DrawRawHist::DrawRawHist(const fhicl::ParameterSet& pset) { configure(pset); }
+  DrawRawHist::DrawRawHist(const fhicl::ParameterSet& pset)
+  {
+    configure(pset);
+  }
 
   DrawRawHist::~DrawRawHist() {}
 
-  void DrawRawHist::configure(const fhicl::ParameterSet& pset) { return; }
+  void DrawRawHist::configure(const fhicl::ParameterSet& pset)
+  {
+    return;
+  }
 
   void DrawRawHist::Fill(evdb::View2D& view2D,
                          raw::ChannelID_t& channel,

@@ -176,7 +176,7 @@ namespace evdb_tool {
       for (const auto& channelToEnergy : channelToEnergyMap) {
         // Recover the color index based on energy
         float widthFactor =
-          0.95 * std::max(float(0.), std::min(float(1.), yzWidthScale* channelToEnergy.second));
+          0.95 * std::max(float(0.), std::min(float(1.), yzWidthScale * channelToEnergy.second));
         float energyFactor =
           cst->fRecoQLow[geo::kCollection] + energyDepositScale * channelToEnergy.second;
 

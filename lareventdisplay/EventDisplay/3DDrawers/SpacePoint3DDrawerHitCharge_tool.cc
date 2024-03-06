@@ -31,7 +31,7 @@ namespace evdb_tool {
               int,                                             // Marker
               float,                                           // Size) const override;
               const art::FindManyP<recob::Hit>*                // pointer to associated hits
-              ) const;
+    ) const;
 
   private:
     double getSpacePointCharge(const art::Ptr<recob::SpacePoint>&,
@@ -57,7 +57,10 @@ namespace evdb_tool {
     return;
   }
 
-  SpacePoint3DDrawerHitCharge::~SpacePoint3DDrawerHitCharge() { return; }
+  SpacePoint3DDrawerHitCharge::~SpacePoint3DDrawerHitCharge()
+  {
+    return;
+  }
 
   void SpacePoint3DDrawerHitCharge::Draw(const std::vector<art::Ptr<recob::SpacePoint>>& hitsVec,
                                          evdb::View3D* view,

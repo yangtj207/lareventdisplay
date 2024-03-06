@@ -29,7 +29,7 @@ namespace evdb_tool {
               int,                                             // Marker
               float,                                           // Size) const override;
               const art::FindManyP<recob::Hit>*                // pointer to associated hits
-              ) const;
+    ) const;
 
   private:
   };
@@ -45,7 +45,10 @@ namespace evdb_tool {
     return;
   }
 
-  SpacePoint3DDrawerChiSquare::~SpacePoint3DDrawerChiSquare() { return; }
+  SpacePoint3DDrawerChiSquare::~SpacePoint3DDrawerChiSquare()
+  {
+    return;
+  }
 
   void SpacePoint3DDrawerChiSquare::Draw(const std::vector<art::Ptr<recob::SpacePoint>>& hitsVec,
                                          evdb::View3D* view,

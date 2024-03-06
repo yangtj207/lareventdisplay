@@ -194,10 +194,16 @@ namespace evd {
   }
 
   //......................................................................
-  void InfoTransfer::SetSeedList(std::vector<util::PxLine> seedlines) { fSeedList = seedlines; }
+  void InfoTransfer::SetSeedList(std::vector<util::PxLine> seedlines)
+  {
+    fSeedList = seedlines;
+  }
 
   //......................................................................
-  std::vector<util::PxLine> const& InfoTransfer::GetSeedList() const { return fSeedList; }
+  std::vector<util::PxLine> const& InfoTransfer::GetSeedList() const
+  {
+    return fSeedList;
+  }
 
   //......................................................................
   void InfoTransfer::FillStartEndHitCoords(unsigned int plane)

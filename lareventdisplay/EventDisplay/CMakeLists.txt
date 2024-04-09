@@ -154,19 +154,16 @@ cet_make_library(SOURCE
   ROOT::MathCore
 )
 
-build_dictionary(${PACKAGE} NO_LIBRARY
-  LIB_TARGET lareventdisplay_EventDisplay
-  GENERATED_SOURCE_FILENAME ${CINTED_SOURCE}
-  SOURCE
-  CalorView.h
-  Display3DView.h
-  DrawingPad.h
-  Ortho3DPad.h
-  Ortho3DView.h
-  TWQMultiTPCProjection.h
-  TWQProjectionView.h
-  LinkDef.h
-)
+########################################################################
+# Temporarily revert to deprecated cet_rootcint() instead of
+# build_dictionary() per https://cdcvs.fnal.gov/redmine/issues/28702
+#
+include(CetRootCint)
+set(_cet_warn_deprecated ${CET_WARN_DEPRECATED})
+unset(CET_WARN_DEPRECATED)
+cet_rootcint(${PACKAGE} LIB_TARGET lareventdisplay_EventDisplay)
+set(CET_WARN_DEPRECATED ${_cet_warn_deprecated})
+########################################################################
 
 add_subdirectory(ExptDrawers)
 add_subdirectory(wfHitDrawers)

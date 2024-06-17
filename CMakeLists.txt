@@ -9,7 +9,7 @@
 cmake_minimum_required(VERSION 3.20 FATAL_ERROR)
 
 find_package(cetmodules REQUIRED)
-project(lareventdisplay VERSION 09.11.06 LANGUAGES CXX)
+project(lareventdisplay VERSION 09.11.07 LANGUAGES CXX)
 
 include(CetCMakeEnv)
 cet_cmake_env()

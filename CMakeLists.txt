@@ -56,5 +56,8 @@ cet_cmake_module_directories(Modules BINARY)
 # source
 add_subdirectory(lareventdisplay)
 
+# tests
+add_subdirectory(test)
+
 # packaging utility
 cet_cmake_config()

@@ -16,7 +16,6 @@ namespace evd_tool {
 
 namespace evd {
   class HeaderDrawer;
-  //class GeometryDrawer;
   class SimulationDrawer;
   class RawDataDrawer;
   class RecoBaseDrawer;

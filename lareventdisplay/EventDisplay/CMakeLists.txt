@@ -1,6 +1,6 @@
 include(BuildDictionary)
 
-set(PACKAGE EventDisplay)
+set(PACKAGE lareventdisplay_EventDisplay)
 
 cet_make_library(LIBRARY_NAME SpacePoint3DDrawer INTERFACE
   SOURCE 3DDrawers/ISpacePoints3D.h
@@ -161,7 +161,7 @@ cet_make_library(SOURCE
 include(CetRootCint)
 set(_cet_warn_deprecated ${CET_WARN_DEPRECATED})
 unset(CET_WARN_DEPRECATED)
-cet_rootcint(${PACKAGE} LIB_TARGET lareventdisplay_EventDisplay)
+cet_rootcint(${PACKAGE})
 set(CET_WARN_DEPRECATED ${_cet_warn_deprecated})
 ########################################################################
 

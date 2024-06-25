@@ -10,9 +10,7 @@
 #include <string>
 #include <vector>
 
-namespace art {
-  class Event;
-}
+#include "art/Framework/Principal/fwd.h"
 #include "lareventdisplay/EventDisplay/OrthoProj.h"
 
 namespace evdb {

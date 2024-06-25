@@ -3,9 +3,7 @@
 #ifndef EVD_ANALYSISBASEDRAWER_H
 #define EVD_ANALYSISBASEDRAWER_H
 
-namespace art {
-  class Event;
-}
+#include "art/Framework/Principal/fwd.h"
 
 namespace evdb {
   class View2D;

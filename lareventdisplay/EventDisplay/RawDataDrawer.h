@@ -4,21 +4,15 @@
 #ifndef EVD_RAWDATADRAWER_H
 #define EVD_RAWDATADRAWER_H
 
-namespace fhicl {
-  class ParameterSet;
-}
-
+#include "art/Framework/Principal/fwd.h"
+#include "fhiclcpp/fwd.h"
 #include "larcoreobj/SimpleTypesAndConstants/geo_types.h" // geo::PlaneID
-
-#include <vector>
 
 #ifndef __CINT__
 #include "larevt/CalibrationDBI/Interface/ChannelStatusProvider.h" // lariov::ChannelStatusProvider::Status_t
 #endif
 
-namespace art {
-  class Event;
-}
+#include <vector>
 
 class TH1F;
 class TVirtualPad;

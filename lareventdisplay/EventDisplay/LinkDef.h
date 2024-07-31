@@ -16,4 +16,5 @@
 #pragma link C++ class evd::Ortho3DPad - ;
 #pragma link C++ class evd::CalorView - ;
 #pragma link C++ class evd::DrawingPad - ;
+#pragma link C++ class evd::PhDetView - ;
 #endif

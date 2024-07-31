@@ -6,6 +6,7 @@
 #ifndef EVD_TQPAD_H
 #define EVD_TQPAD_H
 
+#include "fhiclcpp/ParameterSet.h"
 #include "lareventdisplay/EventDisplay/DrawingPad.h"
 
 #include <memory> // std::unique_ptr<>
@@ -31,7 +32,10 @@ namespace evd {
           double y2,
           const char* opt,
           unsigned int plane,
-          unsigned int wire);
+          unsigned int wire,
+          fhicl::ParameterSet HitDrawerParams,
+          fhicl::ParameterSet RawDigitDrawerParams,
+          fhicl::ParameterSet WireDrawerParams);
 
     ~TQPad();
 

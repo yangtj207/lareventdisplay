@@ -86,7 +86,11 @@ namespace evd {
 
     evdb::Canvas::fCanvas->cd();
     //    fWireQ = new TQPad("fWireQPad", "ADCvsTime",0.15,0.0,1.0,0.13,"TQ", 0, 0);
-    fWireQ = new TQPad("fWireQPad", "ADCvsTime", 0.15, 0.0, 1.0, 0.14, "TQ", 0, 0);
+
+    art::ServiceHandle<evd::RawDrawingOptions const> rawOptions;
+    art::ServiceHandle<evd::RecoDrawingOptions const> recoOptions;
+
+    fWireQ = new TQPad("fWireQPad", "ADCvsTime", 0.15, 0.0, 1.0, 0.14, "TQ", 0, 0, recoOptions->fHitDrawerParams, rawOptions->fRawDigitDrawerParams, recoOptions->fWireDrawerParams);
     fWireQ->Pad()->SetBit(TPad::kCannotMove, true);
     fWireQ->Draw();
 
@@ -282,7 +286,9 @@ namespace evd {
       padtitle += i;
 
       evdb::Canvas::fCanvas->cd();
-      fPlaneQ.push_back(new TQPad(padname, padtitle, twx2, twy1, twx3, twy2, "Q", i, 0));
+      art::ServiceHandle<evd::RawDrawingOptions const> rawOptions;
+      art::ServiceHandle<evd::RecoDrawingOptions const> recoOptions;
+      fPlaneQ.push_back(new TQPad(padname, padtitle, twx2, twy1, twx3, twy2, "Q", i, 0, recoOptions->fHitDrawerParams, rawOptions->fRawDigitDrawerParams, recoOptions->fWireDrawerParams));
       fPlaneQ[i]->Draw();
     }
 

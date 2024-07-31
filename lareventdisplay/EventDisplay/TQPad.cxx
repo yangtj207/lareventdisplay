@@ -42,7 +42,10 @@ namespace evd {
                double y2,
                const char* opt,
                unsigned int plane,
-               unsigned int wire)
+               unsigned int wire,
+               fhicl::ParameterSet HitDrawerParams,
+               fhicl::ParameterSet RawDigitDrawerParams,
+               fhicl::ParameterSet WireDrawerParams)
     : DrawingPad(nm, ti, x1, y1, x2, y2), fWire(wire), fPlane(plane), fFrameHist(0)
   {
     art::ServiceHandle<geo::Geometry const> geo;
@@ -85,14 +88,19 @@ namespace evd {
     this->BookHistogram();
     fView = new evdb::View2D();
 
-    art::ServiceHandle<evd::RawDrawingOptions const> rawOptions;
-    art::ServiceHandle<evd::RecoDrawingOptions const> recoOptions;
+//    art::ServiceHandle<evd::RawDrawingOptions const> rawOptions;
+//    art::ServiceHandle<evd::RecoDrawingOptions const> recoOptions;
+//
+//    fHitDrawerTool = art::make_tool<evdb_tool::IWFHitDrawer>(recoOptions->fHitDrawerParams);
+//    fRawDigitDrawerTool =
+//      art::make_tool<evdb_tool::IWaveformDrawer>(rawOptions->fRawDigitDrawerParams);
+//    fWireDrawerTool = art::make_tool<evdb_tool::IWaveformDrawer>(recoOptions->fWireDrawerParams);
 
-    fHitDrawerTool = art::make_tool<evdb_tool::IWFHitDrawer>(recoOptions->fHitDrawerParams);
+    fHitDrawerTool = art::make_tool<evdb_tool::IWFHitDrawer>(HitDrawerParams);
     fRawDigitDrawerTool =
-      art::make_tool<evdb_tool::IWaveformDrawer>(rawOptions->fRawDigitDrawerParams);
-    fWireDrawerTool = art::make_tool<evdb_tool::IWaveformDrawer>(recoOptions->fWireDrawerParams);
-  }
+      art::make_tool<evdb_tool::IWaveformDrawer>(RawDigitDrawerParams);
+    fWireDrawerTool = art::make_tool<evdb_tool::IWaveformDrawer>(WireDrawerParams);
+}
 
   //......................................................................
 

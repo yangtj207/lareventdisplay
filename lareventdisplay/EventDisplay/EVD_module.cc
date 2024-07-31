@@ -13,6 +13,7 @@
 #include "lareventdisplay/EventDisplay/Ortho3DView.h"
 #include "lareventdisplay/EventDisplay/TWQMultiTPCProjection.h"
 #include "lareventdisplay/EventDisplay/TWQProjectionView.h"
+#include "lareventdisplay/EventDisplay/PhDetView.h"
 #include "nuevdb/EventDisplayBase/DisplayWindow.h"
 
 // Framework includes
@@ -77,6 +78,12 @@ static evdb::Canvas* mk_calor_canvas(TGMainFrame* mf)
   return new evd::CalorView(mf);
 }
 
+// Builder for the Photon Detector view
+static evdb::Canvas* mk_phdet_canvas(TGMainFrame* mf)
+{
+  return new evd::PhDetView(mf);
+}
+
 // // Builder for the MCTruth view
 // static evdb::ObjListCanvas* mk_mctrue_canvas(TGMainFrame* mf)
 // {
@@ -112,6 +119,8 @@ namespace evd {
     evdb::DisplayWindow::Register("Ortho3D", "Ortho3D", 700, 700, mk_ortho3d_canvas);
 
     evdb::DisplayWindow::Register("Calorimetry", "Calorimetry", 700, 700, mk_calor_canvas);
+
+    evdb::DisplayWindow::Register("Photon Detector", "Photon Detector", 700, 700, mk_phdet_canvas);
 
     //     evdb::ListWindow::Register("MC Particle List",
     // 			       "MC Particle List",

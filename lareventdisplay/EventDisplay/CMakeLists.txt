@@ -106,6 +106,7 @@ cet_make_library(SOURCE
   TWQMultiTPCProjection.cxx
   TWQProjectionView.cxx
   TWireProjPad.cxx
+  PhDetView.cxx
   LIBRARIES
   PUBLIC
   larevt::ChannelStatusProvider

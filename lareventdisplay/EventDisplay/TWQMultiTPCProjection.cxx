@@ -27,6 +27,7 @@
 #include "lareventdisplay/EventDisplay/HeaderPad.h"
 #include "lareventdisplay/EventDisplay/MCBriefPad.h"
 #include "lareventdisplay/EventDisplay/RawDataDrawer.h"
+#include "lareventdisplay/EventDisplay/RecoDrawingOptions.h"
 #include "lareventdisplay/EventDisplay/RawDrawingOptions.h"
 #include "lareventdisplay/EventDisplay/RecoBaseDrawer.h"
 #include "lareventdisplay/EventDisplay/SimulationDrawingOptions.h"
@@ -68,7 +69,9 @@ namespace evd {
     fMC->Draw();
 
     evdb::Canvas::fCanvas->cd();
-    fWireQ = new TQPad("fWireQPadMultiTPC", "ADCvsTime", 0.15, 0.0, 1.0, 0.13, "TQ", 0, 0);
+    art::ServiceHandle<evd::RawDrawingOptions const> rawOptions;
+    art::ServiceHandle<evd::RecoDrawingOptions const> recoOptions;
+    fWireQ = new TQPad("fWireQPadMultiTPC", "ADCvsTime", 0.15, 0.0, 1.0, 0.13, "TQ", 0, 0, recoOptions->fHitDrawerParams, rawOptions->fRawDigitDrawerParams, recoOptions->fWireDrawerParams);
     fWireQ->Pad()->SetBit(TPad::kCannotMove, true);
     fWireQ->Draw();
 
@@ -283,7 +286,10 @@ namespace evd {
           padname += i;
 
           evdb::Canvas::fCanvas->cd();
-          fPlaneQ.push_back(new TQPad(padname, padtitle, twx2, twy1, twx3, twy2, "Q", i, 0));
+          art::ServiceHandle<evd::RawDrawingOptions const> rawOptions;
+          art::ServiceHandle<evd::RecoDrawingOptions const> recoOptions;
+          
+          fPlaneQ.push_back(new TQPad(padname, padtitle, twx2, twy1, twx3, twy2, "Q", i, 0, recoOptions->fHitDrawerParams, rawOptions->fRawDigitDrawerParams, recoOptions->fWireDrawerParams));
           fPlaneQ[i]->Draw();
         }
       } // end loop to draw pads

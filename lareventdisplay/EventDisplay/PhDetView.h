@@ -142,7 +142,7 @@ namespace evd {
     TGNumberEntry* fWireEntry;    ///< Wire number displayed.
     TGNumberEntry* fPlaneEntry;   ///< Plane number displayed.
     TGNumberEntry* fThresEntry;   ///< ADC threshold to display.
-    TGNumberEntry* fDistance;     ///<Distance from line to find hits in cluster
+    TGNumberEntry* fDistance;     ///< Distance from line to find hits in cluster
     TGCheckButton* fGreyScale;    ///< Display gray or color scale
     TGCheckButton* fMCOn;         ///< Display MC truth information
     TGRadioButton* fRawDraw;      ///< Draw Raw information only

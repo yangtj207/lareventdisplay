@@ -44,6 +44,21 @@ cet_build_plugin(DrawRawHist lar::WaveformDrawer
   ROOT::Hist
 )
 
+cet_build_plugin(DrawOpRawHist lar::WaveformDrawer
+  LIBRARIES PRIVATE
+  lareventdisplay::EventDisplay_ColorDrawingOptions_service
+  lareventdisplay::EventDisplay_RawDrawingOptions_service
+  larevt::DetPedestalProvider
+  larevt::DetPedestalService
+  lardataobj::RawData
+  larcorealg::Geometry
+  nuevdb::EventDisplayBase
+  art::Framework_Principal
+  art::Framework_Services_Registry
+  messagefacility::MF_MessageLogger
+  ROOT::Hist
+)
+
 cet_build_plugin(DrawSkewHits lar::WFHitDrawer
   LIBRARIES PRIVATE
   lareventdisplay::EventDisplay_ColorDrawingOptions_service

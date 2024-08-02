@@ -49,6 +49,7 @@ namespace evd {
 
   static unsigned int kPlane;
   static unsigned int kWire;
+  //static unsigned int kChannel;
   static double kDistance;
   static int curr_zooming_plane;
   static const char* zoom_opt = 0;
@@ -76,19 +77,19 @@ namespace evd {
 
     fLastThreshold = -1.;
 
-    evdb::Canvas::fCanvas->cd();
-    fHeaderPad = new HeaderPad("fHeaderPad", "Header", 0.0, 0.0, 0.15, 0.13, "");
-    fHeaderPad->Draw();
-
-    evdb::Canvas::fCanvas->cd();
-    fMC = new MCBriefPad("fMCPad", "MC Info.", 0.15, 0.13, 1.0, 0.17, "");
-    fMC->Draw();
+//    evdb::Canvas::fCanvas->cd();
+//    fHeaderPad = new HeaderPad("fHeaderPad", "Header", 0.0, 0.0, 0.15, 0.13, "");
+//    fHeaderPad->Draw();
+//
+//    evdb::Canvas::fCanvas->cd();
+//    fMC = new MCBriefPad("fMCPad", "MC Info.", 0.15, 0.13, 1.0, 0.17, "");
+//    fMC->Draw();
 
     evdb::Canvas::fCanvas->cd();
     //    fWireQ = new TQPad("fWireQPad", "ADCvsTime",0.15,0.0,1.0,0.13,"TQ", 0, 0);
     art::ServiceHandle<evd::RawDrawingOptions const> rawOptions;
     art::ServiceHandle<evd::RecoDrawingOptions const> recoOptions;
-    fWireQ = new TQPad("fWireQPad", "ADCvsTime", 0.15, 0.0, 1.0, 0.14, "TQ", 0, 0, recoOptions->fHitDrawerParams, rawOptions->fRawDigitDrawerParams, recoOptions->fWireDrawerParams);
+    fWireQ = new TQPad("fWireQPad", "ADCvsTime", 0.0, 0.0, 1.0, 0.3, "TQ", 0, 0, recoOptions->fHitDrawerParams, rawOptions->fOpRawDigitDrawerParams, recoOptions->fWireDrawerParams);
     fWireQ->Pad()->SetBit(TPad::kCannotMove, true);
     fWireQ->Draw();
 
@@ -204,11 +205,11 @@ namespace evd {
     if (cst->fColorOrGray == 1) fGreyScale->SetState(kButtonDown);
 
     // check button to toggle MC information
-    if (evdlayoutopt->fEnableMCTruthCheckBox) {
-      fMCOn = new TGCheckButton(fFrame, "MC Truth", 5);
-      fMCOn->Connect("Clicked()", "evd::PhDetView", this, "SetMCInfo()");
-      if (sdo->fShowMCTruthText == 1) fMCOn->SetState(kButtonDown);
-    }
+//    if (evdlayoutopt->fEnableMCTruthCheckBox) {
+//      fMCOn = new TGCheckButton(fFrame, "MC Truth", 5);
+//      fMCOn->Connect("Clicked()", "evd::PhDetView", this, "SetMCInfo()");
+//      if (sdo->fShowMCTruthText == 1) fMCOn->SetState(kButtonDown);
+//    }
 
     // radio buttons to toggle drawing raw vs calibrated information
     fRawCalibDraw = new TGRadioButton(fFrame, "Both", 2);
@@ -227,9 +228,9 @@ namespace evd {
     // Put all these widgets into the frame.  The last
     // four numbers in each TGLayoutHint are padleft, padright,
     // padtop, padbottom.
-    if (evdlayoutopt->fEnableMCTruthCheckBox) {
-      fFrame->AddFrame(fMCOn, new TGLayoutHints(kLHintsBottom | kLHintsRight, 0, 0, 5, 1));
-    }
+//    if (evdlayoutopt->fEnableMCTruthCheckBox) {
+//      fFrame->AddFrame(fMCOn, new TGLayoutHints(kLHintsBottom | kLHintsRight, 0, 0, 5, 1));
+//    }
     fFrame->AddFrame(fGreyScale, new TGLayoutHints(kLHintsBottom | kLHintsRight, 0, 0, 5, 1));
     fFrame->AddFrame(fRawCalibDraw, new TGLayoutHints(kLHintsBottom | kLHintsRight, 0, 0, 5, 1));
     fFrame->AddFrame(fCalibDraw, new TGLayoutHints(kLHintsBottom | kLHintsRight, 0, 0, 5, 1));
@@ -245,11 +246,11 @@ namespace evd {
     //unsigned int nplanes = geo->Nplanes();
     unsigned int nplanes = 1;
 
-    if (evdlayoutopt->fShowSideBar)
-      SetUpSideBar();
-    else
-      evdlayoutopt->fShowEndPointSection =
-        0; // zero it to avoid a misconfiguration in the fcl file.
+//    if (evdlayoutopt->fShowSideBar)
+//      SetUpSideBar();
+//    else
+    evdlayoutopt->fShowEndPointSection =
+      0; // zero it to avoid a misconfiguration in the fcl file.
 
     //zero the ppoints queue.
     ppoints.clear();
@@ -261,9 +262,9 @@ namespace evd {
       double twx1 = 0.;
       double twx2 = 0.97;
       double twx3 = 1.0;
-      double twy1 = 0.17 + (i) * (1.0 - 0.171) / (1. * nplanes);
-      double twy2 = 0.17 + (i + 1) * (1.0 - 0.171) / (1. * nplanes);
-
+      double twy1 = 0.30 + (i) * (1.0 - 0.301) / (1. * nplanes);
+      double twy2 = 0.30 + (i + 1) * (1.0 - 0.301) / (1. * nplanes);
+      std::cout<<twy1<<" "<<twy2<<std::endl;
       TString padname = "fWireProjP";
       padname += i;
 
@@ -287,7 +288,7 @@ namespace evd {
       evdb::Canvas::fCanvas->cd();
       art::ServiceHandle<evd::RawDrawingOptions const> rawOptions;
       art::ServiceHandle<evd::RecoDrawingOptions const> recoOptions;
-      fPlaneQ.push_back(new TQPad(padname, padtitle, twx2, twy1, twx3, twy2, "Q", i, 0, recoOptions->fHitDrawerParams, rawOptions->fRawDigitDrawerParams, recoOptions->fWireDrawerParams));
+      fPlaneQ.push_back(new TQPad(padname, padtitle, twx2, twy1, twx3, twy2, "Q", i, 0, recoOptions->fHitDrawerParams, rawOptions->fOpRawDigitDrawerParams, recoOptions->fWireDrawerParams));
       fPlaneQ[i]->Draw();
     }
 
@@ -390,8 +391,8 @@ namespace evd {
 
     evdb::Canvas::fCanvas->cd();
     zoom_opt = 0;
-    fHeaderPad->Draw();
-    fMC->Draw();
+    //fHeaderPad->Draw();
+    //fMC->Draw();
     fWireQ->Draw();
 
     art::ServiceHandle<evd::EvdLayoutOptions const> evdlayoutopt;

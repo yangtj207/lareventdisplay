@@ -28,4 +28,9 @@ rawdigithist_drawer:
   tool_type:       DrawRawHist
 }
 
+oprawdigithist_drawer:
+{
+  tool_type:       DrawOpRawHist
+}
+
 END_PROLOG

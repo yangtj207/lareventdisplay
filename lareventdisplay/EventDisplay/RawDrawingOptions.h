@@ -58,6 +58,8 @@ namespace evd {
     unsigned int fMaxChannelStatus; ///< Display channels with this status and below
     std::vector<art::InputTag>
       fRawDataLabels; ///< module label that made the raw digits, default is daq
+    std::vector<art::InputTag>
+      fOpRawDataLabels; ///< module label that made the raw digits, default is daq
 
     bool fUncompressWithPed; ///< Option to uncompress with pedestal. Turned off by default
     bool fSeeBadChannels;    ///< Allow "bad" channels to be viewed
@@ -69,6 +71,9 @@ namespace evd {
 
     fhicl::ParameterSet
       fRawDigitDrawerParams; ///< FHICL parameters for the RawDigit waveform display
+
+    fhicl::ParameterSet
+      fOpRawDigitDrawerParams; ///< FHICL parameters for the OpDetWaveform waveform display
 
     /// Returns the current TPC as a TPCID
     geo::TPCID CurrentTPC() const { return geo::TPCID(fCryostat, fTPC); }

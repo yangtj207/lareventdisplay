@@ -27,6 +27,8 @@ namespace evd {
     fAxisOrientation = pset.get<int>("AxisOrientation", 0);
     fRawDataLabels =
       pset.get<std::vector<art::InputTag>>("RawDataLabels", std::vector<art::InputTag>() = {"daq"});
+    fOpRawDataLabels =
+      pset.get<std::vector<art::InputTag>>("OpRawDataLabels", std::vector<art::InputTag>() = {"daq"});
     fTPC = pset.get<unsigned int>("TPC", 0);
     fCryostat = pset.get<unsigned int>("Cryostat", 0);
     fMinChannelStatus = pset.get<unsigned int>("MinChannelStatus", 0);
@@ -40,5 +42,6 @@ namespace evd {
     if (fRoIthresholds.empty()) fRoIthresholds.push_back((float)fMinSignal);
 
     fRawDigitDrawerParams = pset.get<fhicl::ParameterSet>("RawDigitDrawer");
+    fOpRawDigitDrawerParams = pset.get<fhicl::ParameterSet>("OpRawDigitDrawer");
   }
 }
